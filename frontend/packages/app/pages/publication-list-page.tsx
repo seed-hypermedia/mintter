@@ -17,6 +17,7 @@ import {
 
 import {
   Document,
+  PublicationVariant,
   createPublicWebHmUrl,
   idToUrl,
   unpackHmId,
@@ -45,7 +46,7 @@ import {
 } from '../models/documents'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useWaitForPublication} from '../models/web-links'
-import {AuthorsVariant, DraftRoute, useNavRoute} from '../utils/navigation'
+import {DraftRoute, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
@@ -230,17 +231,19 @@ function PublicationsList({}: {}) {
           const {publication, author, editors} = item
           if (!publication.document) return null
           const docId = publication.document.id
-          const variant: AuthorsVariant = {
-            key: 'authors',
-            authors: [publication.document.author],
-          }
+          const variants: PublicationVariant[] = [
+            {
+              key: 'author',
+              author: publication.document.author,
+            },
+          ]
           return (
             <PublicationListItem
-              variant={variant}
+              variants={variants}
               openRoute={{
                 key: 'publication',
                 documentId: docId,
-                variant,
+                variants,
               }}
               hasDraft={drafts.data?.documents.find(
                 (d) => d.id == publication.document?.id,
@@ -261,7 +264,7 @@ function PublicationsList({}: {}) {
               editors={editors}
               menuItems={() => [
                 copyLinkMenuItem(
-                  idToUrl(docId, gwUrl.data, publication.version),
+                  idToUrl(docId, gwUrl.data, {version: publication.version}),
                   'Publication',
                 ),
                 {

@@ -229,7 +229,8 @@ function EmbedControl({
   }, [])
 
   const handleVersionSelect = useCallback(
-    (version: 'exact' | 'latest') => {
+    (versionMode: 'exact' | 'latest') => {
+      console.log('VERSION SELECT', versionMode)
       let unpackedRef = unpackHmId(block.props.ref)
       return () => {
         popoverLatestState.onOpenChange(false)
@@ -240,7 +241,8 @@ function EmbedControl({
                 documentId: unpackedRef?.qid,
                 version: unpackedRef?.version,
                 blockRef: unpackedRef?.blockRef,
-                latest: version == 'latest',
+                variants: unpackedRef?.variants,
+                latest: versionMode === 'latest',
               }),
             },
           })

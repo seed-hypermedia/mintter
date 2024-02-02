@@ -251,7 +251,7 @@ export function CloneGroupDialog({
   onClose,
 }: {
   input: string
-  onClose: () => {}
+  onClose: () => void
 }) {
   const group = useGroup(input)
   const groupContent = useGroupContent(input)

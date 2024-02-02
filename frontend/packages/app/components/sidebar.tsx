@@ -1,4 +1,10 @@
-import {Account, API_FILE_URL} from '@mintter/shared'
+import {
+  Account,
+  API_FILE_URL,
+  AuthorVariant,
+  GroupVariant,
+  PublicationVariant,
+} from '@mintter/shared'
 import {
   Button,
   ListItem,
@@ -42,8 +48,6 @@ import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {
   NavRoute,
-  PublicationRouteContext,
-  PublicationVariant,
   useHmIdToAppRouteResolver,
   useNavRoute,
 } from '../utils/navigation'
@@ -61,7 +65,6 @@ const HoverRegionWidth = 30
 function FullAppSidebar() {
   const route = useNavRoute()
   const navigate = useNavigate()
-  const spawn = useNavigate('spawn')
   const account = useMyAccount()
   const pins = usePins()
   const ctx = useSidebarContext()
@@ -81,6 +84,30 @@ function FullAppSidebar() {
   })
   const isWindowTooNarrowForHoverSidebar = useIsWindowNarrowForHoverSidebar()
   const resolveId = useHmIdToAppRouteResolver()
+  const pubRoute = route.key === 'publication' ? route : null
+  const pubAuthorVariants = pubRoute?.variants?.filter(
+    (variant) => variant.key === 'author',
+  ) as AuthorVariant[] | undefined
+  const pubGroupVariants = pubRoute?.variants?.filter(
+    (variant) => variant.key === 'group',
+  ) as GroupVariant[] | undefined
+  if (pubGroupVariants && pubGroupVariants.length > 1) {
+    throw new Error('Multiple group variants not currently supported')
+  }
+  if (
+    pubAuthorVariants &&
+    pubAuthorVariants.length > 1 &&
+    pubGroupVariants &&
+    pubGroupVariants.length > 1
+  ) {
+    throw new Error(
+      'Combined author and group variants not currently supported',
+    )
+  }
+  const pubGroupVariant = pubGroupVariants?.[0]
+  const pubAuthorVariantAuthors = pubAuthorVariants?.map(
+    (variant) => variant.author,
+  )
   return (
     <>
       {isFocused && !isLocked && !isWindowTooNarrowForHoverSidebar ? (
@@ -119,6 +146,7 @@ function FullAppSidebar() {
         onMouseEnter={ctx.onMenuHover}
         onMouseLeave={ctx.onMenuHoverLeave}
         opacity={isVisible ? 1 : 0}
+        // @ts-expect-error
         overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
       >
         <YGroup
@@ -127,9 +155,11 @@ function FullAppSidebar() {
           borderBottomWidth={1}
           borderColor="$borderColor"
         >
-          <YGroup.Item>
-            <MyAccountItem account={account.data} onRoute={navigate} />
-          </YGroup.Item>
+          {account.data && (
+            <YGroup.Item>
+              <MyAccountItem account={account.data} onRoute={navigate} />
+            </YGroup.Item>
+          )}
           <YGroup.Item>
             <SidebarItem
               active={route.key == 'documents'}
@@ -141,7 +171,7 @@ function FullAppSidebar() {
               bold
               icon={FileText}
               rightHover={[
-                <NewDocumentButton pubContext={null} key="newDoc" />,
+                <NewDocumentButton key="newDoc" />,
                 // <Button
                 //   theme="blue"
                 //   icon={Plus}
@@ -159,27 +189,23 @@ function FullAppSidebar() {
                   navigate({
                     key: 'publication',
                     documentId: pin.docId,
-                    variant: {
-                      key: 'authors',
-                      authors: pin.authors,
-                    },
+                    variants: pin.authors.map((author) => ({
+                      key: 'author',
+                      author,
+                    })),
                   })
                 }}
                 authors={pin.authors}
                 active={
                   route.key === 'publication' &&
                   route.documentId === pin.docId &&
-                  arrayMatch(
-                    pin.authors,
-                    route.variant?.key === 'authors'
-                      ? route.variant.authors
-                      : [],
-                  )
+                  pubAuthorVariantAuthors &&
+                  arrayMatch(pin.authors, pubAuthorVariantAuthors)
                 }
-                variant={{
-                  key: 'authors',
-                  authors: pin.authors,
-                }}
+                variants={pin.authors.map((author) => ({
+                  key: 'author',
+                  author,
+                }))}
                 docId={pin.docId}
                 key={`${pin.docId}.${pin.authors.join('.')}`}
               />
@@ -213,11 +239,13 @@ function FullAppSidebar() {
                   const {pathName, docId, docVersion} = pin
                   return (
                     <PinnedDocument
-                      variant={{
-                        key: 'group',
-                        groupId: group.groupId,
-                        pathName: pathName || '/',
-                      }}
+                      variants={[
+                        {
+                          key: 'group',
+                          groupId: group.groupId,
+                          pathName: pathName || '/',
+                        },
+                      ]}
                       onPress={async () => {
                         const resolved = await resolveId(
                           `${group.groupId}/${pathName}`,
@@ -232,9 +260,9 @@ function FullAppSidebar() {
                       }}
                       active={
                         route.key === 'publication' &&
-                        route.variant?.key === 'group' &&
-                        route.variant.groupId === group.groupId &&
-                        route.variant.pathName === pathName
+                        pubGroupVariant &&
+                        pubGroupVariant.groupId === group.groupId &&
+                        pubGroupVariant.pathName === pathName
                       }
                       docId={docId}
                       docVersion={docVersion}
@@ -306,10 +334,10 @@ function FullAppSidebar() {
 }
 
 function NewDocumentButton({
-  pubContext,
+  groupVariant,
   label,
 }: {
-  pubContext: PublicationRouteContext
+  groupVariant?: GroupVariant | undefined
   label?: string
 }) {
   const openDraft = useOpenDraft('push')
@@ -321,7 +349,7 @@ function NewDocumentButton({
         iconAfter={Plus}
         onPress={(e) => {
           e.stopPropagation()
-          openDraft(pubContext)
+          openDraft(groupVariant)
         }}
       />
     </Tooltip>
@@ -556,7 +584,7 @@ function PinnedGroup(props: {group: {groupId: string}}) {
             }}
           />,
           <NewDocumentButton
-            pubContext={{key: 'group', groupId, pathName: null}}
+            groupVariant={{key: 'group', groupId, pathName: null}}
             label="Group Document"
             key="newDoc"
           />,
@@ -572,20 +600,20 @@ function PinnedDocument({
   onPress,
   active,
   authors,
-  variant,
+  variants,
 }: {
   docId: string
   docVersion?: string | null
   onPress: () => void
   active?: boolean
   authors?: string[]
-  variant: PublicationVariant
+  variants: PublicationVariant[]
 }) {
   const doc = usePublication({id: docId, version: docVersion || undefined})
   const {togglePin} = usePinDocument({
     key: 'publication',
     documentId: docId,
-    variant,
+    variants,
   })
   const authorAccountsQuery = useAccounts(authors || [])
   const authorAccounts = authorAccountsQuery

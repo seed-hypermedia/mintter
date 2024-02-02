@@ -340,4 +340,5 @@ toast.promise = function promiseToast<V>(
     ...opts,
     customContent: <PromiseToast promise={promise} messages={messages} />,
   })
+  return promise
 }

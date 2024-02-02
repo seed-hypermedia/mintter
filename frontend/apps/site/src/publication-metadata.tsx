@@ -363,12 +363,10 @@ function CitationPreview({citationLink}: {citationLink: HMLink}) {
   )
   if (!sourcePub.data) return null
   if (!source?.documentId) return null
-  const destUrl = idToUrl(
-    source?.documentId,
-    null,
-    source?.version,
-    source?.blockId,
-  )
+  const destUrl = idToUrl(source?.documentId, null, {
+    version: source?.version,
+    blockRef: source?.blockId,
+  })
   if (!destUrl) return null
   return (
     <NextLink href={destUrl} style={{textDecoration: 'none'}}>

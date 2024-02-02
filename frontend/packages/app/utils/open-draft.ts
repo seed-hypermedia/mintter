@@ -1,9 +1,9 @@
 import {useQueryInvalidator} from '@mintter/app/app-context'
 import {queryKeys} from '@mintter/app/models/query-keys'
-import {DocumentChange, GRPCClient} from '@mintter/shared'
+import {DocumentChange, GRPCClient, GroupVariant} from '@mintter/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
-import {DraftRoute, GroupVariant, NavMode, useNavRoute} from './navigation'
+import {DraftRoute, NavMode, useNavRoute} from './navigation'
 import {useNavigate} from './useNavigate'
 
 async function createDraft(

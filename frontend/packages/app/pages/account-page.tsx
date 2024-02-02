@@ -126,7 +126,10 @@ export default function AccountPage() {
                 editors={editors}
                 menuItems={() => [
                   copyLinkMenuItem(
-                    idToUrl(docId, gwUrl.data, publication.version),
+                    idToUrl(docId, gwUrl.data, {
+                      version: publication.version,
+                      variants: [{key: 'author', author: accountId}],
+                    }),
                     'Publication',
                   ),
                 ]}
@@ -134,10 +137,12 @@ export default function AccountPage() {
                   key: 'publication',
                   documentId: docId,
                   versionId: publication.version,
-                  variant: {
-                    key: 'authors',
-                    authors: [accountId],
-                  },
+                  variants: [
+                    {
+                      key: 'author',
+                      author: accountId,
+                    },
+                  ],
                 }}
               />
             )

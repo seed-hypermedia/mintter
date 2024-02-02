@@ -50,6 +50,7 @@ export function useCopyGatewayReference() {
     const publicUrl = createPublicWebHmUrl('d', input.eid, {
       version: input.version,
       blockRef: input.blockRef,
+      variants: input.variants,
       hostname: gatewayUrl.data,
     })
     const [setIsPublished, isPublished] =

@@ -7,7 +7,7 @@ import {
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
-import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {GroupVariant, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
   Back,
   Button,
@@ -49,7 +49,6 @@ import {
 } from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {GroupVariant} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
@@ -86,7 +85,10 @@ export function DocOptionsButton() {
           toast.error('Failed to identify document URL')
           return
         }
-        onCopy(id)
+        onCopy({
+          ...id,
+          variants: route.variants,
+        })
       },
     },
     {
@@ -257,12 +259,17 @@ export function useFullReferenceUrl(route: NavRoute): {
   const pub = usePublicationVariant({
     documentId: pubRoute?.documentId,
     versionId: pubRoute?.versionId,
-    variant: pubRoute?.variant,
+    variants: pubRoute?.variants,
     enabled: !!pubRoute?.documentId,
   })
-  const variantGroupId =
-    pubRoute?.variant?.key === 'group' ? pubRoute.variant.groupId : undefined
-  const variantGroup = useGroup(variantGroupId)
+  const pubGroupVariants = pubRoute?.variants?.filter(
+    (variant) => variant.key === 'group',
+  ) as GroupVariant[] | undefined
+  if (pubGroupVariants && pubGroupVariants.length > 1) {
+    throw new Error('Multiple group variants not currently supported')
+  }
+  const pubGroupVariant: GroupVariant | undefined = pubGroupVariants?.[0]
+  const variantGroupId = pubGroupVariant?.groupId
   const routeGroupId = groupRoute?.groupId
   const pubRouteDocId = pubRoute?.documentId
   const group = useGroup(variantGroupId || routeGroupId)
@@ -386,6 +393,7 @@ export function useFullReferenceUrl(route: NavRoute): {
           hostname: hostname || null,
           version: pub.data?.publication?.version || null,
           blockRef: blockId || null,
+          variants: pubRoute.variants,
         })
       },
     }
@@ -425,6 +433,7 @@ function getReferenceUrlOfRoute(
     const url = createPublicWebHmUrl('d', docId.eid, {
       version: exactVersion || route.versionId,
       hostname,
+      variants: route.variants,
     })
     if (!url) return null
     return {
@@ -561,6 +570,7 @@ export function PageActionButtons(props: TitleBarProps) {
 export function NavigationButtons() {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
+  if (!state) return null
   return (
     <XStack className="no-window-drag">
       <XGroup>

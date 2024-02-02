@@ -1,6 +1,12 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
-import {Account, Document, Publication} from '@mintter/shared'
+import {
+  Account,
+  Document,
+  GroupVariant,
+  Publication,
+  PublicationVariant,
+} from '@mintter/shared'
 import {
   ArrowUpRight,
   Button,
@@ -8,7 +14,7 @@ import {
   XStack,
   copyTextToClipboard,
 } from '@mintter/ui'
-import {NavRoute, PublicationVariant} from '../utils/navigation'
+import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {ListItem, TimeAccessory} from './list-item'
@@ -22,7 +28,7 @@ export function getDocumentTitle(document?: Document) {
 export function PublicationListItem({
   publication,
   hasDraft,
-  variant,
+  variants,
   menuItems = () => [],
   onPointerEnter,
   pathName,
@@ -34,7 +40,7 @@ export function PublicationListItem({
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
-  variant?: PublicationVariant
+  variants?: PublicationVariant[]
   menuItems?: () => (MenuItemType | null)[]
   pathName?: string
   onPointerEnter?: () => void
@@ -52,6 +58,9 @@ export function PublicationListItem({
 
   const navigate = useClickNavigate()
 
+  const groupVariant = variants?.find((v) => v.key === 'group') as
+    | GroupVariant
+    | undefined
   return (
     <ListItem
       onPress={() => {
@@ -71,7 +80,7 @@ export function PublicationListItem({
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
-                    variant: variant?.key === 'group' ? variant : undefined,
+                    variant: groupVariant,
                   },
                   e,
                 )

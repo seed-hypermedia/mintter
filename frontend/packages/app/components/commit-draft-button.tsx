@@ -1,6 +1,6 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {API_FILE_URL} from '@mintter/shared'
+import {API_FILE_URL, AuthorVariant, GroupVariant} from '@mintter/shared'
 import {
   AlertCircle,
   Button,
@@ -35,7 +35,6 @@ import {
 } from '../models/groups'
 import {useDaemonReady} from '../node-status-context'
 import {usePopoverState} from '../use-popover-state'
-import {AuthorsVariant, DraftRoute, GroupVariant} from '../utils/navigation'
 import {useAppDialog} from './dialog'
 import {useMediaDialog} from './media-dialog'
 import {
@@ -49,21 +48,21 @@ import {
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
-  if (route.key !== 'draft')
+  const draftRoute = route.key === 'draft' ? route : null
+  if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.key == 'draft' ? route.draftId : null
-  const draftRoute: DraftRoute = route
   const navReplace = useNavigate('replace')
   const navBack = useNavigate('backplace')
   const grpcClient = useGRPCClient()
   const myAccount = useMyAccount()
-  const myAuthorVariant: AuthorsVariant | null = myAccount.data?.id
+  const myAuthorVariant: AuthorVariant | null = myAccount.data?.id
     ? {
-        key: 'authors',
-        authors: [myAccount.data.id],
+        key: 'author',
+        author: myAccount.data.id,
       }
     : null
-  const groupVariant = route.variant
+  const groupVariant = draftRoute.variant
   const group = useGroup(groupVariant?.groupId)
 
   const mediaDialog = useMediaDialog()
@@ -81,17 +80,17 @@ export default function CommitDraftButton() {
     onSuccess: ({pub: publishedDoc, groupVariant}) => {
       if (!publishedDoc || !draftId || !myAuthorVariant) return
       if (
-        route.contextRoute?.key === 'group' &&
+        draftRoute.contextRoute?.key === 'group' &&
         groupVariant?.key === 'group' &&
         groupVariant.pathName === '/'
       ) {
-        navBack(route.contextRoute)
+        navBack(draftRoute.contextRoute)
       } else {
         navReplace({
           key: 'publication',
           documentId: draftId,
           versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
-          variant: groupVariant || myAuthorVariant,
+          variants: [groupVariant || myAuthorVariant],
           immediatelyPromptPush:
             pushOnPublish.data !== 'always' && pushOnPublish.data !== 'never',
           // showFirstPublicationMessage: isFirstPublish, // disabled until gateway publish works again for fresh installations
@@ -156,6 +155,7 @@ export default function CommitDraftButton() {
   const newGroupVariant = isPublishableGroupActiveVariant ? null : groupVariant
   const isAuthorVariant = !groupVariant
   function setVariant(variant: GroupVariant | null) {
+    if (!draftRoute) return
     navReplace({...draftRoute, variant})
   }
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})

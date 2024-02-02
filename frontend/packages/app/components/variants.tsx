@@ -19,8 +19,11 @@ import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   API_FILE_URL,
+  AuthorVariant,
+  GroupVariant,
   HYPERMEDIA_ENTITY_TYPES,
   Publication,
+  PublicationVariant,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   formattedDateMedium,
@@ -74,7 +77,6 @@ import {useGatewayUrl} from '../models/gateway-settings'
 import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
-import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
@@ -187,11 +189,13 @@ export function GroupPublishDialog({
                 .then((didChange: boolean) => {
                   navigate({
                     ...pubRoute,
-                    variant: {
-                      key: 'group',
-                      groupId: selectedGroupId,
-                      pathName,
-                    },
+                    variants: [
+                      {
+                        key: 'group',
+                        groupId: selectedGroupId,
+                        pathName,
+                      },
+                    ],
                   })
                   return didChange
                 }),
@@ -447,17 +451,20 @@ export function VersionContext({route}: {route: NavRoute}) {
   const gwUrl = useGatewayUrl()
   const pubRoute = route.key === 'publication' ? route : null
   const groupRoute = route.key === 'group' ? route : null
-  const pub = usePublicationVariant({
+  const latestPub = usePublicationVariant({
     documentId: pubRoute?.documentId,
-    variant: pubRoute?.variant,
+    variants: pubRoute?.variants,
     enabled: !!pubRoute?.documentId,
+    // version not specified, so we are fetching the latest
   })
-  const group = useGroup(groupRoute?.groupId, {enabled: !!groupRoute?.groupId})
+  const group = useGroup(groupRoute?.groupId, undefined, {
+    enabled: !!groupRoute?.groupId,
+  })
   if (route.key === 'group') {
     const {groupId, accessory, version} = route
     unpackedId = unpackHmId(groupId)
     exactVersion = version || null
-    if (version && group.data.version && group.data.version !== version) {
+    if (version && group.data?.version && group.data.version !== version) {
       latestVersionRoute = {
         key: 'group',
         groupId,
@@ -466,20 +473,20 @@ export function VersionContext({route}: {route: NavRoute}) {
       }
     }
   } else if (route.key === 'publication') {
-    const {accessory, documentId, versionId, variant} = route
+    const {accessory, documentId, versionId, variants} = route
     unpackedId = unpackHmId(documentId)
     exactVersion = versionId || null
     if (
       versionId &&
-      pub.data?.publication?.version &&
-      pub.data?.publication?.version !== versionId
+      latestPub.data?.publication?.version &&
+      latestPub.data?.publication?.version !== versionId
     ) {
       latestVersionRoute = {
         key: 'publication',
         documentId,
         accessory,
         versionId: undefined,
-        variant,
+        variants,
       }
     }
   }
@@ -508,7 +515,7 @@ export function VersionContext({route}: {route: NavRoute}) {
                 size="$2"
                 theme="blue"
                 onPress={() => {
-                  navigate(latestVersionRoute)
+                  latestVersionRoute && navigate(latestVersionRoute)
                 }}
                 iconAfter={ArrowRight}
               >
@@ -526,10 +533,32 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   const publication = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
-    variant: route.variant,
+    variants: route.variants,
   })
-  const {variant} = route
-  const groupVariant = variant?.key === 'group' ? variant : null
+  const {variants} = route
+  const groupVariants = variants?.filter(
+    (variant) => variant.key === 'group',
+  ) as GroupVariant[] | undefined
+  const authorVariants = variants?.filter(
+    (variant) => variant.key === 'author',
+  ) as AuthorVariant[] | undefined
+  if (groupVariants && groupVariants.length > 1)
+    throw new Error('Currently only one group variant is supported')
+  if (
+    authorVariants &&
+    groupVariants &&
+    authorVariants.length > 0 &&
+    groupVariants.length > 0
+  )
+    throw new Error('Currently only one variant type is supported')
+  const pubOwner = publication.data?.publication?.document?.author
+  const realAuthorVariants: AuthorVariant[] | undefined =
+    groupVariants && groupVariants.length > 0
+      ? []
+      : (authorVariants && authorVariants.length) || !pubOwner
+      ? authorVariants
+      : [{key: 'author', author: pubOwner}]
+  const groupVariant = groupVariants?.[0]
   const [variantTab, setVariantTab] = useState(
     groupVariant ? 'groups' : 'authors',
   )
@@ -539,38 +568,34 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   const renameDialog = useAppDialog(RenamePubDialog)
   const myAccount = useMyAccount()
   const myGroups = useAccountGroups(myAccount.data?.id)
-  const variantAuthors =
-    variant?.key === 'authors' || !variant
-      ? variant?.authors || [publication.data?.publication?.document?.author]
-      : null
   const isAuthorVariantEditable =
-    !!variantAuthors &&
+    !!realAuthorVariants &&
+    !!realAuthorVariants.length &&
     !!myAccount.data?.id &&
-    variantAuthors.indexOf(myAccount.data.id) !== -1
+    !!realAuthorVariants.find(
+      (variant) => variant.author === myAccount.data?.id,
+    )
   const isGroupVariantEditable =
     !!groupVariant &&
     !!myGroups.data?.items?.find(
       (item) => item.group?.id === groupVariant.groupId,
     )
   const showEditButton = isAuthorVariantEditable || isGroupVariantEditable
+  const realVariants = variants || realAuthorVariants
   return (
     <>
       <ContextPopover {...popoverState}>
-        <Tooltip content="open Variant switcher">
-          <PopoverTrigger asChild>
-            <Button
-              size="$2"
-              className="no-window-drag"
-              iconAfter={<ChevronDown size={12} />}
-            >
+        <PopoverTrigger asChild>
+          <Button size="$2" className="no-window-drag">
+            {realVariants && (
               <VariantState
-                variant={variant}
+                variants={realVariants}
                 isOpen={popoverState.open}
                 publication={publication.data?.publication}
               />
-            </Button>
-          </PopoverTrigger>
-        </Tooltip>
+            )}
+          </Button>
+        </PopoverTrigger>
         <ContextPopoverContent>
           <ContextPopoverArrow />
           <YStack alignSelf="stretch">
@@ -615,7 +640,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
         <EditDocButton
           key="editActions"
           contextRoute={route}
-          variant={route.variant || null}
+          variants={route.variants}
           docId={route.documentId}
           baseVersion={route.versionId}
         />
@@ -626,19 +651,27 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
 }
 
 function VariantState({
-  variant,
+  variants,
   isOpen,
   publication,
 }: {
-  variant: PublicationVariant | undefined
+  variants: PublicationVariant[]
   isOpen: boolean
   publication: Publication | undefined
 }) {
-  if (variant?.key === 'group')
-    return <GroupVariantState variant={variant} isOpen={isOpen} />
+  const groupVariants = variants.filter(
+    (variant) => variant.key === 'group',
+  ) as GroupVariant[]
+  const authorVariants = variants.filter(
+    (variant) => variant.key === 'author',
+  ) as AuthorVariant[]
+  if (groupVariants.length && authorVariants.length)
+    throw new Error('Cannot have both group and author variants')
+  if (groupVariants.length)
+    return <GroupVariantState variants={groupVariants} isOpen={isOpen} />
   return (
     <AuthorVariantState
-      variant={variant}
+      variants={authorVariants}
       publication={publication}
       isOpen={isOpen}
     />
@@ -663,12 +696,15 @@ function VariantState({
 }
 
 function GroupVariantState({
-  variant,
+  variants,
   isOpen,
 }: {
-  variant: GroupVariant
+  variants: GroupVariant[]
   isOpen: boolean
 }) {
+  if (variants.length > 1)
+    throw new Error('Currently only one group variant is supported')
+  const variant = variants[0]
   const group = useGroup(variant.groupId)
   const navigate = useNavigate()
   return (
@@ -694,19 +730,20 @@ function GroupVariantState({
 }
 
 function AuthorVariantState({
-  variant,
+  variants,
   isOpen,
   publication,
 }: {
-  variant: PublicationVariant | undefined
+  variants: AuthorVariant[]
   isOpen: boolean
   publication: Publication | undefined
 }) {
-  const authorsVariant = variant?.key === 'authors' ? variant : undefined
-  const authors =
-    variant?.key === 'group'
-      ? undefined
-      : authorsVariant?.authors || [publication?.document?.author]
+  const defaultAuthors = publication?.document?.author
+    ? [publication?.document?.author]
+    : null
+  const authors = variants.length
+    ? variants.map((variant) => variant.author)
+    : defaultAuthors
   const firstAccount = useAccount(authors?.[0])
   if (!authors) return <SizableText>Variant</SizableText>
   return (
@@ -749,12 +786,18 @@ function AuthorVariantItem({
   publication: Publication | undefined
   isMerged?: boolean
 }) {
-  const authorsVariant = route.variant?.key === 'authors' ? route.variant : null
+  const authorVariants = route.variants?.filter(
+    (variant) => variant.key === 'author',
+  ) as AuthorVariant[] | undefined
+  const routeAuthors =
+    authorVariants && authorVariants.length
+      ? authorVariants.map((variant) => variant.author)
+      : undefined
   const author = useAccount(authorVersion.author)
   const navigate = useNavigate()
   const activeAuthors =
-    authorsVariant?.authors ||
-    (publication?.document?.author && !route.variant
+    routeAuthors ||
+    (publication?.document?.author && !route.variants
       ? [publication?.document?.author]
       : [])
   const isVariantActive = new Set(activeAuthors).has(authorVersion.author)
@@ -774,10 +817,12 @@ function AuthorVariantItem({
         navigate({
           ...route,
           versionId: undefined,
-          variant: {
-            key: 'authors',
-            authors: [authorVersion.author],
-          },
+          variants: [
+            {
+              key: 'author',
+              author: authorVersion.author,
+            },
+          ],
         })
       }}
       userSelect="none"
@@ -859,10 +904,10 @@ function AuthorVariantItem({
             navigate({
               ...route,
               versionId: undefined,
-              variant: {
-                key: 'authors',
-                authors: newAuthors,
-              },
+              variants: newAuthors.map((author) => ({
+                key: 'author',
+                author,
+              })),
             })
           }}
           borderColor="transparent"
@@ -901,7 +946,7 @@ function AuthorVariants({
   const {handleEdit, hasExistingDraft} = useEditDraft(route.documentId, {
     version: publication?.version,
     contextRoute: route,
-    variant: undefined, // this will result in author variant
+    variants: undefined, // this will result in author variant
     navMode: 'push',
   })
   const allChanges = timeline.data?.allChanges
@@ -973,6 +1018,14 @@ function GroupVariants({
   const docGroups = useCurrentDocumentGroups(route.documentId)
   const replaceRoute = useNavigate('replace')
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
+  const activeGroupVariants = route.variants.filter(
+    (variant) => variant.key === 'group',
+  ) as GroupVariant[]
+  const activeGroupVariantKeys = new Set(
+    activeGroupVariants.map(
+      (variant) => `${variant.groupId}-${variant.pathName}`,
+    ),
+  )
   return (
     <YStack gap="$2" padding="$2">
       {docGroups.data?.map((docGroup) => {
@@ -986,21 +1039,20 @@ function GroupVariants({
               !!publication?.version &&
               publication?.version === fullDocId?.version
             }
-            isActive={
-              route?.variant?.key === 'group' &&
-              docGroup.groupId === route.variant.groupId &&
-              (docGroup.path === route.variant.pathName ||
-                route.variant.pathName === '')
-            }
+            isActive={activeGroupVariantKeys.has(
+              `${docGroup.groupId}-${docGroup.path}`,
+            )}
             key={`${docGroup.groupId}-${docGroup.path}`}
             onPress={() => {
               replaceRoute({
                 ...route,
-                variant: {
-                  key: 'group',
-                  groupId: docGroup.groupId,
-                  pathName: docGroup.path,
-                },
+                variants: [
+                  {
+                    key: 'group',
+                    groupId: docGroup.groupId,
+                    pathName: docGroup.path,
+                  },
+                ],
                 versionId: undefined,
               })
             }}

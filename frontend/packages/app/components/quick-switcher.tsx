@@ -73,10 +73,12 @@ function useURLHandler() {
       return {
         key: 'publication',
         documentId,
-        variant: {
-          key: 'authors',
-          authors: [ownerId],
-        },
+        variants: [
+          {
+            key: 'author',
+            author: ownerId,
+          },
+        ],
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)

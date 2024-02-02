@@ -367,10 +367,12 @@ export function CommentPageTitlebarWithDocId({
               key: 'publication',
               documentId: usableDocId,
               versionId: pub.data?.version,
-              variant: {
-                key: 'authors',
-                authors: [author],
-              },
+              variants: [
+                {
+                  key: 'author',
+                  author,
+                },
+              ],
             })
           }}
         >

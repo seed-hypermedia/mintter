@@ -180,7 +180,7 @@ export default function PublicationPage() {
   const publication = usePublicationVariant({
     documentId: docId,
     versionId: route.versionId,
-    variant: route.variant,
+    variants: route.variants,
   })
 
   const {data: citations} = useDocCitations(

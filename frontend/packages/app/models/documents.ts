@@ -16,6 +16,7 @@ import {
   Document,
   DocumentChange,
   GRPCClient,
+  GroupVariant,
   HMBlock,
   ListPublicationsResponse,
   Publication,
@@ -41,7 +42,7 @@ import _ from 'lodash'
 import {useEffect, useMemo, useRef} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
+import {NavRoute, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'

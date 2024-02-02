@@ -33,7 +33,7 @@ function CitationItem({link}: {link: CitationLink}) {
     documentId: link.source.documentId,
     versionId: link.source.version,
     blockId: link.source?.blockId,
-    variant: {key: 'authors', authors: [...authors]},
+    variants: [...authors].map((author) => ({key: 'author', author})),
   }
   return (
     <PanelCard

@@ -1,4 +1,10 @@
-import {GRPCClient, StateStream, unpackDocId} from '@mintter/shared'
+import {
+  GRPCClient,
+  GroupVariant,
+  PublicationVariant,
+  StateStream,
+  unpackDocId,
+} from '@mintter/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
@@ -33,22 +39,11 @@ export type CommentDraftRoute = {
   showThread?: boolean
 }
 
-export type GroupVariant = {
-  key: 'group'
-  groupId: string
-  pathName: string | null
-}
-export type AuthorsVariant = {
-  key: 'authors'
-  authors: string[]
-}
-export type PublicationVariant = AuthorsVariant | GroupVariant
-
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
-  variant: PublicationVariant
+  variants?: PublicationVariant[]
   blockId?: string
   accessory?:
     | null
@@ -322,11 +317,13 @@ export async function resolveHmIdToAppRoute(
           key: 'publication',
           documentId: createHmId('d', doc.eid),
           versionId: isVersionLatest ? undefined : doc.version || undefined,
-          variant: {
-            key: 'group',
-            groupId: createHmId('g', hmIds.eid),
-            pathName: contentPathName,
-          },
+          variants: [
+            {
+              key: 'group',
+              groupId: createHmId('g', hmIds.eid),
+              pathName: contentPathName,
+            },
+          ],
         },
       }
     }
@@ -335,7 +332,7 @@ export async function resolveHmIdToAppRoute(
     const docId = createHmId('d', hmIds.eid)
     const pub = await grpcClient.publications.getPublication({
       documentId: docId,
-      version: hmIds.version || '',
+      // no version because we are only looking for the publication author
     })
     if (!pub.document) return null
     return {
@@ -345,10 +342,12 @@ export async function resolveHmIdToAppRoute(
         documentId: docId,
         versionId: hmIds.version || undefined,
         blockId: hmIds.blockRef || undefined,
-        variant: {
-          key: 'authors',
-          authors: [pub.document.author],
-        },
+        variants: hmIds.variants || [
+          {
+            key: 'author',
+            author: pub.document.author,
+          },
+        ],
       },
     }
   }

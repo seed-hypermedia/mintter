@@ -94,7 +94,9 @@ import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
   const route = useNavRoute()
-  const accessory = route?.accesory
+  const groupRoute = route.key === 'group' ? route : undefined
+  if (!groupRoute) throw new Error('Group page needs group route')
+  const accessory = groupRoute?.accessory
   if (route.key !== 'group') throw new Error('Group page needs group route')
   const {groupId, version} = route
   const group = useGroup(groupId, version, {
@@ -523,7 +525,10 @@ function GroupContentItem({
         variant={{key: 'group', groupId, pathName}}
         menuItems={() => [
           copyLinkMenuItem(
-            idToUrl(docId, gwUrl.data, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
+            idToUrl(docId, gwUrl.data, {
+              version,
+              variants: [{key: 'group', groupId, pathName}],
+            }),
             'Group Publication',
           ),
           ...(userRole != Role.ROLE_UNSPECIFIED ? memberMenuItems : []),
@@ -532,10 +537,10 @@ function GroupContentItem({
           key: 'publication',
           documentId: docId,
           ...(latestVersion === version
-            ? {variant: {key: 'group', groupId, pathName}}
+            ? {variants: [{key: 'group', groupId, pathName}]}
             : {
                 versionId: version,
-                variant: {key: 'authors', authors: [ownerId]},
+                variants: [{key: 'author', author: ownerId}],
               }),
         }}
       />

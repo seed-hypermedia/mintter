@@ -175,7 +175,7 @@ function PublicationTitle({
   let pub = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
-    variant: route.variant,
+    variants: route.variants,
     enabled: !!route.documentId,
   })
 

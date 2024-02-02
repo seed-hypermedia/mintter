@@ -20,7 +20,7 @@ export function ListItem({
   onPointerEnter,
   menuItems = [],
 }: {
-  accessory: ReactElement
+  accessory?: ReactElement
   title: string
   onPress: ButtonProps['onPress'] | ComponentProps<typeof ButtonText>['onPress']
   onPointerEnter?: () => void
@@ -57,9 +57,11 @@ export function ListItem({
       >
         {title}
       </ButtonText>
-      <XStack flexShrink={0} paddingHorizontal="$2">
-        {accessory}
-      </XStack>
+      {accessory && (
+        <XStack flexShrink={0} paddingHorizontal="$2">
+          {accessory}
+        </XStack>
+      )}
       {currentMenuItems ? (
         <OptionsDropdown
           hover={hover}

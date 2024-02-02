@@ -1,6 +1,11 @@
-import {Publication, unpackHmId} from '@mintter/shared'
+import {
+  AuthorVariant,
+  GroupVariant,
+  Publication,
+  PublicationVariant,
+  unpackHmId,
+} from '@mintter/shared'
 import {UseQueryOptions} from '@tanstack/react-query'
-import {PublicationVariant} from '../utils/navigation'
 import {useEntityTimeline} from './changes'
 import {usePublication} from './documents'
 import {useDocumentGroups} from './groups'
@@ -8,15 +13,31 @@ import {useDocumentGroups} from './groups'
 export function usePublicationVariant({
   documentId,
   versionId,
-  variant,
+  variants,
   ...options
 }: UseQueryOptions<Publication> & {
   documentId?: string
   versionId?: string
-  variant?: undefined | PublicationVariant
+  variants?: undefined | PublicationVariant[]
 }) {
-  const groupVariant = variant?.key === 'group' ? variant : undefined
-  const authorVariant = variant?.key === 'authors' ? variant : undefined
+  const groupVariants = variants?.filter((v) => v.key === 'group') as
+    | GroupVariant[]
+    | undefined
+  const groupVariant = groupVariants ? groupVariants[0] : undefined
+  const authorVariants = variants?.filter((v) => v.key === 'author') as
+    | AuthorVariant[]
+    | undefined
+  if (groupVariants && groupVariants.length > 1) {
+    throw new Error('Only one group variant is currently allowed')
+  }
+  if (
+    authorVariants &&
+    authorVariants.length > 0 &&
+    groupVariants &&
+    groupVariants.length > 0
+  ) {
+    throw new Error('Cannot currently specify multiple variant types')
+  }
   const docGroups = useDocumentGroups(documentId, {enabled: !!groupVariant})
   const timelineQuery = useEntityTimeline(documentId)
   let queryVariantVersion: undefined | string = undefined
@@ -52,8 +73,10 @@ export function usePublicationVariant({
     //   // the document is not actually in the group. so we should not query for anything.
     //   // this probably happens as a race condition sometimes while publishing
     // }
-  } else if (authorVariant) {
-    const variantAuthors = new Set(authorVariant.authors)
+  } else if (authorVariants?.length) {
+    const variantAuthors = new Set(
+      authorVariants.map((variant) => variant.author),
+    )
     // if (authorVariant.authors.length !== 1 || !variantAuthor)
     //   throw new Error('Authors variant must have exactly one author')
     const authorVersions = timelineQuery.data?.authorVersions.filter(
@@ -80,7 +103,7 @@ export function usePublicationVariant({
     enabled: options.enabled !== false && !!queryDocumentId,
   })
   let defaultVariantVersion: undefined | string = undefined
-  if (!variant) {
+  if (!variants) {
     const authorVersion = timelineQuery.data?.authorVersions.find(
       (authorVersion) =>
         authorVersion.author === pubQuery.data?.document?.author,

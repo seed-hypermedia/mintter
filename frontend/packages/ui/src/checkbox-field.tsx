@@ -11,7 +11,7 @@ export function CheckboxField({
 }: {
   value: boolean
   onValue: (value: boolean) => void
-  labelProps: React.ComponentProps<typeof Label>
+  labelProps?: React.ComponentProps<typeof Label>
   children: React.ReactNode | string
 } & React.ComponentProps<typeof XStack>) {
   const fieldId = React.useId()

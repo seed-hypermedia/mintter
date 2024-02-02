@@ -3,6 +3,7 @@ import {TimelineChange} from '@mintter/app/models/changes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Change,
+  GroupVariant,
   createHmId,
   createPublicWebHmUrl,
   formattedDateLong,
@@ -37,7 +38,7 @@ import {
   usePublishDocToGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
-import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
+import {NavRoute, useNavRoute} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
@@ -54,9 +55,9 @@ export function EntityVersionsAccessory({
 }) {
   const changes = useDocHistory(id?.id, variantVersion)
   const route = useNavRoute()
-  const pubContext = route?.key === 'publication' ? route.variant : undefined
+  const pubVariants = route?.key === 'publication' ? route.variants : undefined
   const docId = route?.key === 'publication' ? route.documentId : undefined
-  const groupVariant = pubContext?.key === 'group' ? pubContext : null
+  const groupVariant = pubVariants?.key === 'group' ? pubVariants : null
   const myGroups = useMyGroups()
   const isInPostableContext =
     groupVariant &&
@@ -141,6 +142,8 @@ function ChangeItem({
       {change.createTime ? formattedDateLong(change.createTime) : null}
     </SizableText>
   )
+  const variants =
+    navRoute.key === 'publication' ? navRoute.variants : undefined
   const topRow = shouldDisplayAuthorName ? (
     <XStack paddingTop="$2" gap="$2">
       <AccountLinkAvatar accountId={author?.data?.id} size={24} />
@@ -170,7 +173,7 @@ function ChangeItem({
       key: 'publication',
       documentId: entityId,
       versionId: change.id,
-      variant: navRoute.variant,
+      variants: navRoute.variants,
       accessory: {key: 'versions'},
     }
   }
@@ -181,8 +184,8 @@ function ChangeItem({
     createPublicWebHmUrl(parsedEntityId?.type, parsedEntityId?.eid, {
       version: change.id,
       hostname: gwUrl.data,
+      variants,
     })
-  const spawn = useNavigate('spawn')
   const postToGroup = useContext(PostToGroup)
   const menuItems: MenuItemType[] = []
   if (postToGroup && activeVersion !== change.id) {
@@ -351,7 +354,7 @@ function PostToGroupDialog({
                 navigate({
                   key: 'publication',
                   documentId: input.docId,
-                  variant: input.groupVariant,
+                  variants: [input.groupVariant],
                   accessory: {key: 'versions'},
                 })
                 toast.success('Group version updated')

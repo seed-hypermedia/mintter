@@ -3,10 +3,10 @@ import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {NavMode, NavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {GroupVariant, PublicationVariant} from '@mintter/shared'
 import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import appError from '../errors'
-import {PublicationVariant} from '../utils/navigation'
 
 export function useEditDraft(
   docId: string,
@@ -14,12 +14,12 @@ export function useEditDraft(
     version,
     navMode,
     contextRoute,
-    variant,
+    variants,
   }: {
     version: string | undefined
     navMode?: NavMode
     contextRoute: NavRoute
-    variant?: PublicationVariant
+    variants?: PublicationVariant[]
   },
 ) {
   const draftList = useDraftList()
@@ -31,6 +31,11 @@ export function useEditDraft(
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
+    const groupVariants = variants?.filter((v) => v.key === 'group') as
+      | GroupVariant[]
+      | undefined
+    const singleGroupVariant =
+      groupVariants && groupVariants.length === 0 ? groupVariants[0] : undefined
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
@@ -38,7 +43,7 @@ export function useEditDraft(
           key: 'draft',
           draftId: docId,
           contextRoute,
-          variant: variant?.key === 'group' ? variant : undefined,
+          variant: singleGroupVariant,
         })
         return
       }
@@ -50,7 +55,7 @@ export function useEditDraft(
         key: 'draft',
         draftId: draft.id,
         contextRoute,
-        variant: variant?.key === 'group' ? variant : undefined,
+        variant: singleGroupVariant,
       })
     } catch (error: any) {
       if (
@@ -62,7 +67,7 @@ export function useEditDraft(
           key: 'draft',
           draftId: docId, // because docId and draftId are the same right now
           contextRoute,
-          variant: variant?.key === 'group' ? variant : undefined,
+          variant: singleGroupVariant,
         })
         return
       }
@@ -77,25 +82,25 @@ export function EditDocButton({
   docId,
   contextRoute,
   navMode = 'replace',
-  variant,
+  variants,
   baseVersion,
 }: {
   docId: string
   navMode?: NavMode
   contextRoute: NavRoute
-  variant: PublicationVariant
+  variants?: PublicationVariant[]
   baseVersion?: string
 }) {
   const pub = usePublicationVariant({
     documentId: docId,
     versionId: baseVersion,
-    variant,
+    variants,
     enabled: !!docId,
   })
   const pubVersion = pub.data?.publication?.version
   const {hasExistingDraft, handleEdit} = useEditDraft(docId, {
     version: baseVersion || pubVersion,
-    variant,
+    variants,
     navMode,
     contextRoute,
   })

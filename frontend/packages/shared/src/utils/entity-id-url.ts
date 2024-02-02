@@ -12,6 +12,17 @@ export const HYPERMEDIA_ENTITY_TYPES = {
 
 export type HMEntityType = keyof typeof HYPERMEDIA_ENTITY_TYPES
 
+export type GroupVariant = {
+  key: 'group'
+  groupId: string
+  pathName: string | null
+}
+export type AuthorVariant = {
+  key: 'author'
+  author: string
+}
+export type PublicationVariant = AuthorVariant | GroupVariant
+
 export function createPublicWebHmUrl(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   eid: string,
@@ -19,23 +30,31 @@ export function createPublicWebHmUrl(
     version,
     blockRef,
     hostname,
+    variants,
   }: {
     version?: string | null | undefined
     blockRef?: string | null | undefined
     hostname?: string | null | undefined
+    variants?: PublicationVariant[] | null
   } = {},
 ) {
   const webPath = `/${type}/${eid}`
-  let urlHost =
-    hostname === null
-      ? ''
-      : hostname === undefined
-      ? HYPERMEDIA_PUBLIC_WEB_GATEWAY
-      : hostname
-  let webUrl = `${urlHost}${webPath}`
-  if (version) webUrl += `?v=${version}`
-  if (blockRef) webUrl += `#${blockRef}`
-  return webUrl
+  if (hostname === null) return 'nope'
+  const urlHost =
+    hostname === undefined ? HYPERMEDIA_PUBLIC_WEB_GATEWAY : hostname
+  const webBaseUrl = `${urlHost}${webPath}`
+  let url = new URL(webBaseUrl)
+  if (version) {
+    url.searchParams.set('v', version)
+  }
+  if (variants) {
+    console.log('variants', getVariantsParamValue(variants))
+    url.searchParams.set('a', getVariantsParamValue(variants))
+  }
+  if (blockRef) {
+    url.hash = blockRef
+  }
+  return url.toString()
 }
 
 export function groupDocUrl(
@@ -58,6 +77,25 @@ export function groupDocUrl(
   return webUrl
 }
 
+function getVariantsParamValue(variants: PublicationVariant[]): string {
+  return variants
+    .map((variant) => {
+      if (variant.key === 'group') {
+        const groupId = unpackHmId(variant.groupId)
+        if (!groupId) return false
+        return `g-${groupId.eid}${
+          variant.pathName ? `-${variant.pathName}` : ''
+        }`
+      }
+      if (variant.key === 'author') {
+        return `a-${variant.author}`
+      }
+      return false
+    })
+    .filter(Boolean)
+    .join('.')
+}
+
 export function createHmId(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   id: string,
@@ -66,19 +104,28 @@ export function createHmId(
     blockRef?: string | null
     id?: string
     groupPathName?: string | null
+    variants?: PublicationVariant[] | null
   },
 ) {
-  let outputUrl = `${HYPERMEDIA_SCHEME}://${type}/${id}`
-  if (opts?.groupPathName) outputUrl += `/${opts.groupPathName}`
-  if (opts?.version) outputUrl += `?v=${opts.version}`
-  if (opts?.blockRef) outputUrl += `#${opts.blockRef}`
-  return outputUrl
+  let path = `${type}/${id}`
+  if (opts?.groupPathName) path += `/${opts.groupPathName}`
+  let url = new URL(`${HYPERMEDIA_SCHEME}://${path}`)
+  if (opts?.version) {
+    url.searchParams.set('v', opts.version)
+  }
+  if (opts?.variants) {
+    url.searchParams.set('a', getVariantsParamValue(opts.variants))
+  }
+  if (opts?.blockRef) {
+    url.hash = opts.blockRef
+  }
+  return url.toString()
 }
 
 type ParsedURL = {
   scheme: string | null
   path: string[]
-  query: Record<string, string>
+  query: URLSearchParams
   fragment: string | null
 }
 
@@ -88,13 +135,7 @@ export function parseCustomURL(url: string): ParsedURL | null {
   if (!rest) return null
   const [pathAndQuery, fragment] = rest.split('#')
   const [path, queryString] = pathAndQuery.split('?')
-
-  const query: Record<string, string> = {}
-  queryString?.split('&').forEach((param) => {
-    const [key, value] = param.split('=')
-    query[key] = decodeURIComponent(value)
-  })
-
+  const query = new URLSearchParams(queryString)
   return {
     scheme,
     path: path.split('/'),
@@ -123,14 +164,42 @@ export type UnpackedHypermediaId = {
   blockRef: string | null
   hostname: string | null
   scheme: string | null
+  variants?: PublicationVariant[] | null
+}
+
+function parseVariants(
+  variantsString?: string | null,
+): PublicationVariant[] | null {
+  const variants: PublicationVariant[] = []
+  if (!variantsString) return null
+  variantsString.split('.').forEach((singleVariantString: string) => {
+    if (!singleVariantString) return
+    const [key, ...rest] = singleVariantString.split('-')
+    if (key === 'g') {
+      const [groupEid, pathName] = rest
+      variants.push({
+        key: 'group',
+        groupId: createHmId('g', groupEid),
+        pathName: pathName || null,
+      })
+    }
+    if (key === 'a') {
+      const [author] = rest
+      variants.push({key: 'author', author})
+    }
+  })
+  if (!variants.length) return null
+  return variants
 }
 
 export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
   const parsed = parseCustomURL(hypermediaId)
-  if (parsed?.scheme === HYPERMEDIA_SCHEME) {
+  if (!parsed) return null
+  if (parsed.scheme === HYPERMEDIA_SCHEME) {
     const type = inKeys(parsed?.path[0], HYPERMEDIA_ENTITY_TYPES)
-    const eid = parsed?.path[1]
-    const version = parsed?.query.v
+    const eid = parsed.path[1]
+    const version = parsed.query.get('v')
+    const variants = parseVariants(parsed.query.get('a'))
     if (!type) return null
     const qid = createHmId(type, eid)
     return {
@@ -138,18 +207,20 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       qid,
       type,
       eid,
-      groupPathName: parsed?.path[2] || null,
+      groupPathName: parsed.path[2] || null,
       version,
-      blockRef: parsed?.fragment || null,
+      variants,
+      blockRef: parsed.fragment || null,
       hostname: null,
-      scheme: parsed?.scheme,
+      scheme: parsed.scheme,
     }
   }
   if (parsed?.scheme === 'https' || parsed?.scheme === 'http') {
-    const type = inKeys(parsed?.path[1], HYPERMEDIA_ENTITY_TYPES)
-    const eid = parsed?.path[2]
-    const version = parsed?.query.v
-    let hostname = parsed?.path[0]
+    const type = inKeys(parsed.path[1], HYPERMEDIA_ENTITY_TYPES)
+    const eid = parsed.path[2]
+    const version = parsed.query.get('v')
+    const variants = parseVariants(parsed.query.get('a'))
+    let hostname = parsed.path[0]
     if (!type) return null
     const qid = createHmId(type, eid)
     return {
@@ -157,11 +228,12 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       qid,
       type,
       eid,
-      groupPathName: parsed?.path[3] || null,
+      groupPathName: parsed.path[3] || null,
       version,
-      blockRef: parsed?.fragment || null,
+      variants,
+      blockRef: parsed.fragment || null,
       hostname,
-      scheme: parsed?.scheme,
+      scheme: parsed.scheme,
     }
   }
   return null
@@ -176,14 +248,10 @@ export function unpackDocId(inputUrl: string): UnpackedDocId | null {
     throw new Error('URL is expected to be a document ID: ' + inputUrl)
   }
   return {
+    ...unpackedHm,
     id: inputUrl,
-    eid: unpackedHm.eid,
     type: 'd',
     docId: createHmId('d', unpackedHm.eid),
-    version: unpackedHm.version,
-    blockRef: unpackedHm.blockRef,
-    hostname: unpackedHm.hostname,
-    scheme: unpackedHm.scheme,
   }
 }
 
@@ -199,15 +267,23 @@ export function isPublicGatewayLink(text: string, gwUrl: StateStream<string>) {
 export function idToUrl(
   hmId: string,
   hostname?: string | null | undefined,
-  versionId?: string | null | undefined,
-  blockRef?: string | null | undefined,
+  {
+    version,
+    blockRef,
+    variants,
+  }: {
+    version?: string | null | undefined
+    blockRef?: string | null | undefined
+    variants?: PublicationVariant[] | null | undefined
+  } = {},
 ) {
   const unpacked = unpackHmId(hmId)
   if (!unpacked?.type) return null
   return createPublicWebHmUrl(unpacked.type, unpacked.eid, {
-    version: versionId || unpacked.version,
+    version: version || unpacked.version,
     blockRef: blockRef || unpacked.blockRef,
     hostname,
+    variants,
   })
 }
 
@@ -231,18 +307,34 @@ export function createHmDocLink({
   version,
   blockRef,
   latest,
+  variants,
 }: {
   documentId: string
   version?: string | null
   blockRef?: string | null
   latest?: boolean
+  variants?: PublicationVariant[] | null | undefined
 }): string {
   let res = documentId
-  if (version || latest) {
-    res += `?`
+  const params = new URLSearchParams()
+  if (version) params.set('v', version)
+  if (latest) params.set('l', '')
+  const query: Record<string, string | null> = {}
+  if (latest) {
+    query.l = null
   }
-  if (version) res += `v=${version}`
-  if (latest) res += `&l`
+  if (version) {
+    query.v = version
+  }
+  if (variants?.length) {
+    query.a = getVariantsParamValue(variants)
+  }
+  const queryString = Object.entries(query)
+    .map(([key, value]) => (value === null ? key : `${key}=${value}`))
+    .join('&')
+  if (queryString) {
+    res += `?${queryString}`
+  }
   if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res
 }
