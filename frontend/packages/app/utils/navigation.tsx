@@ -340,7 +340,7 @@ export async function resolveHmIdToAppRoute(
       navRoute: {
         key: 'publication',
         documentId: docId,
-        versionId: hmIds.version || undefined,
+        versionId: hmIds.latest ? undefined : hmIds.version || undefined,
         blockId: hmIds.blockRef || undefined,
         variants: hmIds.variants || [
           {
