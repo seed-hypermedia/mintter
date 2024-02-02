@@ -58,6 +58,7 @@ services:
       - "-lndhub.mainnet"
       - "-p2p.port=56000"
       - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "-syncing.allow-push=${MTT_SITE_ALLOW_PUSH:-false}"
       - "-grpc.port=56002"
       - "-syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true}"
       - "-syncing.no-pull=${MTT_SITE_NO_PULL:-true}"
