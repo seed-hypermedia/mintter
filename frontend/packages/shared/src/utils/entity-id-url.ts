@@ -48,7 +48,6 @@ export function createPublicWebHmUrl(
     url.searchParams.set('v', version)
   }
   if (variants) {
-    console.log('variants', getVariantsParamValue(variants))
     url.searchParams.set('a', getVariantsParamValue(variants))
   }
   if (blockRef) {
@@ -99,27 +98,34 @@ function getVariantsParamValue(variants: PublicationVariant[]): string {
 export function createHmId(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   id: string,
-  opts?: {
+  opts: {
     version?: string | null
     blockRef?: string | null
     id?: string
     groupPathName?: string | null
     variants?: PublicationVariant[] | null
-  },
+    latest?: boolean | null
+  } = {},
 ) {
   let path = `${type}/${id}`
   if (opts?.groupPathName) path += `/${opts.groupPathName}`
   let url = new URL(`${HYPERMEDIA_SCHEME}://${path}`)
-  if (opts?.version) {
-    url.searchParams.set('v', opts.version)
+  let responseUrl = url.toString()
+  const query: Record<string, string | null> = {}
+  if (opts.version) {
+    query.v = opts.version
   }
-  if (opts?.variants) {
-    url.searchParams.set('a', getVariantsParamValue(opts.variants))
+  if (opts.variants?.length) {
+    query.a = getVariantsParamValue(opts.variants)
   }
+  if (opts.latest) {
+    query.l = null
+  }
+  responseUrl += serializeQueryString(query)
   if (opts?.blockRef) {
-    url.hash = opts.blockRef
+    responseUrl += `#${opts.blockRef}`
   }
-  return url.toString()
+  return responseUrl
 }
 
 type ParsedURL = {
@@ -165,6 +171,7 @@ export type UnpackedHypermediaId = {
   hostname: string | null
   scheme: string | null
   variants?: PublicationVariant[] | null
+  latest?: boolean | null
 }
 
 function parseVariants(
@@ -199,6 +206,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const type = inKeys(parsed?.path[0], HYPERMEDIA_ENTITY_TYPES)
     const eid = parsed.path[1]
     const version = parsed.query.get('v')
+    const latest = parsed.query.has('l')
     const variants = parseVariants(parsed.query.get('a'))
     if (!type) return null
     const qid = createHmId(type, eid)
@@ -212,6 +220,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       variants,
       blockRef: parsed.fragment || null,
       hostname: null,
+      latest,
       scheme: parsed.scheme,
     }
   }
@@ -219,6 +228,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const type = inKeys(parsed.path[1], HYPERMEDIA_ENTITY_TYPES)
     const eid = parsed.path[2]
     const version = parsed.query.get('v')
+    const latest = parsed.query.has('l')
     const variants = parseVariants(parsed.query.get('a'))
     let hostname = parsed.path[0]
     if (!type) return null
@@ -233,6 +243,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       variants,
       blockRef: parsed.fragment || null,
       hostname,
+      latest,
       scheme: parsed.scheme,
     }
   }
@@ -320,23 +331,26 @@ export function createHmDocLink({
   if (version) params.set('v', version)
   if (latest) params.set('l', '')
   const query: Record<string, string | null> = {}
-  if (latest) {
-    query.l = null
-  }
   if (version) {
     query.v = version
   }
   if (variants?.length) {
     query.a = getVariantsParamValue(variants)
   }
+  if (latest) {
+    query.l = null
+  }
+  res += serializeQueryString(query)
+  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
+  return res
+}
+
+function serializeQueryString(query: Record<string, string | null>) {
   const queryString = Object.entries(query)
     .map(([key, value]) => (value === null ? key : `${key}=${value}`))
     .join('&')
-  if (queryString) {
-    res += `?${queryString}`
-  }
-  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
-  return res
+  if (!queryString) return ''
+  return `?${queryString}`
 }
 
 export function createHmGroupDocLink(

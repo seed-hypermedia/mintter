@@ -5,9 +5,9 @@ import {AppQueryClient} from '@mintter/app/query-client'
 import {client} from '@mintter/desktop/src/trpc'
 import {
   GRPCClient,
-  HYPERMEDIA_SCHEME,
   StateStream,
   UnpackedHypermediaId,
+  createHmId,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -152,14 +152,11 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         if (selection.empty && unpackedHmId?.eid && unpackedHmId.type) {
           let tr = view.state.tr
           let pos = tr.selection.from
-          let normalizedHmUrl = `${HYPERMEDIA_SCHEME}://${unpackedHmId.type}/${unpackedHmId.eid}`
-          if (unpackedHmId?.groupPathName)
-            normalizedHmUrl += `/${unpackedHmId.groupPathName}`
-          if (unpackedHmId?.version)
-            normalizedHmUrl += `?v=${unpackedHmId.version}`
-          if (unpackedHmId?.blockRef)
-            normalizedHmUrl += `#${unpackedHmId.blockRef}`
-
+          const normalizedHmUrl = createHmId(
+            unpackedHmId.type,
+            unpackedHmId.eid,
+            unpackedHmId,
+          )
           fetchEntityTitle(unpackedHmId, options.grpcClient)
             .then((title) => {
               if (title) {

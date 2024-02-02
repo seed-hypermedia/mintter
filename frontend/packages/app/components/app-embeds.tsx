@@ -18,8 +18,8 @@ import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'
-import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
+import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 import {Avatar} from './avatar'
@@ -58,27 +58,28 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
 
 export function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = usePublication({
-    id: docId,
-    version: props.version || undefined,
+  const pub = usePublicationVariant({
+    documentId: docId,
+    versionId: props.latest ? undefined : props.version || undefined,
+    variants: props.variants || undefined,
     enabled: !!docId,
   })
   let embedData = useMemo(() => {
     const {data} = pub
 
     const selectedBlock =
-      props.blockRef && data?.document?.children
-        ? getBlockNodeById(data.document.children, props.blockRef)
+      props.blockRef && data?.publication?.document?.children
+        ? getBlockNodeById(data.publication?.document.children, props.blockRef)
         : null
 
     const embedBlocks = selectedBlock
       ? [selectedBlock]
-      : data?.document?.children
+      : data?.publication?.document?.children
 
     return {
       ...pub,
       data: {
-        publication: pub.data,
+        publication: pub.data?.publication,
         embedBlocks,
       },
     }
@@ -109,16 +110,16 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
 
 export function EmbedPublicationCard(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = usePublication({
-    id: docId,
-    version: props.version || undefined,
+  const pub = usePublicationVariant({
+    documentId: docId,
+    versionId: props.latest ? undefined : props.version || undefined,
+    variants: props.variants || undefined,
     enabled: !!docId,
   })
-
   let textContent = useMemo(() => {
-    if (pub.data?.document?.children) {
+    if (pub.data?.publication?.document?.children) {
       let content = ''
-      pub.data?.document?.children.forEach((bn) => {
+      pub.data?.publication?.document?.children.forEach((bn) => {
         content += bn.block?.text + ' '
       })
       return content
@@ -128,11 +129,11 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       <PublicationCardView
-        title={pub.data?.document?.title}
+        title={pub.data?.publication?.document?.title}
         textContent={textContent}
-        editors={pub.data?.document?.editors || []}
+        editors={pub.data?.publication?.document?.editors || []}
         AvatarComponent={AvatarComponent}
-        date={pub.data?.document?.updateTime}
+        date={pub.data?.publication?.document?.updateTime}
       />
     </EmbedWrapper>
   )
