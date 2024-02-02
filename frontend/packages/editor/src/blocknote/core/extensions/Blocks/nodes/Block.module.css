@@ -143,7 +143,7 @@ NESTED BLOCKS
 
 /* NESTED BLOCK ANIMATIONS (change in indent) */
 
-[data-prev-depth-change='1'] {
+/* [data-prev-depth-change='1'] {
   --x: 1;
 }
 [data-prev-depth-change='2'] {
@@ -173,7 +173,7 @@ NESTED BLOCKS
 }
 [data-prev-depth-change='-5'] {
   --x: -5;
-}
+} */
 
 .blockOuter[data-prev-depth-change] {
   margin-left: calc(10px * var(--x));
