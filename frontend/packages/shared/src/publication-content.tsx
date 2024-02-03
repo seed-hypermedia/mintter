@@ -16,20 +16,22 @@ import {
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
+  pluralS,
   toHMInlineContent,
   unpackHmId,
   useHover,
 } from '@mintter/shared'
 import {
+  BlockQuote,
   Button,
   ButtonFrame,
   Check as CheckIcon,
   Checkbox,
   CheckboxProps,
   ColorProp,
-  Copy,
   File,
   Label,
+  Link,
   RadioGroup,
   SizableText,
   SizableTextProps,
@@ -415,20 +417,6 @@ export function BlockNodeContent({
               props.embedDepth ? undefined : hoverProps.onHoverOut()
             }
           >
-            {citations?.length ? (
-              <Button
-                size="$1"
-                padding="$2"
-                borderRadius="$2"
-                chromeless
-                onPress={() => onCitationClick?.()}
-              >
-                <SizableText color="$blue11" size="$1">
-                  {citations.length}
-                </SizableText>
-              </Button>
-            ) : null}
-
             {onCopyBlock ? (
               <Tooltip content="Copy block reference" delay={800}>
                 <Button
@@ -437,7 +425,7 @@ export function BlockNodeContent({
                   padding={layoutUnit / 4}
                   borderRadius={layoutUnit / 4}
                   chromeless
-                  icon={Copy}
+                  icon={Link}
                   onPress={() => {
                     if (blockNode.block?.id) {
                       onCopyBlock(blockNode.block.id)
@@ -486,6 +474,32 @@ export function BlockNodeContent({
                     }
                   }}
                 />
+              </Tooltip>
+            ) : null}
+            {citations?.length ? (
+              <Tooltip
+                content={`See ${citations.length} ${pluralS(
+                  citations.length,
+                  'document',
+                )} referencing this`}
+                delay={800}
+              >
+                <Button
+                  size="$2"
+                  chromeless
+                  opacity={hover ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  theme="blue"
+                  onPress={() => onCitationClick?.()}
+                >
+                  <XStack gap="$2" ai="center">
+                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
+                    <SizableText color="$blue11" size="$2">
+                      {String(citations.length)}
+                    </SizableText>
+                  </XStack>
+                </Button>
               </Tooltip>
             ) : null}
           </XStack>

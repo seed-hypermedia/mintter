@@ -17,9 +17,9 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {
+  BlockQuote,
   Button,
   ButtonText,
-  Link,
   Separator,
   SizableText,
   Text,
@@ -347,7 +347,7 @@ export default function PublicationPage() {
                   citations?.links?.length,
                   'Citation',
                 )}`}
-                icon={Link}
+                icon={BlockQuote}
                 onPress={() => {
                   if (route.accessory?.key === 'citations')
                     return replace({...route, accessory: null})
