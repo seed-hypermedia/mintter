@@ -14,11 +14,13 @@ export function usePublicationVariant({
   documentId,
   versionId,
   variants,
+  latest,
   ...options
 }: UseQueryOptions<Publication> & {
   documentId?: string
   versionId?: string
   variants?: undefined | PublicationVariant[]
+  latest?: boolean
 }) {
   const groupVariants = variants?.filter((v) => v.key === 'group') as
     | GroupVariant[]
@@ -58,27 +60,10 @@ export function usePublicationVariant({
         `Could not determine version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
       )
     }
-    // const contentURL =
-    //   groupVariant.pathName && groupContent[groupVariant.pathName]
-    // if (!contentURL) {
-    //   // throw new Error(
-    //   //   `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
-    //   // )
-    //   queryDocumentId = undefined
-    // }
-    // const groupItem = contentURL ? unpackDocId(contentURL) : null
-    // if (groupItem?.docId === documentId) {
-    //   queryVariantVersion = groupItem?.version || undefined
-    // } else {
-    //   // the document is not actually in the group. so we should not query for anything.
-    //   // this probably happens as a race condition sometimes while publishing
-    // }
   } else if (authorVariants?.length) {
     const variantAuthors = new Set(
       authorVariants.map((variant) => variant.author),
     )
-    // if (authorVariant.authors.length !== 1 || !variantAuthor)
-    //   throw new Error('Authors variant must have exactly one author')
     const authorVersions = timelineQuery.data?.authorVersions.filter(
       (authorVersion) => variantAuthors.has(authorVersion.author),
     )

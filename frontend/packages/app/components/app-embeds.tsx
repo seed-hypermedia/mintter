@@ -3,6 +3,7 @@ import {
   BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
+  ContentEmbed,
   EmbedContentAccount,
   EmbedContentGroup,
   EntityComponentProps,
@@ -14,17 +15,30 @@ import {
   usePublicationContentContext,
 } from '@mintter/shared'
 import {hmGroup} from '@mintter/shared/src/to-json-hm'
-import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
-import {PropsWithChildren, useMemo} from 'react'
+import {
+  Button,
+  SizableText,
+  Spinner,
+  UIAvatar,
+  XStack,
+  YStack,
+} from '@mintter/ui'
+import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
+import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
 import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'
 import {useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
+import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 
-function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
+function EmbedWrapper({
+  hmRef,
+  children,
+  ...props
+}: PropsWithChildren<{hmRef: string} & ComponentProps<typeof YStack>>) {
   const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
   const open = useOpenUrl()
   return (
@@ -46,65 +60,60 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
       onPress={
         !disableEmbedClick
           ? () => {
-              open(props.hmRef, true)
+              open(hmRef, true)
             }
           : undefined
       }
+      {...props}
     >
-      {props.children}
+      {children}
     </YStack>
   )
 }
 
 export function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
+  const [showReferenced, setShowReferenced] = useState(false)
   const pub = usePublicationVariant({
     documentId: docId,
-    versionId: props.latest ? undefined : props.version || undefined,
+    versionId:
+      showReferenced && props.version
+        ? props.version
+        : props.latest
+        ? undefined
+        : props.version || undefined,
     variants: props.variants || undefined,
     enabled: !!docId,
   })
-  let embedData = useMemo(() => {
-    const {data} = pub
-
-    const selectedBlock =
-      props.blockRef && data?.publication?.document?.children
-        ? getBlockNodeById(data.publication?.document.children, props.blockRef)
-        : null
-
-    const embedBlocks = selectedBlock
-      ? [selectedBlock]
-      : data?.publication?.document?.children
-
-    return {
-      ...pub,
-      data: {
-        publication: pub.data?.publication,
-        embedBlocks,
-      },
-    }
-  }, [props.blockRef, pub])
-
-  if (embedData.isLoading) return <Spinner />
+  const spawn = useNavigate('spawn')
   return (
-    <EmbedWrapper hmRef={props.id}>
-      {embedData.data.embedBlocks?.length ? (
-        <BlockNodeList childrenType="group">
-          {embedData.data.embedBlocks.map((bn, idx) => (
-            <BlockNodeContent
-              key={bn.block?.id}
-              depth={1}
-              blockNode={bn}
-              childrenType="group"
-              index={idx}
-              embedDepth={1}
-            />
-          ))}
-        </BlockNodeList>
-      ) : (
-        <BlockContentUnknown {...props} />
-      )}
-    </EmbedWrapper>
+    <ContentEmbed
+      props={props}
+      isLoading={pub.isInitialLoading}
+      showReferenced={showReferenced}
+      onShowReferenced={setShowReferenced}
+      pub={pub.data?.publication}
+      EmbedWrapper={EmbedWrapper}
+      renderOpenButton={() =>
+        docId && (
+          <Button
+            size="$2"
+            icon={ArrowUpRightSquare}
+            onPress={() => {
+              if (!docId) return
+              spawn({
+                key: 'publication',
+                documentId: docId,
+                variants: props.variants || undefined,
+                versionId: props.version || undefined,
+              })
+            }}
+          >
+            Open Document
+          </Button>
+        )
+      }
+    />
   )
 }
 

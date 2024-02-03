@@ -206,13 +206,14 @@ function EmbedControl({
   block: Block<HMBlockSchema>
   assign: any
 }) {
-  let isDocument = useMemo(() => {
+  const hmId = useMemo(() => {
     if (block.props.ref) {
-      let unpackedRef = unpackHmId(block.props.ref)
-      return unpackedRef?.type == 'd' && !unpackedRef?.blockRef
+      return unpackHmId(block.props.ref)
     }
-    return false
+    return null
   }, [block.props.ref])
+  const allowViewSwitcher = hmId?.type === 'd' && !hmId.blockRef
+  const allowVersionSwitcher = hmId?.type === 'd'
   const openUrl = useOpenUrl()
   const popoverState = usePopoverState()
   const popoverViewState = usePopoverState()
@@ -275,87 +276,87 @@ function EmbedControl({
           }}
         />
       </Tooltip>
-      {isDocument ? (
-        <>
-          <Popover
-            {...popoverViewState}
-            onOpenChange={(open) => {
-              popoverState.onOpenChange(open)
-              popoverViewState.onOpenChange(open)
-            }}
-            placement="bottom-end"
-          >
-            <Popover.Trigger asChild>
-              <Button
-                backgroundColor="$backgroundStrong"
-                size="$2"
-                iconAfter={ChevronDown}
-              >{`view: ${block.props.view}`}</Button>
-            </Popover.Trigger>
-            <Popover.Content asChild>
-              <YGroup padding={0} width={120}>
-                <YGroup.Item>
-                  <ListItem
-                    size="$2"
-                    title="as Content"
-                    onPress={handleViewSelect('content')}
-                    iconAfter={block.props.view == 'content' ? Check : null}
-                    hoverStyle={{
-                      cursor: 'pointer',
-                    }}
-                  />
-                </YGroup.Item>
-                <Separator />
-                <YGroup.Item>
-                  <ListItem
-                    size="$2"
-                    title="as Card"
-                    onPress={handleViewSelect('card')}
-                    iconAfter={block.props.view == 'card' ? Check : null}
-                  />
-                </YGroup.Item>
-              </YGroup>
-            </Popover.Content>
-          </Popover>
-          <Popover
-            {...popoverLatestState}
-            onOpenChange={(open) => {
-              popoverState.onOpenChange(open)
-              popoverLatestState.onOpenChange(open)
-            }}
-            placement="bottom-end"
-          >
-            <Popover.Trigger asChild>
-              <Button
-                backgroundColor="$backgroundStrong"
-                size="$2"
-                iconAfter={ChevronDown}
-              >{`version: ${versionValue}`}</Button>
-            </Popover.Trigger>
-            <Popover.Content asChild>
-              <YGroup padding={0} width={120}>
-                <YGroup.Item>
-                  <ListItem
-                    size="$2"
-                    title="Latest"
-                    onPress={handleVersionSelect('latest')}
-                    iconAfter={isVersionLatest ? Check : null}
-                  />
-                </YGroup.Item>
-                <Separator />
-                <YGroup.Item>
-                  <ListItem
-                    size="$2"
-                    title="Exact"
-                    onPress={handleVersionSelect('exact')}
-                    iconAfter={!isVersionLatest ? Check : null}
-                  />
-                </YGroup.Item>
-              </YGroup>
-            </Popover.Content>
-          </Popover>
-        </>
-      ) : null}
+      {allowViewSwitcher && (
+        <Popover
+          {...popoverViewState}
+          onOpenChange={(open) => {
+            popoverState.onOpenChange(open)
+            popoverViewState.onOpenChange(open)
+          }}
+          placement="bottom-end"
+        >
+          <Popover.Trigger asChild>
+            <Button
+              backgroundColor="$backgroundStrong"
+              size="$2"
+              iconAfter={ChevronDown}
+            >{`view: ${block.props.view}`}</Button>
+          </Popover.Trigger>
+          <Popover.Content asChild>
+            <YGroup padding={0} width={120}>
+              <YGroup.Item>
+                <ListItem
+                  size="$2"
+                  title="as Content"
+                  onPress={handleViewSelect('content')}
+                  iconAfter={block.props.view == 'content' ? Check : null}
+                  hoverStyle={{
+                    cursor: 'pointer',
+                  }}
+                />
+              </YGroup.Item>
+              <Separator />
+              <YGroup.Item>
+                <ListItem
+                  size="$2"
+                  title="as Card"
+                  onPress={handleViewSelect('card')}
+                  iconAfter={block.props.view == 'card' ? Check : null}
+                />
+              </YGroup.Item>
+            </YGroup>
+          </Popover.Content>
+        </Popover>
+      )}
+      {allowVersionSwitcher && (
+        <Popover
+          {...popoverLatestState}
+          onOpenChange={(open) => {
+            popoverState.onOpenChange(open)
+            popoverLatestState.onOpenChange(open)
+          }}
+          placement="bottom-end"
+        >
+          <Popover.Trigger asChild>
+            <Button
+              backgroundColor="$backgroundStrong"
+              size="$2"
+              iconAfter={ChevronDown}
+            >{`version: ${versionValue}`}</Button>
+          </Popover.Trigger>
+          <Popover.Content asChild>
+            <YGroup padding={0} width={120}>
+              <YGroup.Item>
+                <ListItem
+                  size="$2"
+                  title="Latest"
+                  onPress={handleVersionSelect('latest')}
+                  iconAfter={isVersionLatest ? Check : null}
+                />
+              </YGroup.Item>
+              <Separator />
+              <YGroup.Item>
+                <ListItem
+                  size="$2"
+                  title="Exact"
+                  onPress={handleVersionSelect('exact')}
+                  iconAfter={!isVersionLatest ? Check : null}
+                />
+              </YGroup.Item>
+            </YGroup>
+          </Popover.Content>
+        </Popover>
+      )}
     </XStack>
   )
 }

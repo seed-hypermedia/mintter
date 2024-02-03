@@ -2,6 +2,7 @@ import {
   BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
+  ContentEmbed,
   EmbedContentAccount,
   EmbedContentGroup,
   EntityComponentProps,
@@ -29,7 +30,7 @@ import {
   copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
 import {useRouter} from 'next/router'
-import {PropsWithChildren, ReactNode, useMemo} from 'react'
+import {PropsWithChildren, ReactNode, useMemo, useState} from 'react'
 import {NextLink} from 'src/next-link'
 import {trpc} from './trpc'
 
@@ -127,77 +128,52 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
 
 export function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = trpc.publication.get.useQuery(
+  const [showReferenced, setShowReferenced] = useState(false)
+  const pub = trpc.publication.getVariant.useQuery(
     {
       documentId: docId,
-      versionId: props.version || undefined,
+      versionId: props.version,
+      variants: props.variants,
+      latest: props.latest && !showReferenced,
     },
     {
       enabled: !!docId,
     },
   )
-  const pubData = pub.data
-  let embedBlocks = useMemo(() => {
-    const selectedBlock =
-      props.blockRef && pubData?.publication?.document?.children
-        ? getBlockNodeById(
-            pubData.publication?.document?.children,
-            props.blockRef,
-          )
-        : null
-
-    const embedBlocks = selectedBlock
-      ? [selectedBlock]
-      : pubData?.publication?.document?.children
-
-    return embedBlocks
-  }, [props.blockRef, pubData])
-
-  if (pub.isLoading) return <Spinner />
-  if (pub.error) return <ErrorBlock message={pub.error.message} />
-
-  if (!docId || !embedBlocks?.length)
-    return <ErrorBlock message="Failed to load this embed" />
+  const pubData = pub.data?.publication
   return (
-    <EmbedWrapper hmRef={props.id}>
-      {embedBlocks?.length ? (
-        <BlockNodeList childrenType="group">
-          {embedBlocks.map((bn, idx) => (
-            <BlockNodeContent
-              key={bn.block?.id}
-              depth={1}
-              blockNode={bn}
-              childrenType="group"
-              index={idx}
-              embedDepth={1}
-            />
-          ))}
-        </BlockNodeList>
-      ) : (
-        <ErrorBlock message="Embedded content was not found" />
-      )}
-    </EmbedWrapper>
+    <ContentEmbed
+      props={props}
+      isLoading={pub.isInitialLoading}
+      showReferenced={showReferenced}
+      onShowReferenced={setShowReferenced}
+      pub={pubData}
+      EmbedWrapper={EmbedWrapper}
+      renderOpenButton={() => null}
+    />
   )
 }
 
 export function EmbedPublicationCard(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = trpc.publication.get.useQuery(
+  const pub = trpc.publication.getVariant.useQuery(
     {
       documentId: docId,
-      versionId: props.version || undefined,
+      versionId: props.version,
+      variants: props.variants,
+      latest: props.latest,
     },
     {
       enabled: !!docId,
     },
   )
 
-  const pubData = pub.data
+  const pubData = pub.data?.publication
 
   let textContent = useMemo(() => {
-    if (pubData?.publication?.document?.children?.length) {
+    if (pubData?.document?.children?.length) {
       let content = ''
-      pubData?.publication?.document?.children.forEach((bn) => {
+      pubData?.document?.children.forEach((bn) => {
         if (bn.block.text) {
           content += bn.block.text + ' '
         }
@@ -212,9 +188,9 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       <PublicationCardView
-        title={pubData?.publication?.document?.title}
+        title={pubData?.document?.title}
         textContent={textContent}
-        editors={pubData?.publication?.document?.editors}
+        editors={pubData?.document?.editors}
         AvatarComponent={AvatarComponent}
       />
     </EmbedWrapper>

@@ -1,4 +1,11 @@
-import {HMComment, createHmId, unpackDocId, unpackHmId} from '@mintter/shared'
+import {
+  AuthorVariant,
+  GroupVariant,
+  HMComment,
+  createHmId,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
 import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 import {
   hmAccount,
@@ -32,6 +39,18 @@ const walletsRouter = router({
       return output.existing_users || []
     }),
 })
+
+const variantSchema = z.discriminatedUnion('key', [
+  z.object({
+    key: z.literal('author'),
+    author: z.string(),
+  }),
+  z.object({
+    key: z.literal('group'),
+    groupId: z.string(),
+    pathName: z.string().or(z.null()),
+  }),
+])
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -74,6 +93,98 @@ const publicationRouter = router({
       }
       return {
         publication: hmPublication(resolvedPub) || null,
+      }
+    }),
+  getVariant: procedure
+    .input(
+      z.object({
+        documentId: z.string().optional(),
+        versionId: z.string().or(z.null()).optional(),
+        latest: z.boolean().or(z.null()).optional(),
+        variants: z.null().or(z.array(variantSchema)).optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      // KEEP THIS LOGIC IN SYNC WITH packages/app/models/publication.ts usePublicationVariant
+      const {variants, versionId, documentId, latest} = input
+      if (!documentId) {
+        return {publication: null}
+      }
+      let variantVersion = null
+      const exactVersion = latest ? undefined : versionId
+      const groupVariants = variants?.filter((v) => v.key === 'group') as
+        | GroupVariant[]
+        | undefined
+      const groupVariant = groupVariants ? groupVariants[0] : undefined
+      const authorVariants = variants?.filter((v) => v.key === 'author') as
+        | AuthorVariant[]
+        | undefined
+      if (groupVariants && groupVariants.length > 1) {
+        throw new Error('Only one group variant is currently allowed')
+      }
+      if (authorVariants && authorVariants.length > 0 && groupVariant) {
+        throw new Error('Cannot currently specify multiple variant types')
+      }
+      if (groupVariant) {
+        const docGroups = await queryClient.groups.listDocumentGroups({
+          documentId,
+        })
+        const docGroupEntry = docGroups.items.find(
+          (d) =>
+            d.groupId === groupVariant.groupId &&
+            d.path === groupVariant.pathName,
+        )
+        const groupEntryId =
+          typeof docGroupEntry?.rawUrl === 'string'
+            ? unpackHmId(docGroupEntry?.rawUrl)
+            : null
+        if (groupEntryId?.version) {
+          variantVersion = groupEntryId?.version
+        } else {
+          throw new Error(
+            `Could not find version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
+          )
+        }
+      } else if (authorVariants?.length) {
+        const timeline = await queryClient.entities.getEntityTimeline({
+          id: documentId,
+        })
+
+        const variantAuthors = new Set(
+          authorVariants.map((variant) => variant.author),
+        )
+        const authorVersions = timeline?.authorVersions.filter(
+          (authorVersion) => variantAuthors.has(authorVersion.author),
+        )
+        const activeChanges = new Set<string>()
+        authorVersions?.forEach((versionItem) => {
+          versionItem.version.split('.').forEach((changeId) => {
+            activeChanges.add(changeId)
+          })
+        })
+        if (activeChanges.size) {
+          variantVersion = [...activeChanges].join('.')
+        } else {
+          throw new Error(
+            `Could not find active changes for authors ${[
+              ...variantAuthors,
+            ].join(', ')}`,
+          )
+        }
+      }
+      const resolvedPub = await queryClient.publications
+        .getPublication({
+          documentId: input.documentId,
+          version: exactVersion || variantVersion || '',
+          localOnly: true, // avoid DHT fetching
+        })
+        .catch((e) => undefined)
+      if (!resolvedPub) {
+        return {publication: null}
+      }
+      return {
+        publication: hmPublication(resolvedPub) || null,
+        variantVersion,
       }
     }),
   getEmbedMeta: procedure

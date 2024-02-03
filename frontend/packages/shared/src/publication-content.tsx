@@ -32,14 +32,17 @@ import {
   File,
   Label,
   Link,
+  MoveLeft,
   RadioGroup,
   SizableText,
   SizableTextProps,
   SizeTokens,
+  Spinner,
   Text,
   TextProps,
   Tooltip,
   UIAvatar,
+  Undo2,
   XStack,
   XStackProps,
   YStack,
@@ -1103,10 +1106,10 @@ export function ErrorBlock({
     <Tooltip
       content={debugData ? (open ? 'Hide debug Data' : 'Show debug data') : ''}
     >
-      <YStack>
+      <YStack f={1}>
         <ButtonFrame theme="red" gap="$2" onPress={() => toggleOpen((v) => !v)}>
           <SizableText flex={1} color="$red10">
-            Error
+            {message ? message : 'Error'}
           </SizableText>
           <AlertCircle color="$red10" size={12} />
         </ButtonFrame>
@@ -1131,6 +1134,129 @@ export function ErrorBlock({
         ) : null}
       </YStack>
     </Tooltip>
+  )
+}
+
+export function ContentEmbed({
+  props,
+  pub,
+  isLoading,
+  showReferenced,
+  onShowReferenced,
+  renderOpenButton,
+  EmbedWrapper,
+}: {
+  isLoading: boolean
+  props: EntityComponentProps
+  pub: HMPublication | null | undefined
+  showReferenced: boolean
+  onShowReferenced: (showReference: boolean) => void
+  renderOpenButton: () => React.ReactNode
+  EmbedWrapper: React.ComponentType<React.PropsWithChildren<{hmRef: string}>>
+}) {
+  const embedData = useMemo(() => {
+    const selectedBlock =
+      props.blockRef && pub?.document?.children
+        ? getBlockNodeById(pub?.document.children, props.blockRef)
+        : null
+    const embedBlocks = props.blockRef
+      ? selectedBlock
+        ? [selectedBlock]
+        : null
+      : pub?.document?.children
+    return {
+      ...pub,
+      data: {
+        publication: pub,
+        embedBlocks,
+      },
+    }
+  }, [props.blockRef, pub])
+
+  let content = <BlockContentUnknown {...props} />
+  if (isLoading) {
+    content = <Spinner />
+  } else if (embedData.data.embedBlocks) {
+    content = (
+      <>
+        <BlockNodeList childrenType="group">
+          {embedData.data.embedBlocks.map((bn, idx) => (
+            <BlockNodeContent
+              key={bn.block?.id}
+              depth={1}
+              blockNode={bn}
+              childrenType="group"
+              index={idx}
+              embedDepth={1}
+            />
+          ))}
+        </BlockNodeList>
+        {showReferenced ? (
+          <XStack jc="flex-end">
+            <Tooltip content="The latest reference was not found. Click to try again.">
+              <Button
+                size="$2"
+                theme="red"
+                icon={Undo2}
+                onPress={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onShowReferenced(false)
+                }}
+              >
+                Back to Reference
+              </Button>
+            </Tooltip>
+          </XStack>
+        ) : null}
+      </>
+    )
+  } else if (props.blockRef) {
+    return (
+      <BlockNotFoundError
+        message={`Block #${props.blockRef} was not found in this version`}
+      >
+        <XStack gap="$2" paddingHorizontal="$4">
+          {props.version ? (
+            <Button
+              size="$2"
+              onPress={() => {
+                onShowReferenced(true)
+              }}
+              icon={MoveLeft}
+            >
+              Show Referenced Version
+            </Button>
+          ) : null}
+          {renderOpenButton()}
+        </XStack>
+      </BlockNotFoundError>
+    )
+  }
+  return <EmbedWrapper hmRef={props.id}>{content}</EmbedWrapper>
+}
+
+export function BlockNotFoundError({
+  message,
+  children,
+}: PropsWithChildren<{
+  message: string
+}>) {
+  return (
+    <YStack
+      theme="red"
+      backgroundColor="$backgroundHover"
+      f={1}
+      paddingVertical="$2"
+    >
+      <XStack gap="$2" paddingHorizontal="$4" paddingVertical="$2" ai="center">
+        <AlertCircle color="$red10" size={12} />
+        <SizableText flex={1} color="$red10">
+          {message ? message : 'Error'}
+        </SizableText>
+      </XStack>
+      {children}
+    </YStack>
   )
 }
 
