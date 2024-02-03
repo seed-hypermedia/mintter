@@ -53,7 +53,7 @@ if [ -z "$hostname" ]; then
   echo "Please enter the hostname"
   exit 1
 fi
-
+hostname="${hostname%/}"
 mkdir -p ${workspace}
 rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
