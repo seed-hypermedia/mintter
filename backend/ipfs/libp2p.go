@@ -214,9 +214,9 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 				return r.Close()
 			})
 
-			n.Routing = r
+			n.Routing = &instrumentedRouting{r}
 
-			return r, nil
+			return n.Routing, nil
 		}),
 	}
 

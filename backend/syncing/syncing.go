@@ -42,6 +42,11 @@ var (
 		Help: "The total number of periodic sync operations performed with peers (groups don't count).",
 	})
 
+	mSyncsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_syncing_operations_in_flight",
+		Help: "The number of periodic sync operations currently in flight with peers (groups don't count).",
+	})
+
 	mSyncErrorsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "mintter_syncing_periodic_errors_total",
 		Help: "The total number of errors encountered during periodic sync operations with peers (groups don't count).",
@@ -50,6 +55,11 @@ var (
 	mWorkers = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "mintter_syncing_workers",
 		Help: "The number of active syncing workers.",
+	})
+
+	mConnectsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_syncing_connects_in_flight",
+		Help: "Number of connection attempts in progress.",
 	})
 )
 
@@ -334,7 +344,9 @@ func syncPeer(
 	db *sqlitex.Pool,
 	log *zap.Logger,
 ) (err error) {
+	mSyncsInFlight.Inc()
 	defer func() {
+		mSyncsInFlight.Dec()
 		mSyncsTotal.Inc()
 		if err != nil {
 			mSyncErrorsTotal.Inc()
