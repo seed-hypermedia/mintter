@@ -1042,17 +1042,18 @@ WHERE structural_blobs.resource = :structuralBlobsResource`
 }
 
 type BacklinksForDocumentResult struct {
-	ResourcesID       int64
-	ResourcesIRI      string
-	BlobsCodec        int64
-	BlobsMultihash    []byte
-	StructuralBlobsID int64
-	ResourceLinksType string
-	ResourceLinksMeta []byte
+	ResourcesID           int64
+	ResourcesIRI          string
+	BlobsCodec            int64
+	BlobsMultihash        []byte
+	StructuralBlobsID     int64
+	ResourceLinksType     string
+	ResourceLinksMeta     []byte
+	ResourceLinksIsPinned int64
 }
 
 func BacklinksForDocument(conn *sqlite.Conn, resourceLinksTarget int64) ([]BacklinksForDocumentResult, error) {
-	const query = `SELECT resources.id, resources.iri, blobs.codec, blobs.multihash, structural_blobs.id, resource_links.type, resource_links.meta
+	const query = `SELECT resources.id, resources.iri, blobs.codec, blobs.multihash, structural_blobs.id, resource_links.type, resource_links.meta, resource_links.is_pinned
 FROM resource_links
 JOIN structural_blobs ON structural_blobs.id = resource_links.source
 JOIN resources ON resources.id = structural_blobs.resource
@@ -1068,13 +1069,14 @@ AND resource_links.target = :resourceLinksTarget`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, BacklinksForDocumentResult{
-			ResourcesID:       stmt.ColumnInt64(0),
-			ResourcesIRI:      stmt.ColumnText(1),
-			BlobsCodec:        stmt.ColumnInt64(2),
-			BlobsMultihash:    stmt.ColumnBytes(3),
-			StructuralBlobsID: stmt.ColumnInt64(4),
-			ResourceLinksType: stmt.ColumnText(5),
-			ResourceLinksMeta: stmt.ColumnBytes(6),
+			ResourcesID:           stmt.ColumnInt64(0),
+			ResourcesIRI:          stmt.ColumnText(1),
+			BlobsCodec:            stmt.ColumnInt64(2),
+			BlobsMultihash:        stmt.ColumnBytes(3),
+			StructuralBlobsID:     stmt.ColumnInt64(4),
+			ResourceLinksType:     stmt.ColumnText(5),
+			ResourceLinksMeta:     stmt.ColumnBytes(6),
+			ResourceLinksIsPinned: stmt.ColumnInt64(7),
 		})
 
 		return nil

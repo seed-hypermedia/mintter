@@ -662,14 +662,19 @@ func indexURL(sb *structuralBlob, log *zap.Logger, anchor, linkType, rawURL stri
 
 	switch {
 	case u.Scheme == "hm" && u.Host != "c":
+		uq := u.Query()
+
 		linkMeta := DocLinkMeta{
 			Anchor:         anchor,
 			TargetFragment: u.Fragment,
-			TargetVersion:  u.Query().Get("v"),
+			TargetVersion:  uq.Get("v"),
 		}
 
 		target := IRI("hm://" + u.Host + u.Path)
-		sb.AddResourceLink(linkType, target, linkMeta.TargetVersion != "", linkMeta)
+
+		isLatest := uq.Has("l") || linkMeta.TargetVersion == ""
+
+		sb.AddResourceLink(linkType, target, !isLatest, linkMeta)
 
 		vblobs, err := Version(linkMeta.TargetVersion).Parse()
 		if err != nil {

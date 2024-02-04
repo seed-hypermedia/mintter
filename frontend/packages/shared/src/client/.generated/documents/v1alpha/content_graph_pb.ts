@@ -107,6 +107,16 @@ export class Link extends Message<Link> {
    */
   target?: LinkNode;
 
+  /**
+   * Indicates whether the link targets the latest version of the document.
+   * Notice that the target link node might still have a version specified,
+   * which has to be treated as a frame of reference, i.e. "this version or newer"
+   * if is_latest is true.
+   *
+   * @generated from field: bool is_latest = 3;
+   */
+  isLatest = false;
+
   constructor(data?: PartialMessage<Link>) {
     super();
     proto3.util.initPartial(data, this);
@@ -117,6 +127,7 @@ export class Link extends Message<Link> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "source", kind: "message", T: LinkNode },
     { no: 2, name: "target", kind: "message", T: LinkNode },
+    { no: 3, name: "is_latest", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Link {
