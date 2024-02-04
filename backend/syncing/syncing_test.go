@@ -42,7 +42,7 @@ func TestSync(t *testing.T) {
 
 	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Syncer.me.Account().Principal()))
 
-	res, err := bob.Syncer.Sync(ctx)
+	res, err := bob.Syncer.SyncAll(ctx)
 	require.NoError(t, err)
 	require.Equalf(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures: %v", res.Errs)
 	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
@@ -55,43 +55,6 @@ func TestSync(t *testing.T) {
 	}
 }
 
-func TestSyncWithList(t *testing.T) {
-	t.Parallel()
-
-	alice := makeTestNode(t, "alice")
-	bob := makeTestNode(t, "bob")
-	ctx := context.Background()
-
-	entityID := hyper.EntityID("alice-test-entity")
-	{
-		e := hyper.NewEntity(entityID)
-		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs), map[string]any{
-			"title": "This is a title of a fake test entity",
-		})
-		require.NoError(t, err)
-		require.NoError(t, alice.Blobs.SaveBlob(ctx, hb))
-	}
-	// Create another entity for alice to make sure we only sync one entity.
-	{
-		e := hyper.NewEntity("another-entity")
-		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs), map[string]any{
-			"title": "This is a title of another fake test entity",
-		})
-		require.NoError(t, err)
-		require.NoError(t, alice.Blobs.SaveBlob(ctx, hb))
-	}
-
-	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
-
-	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().PeerID(), entityID))
-
-	list, err := bob.Blobs.ListEntities(ctx, "*")
-	require.NoError(t, err)
-
-	require.Len(t, list, 3, "bob must have synced only one entity from alice") // 3 = bob's account + alice's account + alice's entity
-	require.Equal(t, entityID, list[2], "bob must have synced alice's entity")
-}
-
 func makeTestNode(t *testing.T, name string) testNode {
 	u := coretest.NewTester(name)
 	db := storage.MakeTestDB(t)
@@ -100,12 +63,12 @@ func makeTestNode(t *testing.T, name string) testNode {
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
-	cfg := config.Default().P2P
-	cfg.Port = 0
-	cfg.NoRelay = true
-	cfg.BootstrapPeers = nil
-	cfg.NoMetrics = true
-	n, err := mttnet.New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), "debug")
+	cfg := config.Default()
+	cfg.P2P.Port = 0
+	cfg.P2P.NoRelay = true
+	cfg.P2P.BootstrapPeers = nil
+	cfg.P2P.NoMetrics = true
+	n, err := mttnet.New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), "debug")
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
@@ -132,7 +95,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 	return testNode{
 		Node:   n,
 		Blobs:  blobs,
-		Syncer: NewService(must.Do2(zap.NewDevelopment()).Named(name), n.ID(), db, blobs, n.Bitswap(), n.Client),
+		Syncer: NewService(cfg.Syncing, must.Do2(zap.NewDevelopment()).Named(name), n.ID(), db, blobs, n),
 	}
 }
 

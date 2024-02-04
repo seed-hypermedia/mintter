@@ -126,12 +126,6 @@ type Node struct {
 	ctx       context.Context // will be set after calling Start()
 }
 
-// Synchronizer is a subset of the syncing service that
-// is able to sync content with remote peers on demand.
-type Synchronizer interface {
-	SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error
-}
-
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
 func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger, extraServers ...interface{}) (*Node, error) {

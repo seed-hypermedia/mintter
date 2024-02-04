@@ -361,15 +361,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", LogLevel), id, db, blobs, node.Bitswap(), node.Client)
-		svc.SetWarmupDuration(cfg.WarmupDuration)
-		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
-		svc.SetSyncInterval(cfg.Interval)
-
-		if cfg.NoDiscovery {
-			svc.DisableDiscovery = true
-		}
-
+		svc := syncing.NewService(cfg, logging.New("mintter/syncing", LogLevel), id, db, blobs, node)
 		if cfg.NoPull {
 			close(done)
 		} else {
