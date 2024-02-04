@@ -189,6 +189,9 @@ func (sw *worker) sync(ctx context.Context) {
 
 // maybeConnect tries to maybeConnect to the peer, backing off unless it's a first attempt.
 func (sw *worker) maybeConnect(ctx context.Context, attempts int) peerState {
+	mConnectsInFlight.Inc()
+	defer mConnectsInFlight.Dec()
+
 	state := sw.getPeerState()
 	switch state {
 	case peerStateOnline:

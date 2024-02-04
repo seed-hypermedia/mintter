@@ -1,6 +1,7 @@
 package ipfs
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -8,7 +9,9 @@ import (
 	"github.com/libp2p/go-libp2p/core/metrics"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
+	"github.com/libp2p/go-libp2p/core/routing"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // Libp2pMetrics implements Libp2p metrics.Reporter and prometheus.Collector.
@@ -210,4 +213,36 @@ func (m *Libp2pMetrics) GetBandwidthByPeer() map[peer.ID]metrics.Stats {
 // GetBandwidthByProtocol implements libp2p metrics.Reporter.
 func (m *Libp2pMetrics) GetBandwidthByProtocol() map[protocol.ID]metrics.Stats {
 	panic("BUG: this is not implemented and must never be called")
+}
+
+var (
+	mPeerRoutingTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "libp2p_routing_find_peer_requests_total",
+		Help: "Total number of FindPeer requests to the routing system.",
+	})
+
+	mPeerRoutingErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "libp2p_routing_find_peer_requests_errors_total",
+		Help: "Total number of FindPeer requests that resulted in an error.",
+	})
+
+	mPeerRoutingInFlight = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "libp2p_routing_find_peer_requests_in_flight",
+		Help: "Number of FindPeer requests currently in flight.",
+	})
+)
+
+type instrumentedRouting struct {
+	routing.Routing
+}
+
+func (r *instrumentedRouting) FindPeer(ctx context.Context, p peer.ID) (peer.AddrInfo, error) {
+	mPeerRoutingTotal.Inc()
+	mPeerRoutingInFlight.Inc()
+	defer mPeerRoutingInFlight.Dec()
+	info, err := r.Routing.FindPeer(ctx, p)
+	if err != nil {
+		mPeerRoutingErrors.Inc()
+	}
+	return info, err
 }

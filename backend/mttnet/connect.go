@@ -27,8 +27,8 @@ import (
 )
 
 var (
-	mConnectsInflight = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_connects_inflight",
+	mConnectsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_connects_in_flight",
 		Help: "Number of connection attempts in progress.",
 	})
 )
@@ -50,8 +50,8 @@ func (n *Node) ForceConnect(ctx context.Context, info peer.AddrInfo) error {
 }
 
 func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err error) {
-	mConnectsInflight.Inc()
-	defer mConnectsInflight.Dec()
+	mConnectsInFlight.Inc()
+	defer mConnectsInFlight.Dec()
 
 	if info.ID == "" {
 		return fmt.Errorf("must specify peer ID to connect")
