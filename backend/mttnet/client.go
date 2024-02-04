@@ -37,6 +37,14 @@ type singleConn struct {
 	conn *grpc.ClientConn
 }
 
+func (sc *singleConn) Close() error {
+	if sc.conn == nil {
+		return nil
+	}
+
+	return sc.conn.Close()
+}
+
 // newClient creates a new Client using the provided libp2p host.
 func newClient(me core.Identity, h host.Host, protoID protocol.ID) *Client {
 	return &Client{
@@ -78,7 +86,7 @@ func (c *Client) Close() (err error) {
 
 	for _, sc := range c.conns {
 		sc.mu.Lock()
-		err = multierr.Append(err, sc.conn.Close())
+		err = multierr.Append(err, sc.Close())
 		sc.mu.Unlock()
 	}
 

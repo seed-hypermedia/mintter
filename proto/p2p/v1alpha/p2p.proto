@@ -10,14 +10,6 @@ service P2P {
   // No matter who initiates the connect, this will make sure both peers exchange their information.
   rpc Handshake(HandshakeInfo) returns (HandshakeInfo);
 
-  // Returns list of all the objects authored by the account this peer belongs to.
-  // Used for syncing objects between peers. Clients are expected to periodically
-  // use this call to pull the latest objects from the remote peer.
-  //
-  // This is a very naive syncing protocol, it returns all the objects and all the changes
-  // every time. Eventually this will be improved and made more efficient.
-  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
-
   // ListBlobs returns a stream of blobs that the peer has.
   // It's assumed that all peers have a way to list their blobs in a monotonic order,
   // i.e. blobs that a peer receives later will have a higher index/cursor.
@@ -36,19 +28,6 @@ message HandshakeInfo {
 
   // The bytes of the key delegation blob.
   bytes key_delegation_data = 2;
-}
-
-message ListObjectsRequest {
-  // TODO: add some filtering options here.
-  // Some ideas:
-  // - Filter by account ID.
-  // - Filter by object type.
-  // - Send the timestamps of the last sync to avoid sending old data.
-  // - etc.
-}
-
-message ListObjectsResponse {
-  repeated Object objects = 1;
 }
 
 // Request to list blobs.
@@ -76,12 +55,6 @@ message RequestInvoiceRequest {
 message RequestInvoiceResponse {
   // Text encoded BOLT-11 Invoice
   string pay_req = 1;
-}
-
-message Object {
-  string id = 1;
-
-  repeated string change_ids = 2;
 }
 
 message Blob {

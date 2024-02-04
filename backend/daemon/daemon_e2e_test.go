@@ -7,8 +7,6 @@ import (
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
@@ -16,7 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -257,49 +254,6 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 	require.NoError(t, g.Wait())
 }
 
-func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
-	t.Parallel()
-
-	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
-	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
-	ctx := context.Background()
-
-	require.NoError(t, bob.Net.MustGet().Connect(ctx, alice.Net.MustGet().AddrInfo()))
-
-	pub := publishDocument(t, ctx, alice)
-
-	cc, err := bob.Net.MustGet().Client(ctx, alice.Storage.Device().PeerID())
-	require.NoError(t, err)
-
-	list, err := cc.ListObjects(ctx, &p2p.ListObjectsRequest{})
-	require.NoError(t, err)
-
-	require.Len(t, list.Objects, 2, "alice must list her account and the published document")
-
-	var found *p2p.Object
-	seen := map[cid.Cid]struct{}{}
-	for _, obj := range list.Objects {
-		if obj.Id == pub.Document.Id {
-			found = obj
-		}
-		for _, ch := range obj.ChangeIds {
-			c := must.Do2(cid.Decode(ch))
-
-			var change hyper.Change
-			require.NoError(t, alice.Blobs.LoadBlob(ctx, c, &change))
-
-			seen[c] = struct{}{}
-
-			for _, dep := range change.Deps {
-				_, ok := seen[dep]
-				require.True(t, ok, "non causal order of IPLD links: haven't seen dep %s of %s", dep, c)
-			}
-		}
-	}
-
-	require.NotNil(t, found, "published document must be in the list objects response")
-}
-
 func TestPeriodicSync(t *testing.T) {
 	t.Parallel()
 
@@ -311,6 +265,9 @@ func TestPeriodicSync(t *testing.T) {
 
 	acfg.Syncing.Interval = 150 * time.Millisecond
 	bcfg.Syncing.Interval = 150 * time.Millisecond
+
+	acfg.Syncing.RefreshInterval = 50 * time.Millisecond
+	bcfg.Syncing.RefreshInterval = 50 * time.Millisecond
 
 	alice := makeTestApp(t, "alice", acfg, true)
 	bob := makeTestApp(t, "bob", bcfg, true)
@@ -358,17 +315,17 @@ func TestMultiDevice(t *testing.T) {
 	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
 
 	{
-		sr := must.Do2(alice1.Syncing.MustGet().Sync(ctx))
+		sr := must.Do2(alice1.Syncing.MustGet().SyncAll(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID(), alice2.Storage.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	{
-		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
+		sr := must.Do2(alice2.Syncing.MustGet().SyncAll(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))

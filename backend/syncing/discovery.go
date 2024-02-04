@@ -22,7 +22,7 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 	// for the permanode, we could be just looking for the leaf change CIDs, and walk up the
 	// change DAG. We are doing almost exactly that inside the syncFromVersion() method.
 
-	if s.DisableDiscovery {
+	if s.cfg.NoDiscovery {
 		return status.Error(codes.FailedPrecondition, "remote content discovery is disabled")
 	}
 

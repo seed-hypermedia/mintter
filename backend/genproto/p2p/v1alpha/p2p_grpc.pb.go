@@ -25,13 +25,6 @@ type P2PClient interface {
 	// Handshake gets called whenever two Mintter peers connect to each other.
 	// No matter who initiates the connect, this will make sure both peers exchange their information.
 	Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error)
-	// Returns list of all the objects authored by the account this peer belongs to.
-	// Used for syncing objects between peers. Clients are expected to periodically
-	// use this call to pull the latest objects from the remote peer.
-	//
-	// This is a very naive syncing protocol, it returns all the objects and all the changes
-	// every time. Eventually this will be improved and made more efficient.
-	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
 	// ListBlobs returns a stream of blobs that the peer has.
 	// It's assumed that all peers have a way to list their blobs in a monotonic order,
 	// i.e. blobs that a peer receives later will have a higher index/cursor.
@@ -54,15 +47,6 @@ func NewP2PClient(cc grpc.ClientConnInterface) P2PClient {
 func (c *p2PClient) Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error) {
 	out := new(HandshakeInfo)
 	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/Handshake", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *p2PClient) ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error) {
-	out := new(ListObjectsResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/ListObjects", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,13 +101,6 @@ type P2PServer interface {
 	// Handshake gets called whenever two Mintter peers connect to each other.
 	// No matter who initiates the connect, this will make sure both peers exchange their information.
 	Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error)
-	// Returns list of all the objects authored by the account this peer belongs to.
-	// Used for syncing objects between peers. Clients are expected to periodically
-	// use this call to pull the latest objects from the remote peer.
-	//
-	// This is a very naive syncing protocol, it returns all the objects and all the changes
-	// every time. Eventually this will be improved and made more efficient.
-	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
 	// ListBlobs returns a stream of blobs that the peer has.
 	// It's assumed that all peers have a way to list their blobs in a monotonic order,
 	// i.e. blobs that a peer receives later will have a higher index/cursor.
@@ -141,9 +118,6 @@ type UnimplementedP2PServer struct {
 
 func (UnimplementedP2PServer) Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Handshake not implemented")
-}
-func (UnimplementedP2PServer) ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListObjects not implemented")
 }
 func (UnimplementedP2PServer) ListBlobs(*ListBlobsRequest, P2P_ListBlobsServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListBlobs not implemented")
@@ -177,24 +151,6 @@ func _P2P_Handshake_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(P2PServer).Handshake(ctx, req.(*HandshakeInfo))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _P2P_ListObjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListObjectsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(P2PServer).ListObjects(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.p2p.v1alpha.P2P/ListObjects",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(P2PServer).ListObjects(ctx, req.(*ListObjectsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -248,10 +204,6 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Handshake",
 			Handler:    _P2P_Handshake_Handler,
-		},
-		{
-			MethodName: "ListObjects",
-			Handler:    _P2P_ListObjects_Handler,
 		},
 		{
 			MethodName: "RequestInvoice",

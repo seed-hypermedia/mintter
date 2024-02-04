@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mintter/backend/config"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/mttnet"
 	"mintter/backend/pkg/dqb"
 	"sync"
 	"sync/atomic"
@@ -15,9 +17,10 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/boxo/blockstore"
 	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -29,112 +32,101 @@ import (
 //
 // TODO(burdiyan): refactor this to unify group syncing and normal periodic syncing.
 var (
-	MSyncingWantBlobs = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	MSyncingWantedBlobs = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mintter_syncing_wanted_blobs",
-		Help: "Number of blobs we want to sync at this time.",
+		Help: "Number of blobs we want to sync at this time. Same blob may be counted multiple times if it's wanted from multiple peers.",
 	}, []string{"package"})
+
+	mSyncsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "mintter_syncing_periodic_operations_total",
+		Help: "The total number of periodic sync operations performed with peers (groups don't count).",
+	})
+
+	mSyncErrorsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "mintter_syncing_periodic_errors_total",
+		Help: "The total number of errors encountered during periodic sync operations with peers (groups don't count).",
+	})
+
+	mWorkers = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_syncing_workers",
+		Help: "The number of active syncing workers.",
+	})
 )
 
-// NetDialFunc is a function of the Mintter P2P node that creates an instance
-// of a P2P RPC client for a given remote Device ID.
-type NetDialFunc func(context.Context, peer.ID) (p2p.P2PClient, error)
+// Force metric to appear even if there's no blobs to sync.
+func init() {
+	MSyncingWantedBlobs.WithLabelValues("syncing").Set(0)
+	MSyncingWantedBlobs.WithLabelValues("groups").Set(0)
+}
 
-// Bitswap is a subset of the Bitswap that is used by syncing service.
-type Bitswap interface {
+// netDialFunc is a function of the Mintter P2P node that creates an instance
+// of a P2P RPC client for a given remote Device ID.
+type netDialFunc func(context.Context, peer.ID) (p2p.P2PClient, error)
+
+// bitswap is a subset of the bitswap that is used by syncing service.
+type bitswap interface {
 	NewSession(context.Context) exchange.Fetcher
 	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.AddrInfo
 }
 
 // Service manages syncing of Mintter objects among peers.
 type Service struct {
-	// warmupDuration defines how long to wait before the first sync after the service is started.
-	// Can be changed before calling Start().
-	warmupDuration time.Duration
-	// syncInterval specifies how often global sync process is performed.
-	// Can be changed before calling Start().
-	syncInterval time.Duration
-	// peerSyncTimeout defines the timeout for syncing with one peer.
-	peerSyncTimeout time.Duration
-
-	// burstSync attempts to sync all peers at once, creating CPU overhead.
-	burstSync bool
-
+	cfg     config.Syncing
 	log     *zap.Logger
 	db      *sqlitex.Pool
 	blobs   *hyper.Storage
 	me      core.Identity
-	bitswap Bitswap
-	client  NetDialFunc
+	bitswap bitswap
+	client  netDialFunc
+	host    host.Host
 
 	mu sync.Mutex // Ensures only one sync loop is running at a time.
 
-	// DisableDiscovery can be used to disable remote content discovery.
-	// This value must be set before calling start, and before calling any Discover methods.
-	DisableDiscovery bool
+	wg        sync.WaitGroup
+	workers   map[peer.ID]*worker
+	semaphore chan struct{}
 }
 
 const (
-	defaultWarmupDuration  = time.Second * 20
-	defaultSyncInterval    = time.Minute
-	defaultPeerSyncTimeout = time.Minute * 5
+	connectTimeout = 30 * time.Second
 )
 
-// NewService creates a new syncing service. Users should call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, bitswap Bitswap, client NetDialFunc) *Service {
-	svc := &Service{
-		warmupDuration:  defaultWarmupDuration,
-		syncInterval:    defaultSyncInterval,
-		peerSyncTimeout: defaultPeerSyncTimeout,
+const peerRoutingConcurrency = 3 // how many concurrent requests for peer routing.
 
-		log:     log,
-		db:      db,
-		blobs:   blobs,
-		me:      me,
-		bitswap: bitswap,
-		client:  client,
+// NewService creates a new syncing service. Users should call Start() to start the periodic syncing.
+func NewService(cfg config.Syncing, log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, net *mttnet.Node) *Service {
+	svc := &Service{
+		cfg:       cfg,
+		log:       log,
+		db:        db,
+		blobs:     blobs,
+		me:        me,
+		bitswap:   net.Bitswap(),
+		client:    net.Client,
+		host:      net.Libp2p().Host,
+		workers:   make(map[peer.ID]*worker),
+		semaphore: make(chan struct{}, peerRoutingConcurrency),
 	}
 
 	return svc
 }
 
-// SetWarmupDuration sets the corresponding duration if it's non-zero.
-// Must be called before calling Start().
-func (s *Service) SetWarmupDuration(d time.Duration) {
-	if d != 0 {
-		s.warmupDuration = d
-	}
-}
-
-// SetSyncInterval sets the corresponding duration if it's non-zero.
-// Must be called before calling Start().
-func (s *Service) SetSyncInterval(d time.Duration) {
-	if d != 0 {
-		s.syncInterval = d
-	}
-}
-
-// SetPeerSyncTimeout sets the corresponding duration if it's non-zero.
-// Must be called before calling Start().
-func (s *Service) SetPeerSyncTimeout(d time.Duration) {
-	if d != 0 {
-		s.peerSyncTimeout = d
-	}
-}
-
-// SetBurstSync sets wether or not syncing in bursts (CPU intense)
-// or spawn routines throughout the syncing interval
-func (s *Service) SetBurstSync(b bool) {
-	s.burstSync = b
-}
-
-// Start the syncing service which will periodically perform global sync loop.
+// Start the syncing service which will periodically refresh the list of peers
+// to sync with from the database, and schedule the worker loop for each peer,
+// creating new workers for newly added peers, and stopping workers for removed peers.
 func (s *Service) Start(ctx context.Context) (err error) {
 	s.log.Debug("SyncingServiceStarted")
 	defer func() {
 		s.log.Debug("SyncingServiceFinished", zap.Error(err))
 	}()
 
-	t := time.NewTimer(s.warmupDuration)
+	ctx, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+		s.wg.Wait()
+	}()
+
+	t := time.NewTimer(s.cfg.WarmupDuration)
 	defer t.Stop()
 
 	for {
@@ -142,24 +134,67 @@ func (s *Service) Start(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-t.C:
-			if err := s.SyncAndLog(ctx); err != nil {
+			if err := s.refreshWorkers(ctx); err != nil {
 				return err
 			}
 
-			t.Reset(s.syncInterval)
+			t.Reset(s.cfg.RefreshInterval)
 		}
 	}
 }
 
-// SyncAndLog is the same as Sync but will log the results instead of returning them.
+func (s *Service) refreshWorkers(ctx context.Context) error {
+	peers := make(map[peer.ID]struct{}, int(float64(len(s.workers))*1.5)) // arbitrary multiplier to avoid map resizing.
+
+	if err := s.db.Query(ctx, func(conn *sqlite.Conn) error {
+		return sqlitex.Exec(conn, qListPeersToSync(), func(stmt *sqlite.Stmt) error {
+			pid, err := core.Principal(stmt.ColumnBytesUnsafe(0)).PeerID()
+			if err != nil {
+				return err
+			}
+			peers[pid] = struct{}{}
+			return nil
+		})
+	}); err != nil {
+		return err
+	}
+
+	var workersDiff int
+
+	// Starting workers for newly added trusted peers.
+	for pid := range peers {
+		if _, ok := s.workers[pid]; !ok {
+			w := newWorker(s.cfg, pid, s.log, s.client, s.host, s.blobs.IPFSBlockstore(), s.bitswap, s.db, s.semaphore)
+			s.wg.Add(1)
+			go w.start(ctx, &s.wg, s.cfg.Interval)
+			workersDiff++
+			s.workers[pid] = w
+		}
+	}
+
+	// Stop workers for those peers we no longer trust.
+	for _, w := range s.workers {
+		if _, ok := peers[w.pid]; !ok {
+			w.stop()
+			workersDiff--
+			delete(s.workers, w.pid)
+		}
+	}
+
+	mWorkers.Add(float64(workersDiff))
+
+	return nil
+}
+
+// SyncAllAndLog is the same as Sync but will log the results instead of returning them.
 // Calls will be de-duplicated as only one sync loop may be in progress at any given moment.
 // Returned error indicates a fatal error. The behavior of calling Sync again after a fatal error is undefined.
-func (s *Service) SyncAndLog(ctx context.Context) error {
+func (s *Service) SyncAllAndLog(ctx context.Context) error {
 	log := s.log.With(zap.Int64("traceID", time.Now().UnixMicro()))
 
 	log.Info("SyncLoopStarted")
 
-	res, err := s.Sync(ctx)
+	res, err := s.SyncAll(ctx)
 	if err != nil {
 		if errors.Is(err, ErrSyncAlreadyRunning) {
 			log.Debug("SyncLoopIsAlreadyRunning")
@@ -202,10 +237,12 @@ var qListPeersToSync = dqb.Str(`
 	FROM key_delegations
 	JOIN trusted_accounts ON trusted_accounts.id = key_delegations.issuer
 	JOIN public_keys del ON del.id = key_delegations.delegate
+	-- Skipping our own key delegation.
+	WHERE key_delegations.id != 1
 `)
 
-// Sync attempts to sync the objects with connected peers.
-func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
+// SyncAll attempts to sync the with all the peers at once.
+func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 	if !s.mu.TryLock() {
 		return res, ErrSyncAlreadyRunning
 	}
@@ -230,18 +267,6 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	var wg sync.WaitGroup
 	wg.Add(len(peers))
 
-	// In order not to create a CPU overhead we spread sync routines throughout the
-	// syncing interval
-	roundSleep := time.Microsecond * 0
-	const numSlots = 100
-	every := 1
-
-	if !s.burstSync {
-		roundSleep = (s.syncInterval * 85 / 100) / numSlots
-		if len(peers) > numSlots {
-			every = 1 + len(peers)/numSlots
-		}
-	}
 	for i, pid := range peers {
 		go func(i int, pid peer.ID) {
 			var err error
@@ -262,154 +287,62 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 				err = errors.Join(err, fmt.Errorf("failed to sync objects: %w", xerr))
 			}
 		}(i, pid)
-		if i%every == 0 {
-			time.Sleep(roundSleep)
-		}
 	}
 
 	wg.Wait()
 
-	// Subtracting one to account for our own device.
-	res.NumSyncOK--
-
 	return res, nil
 }
 
-func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2p.Object) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	defer cancel()
-
-	bs := s.blobs.IPFSBlockstoreReader()
-
-	// oid, err := hyper.EntityID(obj.Id).CID()
-	// if err != nil {
-	// 	return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
-	// }
-
-	// // Hint to bitswap to only talk to peers who have the object.
-	// if _, err := sess.GetBlock(ctx, oid); err != nil {
-	// 	return fmt.Errorf("failed to start bitswap session: %w", err)
-	// }
-
-	// We have to check which of the remote changes we're actually missing to avoid
-	// doing bitswap unnecessarily.
-	var missingSorted []cid.Cid
-	{
-		for _, c := range obj.ChangeIds {
-			cc, err := cid.Decode(c)
-			if err != nil {
-				return fmt.Errorf("failed to decode change CID: %w", err)
-			}
-
-			has, err := bs.Has(ctx, cc)
-			if err != nil {
-				return err
-			}
-			if !has {
-				missingSorted = append(missingSorted, cc)
-			}
-		}
-	}
-
-	type verifiedChange struct {
-		cid    cid.Cid
-		change hyper.Change
-	}
-
-	// Fetch missing changes and make sure we have their parents.
-	// We assume causally sorted list, but verifying just in case.
-	visited := make(map[cid.Cid]struct{}, len(missingSorted))
-	{
-		for _, c := range missingSorted {
-			blk, err := sess.GetBlock(ctx, c)
-			if err != nil {
-				return fmt.Errorf("failed to sync blob %s: %w", c, err)
-			}
-
-			var ch hyper.Change
-			if err := cbornode.DecodeInto(blk.RawData(), &ch); err != nil {
-				return fmt.Errorf("failed to decode change after sync: %w", err)
-			}
-
-			if err := ch.Verify(); err != nil {
-				return fmt.Errorf("failed to verify signature for change %s: %w", c.String(), err)
-			}
-
-			// get delegation
-			ok, err := bs.Has(ctx, ch.Delegation)
-			if err != nil {
-				return err
-			}
-			if !ok {
-				kdblk, err := sess.GetBlock(ctx, ch.Delegation)
-				if err != nil {
-					return err
-				}
-				var kd hyper.KeyDelegation
-				if err := cbornode.DecodeInto(kdblk.RawData(), &kd); err != nil {
-					return err
-				}
-				if err := kd.Verify(); err != nil {
-					return fmt.Errorf("failed to verify key delegation: %w", err)
-				}
-				kdblob, err := hyper.EncodeBlob(kd)
-				if err != nil {
-					return err
-				}
-
-				if !kdblob.CID.Equals(kdblk.Cid()) {
-					return fmt.Errorf("reencoded key delegation cid doesn't match")
-				}
-
-				if err := s.blobs.SaveBlob(ctx, kdblob); err != nil {
-					return fmt.Errorf("failed to save key delegation blob: %w", err)
-				}
-			}
-
-			vc := verifiedChange{cid: c, change: ch}
-			visited[vc.cid] = struct{}{}
-			for _, dep := range vc.change.Deps {
-				has, err := bs.Has(ctx, dep)
-				if err != nil {
-					return fmt.Errorf("failed to check parent %s of %s: %w", dep, c, err)
-				}
-				_, seen := visited[dep]
-				if !has && !seen {
-					return fmt.Errorf("won't sync object %s: missing parent %s of change %s", obj, dep, c)
-				}
-			}
-
-			changeBlob, err := hyper.EncodeBlob(vc.change)
-			if err != nil {
-				return err
-			}
-
-			if !changeBlob.CID.Equals(vc.cid) {
-				return fmt.Errorf("reencoded change CID must match")
-			}
-
-			if err := s.blobs.SaveBlob(ctx, changeBlob); err != nil {
-				return fmt.Errorf("failed to save synced change: %w", err)
-			}
-		}
-	}
-
-	return nil
-}
-
-// SyncAllBlobs is the alternative dumb syncing method, which just syncs all the blob from the remote peer.
-func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
+// SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
+// if a list a list of initialObjects is provided, then only syncs objects from that list.
+func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
 	// Can't sync with self.
 	if s.me.DeviceKey().PeerID() == pid {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second*40) // arbitrary timeout
-	defer cancel()
+	{
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, connectTimeout)
+		defer cancel()
+	}
 
 	c, err := s.client(ctx, pid)
 	if err != nil {
 		return err
+	}
+
+	{
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, s.cfg.TimeoutPerPeer)
+		defer cancel()
+	}
+
+	bs := s.blobs.IPFSBlockstore()
+	bswap := s.bitswap.NewSession(ctx)
+
+	return syncPeer(ctx, pid, c, bs, bswap, s.db, s.log)
+}
+
+func syncPeer(
+	ctx context.Context,
+	pid peer.ID,
+	c p2p.P2PClient,
+	bs blockstore.Blockstore,
+	sess exchange.Fetcher,
+	db *sqlitex.Pool,
+	log *zap.Logger,
+) (err error) {
+	defer func() {
+		mSyncsTotal.Inc()
+		if err != nil {
+			mSyncErrorsTotal.Inc()
+		}
+	}()
+
+	if _, ok := ctx.Deadline(); !ok {
+		panic("BUG: syncPeer must have timeout")
 	}
 
 	stream, err := c.ListBlobs(ctx, &p2p.ListBlobsRequest{})
@@ -423,8 +356,6 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 	}
 
 	remotePrincipal := core.PrincipalFromPubKey(pk)
-
-	bs := s.blobs.IPFSBlockstore()
 
 	type wantBlob struct {
 		cid    cid.Cid
@@ -453,22 +384,20 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 
 		if !ok {
 			want = append(want, wantBlob{cid: c, cursor: obj.Cursor})
-			MSyncingWantBlobs.WithLabelValues("syncing").Inc()
 		}
 	}
-
-	MSyncingWantBlobs.WithLabelValues("syncing").Set(float64(len(want)))
-	defer MSyncingWantBlobs.WithLabelValues("syncing").Set(0)
 
 	if len(want) == 0 {
 		return nil
 	}
 
-	log := s.log.With(
-		zap.String("remotePeer", pid.String()),
+	MSyncingWantedBlobs.WithLabelValues("syncing").Add(float64(len(want)))
+	defer MSyncingWantedBlobs.WithLabelValues("syncing").Sub(float64(len(want)))
+
+	log = log.With(
+		zap.String("peer", pid.String()),
 	)
 
-	sess := s.bitswap.NewSession(ctx)
 	var lastSavedCursor string
 	for i, c := range want {
 		blk, err := sess.GetBlock(ctx, c.cid)
@@ -482,8 +411,9 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 			continue
 		}
 
+		// Save the cursor every N blobs instead of after every blob.
 		if i%50 == 0 {
-			if err := SaveCursor(ctx, s.db, remotePrincipal, c.cursor); err != nil {
+			if err := SaveCursor(ctx, db, remotePrincipal, c.cursor); err != nil {
 				return err
 			}
 			lastSavedCursor = c.cursor
@@ -493,69 +423,11 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 	lastCursor := want[len(want)-1].cursor
 
 	if lastSavedCursor != lastCursor {
-		if err := SaveCursor(ctx, s.db, remotePrincipal, lastCursor); err != nil {
+		if err := SaveCursor(ctx, db, remotePrincipal, lastCursor); err != nil {
 			return err
 		}
 	}
 
-	return nil
-}
-
-// SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
-// if a list a list of initialObjects is provided, then only syncs objects from that list.
-func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error {
-	// Can't sync with self.
-	if s.me.DeviceKey().PeerID() == device {
-		return nil
-	}
-
-	if initialObjects == nil {
-		return s.SyncAllBlobs(ctx, device)
-	}
-
-	var filter map[hyper.EntityID]struct{}
-	if initialObjects != nil {
-		filter = make(map[hyper.EntityID]struct{}, len(initialObjects))
-		for _, o := range initialObjects {
-			filter[o] = struct{}{}
-		}
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
-	defer cancel()
-
-	c, err := s.client(ctx, device)
-	if err != nil {
-		return err
-	}
-
-	remoteObjs, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
-	if err != nil {
-		return err
-	}
-
-	// If only selected objects are requested to sync we filter them out here.
-	var finalObjs []*p2p.Object
-	if filter == nil {
-		finalObjs = remoteObjs.Objects
-	} else {
-		for _, obj := range remoteObjs.Objects {
-			_, ok := filter[hyper.EntityID(obj.Id)]
-			if !ok {
-				continue
-			}
-			finalObjs = append(finalObjs, obj)
-		}
-	}
-
-	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(finalObjs)))
-
-	sess := s.bitswap.NewSession(ctx)
-	for _, obj := range finalObjs {
-		if err := s.syncObject(ctx, sess, obj); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 

@@ -50,7 +50,7 @@ func New(
 		}
 
 		go func() {
-			if err := s.SyncAndLog(ctx); err != nil {
+			if err := s.SyncAllAndLog(ctx); err != nil {
 				panic("bug or fatal error during sync " + err.Error())
 			}
 		}()
@@ -121,11 +121,11 @@ func (ld *lazyDiscoverer) Connect(ctx context.Context, peerInfo peer.AddrInfo) e
 
 // Connect connects to a remote peer. Necessary here for the grpc server to add a site
 // that needs to connect to the site under the hood.
-func (ld *lazyDiscoverer) SyncWithPeer(ctx context.Context, deviceID peer.ID, initialObjects ...hyper.EntityID) error {
+func (ld *lazyDiscoverer) SyncWithPeer(ctx context.Context, deviceID peer.ID) error {
 	svc, ok := ld.sync.Get()
 	if !ok {
 		return fmt.Errorf("sync not ready yet")
 	}
 
-	return svc.SyncWithPeer(ctx, deviceID, initialObjects...)
+	return svc.SyncWithPeer(ctx, deviceID)
 }
