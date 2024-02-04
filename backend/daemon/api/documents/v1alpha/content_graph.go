@@ -62,6 +62,7 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 				BlockId:    ld.TargetFragment,
 				Version:    ld.TargetVersion,
 			},
+			IsLatest: link.ResourceLinksIsPinned == 0,
 		}
 	}
 
