@@ -31,29 +31,35 @@ export function createPublicWebHmUrl(
     blockRef,
     hostname,
     variants,
+    latest,
   }: {
     version?: string | null | undefined
     blockRef?: string | null | undefined
     hostname?: string | null | undefined
     variants?: PublicationVariant[] | null
+    latest?: boolean | null
   } = {},
 ) {
   const webPath = `/${type}/${eid}`
-  if (hostname === null) return 'nope'
+  if (hostname === null) return ''
   const urlHost =
     hostname === undefined ? HYPERMEDIA_PUBLIC_WEB_GATEWAY : hostname
-  const webBaseUrl = `${urlHost}${webPath}`
-  let url = new URL(webBaseUrl)
+  let res = `${urlHost}${webPath}`
+  const query: Record<string, string | null> = {}
   if (version) {
-    url.searchParams.set('v', version)
+    query.v = version
   }
-  if (variants) {
-    url.searchParams.set('a', getVariantsParamValue(variants))
+  if (variants?.length) {
+    query.b = getVariantsParamValue(variants)
   }
+  if (latest) {
+    query.l = null
+  }
+  res += serializeQueryString(query)
   if (blockRef) {
-    url.hash = blockRef
+    res += `#${blockRef}`
   }
-  return url.toString()
+  return res
 }
 
 export function groupDocUrl(
@@ -82,12 +88,12 @@ function getVariantsParamValue(variants: PublicationVariant[]): string {
       if (variant.key === 'group') {
         const groupId = unpackHmId(variant.groupId)
         if (!groupId) return false
-        return `g-${groupId.eid}${
-          variant.pathName ? `-${variant.pathName}` : ''
+        return `g:${groupId.eid}${
+          variant.pathName ? `:${variant.pathName}` : ''
         }`
       }
       if (variant.key === 'author') {
-        return `a-${variant.author}`
+        return `a:${variant.author}`
       }
       return false
     })
@@ -116,7 +122,7 @@ export function createHmId(
     query.v = opts.version
   }
   if (opts.variants?.length) {
-    query.a = getVariantsParamValue(opts.variants)
+    query.b = getVariantsParamValue(opts.variants)
   }
   if (opts.latest) {
     query.l = null
@@ -181,7 +187,7 @@ function parseVariants(
   if (!variantsString) return null
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
-    const [key, ...rest] = singleVariantString.split('-')
+    const [key, ...rest] = singleVariantString.split(':')
     if (key === 'g') {
       const [groupEid, pathName] = rest
       variants.push({
@@ -190,7 +196,7 @@ function parseVariants(
         pathName: pathName || null,
       })
     }
-    if (key === 'a') {
+    if (key === 'b') {
       const [author] = rest
       variants.push({key: 'author', author})
     }
@@ -207,7 +213,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const eid = parsed.path[1]
     const version = parsed.query.get('v')
     const latest = parsed.query.has('l')
-    const variants = parseVariants(parsed.query.get('a'))
+    const variants = parseVariants(parsed.query.get('b'))
     if (!type) return null
     const qid = createHmId(type, eid)
     return {
@@ -229,7 +235,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const eid = parsed.path[2]
     const version = parsed.query.get('v')
     const latest = parsed.query.has('l')
-    const variants = parseVariants(parsed.query.get('a'))
+    const variants = parseVariants(parsed.query.get('b'))
     let hostname = parsed.path[0]
     if (!type) return null
     const qid = createHmId(type, eid)
@@ -327,15 +333,12 @@ export function createHmDocLink({
   variants?: PublicationVariant[] | null | undefined
 }): string {
   let res = documentId
-  const params = new URLSearchParams()
-  if (version) params.set('v', version)
-  if (latest) params.set('l', '')
   const query: Record<string, string | null> = {}
   if (version) {
     query.v = version
   }
   if (variants?.length) {
-    query.a = getVariantsParamValue(variants)
+    query.b = getVariantsParamValue(variants)
   }
   if (latest) {
     query.l = null

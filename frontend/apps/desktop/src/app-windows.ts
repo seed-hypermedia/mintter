@@ -66,7 +66,7 @@ type AppWindow = {
   sidebarLocked: boolean
 }
 
-const WINDOW_STATE_STORAGE_KEY = 'WindowState-v003'
+const WINDOW_STATE_STORAGE_KEY = 'WindowState-v004'
 
 let windowsState =
   (appStore.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
