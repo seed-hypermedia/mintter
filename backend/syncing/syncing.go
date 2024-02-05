@@ -44,7 +44,7 @@ var (
 
 	mSyncsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "mintter_syncing_operations_in_flight",
-		Help: "The number of periodic sync operations currently in flight with peers (groups don't count).",
+		Help: "The number of periodic sync operations currently in-flight with peers (groups don't count).",
 	})
 
 	mSyncErrorsTotal = promauto.NewCounter(prometheus.CounterOpts{

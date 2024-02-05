@@ -167,7 +167,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Sync Operations Rate",
+            "title": "Sync Operations (Rate)",
             "type": "timeseries"
         },
         {
@@ -267,7 +267,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "Connection Attempts In Flight",
+            "title": "Connection Attempts (In-Flight)",
             "type": "timeseries"
         },
         {
@@ -584,7 +584,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Peer Routing Calls (In Flight)",
+            "title": "Peer Routing Calls (In-Flight)",
             "type": "timeseries"
         },
         {
