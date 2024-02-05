@@ -228,7 +228,7 @@ var (
 
 	mPeerRoutingInFlight = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "libp2p_routing_find_peer_requests_in_flight",
-		Help: "Number of FindPeer requests currently in flight.",
+		Help: "Number of FindPeer requests currently in-flight.",
 	})
 )
 
