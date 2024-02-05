@@ -321,10 +321,20 @@ export function CommentPageTitlebar({
       paddingHorizontal="$2"
       className="window-drag"
     >
-      {isWindowsLinux ? null : <View width={72} />}
+      {!isWindowsLinux ? <View width={100} height="100%" /> : null}
       <XStack ai="center" jc="flex-start" f={1} paddingHorizontal="$2">
-        <XStack ai="center" gap="$2">
-          {icon || <MessageSquare size={12} />}
+        <XStack ai="center" gap="$2" width="100%">
+          {icon || (
+            <XStack
+              ai="center"
+              jc="center"
+              flexGrow={0}
+              flexShrink={0}
+              paddingTop={3} // now the icons "feels" vertically aligned
+            >
+              <MessageSquare size={12} />
+            </XStack>
+          )}
           {children}
         </XStack>
       </XStack>
@@ -362,6 +372,10 @@ export function CommentPageTitlebarWithDocId({
           fontSize="$4"
           className="no-window-drag"
           textDecorationLine="underline"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          width="100%"
+          overflow="hidden"
           onPress={() => {
             spawn({
               key: 'publication',
