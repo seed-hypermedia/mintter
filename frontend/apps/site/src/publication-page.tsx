@@ -168,7 +168,7 @@ export function PublicationPage({
       ? `/api/content-image/${pubId.type}/${pubId.eid}/${pubVersion}/media.png`
       : undefined
   if (!pub && !publication.isLoading) {
-    if (process.env.NEXT_PUBLIC_ENABLE_DISCOVERY) {
+    if (process.env.NEXT_PUBLIC_ENABLE_GATEWAY) {
       return <DiscoveryPage id={documentId} version={version} />
     }
     return <DocumentNotFoundPage id={documentId} version={version} />
