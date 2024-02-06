@@ -303,14 +303,12 @@ NESTED BLOCKS
   /* margin-left: -16px;
   margin-right: -16px; */
   position: 'relative';
-  white-space: pre-wrap;
 }
 
 .blockContent[data-content-type='codeBlock'] code {
   font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
   font-size: 0.85em;
-  white-space: pre-wrap;
   white-space: pre;
 }
 
