@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package com.mintter.activity.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/activity/v1alpha;activity";
+
+// ActivityFeed service provides information about the recent activity events happened in the system.
+service ActivityFeed {
+  // Lists the recent activity events,
+  // sorted by locally observed time (newest first).
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+}
+
+// The request to list the events.
+message ListEventsRequest {
+  // Optional. The size of the page. The default is defined by the server.
+  int32 page_size = 1;
+
+  // Optional. The page token for requesting next pages.
+  string page_token = 2;
+
+  // TODO: add filtering options.
+}
+
+// The response with the list of events.
+message ListEventsResponse {
+  // The list of events.
+  repeated Event events = 1;
+
+  // The token to request the next page.
+  string next_page_token = 2;
+}
+
+// Description of the event occurred in the system.
+message Event {
+  // Union type of different event types.
+  // Eventually we'll have more event types.
+  oneof data {
+    // Event type describing the appearance of a new blob in the system.
+    NewBlobEvent new_blob = 1;
+  }
+
+  // The ID of the user account that has caused the event.
+  string account = 2;
+
+  // Timestamp of the event as per the event itself.
+  google.protobuf.Timestamp event_time = 3;
+
+  // Locally perceived time of the event.
+  // I.e. time when we have received the event on our machine.
+  google.protobuf.Timestamp observe_time = 4;
+}
+
+// The event describing the
+message NewBlobEvent {
+  // The CID of the blob that was created.
+  string cid = 1;
+
+  // The type of the blob that was created.
+  // Defined as string for extensibility.
+  // Some of the currently supported blob types are:
+  //   - KeyDelegation
+  //   - Change
+  //   - Comment
+  //   - DagPB
+  string blob_type = 2;
+
+  // The user account ID that has created the blob.
+  string author = 3;
+
+  // The resource ID that the blob is related to.
+  string resource = 4;
+}
