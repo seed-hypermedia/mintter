@@ -1,11 +1,14 @@
 import {
   Account,
+  AuthorVariant,
+  GroupVariant,
   HMGroup,
   HMPublication,
   HYPERMEDIA_ENTITY_TYPES,
   Publication,
   PublicationContent,
   PublicationHeading,
+  PublicationVariant,
   UnpackedHypermediaId,
   createHmDocLink,
   createHmGroupDocLink,
@@ -125,18 +128,38 @@ export function PublicationPage({
   pathName,
   documentId,
   version,
-  contextGroup,
+  variants,
+  latest,
 }: {
   pathName?: string
   documentId: string
   version?: string | null
-  contextGroup?: HMGroup | null
+  variants?: Array<PublicationVariant> | null
+  latest?: boolean
 }) {
-  const publication = trpc.publication.get.useQuery({
+  const publication = trpc.publication.getVariant.useQuery({
     documentId: documentId,
     versionId: version || '',
+    variants,
+    latest,
   })
-
+  const authorVariants = (variants?.filter((v) => v.key === 'author') ||
+    []) as AuthorVariant[]
+  const groupVariants = (variants?.filter((v) => v.key === 'group') ||
+    []) as GroupVariant[]
+  if (authorVariants?.length > 0 && groupVariants?.length > 0) {
+    throw new Error('Cannot have both author and group variants')
+  }
+  if (groupVariants?.length > 1) {
+    throw new Error('Cannot have multiple group variants')
+  }
+  const groupVariant = groupVariants?.[0]
+  const contextGroup = trpc.group.get.useQuery(
+    {
+      groupId: groupVariant?.groupId || '',
+    },
+    {enabled: !!groupVariant?.groupId},
+  )
   const pub = publication.data?.publication
   const pubId = pub?.document?.id ? unpackHmId(pub?.document?.id) : null
   const pubVersion = pub?.version
@@ -150,7 +173,9 @@ export function PublicationPage({
     }
     return <DocumentNotFoundPage id={documentId} version={version} />
   }
-  const contextGroupId = contextGroup?.id ? unpackHmId(contextGroup?.id) : null
+  const contextGroupId = groupVariant?.groupId
+    ? unpackHmId(groupVariant?.groupId)
+    : null
   return (
     <>
       <Head>
@@ -161,7 +186,7 @@ export function PublicationPage({
             content={
               contextGroupId
                 ? createHmId('g', contextGroupId.eid, {
-                    version: contextGroup?.version,
+                    version: contextGroup.data?.group?.version,
                     groupPathName: pathName,
                   })
                 : createHmId('d', pubId.eid, {version: pubVersion})
@@ -181,7 +206,7 @@ export function PublicationPage({
         head={<SiteHead pageTitle={pub?.document?.title} />}
         leftSide={
           <PublicationContextSide
-            group={contextGroup}
+            group={contextGroup?.data?.group}
             activePathName={pathName || ''}
           />
         }
@@ -195,11 +220,11 @@ export function PublicationPage({
               >
                 <OpenInAppLink
                   url={
-                    contextGroup?.id && pathName
+                    contextGroup?.data?.group?.id && pathName
                       ? createHmGroupDocLink(
-                          contextGroup.id,
+                          contextGroup?.data?.group?.id,
                           pathName,
-                          contextGroup.version,
+                          contextGroup?.data?.group?.version,
                         )
                       : createHmDocLink({
                           documentId,

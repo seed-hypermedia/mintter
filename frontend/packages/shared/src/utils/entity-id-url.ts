@@ -1,3 +1,4 @@
+import {z} from 'zod'
 import {StateStream} from './stream'
 
 export const HYPERMEDIA_PUBLIC_WEB_GATEWAY = 'https://hyper.media'
@@ -11,17 +12,6 @@ export const HYPERMEDIA_ENTITY_TYPES = {
 } as const
 
 export type HMEntityType = keyof typeof HYPERMEDIA_ENTITY_TYPES
-
-export type GroupVariant = {
-  key: 'group'
-  groupId: string
-  pathName: string | null
-}
-export type AuthorVariant = {
-  key: 'author'
-  author: string
-}
-export type PublicationVariant = AuthorVariant | GroupVariant
 
 export function createPublicWebHmUrl(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
@@ -41,9 +31,12 @@ export function createPublicWebHmUrl(
   } = {},
 ) {
   const webPath = `/${type}/${eid}`
-  if (hostname === null) return ''
   const urlHost =
-    hostname === undefined ? HYPERMEDIA_PUBLIC_WEB_GATEWAY : hostname
+    hostname === undefined
+      ? HYPERMEDIA_PUBLIC_WEB_GATEWAY
+      : hostname === null
+      ? ''
+      : hostname
   let res = `${urlHost}${webPath}`
   const query: Record<string, string | null> = {}
   if (version) {
@@ -166,6 +159,25 @@ function inKeys<V extends string>(
   return null
 }
 
+export const groupVariantSchema = z.object({
+  key: z.literal('group'),
+  groupId: z.string(),
+  pathName: z.string().or(z.null()),
+})
+export type GroupVariant = z.infer<typeof groupVariantSchema>
+
+export const authorVariantSchema = z.object({
+  key: z.literal('author'),
+  author: z.string(),
+})
+export type AuthorVariant = z.infer<typeof authorVariantSchema>
+
+export const publicationVariantSchema = z.discriminatedUnion('key', [
+  groupVariantSchema,
+  authorVariantSchema,
+])
+export type PublicationVariant = z.infer<typeof publicationVariantSchema>
+
 export type UnpackedHypermediaId = {
   id: string
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
@@ -180,11 +192,12 @@ export type UnpackedHypermediaId = {
   latest?: boolean | null
 }
 
-function parseVariants(
-  variantsString?: string | null,
+export function parseVariantsQuery(
+  variantsString?: string[] | string | null,
 ): PublicationVariant[] | null {
-  const variants: PublicationVariant[] = []
   if (!variantsString) return null
+  if (Array.isArray(variantsString)) variantsString = variantsString.join('.')
+  const variants: PublicationVariant[] = []
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
     const [key, ...rest] = singleVariantString.split(':')
@@ -196,7 +209,7 @@ function parseVariants(
         pathName: pathName || null,
       })
     }
-    if (key === 'b') {
+    if (key === 'a') {
       const [author] = rest
       variants.push({key: 'author', author})
     }
@@ -213,7 +226,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const eid = parsed.path[1]
     const version = parsed.query.get('v')
     const latest = parsed.query.has('l')
-    const variants = parseVariants(parsed.query.get('b'))
+    const variants = parseVariantsQuery(parsed.query.get('b'))
     if (!type) return null
     const qid = createHmId(type, eid)
     return {
@@ -235,7 +248,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const eid = parsed.path[2]
     const version = parsed.query.get('v')
     const latest = parsed.query.has('l')
-    const variants = parseVariants(parsed.query.get('b'))
+    const variants = parseVariantsQuery(parsed.query.get('b'))
     let hostname = parsed.path[0]
     if (!type) return null
     const qid = createHmId(type, eid)

@@ -1,11 +1,11 @@
 import {createHmId} from '@mintter/shared'
-import {Heading, Spinner} from '@mintter/ui'
+import {Spinner} from '@mintter/ui'
 import {useRouter} from 'next/router'
+import NotFoundPage from 'pages/404'
 import {PublicationPage} from 'src/publication-page'
 import {trpc} from 'src/trpc'
-import {GroupPage} from './group-page'
 import {ErrorPage} from './error-page'
-import NotFoundPage from 'pages/404'
+import {GroupPage} from './group-page'
 
 export function GroupDocPage({}) {
   const router = useRouter()
@@ -45,7 +45,8 @@ export function GroupDocPage({}) {
       pathName={pathName}
       documentId={createHmId('d', pathItem.docId.eid)}
       version={pathItem.publication?.version}
-      contextGroup={group.data?.group}
+      variants={[{key: 'group', groupId, pathName}]}
+      latest={router.query.l != null}
     />
   )
 }

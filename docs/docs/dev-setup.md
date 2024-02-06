@@ -123,7 +123,7 @@ MINTTER_P2P_TESTNET_NAME="dev" go run ./backend/cmd/mintter-site -data-dir=~/.mt
 Simultaneously run the Frontend:
 
 ```
-GRPC_HOST="http://localhost:57001/" PORT=3300 GW_NEXT_HOST="http://localhost:3300" yarn site
+NEXT_PUBLIC_GRPC_HOST="http://localhost:57001" GRPC_HOST="http://localhost:57001/" PORT=3300 GW_NEXT_HOST="http://localhost:3300" yarn site
 ```
 
 Now your dev gateway is running at `http://localhost:3300`

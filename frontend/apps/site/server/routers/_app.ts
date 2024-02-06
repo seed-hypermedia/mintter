@@ -3,6 +3,7 @@ import {
   GroupVariant,
   HMComment,
   createHmId,
+  publicationVariantSchema,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
@@ -40,18 +41,6 @@ const walletsRouter = router({
     }),
 })
 
-const variantSchema = z.discriminatedUnion('key', [
-  z.object({
-    key: z.literal('author'),
-    author: z.string(),
-  }),
-  z.object({
-    key: z.literal('group'),
-    groupId: z.string(),
-    pathName: z.string().or(z.null()),
-  }),
-])
-
 const publicationRouter = router({
   getPathInfo: procedure
     .input(
@@ -70,6 +59,17 @@ const publicationRouter = router({
       // }
       return null
     }),
+  // getVariantVersion: procedure
+  //   .input(
+  //     z.object({
+  //       documentId: z.string().optional(),
+  //       latest: z.boolean().optional(),
+  //       variants: z.array(publicationVariantSchema).nullable().optional(),
+  //     }),
+  //   )
+  //   .query(async ({input}) => {
+  //     return 'foo'
+  //   }),
   get: procedure
     .input(
       z.object({
@@ -99,9 +99,9 @@ const publicationRouter = router({
     .input(
       z.object({
         documentId: z.string().optional(),
-        versionId: z.string().or(z.null()).optional(),
-        latest: z.boolean().or(z.null()).optional(),
-        variants: z.null().or(z.array(variantSchema)).optional(),
+        versionId: z.string().nullable().optional(),
+        latest: z.boolean().nullable().optional(),
+        variants: z.array(publicationVariantSchema).nullable().optional(),
       }),
     )
     .query(async ({input}) => {

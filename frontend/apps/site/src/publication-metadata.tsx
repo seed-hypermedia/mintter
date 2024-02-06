@@ -6,6 +6,7 @@ import {
   HMPublication,
   HMTimestamp,
   idToUrl,
+  parseVariantsQuery,
   pluralS,
   unpackDocId,
   unpackHmId,
@@ -19,8 +20,9 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {ChevronDown, ChevronUp} from '@tamagui/lucide-icons'
+import {ArrowRight, ChevronDown, ChevronUp} from '@tamagui/lucide-icons'
 import {format} from 'date-fns'
+import {useRouter} from 'next/router'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {AccountRow} from 'src/account-row'
 import {NextLink} from 'src/next-link'
@@ -120,6 +122,56 @@ function DepPreview({
         {depTime}
       </SizableText>
     </NextLink>
+  )
+}
+
+function LatestVersionMeta({
+  publication,
+  pathName,
+}: {
+  publication?: HMPublication | null
+  pathName?: string
+}) {
+  const router = useRouter()
+  const variants = parseVariantsQuery(router.query.b)
+  const pub = trpc.publication.getVariant.useQuery({
+    documentId: publication?.document?.id,
+    variants,
+    latest: true,
+  })
+  const latestVersion = pub.data?.variantVersion
+  const docEid = unpackDocId(publication?.document?.id || '')?.eid
+  if (!latestVersion || !docEid || latestVersion === publication?.version)
+    return null
+  return (
+    <SideSection>
+      <YStack gap="$2">
+        <NextLink
+          style={{
+            display: 'flex',
+            alignSelf: 'stretch',
+            textDecoration: 'none',
+          }}
+          href={createPublicWebHmUrl('d', docEid, {
+            version: latestVersion,
+            hostname: null,
+            variants,
+            latest: true,
+          })}
+        >
+          <Button
+            theme="blue"
+            size="$2"
+            f={1}
+            iconAfter={ArrowRight}
+            style={{textDecoration: 'none'}}
+            alignSelf="stretch"
+          >
+            Latest Version
+          </Button>
+        </NextLink>
+      </YStack>
+    </SideSection>
   )
 }
 
@@ -439,11 +491,14 @@ function getToc(blockNodes?: HMBlockNode[] | null): SectionHeading[] {
   let headings: SectionHeading[] = []
   for (let blockNode of blockNodes) {
     if (blockNode.block?.type === 'heading') {
-      headings.push({
-        title: blockNode.block?.text || '',
-        blockId: blockNode.block?.id || '',
-        children: getToc(blockNode.children),
-      })
+      const children = getToc(blockNode.children)
+      if (children.length || blockNode.block?.text) {
+        headings.push({
+          title: blockNode.block?.text || '',
+          blockId: blockNode.block?.id || '',
+          children: getToc(blockNode.children),
+        })
+      }
     } else if (blockNode.children) {
       headings.push({
         blockId: blockNode.block?.id || '',
@@ -484,6 +539,7 @@ export function PublicationMetadata({
     <>
       <TableOfContents publication={publication} />
       <PublishedMeta publication={publication} pathName={pathName} />
+      <LatestVersionMeta publication={publication} pathName={pathName} />
       <AuthorsMeta publication={publication} />
       <EmbedMeta publication={publication} />
       <NextVersionsMeta publication={publication} pathName={pathName} />
@@ -500,32 +556,9 @@ export function PublishedMeta({
   publication?: HMPublication | null
   pathName?: string
 }) {
-  // const pathRecord = trpc.publication.getPath.useQuery(
-  //   {pathName},
-  //   {enabled: !!pathName},
-  // )
   const publishTime = publication?.document?.publishTime
   const publishTimeRelative = useFormattedTime(publishTime, true)
-
   const publishTimeDate = publishTime && new Date(publishTime)
-  let latestVersion: null | ReactElement = null
-  // const {documentId: pathDocId, versionId: pathVersionId} =
-  //   pathRecord.data || {}
-  // if (
-  //   pathName &&
-  //   pathRecord.data &&
-  //   pathRecord &&
-  //   publication &&
-  //   pathDocId &&
-  //   pathVersionId &&
-  //   (pathDocId !== publication.document?.id ||
-  //     pathVersionId !== publication.version)
-  // ) {
-  //   latestVersion = (
-  //     <LatestVersionBanner pathName={pathName} record={pathRecord.data} />
-  //   )
-  // }
-
   return (
     <SideSection>
       <SideSectionTitle>Published:</SideSectionTitle>
@@ -549,7 +582,6 @@ export function PublishedMeta({
           )}
         </NextLink>
       </SizableText>
-      {latestVersion}
     </SideSection>
   )
 }
