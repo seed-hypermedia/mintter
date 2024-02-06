@@ -1,5 +1,12 @@
 import {trpc} from '@mintter/desktop/src/trpc'
-import {unpackDocId} from '@mintter/shared'
+import {
+  AuthorVariant,
+  GroupVariant,
+  groupsVariantsMatch,
+  stringArrayMatch,
+  unpackDocId,
+} from '@mintter/shared'
+import {useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
 import {PublicationRoute} from '../utils/navigation'
 import {useGroupsContent} from './groups'
@@ -107,6 +114,17 @@ export function usePins() {
   }
 }
 
+function extractVariants(route: PublicationRoute) {
+  const groupVariants = (route.variants?.filter((v) => v.key === 'group') ||
+    []) as GroupVariant[]
+  const authorVariants = (route.variants?.filter((v) => v.key === 'author') ||
+    []) as AuthorVariant[]
+  return {
+    groupVariants,
+    authorVariants,
+  }
+}
+
 export function usePinDocument(route: PublicationRoute) {
   const invalidate = useQueryInvalidator()
   const mutationOpts = {
@@ -119,54 +137,72 @@ export function usePinDocument(route: PublicationRoute) {
   const removePin = trpc.pins.removeDocument.useMutation(mutationOpts)
   const removeGroupPin = trpc.pins.removeGroupDocument.useMutation(mutationOpts)
   const pins = trpc.pins.get.useQuery()
-
-  const isPinnedDoc =
-    route.variant?.key !== 'group' &&
-    !!pins.data?.documents.find(({docId, authors}) => {
+  const variants = extractVariants(route)
+  const isPinnedDoc = useMemo(() => {
+    const variants = extractVariants(route)
+    return !!pins.data?.documents.find(({docId, authors, groups}) => {
       if (docId !== route.documentId) return false
-      const routeAuthors =
-        route.variant?.key === 'authors' ? route.variant.authors : null
+      const routeAuthors = variants.authorVariants.map((a) => a.author)
+      const routeGroups = variants.groupVariants.map((g) => ({
+        groupId: g.groupId,
+        pathName: g.pathName,
+      }))
       if (!routeAuthors) return authors.length === 0
-      return arrayMatch(routeAuthors, authors)
+      return (
+        stringArrayMatch(routeAuthors, authors) &&
+        groupsVariantsMatch(routeGroups, groups)
+      )
     })
-  const groupVariant =
-    route.variant?.key === 'group' ? route.variant : undefined
-  const contextGroupId = groupVariant?.groupId
+  }, [pins.data, route])
+
+  const singleGroupVariant: undefined | {pathName: string; groupId: string} =
+    variants.authorVariants.length > 0 ||
+    variants.groupVariants.length !== 1 ||
+    variants.groupVariants[0]?.pathName === null
+      ? undefined
+      : variants.groupVariants[0]
+  const singleGroupVariantId = singleGroupVariant?.groupId
   const isPinnedGroup =
-    !!groupVariant &&
+    !!singleGroupVariant &&
     !!pins.data?.groups.find(
       (group) =>
-        group.groupId === contextGroupId &&
+        group.groupId === singleGroupVariantId &&
         !!group.documents.find(
-          ({pathName}) => pathName === groupVariant?.pathName,
+          ({pathName}) => pathName === singleGroupVariant?.pathName,
         ),
     )
   const isPinned = isPinnedDoc || isPinnedGroup
   function pin() {
-    if (route.variant?.key === 'group') {
+    if (singleGroupVariant) {
       addGroupPin.mutate({
-        docId: route.documentId,
-        groupId: route.variant.groupId,
-        pathName: route.variant.pathName,
+        groupId: singleGroupVariant.groupId,
+        pathName: singleGroupVariant.pathName,
       })
     } else {
       addPin.mutate({
         docId: route.documentId,
-        authors: route.variant?.key === 'authors' ? route.variant.authors : [],
+        authors: variants.authorVariants.map((a) => a.author),
+        groups: variants.groupVariants.map((g) => ({
+          groupId: g.groupId,
+          pathName: g.pathName,
+        })),
       })
     }
   }
   function unpin() {
-    if (route.variant?.key === 'group') {
+    if (singleGroupVariant) {
       removeGroupPin.mutate({
-        docId: route.documentId,
-        groupId: route.variant.groupId,
-        pathName: route.variant.pathName,
+        groupId: singleGroupVariant.groupId,
+        pathName: singleGroupVariant.pathName,
       })
     } else {
       removePin.mutate({
         docId: route.documentId,
-        authors: route.variant?.key === 'authors' ? route.variant.authors : [],
+        authors: variants.authorVariants.map((a) => a.author),
+        groups: variants.groupVariants.map((g) => ({
+          groupId: g.groupId,
+          pathName: g.pathName,
+        })),
       })
     }
   }
@@ -183,15 +219,4 @@ export function usePinDocument(route: PublicationRoute) {
     pin,
     unpin,
   }
-}
-
-export function arrayMatch(a: string[], b: string[]) {
-  const sortedB = b.slice().sort()
-  return (
-    a.length === b.length &&
-    a
-      .slice()
-      .sort()
-      .every((val, index) => val === sortedB[index])
-  )
 }

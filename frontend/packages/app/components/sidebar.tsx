@@ -2,8 +2,10 @@ import {
   Account,
   API_FILE_URL,
   AuthorVariant,
+  groupsVariantsMatch,
   GroupVariant,
   PublicationVariant,
+  stringArrayMatch,
 } from '@mintter/shared'
 import {
   Button,
@@ -37,7 +39,6 @@ import {useAccount, useAccounts, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {
-  arrayMatch,
   usePinAccount,
   usePinDocument,
   usePinGroup,
@@ -200,7 +201,8 @@ function FullAppSidebar() {
                   route.key === 'publication' &&
                   route.documentId === pin.docId &&
                   pubAuthorVariantAuthors &&
-                  arrayMatch(pin.authors, pubAuthorVariantAuthors)
+                  stringArrayMatch(pin.authors, pubAuthorVariantAuthors) &&
+                  groupsVariantsMatch(pin.groups, pubGroupVariants || [])
                 }
                 variants={pin.authors.map((author) => ({
                   key: 'author',
@@ -627,7 +629,7 @@ function PinnedDocument({
         active={active}
         icon={
           authorAccounts.length ? (
-            <XStack>
+            <XStack minWidth={26} paddingLeft={8}>
               {authorAccounts.map((account, idx) => {
                 if (!account) return null
 
@@ -652,7 +654,9 @@ function PinnedDocument({
               })}
             </XStack>
           ) : (
-            FileText
+            <XStack width={16}>
+              <FileText />
+            </XStack>
           )
         }
         title={doc.data?.document?.title || <Spinner />}

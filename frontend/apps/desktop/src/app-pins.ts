@@ -1,14 +1,16 @@
+import {groupsVariantsMatch, stringArrayMatch} from '@mintter/shared'
 import z from 'zod'
 import {appStore} from './app-store'
 import {t} from './app-trpc'
 
-const PINS_STORAGE_KEY = 'Pins-v003'
+const PINS_STORAGE_KEY = 'Pins-v004'
 
 type PinsState = {
   accounts: string[]
   documents: {
     docId: string
     authors: string[]
+    groups?: {groupId: string; pathName: string | null}[]
   }[]
   groups: {
     groupId: string
@@ -102,19 +104,27 @@ export const pinsApi = t.router({
       z.object({
         docId: z.string(),
         authors: z.array(z.string()),
+        groups: z.array(
+          z.object({
+            groupId: z.string(),
+            pathName: z.string().nullable(),
+          }),
+        ),
       }),
     )
     .mutation(async ({input}) => {
       const prevDoc = pins.documents.find(
         (doc) =>
-          doc.docId === input.docId && arrayMatch(doc.authors, input.authors),
+          doc.docId === input.docId &&
+          stringArrayMatch(doc.authors, input.authors) &&
+          groupsVariantsMatch(doc.groups, input.groups),
       )
       if (!prevDoc) {
         await writePins({
           ...pins,
           documents: [
             ...pins.documents,
-            {docId: input.docId, authors: input.authors},
+            {docId: input.docId, authors: input.authors, groups: input.groups},
           ],
         })
       }
@@ -145,6 +155,12 @@ export const pinsApi = t.router({
       z.object({
         docId: z.string(),
         authors: z.array(z.string()),
+        groups: z.array(
+          z.object({
+            groupId: z.string(),
+            pathName: z.string(),
+          }),
+        ),
       }),
     )
     .mutation(async ({input}) => {
@@ -153,19 +169,9 @@ export const pinsApi = t.router({
         documents: pins.documents.filter(
           (doc) =>
             doc.docId !== input.docId ||
-            !arrayMatch(doc.authors, input.authors),
+            !stringArrayMatch(doc.authors, input.authors) ||
+            !groupsVariantsMatch(doc.groups, input.groups),
         ),
       })
     }),
 })
-
-function arrayMatch(a: string[], b: string[]) {
-  const sortedB = b.slice().sort()
-  return (
-    a.length === b.length &&
-    a
-      .slice()
-      .sort()
-      .every((val, index) => val === sortedB[index])
-  )
-}
