@@ -1,8 +1,8 @@
+import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import {Editor, mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
+import {Fragment, Slice} from '@tiptap/pm/model'
 import {Plugin, PluginKey, TextSelection} from '@tiptap/pm/state'
 import {createTipTapBlock, getBlockInfoFromPos, mergeCSSClasses} from '.'
-import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
-import {Fragment, Slice} from '@tiptap/pm/model'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -61,6 +61,9 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
       {
         tag: 'pre',
         preserveWhitespace: 'full',
+        attrs: {
+          class: 'FOOO',
+        },
       },
     ]
   },

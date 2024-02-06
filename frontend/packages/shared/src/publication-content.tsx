@@ -1465,17 +1465,17 @@ export function BlockContentCode({block, ...props}: BlockContentProps) {
       {...debugStyles(debug, 'blue')}
       marginHorizontal={(-1 * layoutUnit) / 2}
     >
-      <pre>
+      <XStack tag="pre" flex="unset" overflow="auto">
         <Text
           tag="code"
-          whiteSpace="pre-wrap"
+          whiteSpace="pre"
           fontFamily="$mono"
           lineHeight={textUnit * 1.5}
           fontSize={textUnit * 0.85}
         >
           {block.text}
         </Text>
-      </pre>
+      </XStack>
     </YStack>
   )
 }

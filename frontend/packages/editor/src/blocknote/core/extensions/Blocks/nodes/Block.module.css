@@ -299,6 +299,7 @@ NESTED BLOCKS
   background-color: var(--color4);
   border-radius: 6px;
   padding: 10px 16px;
+  overflow: auto;
   /* margin-left: -16px;
   margin-right: -16px; */
   position: 'relative';
@@ -310,6 +311,7 @@ NESTED BLOCKS
     'Liberation Mono', monospace;
   font-size: 0.85em;
   white-space: pre-wrap;
+  white-space: pre;
 }
 
 /* LISTS */
