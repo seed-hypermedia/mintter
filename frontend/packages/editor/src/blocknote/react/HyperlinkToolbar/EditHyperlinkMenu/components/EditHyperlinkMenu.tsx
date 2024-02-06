@@ -1,5 +1,7 @@
-import {createStyles, Stack} from '@mantine/core'
-import {forwardRef, HTMLAttributes, useState} from 'react'
+import {Checkbox, createStyles, Stack} from '@mantine/core'
+import {createHmDocLink, isHypermediaScheme, unpackHmId} from '@mintter/shared'
+import {XStack} from '@mintter/ui'
+import {forwardRef, HTMLAttributes, useCallback, useMemo, useState} from 'react'
 import {RiLink, RiText} from 'react-icons/ri'
 import {EditHyperlinkMenuItem} from './EditHyperlinkMenuItem'
 
@@ -24,6 +26,30 @@ export const EditHyperlinkMenu = forwardRef<
   const [currentUrl, setCurrentUrl] = useState(url)
   const [currentText, setCurrentText] = useState(text)
 
+  const isHmHref = isHypermediaScheme(url)
+  const isHmLatest = useMemo(
+    () => isHmHref && currentUrl.includes('&l'),
+    [currentUrl],
+  )
+
+  const handleVersion = useCallback(
+    (versionMode: boolean) => {
+      let unpackedRef = unpackHmId(url)
+      if (unpackedRef) {
+        setCurrentUrl(
+          createHmDocLink({
+            documentId: unpackedRef?.qid,
+            version: unpackedRef?.version,
+            blockRef: unpackedRef?.blockRef,
+            variants: unpackedRef?.variants,
+            latest: versionMode,
+          }),
+        )
+      }
+    },
+    [currentUrl],
+  )
+
   return (
     <Stack
       {...props}
@@ -47,6 +73,21 @@ export const EditHyperlinkMenu = forwardRef<
         onChange={(value) => setCurrentText(value)}
         onSubmit={() => update(url, currentText)}
       />
+      {isHmHref ? (
+        <XStack padding="$2">
+          <Checkbox
+            size="xs"
+            label="use Latest Hypermedia reference"
+            checked={isHmLatest}
+            onChange={(event) => {
+              handleVersion(event.currentTarget.checked)
+              if (event.currentTarget.checked) {
+              }
+            }}
+            onSubmit={() => update(currentUrl, currentText)}
+          />
+        </XStack>
+      ) : null}
     </Stack>
   )
 })
