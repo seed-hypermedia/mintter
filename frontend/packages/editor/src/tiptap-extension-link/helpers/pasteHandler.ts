@@ -17,7 +17,7 @@ import {
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
-import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
+import {Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {find} from 'linkifyjs'
 import {nanoid} from 'nanoid'
@@ -459,13 +459,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
     },
   })
 
-  function findPlaceholder(state: EditorState, url: string) {
-    let decos = pastePlugin.getState(state)
-    if (!decos) return null
-    let found = decos.find(null, null, (spec) => spec.link.href == url)
-    return found.length ? found[0].from : null
-  }
-
   function checkMediaUrl(url: string): [number, string] {
     const matchResult = url.match(/[^/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/)
     if (matchResult) {
@@ -491,23 +484,45 @@ async function fetchEntityTitle(
   hmId: UnpackedHypermediaId,
   grpcClient: GRPCClient,
 ) {
-  if (hmId.type === 'd') {
+  if (hmId.type == 'd') {
     const pub = await grpcClient.publications.getPublication({
       documentId: hmId.qid,
       version: hmId.version ? hmId.version : undefined,
     })
     return pub?.document?.title || null
-  } else if (hmId.type === 'a') {
+  } else if (hmId.type == 'a') {
     const account = await grpcClient.accounts.getAccount({
       id: hmId.eid,
     })
     return account?.profile?.alias || null
-  } else if (hmId.type === 'g') {
+  } else if (hmId.type == 'g') {
     const group = await grpcClient.groups.getGroup({
       id: hmId.qid,
       version: hmId.version ? hmId.version : undefined,
     })
     return group?.title || null
+  } else if (hmId.type == 'c') {
+    try {
+      const comment = await grpcClient.comments.getComment({
+        id: hmId.qid,
+      })
+
+      if (comment) {
+        const account = await grpcClient.accounts.getAccount({
+          id: comment.author,
+        })
+
+        return `Comment from ${
+          account?.profile?.alias ||
+          `${account.id.slice(0, 5)}...${account.id.slice(-5)}`
+        }`
+      } else {
+        return null
+      }
+    } catch (error) {
+      console.error(`fetchEntityTitle error: ${JSON.stringify(error)}`)
+      return null
+    }
   }
   return null
 }
