@@ -3,7 +3,7 @@ import z from 'zod'
 import {appStore} from './app-store'
 import {t} from './app-trpc'
 
-const PINS_STORAGE_KEY = 'Pins-v004'
+const PINS_STORAGE_KEY = 'Pins-v003'
 
 type PinsState = {
   accounts: string[]
