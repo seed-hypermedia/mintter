@@ -92,6 +92,13 @@ export function useConnectPeer(
           addrs = wellKnownData.peerInfo.addrs.map(
             (addr) => `${addr}/p2p/${peerId}`,
           )
+          if (wellKnownData.peerInfo.accountId) {
+            // hacky workaround of trusting sites we connect to, so we will actually sync from them!! remove this once we have better syncing policies!
+            await grpcClient.accounts.setAccountTrust({
+              id: wellKnownData.peerInfo.accountId,
+              isTrusted: true,
+            })
+          }
         } else {
           throw new Error('Failed to connet to web url: ' + peer)
         }
