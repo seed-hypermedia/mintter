@@ -103,7 +103,7 @@ if [ $auto_update -eq 1 ]; then
     # Remove any existing cron job for this task, add the new cron job, and install the new crontab
     { crontab -l 2>/dev/null || true; echo "$clean_images_cron"; } | crontab -
   fi
-  docker run -d --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
+  docker run -d --restart unless-stopped --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
 fi
 
 MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
