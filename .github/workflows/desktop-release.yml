@@ -108,7 +108,7 @@ jobs:
       - name: Build, package & make (Unix)
         if: matrix.config.os != 'windows-latest-l'
         run: |
-          DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
+          yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
@@ -129,7 +129,6 @@ jobs:
       - name: Build, package and make (Win32)
         if: matrix.config.os == 'windows-latest-l'
         run: |
-          $env:DEBUG='electron-osx-sign*,electron-notarize*'
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
