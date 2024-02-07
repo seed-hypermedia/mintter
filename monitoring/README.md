@@ -13,4 +13,4 @@ Make sure to have Docker available on your machine. For macOS you might want to 
 The following commands assume you are inside the `monitoring` directory, but you can also run them from anywhere, providing `-f <path-to-compose-file>` flag to the `docker compose` commands.
 
 1. Run `docker compose up -d`.
-2. Open http://localhost:3000 in your browser. It might take a while before Grafana is ready to use.
+2. Open http://localhost:3001 in your browser. It might take a while before Grafana is ready to use.

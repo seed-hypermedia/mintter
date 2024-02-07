@@ -7,7 +7,6 @@ import {
 } from '@/blocknote/core'
 import Tippy from '@tippyjs/react'
 import {FC, useEffect, useMemo, useRef, useState} from 'react'
-
 import {DefaultSideMenu} from './DefaultSideMenu'
 import {DragHandleMenuProps} from './DragHandleMenu/DragHandleMenu'
 
@@ -34,14 +33,15 @@ export const SideMenuPositioner = <
 }) => {
   const [show, setShow] = useState<boolean>(false)
   const [block, setBlock] = useState<Block<BSchema>>()
-
   const referencePos = useRef<DOMRect>()
+  const [lh, setLh] = useState('')
 
   useEffect(() => {
     return props.editor.sideMenu.onUpdate((sideMenuState) => {
       setShow(sideMenuState.show)
       setBlock(sideMenuState.block)
       referencePos.current = sideMenuState.referencePos
+      setLh(sideMenuState.lineHeight)
     })
   }, [props.editor])
 
@@ -76,6 +76,22 @@ export const SideMenuPositioner = <
     )
   }, [block, props.editor, props.sideMenu])
 
+  let topOffset = useMemo(() => {
+    if (block && referencePos.current) {
+      let lhValue = parseInt(lh, 10)
+
+      switch (block.type) {
+        case 'paragraph':
+        case 'heading':
+          return (referencePos?.current?.height / 2) * -1 + lhValue
+        default:
+          return 8
+      }
+    } else {
+      return 8
+    }
+  }, [referencePos.current])
+
   return (
     <Tippy
       appendTo={props.editor.domElement.parentElement!}
@@ -84,14 +100,12 @@ export const SideMenuPositioner = <
       interactive={true}
       visible={show}
       animation={'fade'}
-      offset={offset}
+      offset={[topOffset, 0]}
       placement={props.placement}
       popperOptions={popperOptions}
     />
   )
 }
-
-const offset: [number, number] = [0, 0]
 const popperOptions = {
   modifiers: [
     {

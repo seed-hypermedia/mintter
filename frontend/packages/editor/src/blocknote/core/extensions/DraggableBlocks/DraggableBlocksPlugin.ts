@@ -1,15 +1,11 @@
 import {Editor} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {
-  NodeSelection,
-  Plugin,
-  PluginKey,
-  Selection,
-  TextSelection,
-} from 'prosemirror-state'
+import {NodeSelection, Plugin, PluginKey, Selection} from 'prosemirror-state'
 import * as pv from 'prosemirror-view'
 import {EditorView} from 'prosemirror-view'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
 import styles from '../../editor.module.css'
+import {BlockSchema} from '../Blocks/api/blockTypes'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 import {SlashMenuPluginKey} from '../SlashMenu/SlashMenuExtension'
 import {
@@ -20,8 +16,6 @@ import {
 } from './BlockSideMenuFactoryTypes'
 import {DraggableBlocksOptions} from './DraggableBlocksExtension'
 import {MultipleNodeSelection} from './MultipleNodeSelection'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
-import {BlockSchema} from '../Blocks/api/blockTypes'
 
 const serializeForClipboard = (pv as any).__serializeForClipboard
 // code based on https://github.com/ueberdosis/tiptap/issues/323#issuecomment-506637799
@@ -495,7 +489,9 @@ export class BlockMenuView<BSchema extends BlockSchema> {
     if (
       this.menuOpen &&
       this.hoveredBlock?.hasAttribute('data-id') &&
-      this.hoveredBlock?.getAttribute('data-id') === block.id
+      this.hoveredBlock?.getAttribute('data-id') === block.id &&
+      this.hoveredBlock?.hasAttribute('data-node-type') &&
+      this.hoveredBlock?.getAttribute('data-node-type') === 'blockContainer'
     ) {
       return
     }
@@ -635,7 +631,7 @@ export const createDraggableBlocksPlugin = <BSchema extends BlockSchema>(
         tiptapEditor: options.tiptapEditor,
         editor: options.editor,
         blockMenuFactory: options.blockSideMenuFactory,
-        horizontalPosAnchoredAtRoot: true,
+        horizontalPosAnchoredAtRoot: false,
       }),
   })
 }

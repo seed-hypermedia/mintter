@@ -20,6 +20,7 @@ let dragImageElement: Element | undefined
 export type SideMenuState<BSchema extends BlockSchema> = BaseUiElementState & {
   // The block that the side menu is attached to.
   block: Block<BSchema>
+  lineHeight: string
 }
 
 function getDraggableBlockFromCoords(
@@ -67,6 +68,8 @@ function blockPositionFromCoords(
   view: EditorView,
 ) {
   const block = getDraggableBlockFromCoords(coords, view)
+
+  console.log('blockPositionFromCoords', block, coords)
 
   if (block && block.node.nodeType === 1) {
     // TODO: this uses undocumented PM APIs? do we need this / let's add docs?
@@ -435,8 +438,14 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
       return
     }
 
-    this.hoveredBlock = block.node
+    if (
+      !block.node?.hasAttribute('data-node-type') &&
+      !block.node?.getAttribute('data-node-type') == 'blockContainer'
+    ) {
+      return
+    }
 
+    this.hoveredBlock = block.node
     // Gets the block's content node, which lets to ignore child blocks when determining the block menu's position.
     const blockContent = block.node.firstChild as HTMLElement
 
@@ -451,9 +460,10 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
       this.sideMenuState = {
         show: true,
         referencePos: new DOMRect(
-          this.horizontalPosAnchoredAtRoot
-            ? this.horizontalPosAnchor
-            : blockContentBoundingBox.x,
+          // this.horizontalPosAnchoredAtRoot
+          //   ? this.horizontalPosAnchor
+          //   : blockContentBoundingBox.x,
+          blockContentBoundingBox.x,
           blockContentBoundingBox.y,
           blockContentBoundingBox.width,
           blockContentBoundingBox.height,
@@ -461,6 +471,7 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
         block: this.editor.getBlock(
           this.hoveredBlock!.getAttribute('data-id')!,
         )!,
+        lineHeight: window.getComputedStyle(blockContent).lineHeight,
       }
 
       this.updateSideMenu(this.sideMenuState)
@@ -473,9 +484,7 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
       const blockContentBoundingBox = blockContent.getBoundingClientRect()
 
       this.sideMenuState.referencePos = new DOMRect(
-        this.horizontalPosAnchoredAtRoot
-          ? this.horizontalPosAnchor
-          : blockContentBoundingBox.x,
+        blockContentBoundingBox.x,
         blockContentBoundingBox.y,
         blockContentBoundingBox.width,
         blockContentBoundingBox.height,

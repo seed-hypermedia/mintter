@@ -274,7 +274,7 @@ NESTED BLOCKS
   .blockContent[data-content-type='heading'] {
   font-size: var(--level);
   line-height: 1.2;
-  margin-top: 0.6em;
+  /* margin-top: 0.6em; */
   font-weight: bold;
 }
 
