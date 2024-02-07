@@ -73,6 +73,7 @@ export function useConnectPeer(
           (shortAddr: string) => `${shortAddr}/p2p/${connectInfo.d}`,
         )
       }
+      let trustAccountId: string | null = null
       if (!addrs && peer.match(/^(https:\/\/)/)) {
         // in this case, the "peer" input is not https://site/connect-peer/x url, but it is a web url. So lets try to connect to this site via its well known peer id.
         const peerUrl = new URL(peer)
@@ -94,10 +95,7 @@ export function useConnectPeer(
           )
           if (wellKnownData.peerInfo.accountId) {
             // hacky workaround of trusting sites we connect to, so we will actually sync from them!! remove this once we have better syncing policies!
-            await grpcClient.accounts.setAccountTrust({
-              id: wellKnownData.peerInfo.accountId,
-              isTrusted: true,
-            })
+            trustAccountId = wellKnownData.peerInfo.accountId
           }
         } else {
           throw new Error('Failed to connet to web url: ' + peer)
@@ -108,6 +106,12 @@ export function useConnectPeer(
       }
       if (!addrs) throw new Error('Invalid peer address(es) provided.')
       await grpcClient.networking.connect({addrs})
+      if (trustAccountId) {
+        await grpcClient.accounts.setAccountTrust({
+          id: trustAccountId,
+          isTrusted: true,
+        })
+      }
       if (opts.syncImmediately) {
         await grpcClient.daemon.forceSync({})
       }
