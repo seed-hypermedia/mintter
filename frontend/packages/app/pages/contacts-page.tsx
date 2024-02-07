@@ -6,7 +6,7 @@ import {
   useAllAccounts,
 } from '@mintter/app/models/accounts'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Account, useHover} from '@mintter/shared'
+import {Account} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -14,6 +14,7 @@ import {
   HeadingProps,
   Spinner,
   Text,
+  View,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -40,18 +41,15 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
   const navigate = useNavigate()
   const isConnected = useAccountIsConnected(account)
   const alias = account.profile?.alias
-  const {hover, ...hoverProps} = useHover()
+  if (!alias) return null // hide contacts without an alias because this is confusing for users
   return (
-    // <AccountCard accountId={account.id} hideActions>
     <Button
       chromeless
-      theme="gray"
+      group="item"
       tag="li"
-      // gap="$4"
       onPress={() => {
         navigate({key: 'account', accountId: account.id})
       }}
-      {...hoverProps}
     >
       <XStack alignItems="center" gap="$4" flex={1}>
         <Avatar
@@ -70,38 +68,24 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
           </Text>
         )}
       </XStack>
-      {hover ? (
-        <XStack
-          alignItems="flex-end"
-          gap="$3"
-          onPress={(e) => {
-            e.stopPropagation()
-          }}
-        >
+      <XStack
+        alignItems="flex-end"
+        gap="$3"
+        onPress={(e) => {
+          e.stopPropagation()
+        }}
+      >
+        <View opacity={0} $group-item-hover={{opacity: 1}}>
           <PinAccountButton accountId={account.id} />
-          <AccountTrustButton
-            iconOnly
-            accountId={account.id}
-            isTrusted={account.isTrusted}
-          />
-        </XStack>
-      ) : null}
-      {/* {!isTrusted && (
-          <Button
-            chromeless
-            size="$2"
-            onPress={(e) => {
-              e.stopPropagation()
-              setTrusted.mutate({accountId: account.id, isTrusted: true})
-            }}
-            icon={PlusCircle}
-          >
-            Trust
-          </Button>
-        )} */}
+        </View>
+        <AccountTrustButton
+          accountId={account.id}
+          isTrusted={account.isTrusted}
+        />
+      </XStack>
+
       <OnlineIndicator online={isConnected} />
     </Button>
-    // </AccountCard>
   )
 }
 

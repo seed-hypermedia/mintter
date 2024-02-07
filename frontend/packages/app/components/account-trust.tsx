@@ -25,6 +25,7 @@ export function AccountTrustButton({
       <Tooltip content={label}>
         <Button
           size="$2"
+          theme="green"
           icon={PlusCircle}
           onPress={() => {
             setTrusted.mutate({accountId, isTrusted: true})
