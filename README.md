@@ -90,3 +90,20 @@ just execute the installation command with the `--auto-update` flag. Ex:
 ```shell
 sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com --auto-update
 ```
+
+#### Replace Site
+
+If you want to replace an old site with a new site in a different domain in the same machine,
+you need to redeploy the site from scratch. Note that old content will be available as long as 
+the owner of the site is synced with the site at the moment of the replacement. On the server:
+
+```shell
+docker stop minttersite
+mv ~/.mtt-site ~/.mtt-site.bak
+docker start minttersite
+```
+Get the new secret link from the command line after starting the `minttersite` container
+Now in the Mintter App, the Owner of the site can go to the group he/she wants to (re)deploy 
+and click on the three dots, and publish group to site. Enter the new secret and the old content
+should be now available in the new site. If there is no new content (A completely new group), then 
+the site will be empty ready to accept documents
