@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
+	activity "mintter/backend/daemon/api/activity/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	documents "mintter/backend/daemon/api/documents/v1alpha"
 	entities "mintter/backend/daemon/api/entities/v1alpha"
@@ -30,6 +31,7 @@ type Server struct {
 	Networking *networking.Server
 	Entities   *entities.Server
 	Groups     *groups.Server
+	Activity   *activity.Server
 }
 
 // New creates a new API server.

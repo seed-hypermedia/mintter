@@ -2,6 +2,7 @@ package api
 
 import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	activity "mintter/backend/genproto/activity/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	entities "mintter/backend/genproto/entities/v1alpha"
@@ -22,6 +23,7 @@ func (s Server) Register(srv *grpc.Server) {
 	documents.RegisterChangesServer(srv, s.Documents)
 	documents.RegisterCommentsServer(srv, s.Documents)
 
+	activity.RegisterActivityFeedServer(srv, s.Activity)
 	networking.RegisterNetworkingServer(srv, s.Networking)
 	entities.RegisterEntitiesServer(srv, s.Entities)
 	groups.RegisterGroupsServer(srv, s.Groups)
