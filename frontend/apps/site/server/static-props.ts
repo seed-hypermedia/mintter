@@ -1,4 +1,4 @@
-import {createHmId} from '@mintter/shared'
+import {createHmId, parseVariantsQuery} from '@mintter/shared'
 import {GetStaticPaths, GetStaticProps} from 'next'
 import {EveryPageProps} from 'pages/_app'
 import {prefetchGroup, prefetchGroupContent} from 'server/group'
@@ -60,11 +60,17 @@ export const getDocStaticProps: GetStaticProps<EveryPageProps> = async (
 ) => {
   const docEid = (context.params?.docEid as string) || ''
   const versionId = (context.params?.versionId as string) || ''
+  const latestQuery = (context.params?.latest as string) || undefined
+  const latest = typeof latestQuery === 'string'
+  const variantsQuery = (context.params?.variants as string) || undefined
   const {helpers} = await getSiteServerHelpers()
-  const docId = createHmId('d', docEid)
-  const loadedDoc = await helpers.publication.get.fetch({
-    documentId: docId,
+  const documentId = createHmId('d', docEid)
+  const variants = parseVariantsQuery(variantsQuery)
+  const loadedDoc = await helpers.publication.getVariant.fetch({
+    documentId,
     versionId: versionId || '',
+    latest,
+    variants,
   })
   const versionRevalidationTime = loadedDoc.publication?.document
     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change

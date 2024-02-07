@@ -46,7 +46,7 @@ export function GroupDocPage({}) {
       documentId={createHmId('d', pathItem.docId.eid)}
       version={pathItem.publication?.version}
       variants={[{key: 'group', groupId, pathName}]}
-      latest={router.query.l != null}
+      latest={true}
     />
   )
 }
