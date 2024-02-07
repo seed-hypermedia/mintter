@@ -77,7 +77,7 @@ export const EditHyperlinkMenu = forwardRef<
         <XStack padding="$2">
           <Checkbox
             size="xs"
-            label="use Latest Hypermedia reference"
+            label="Link to Latest Version"
             checked={isHmLatest}
             onChange={(event) => {
               handleVersion(event.currentTarget.checked)
