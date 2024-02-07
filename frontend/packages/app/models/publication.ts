@@ -45,10 +45,18 @@ export function usePublicationVariant({
   let queryVariantVersion: undefined | string = undefined
   let queryDocumentId = documentId
   if (groupVariant && docGroups.data && !docGroups.isPreviousData) {
-    const docGroupEntry = docGroups.data?.find(
-      (d) =>
-        d.groupId === groupVariant.groupId && d.path === groupVariant.pathName,
-    )
+    const docGroupEntry = docGroups.data
+      .filter(
+        (d) =>
+          d.groupId === groupVariant.groupId &&
+          d.path === groupVariant.pathName,
+      )
+      .sort((a, b) => {
+        const aTime = a.changeTime?.seconds
+        const bTime = b.changeTime?.seconds
+        if (!aTime || !bTime) return 0
+        return Number(bTime - aTime)
+      })[0]
     const groupEntryId =
       typeof docGroupEntry?.rawUrl === 'string'
         ? unpackHmId(docGroupEntry?.rawUrl)

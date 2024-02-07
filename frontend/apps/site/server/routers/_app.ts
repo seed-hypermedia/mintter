@@ -129,11 +129,18 @@ const publicationRouter = router({
         const docGroups = await queryClient.groups.listDocumentGroups({
           documentId,
         })
-        const docGroupEntry = docGroups.items.find(
-          (d) =>
-            d.groupId === groupVariant.groupId &&
-            d.path === groupVariant.pathName,
-        )
+        const docGroupEntry = docGroups.items
+          .filter(
+            (d) =>
+              d.groupId === groupVariant.groupId &&
+              d.path === groupVariant.pathName,
+          )
+          .sort((a, b) => {
+            const aTime = a.changeTime?.seconds
+            const bTime = b.changeTime?.seconds
+            if (!aTime || !bTime) return 0
+            return Number(bTime - aTime)
+          })[0]
         const groupEntryId =
           typeof docGroupEntry?.rawUrl === 'string'
             ? unpackHmId(docGroupEntry?.rawUrl)
