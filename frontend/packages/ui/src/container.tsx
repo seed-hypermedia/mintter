@@ -17,7 +17,7 @@ const variants = {
 
 export function PageContainer({children}: {children: ReactNode}) {
   return (
-    <XStack jc="center" f={1}>
+    <XStack jc="center">
       <YStack
         f={1}
         paddingHorizontal="$4"

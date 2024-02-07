@@ -17,6 +17,7 @@ import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
+var Feed = lazy(() => import('@mintter/app/pages/feed'))
 var Documents = lazy(() => import('@mintter/app/pages/documents'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
@@ -38,6 +39,11 @@ function BaseLoading() {
 
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
+    case 'feed':
+      return {
+        PageComponent: Feed,
+        Fallback: BaseLoading,
+      }
     case 'documents':
       return {
         PageComponent: Documents,

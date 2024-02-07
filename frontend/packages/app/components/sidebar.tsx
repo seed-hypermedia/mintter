@@ -9,6 +9,7 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  Home,
   ListItem,
   ListItemProps,
   Separator,
@@ -158,6 +159,17 @@ function FullAppSidebar() {
               <MyAccountItem account={account.data} onRoute={navigate} />
             </YGroup.Item>
           )}
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'feed'}
+              onPress={() => {
+                navigate({key: 'feed', tab: 'trusted'})
+              }}
+              title="Home Feed"
+              bold
+              icon={Home}
+            />
+          </YGroup.Item>
           <YGroup.Item>
             <SidebarItem
               active={route.key == 'documents'}

@@ -1,6 +1,7 @@
 import {createPromiseClient, PromiseClient} from '@connectrpc/connect'
 import {
   Accounts,
+  ActivityFeed,
   Changes,
   Comments,
   ContentGraph,
@@ -25,6 +26,7 @@ export type GRPCClient = {
   daemon: PromiseClient<typeof Daemon>
   networking: PromiseClient<typeof Networking>
   website: PromiseClient<typeof Website>
+  activityFeed: PromiseClient<typeof ActivityFeed>
 }
 
 export function createGRPCClient(transport: any): GRPCClient {
@@ -40,5 +42,6 @@ export function createGRPCClient(transport: any): GRPCClient {
     groups: createPromiseClient(Groups, transport),
     entities: createPromiseClient(Entities, transport),
     website: createPromiseClient(Website, transport),
+    activityFeed: createPromiseClient(ActivityFeed, transport),
   } as const
 }
