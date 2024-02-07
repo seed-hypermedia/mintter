@@ -3,22 +3,20 @@ import {ReactNode, useEffect, useMemo} from 'react'
 import {useIPC} from '../app-context'
 import {useConfirmConnection} from '../components/contacts-prompt'
 import {
-  DocumentsRoute,
   NavAction,
   NavContextProvider,
   NavState,
   navStateReducer,
   setAppNavDispatch,
 } from './navigation'
+import {defaultRoute} from './routes'
 import {AppWindowEvent} from './window-events'
-
-const homeRoute: DocumentsRoute = {key: 'documents'}
 
 export function NavigationContainer({
   children,
   initialNav = {
     sidebarLocked: false,
-    routes: [homeRoute],
+    routes: [defaultRoute],
     routeIndex: 0,
     lastAction: 'replace',
   },

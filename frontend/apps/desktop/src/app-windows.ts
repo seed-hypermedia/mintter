@@ -1,5 +1,6 @@
 import appError from '@mintter/app/errors'
-import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
+import type {NavState} from '@mintter/app/utils/navigation'
+import {NavRoute} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
 import {BrowserWindow, app, nativeTheme} from 'electron'
@@ -73,7 +74,7 @@ let windowsState =
   ({} as Record<string, AppWindow>)
 
 export function getWindowsState() {
-  return windowsState
+  return windowsState || {}
 }
 
 function getAWindow() {

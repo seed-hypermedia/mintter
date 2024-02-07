@@ -21,11 +21,11 @@ import {useGroups} from '../models/groups'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
 import {
-  NavRoute,
   isHttpUrl,
   resolveHmIdToAppRoute,
   useHmIdToAppRouteResolver,
 } from '../utils/navigation'
+import {NavRoute} from '../utils/routes'
 import {useListenAppEvent} from '../utils/window-events'
 import './quick-switcher.css'
 

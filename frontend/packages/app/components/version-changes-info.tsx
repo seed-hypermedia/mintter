@@ -1,10 +1,11 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {NavRoute, useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {ButtonText, Tooltip, XStack} from '@mintter/ui'
 import {formattedDateLong, formattedDateMedium} from '@mintter/shared'
-import {useChange} from '../models/changes'
+import {ButtonText, Tooltip, XStack} from '@mintter/ui'
 import {useAccount} from '../models/accounts'
+import {useChange} from '../models/changes'
+import {useNavRoute} from '../utils/navigation'
+import {NavRoute} from '../utils/routes'
+import {useNavigate} from '../utils/useNavigate'
 import {AccountLinkAvatar} from './account-link-avatar'
 
 export function VersionChangesInfo({version}: {version: string}) {

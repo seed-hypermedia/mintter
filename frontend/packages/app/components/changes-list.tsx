@@ -38,7 +38,8 @@ import {
   usePublishDocToGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
-import {NavRoute, useNavRoute} from '../utils/navigation'
+import {useNavRoute} from '../utils/navigation'
+import {NavRoute} from '../utils/routes'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'

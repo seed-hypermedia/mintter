@@ -1,10 +1,6 @@
 import {useDraftTitle} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
-import {
-  DraftRoute,
-  PublicationRoute,
-  useNavRoute,
-} from '@mintter/app/utils/navigation'
+import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
   ErrorIcon,
   FontSizeTokens,
@@ -17,7 +13,13 @@ import {Book, Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
-import {AccountRoute, GroupRoute, NavRoute} from '../utils/navigation'
+import {
+  AccountRoute,
+  DraftRoute,
+  GroupRoute,
+  NavRoute,
+  PublicationRoute,
+} from '../utils/routes'
 import {getDocumentTitle} from './publication-list-item'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {

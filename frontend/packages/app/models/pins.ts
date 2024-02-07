@@ -8,7 +8,7 @@ import {
 } from '@mintter/shared'
 import {useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
-import {PublicationRoute} from '../utils/navigation'
+import {PublicationRoute} from '../utils/routes'
 import {useGroupsContent} from './groups'
 
 export function usePinAccount(accountId: string) {

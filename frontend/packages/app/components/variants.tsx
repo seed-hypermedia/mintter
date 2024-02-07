@@ -10,8 +10,6 @@ import {usePublicationVariant} from '@mintter/app/models/publication'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   NavContextProvider,
-  NavRoute,
-  PublicationRoute,
   useNavRoute,
   useNavigation,
 } from '@mintter/app/utils/navigation'
@@ -77,6 +75,7 @@ import {useGatewayUrl} from '../models/gateway-settings'
 import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
+import {NavRoute, PublicationRoute} from '../utils/routes'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'

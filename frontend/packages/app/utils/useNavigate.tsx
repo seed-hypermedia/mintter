@@ -1,7 +1,8 @@
 import {startTransition, useCallback} from 'react'
 import {useIPC} from '../app-context'
-import {NavMode, NavRoute, useNavigationDispatch} from './navigation'
+import {NavMode, useNavigationDispatch} from './navigation'
 import {encodeRouteToPath} from './route-encoding'
+import {NavRoute} from './routes'
 import {getRouteWindowType, getWindowType} from './window-types'
 
 export function useNavigate(requestedMode: NavMode = 'push') {

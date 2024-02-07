@@ -2,7 +2,6 @@ import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {
-  NavRoute,
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
@@ -50,6 +49,7 @@ import {
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {useOpenDraft} from '../utils/open-draft'
+import {NavRoute} from '../utils/routes'
 import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
 import {useAppDialog} from './dialog'

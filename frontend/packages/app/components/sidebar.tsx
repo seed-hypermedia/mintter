@@ -47,12 +47,9 @@ import {
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
-import {
-  NavRoute,
-  useHmIdToAppRouteResolver,
-  useNavRoute,
-} from '../utils/navigation'
+import {useHmIdToAppRouteResolver, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
+import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {Avatar} from './avatar'
@@ -166,7 +163,7 @@ function FullAppSidebar() {
               active={route.key == 'documents'}
               data-testid="menu-item-global"
               onPress={() => {
-                navigate({key: 'documents'})
+                navigate({key: 'documents', tab: 'trusted'})
               }}
               title="Documents"
               bold

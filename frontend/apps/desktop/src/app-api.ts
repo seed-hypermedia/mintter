@@ -1,5 +1,5 @@
-import type {NavRoute} from '@mintter/app/utils/navigation'
 import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
+import {NavRoute, defaultRoute, navRouteSchema} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {observable} from '@trpc/server/observable'
 import {
@@ -71,12 +71,20 @@ info('App UserData: ', userDataPath)
 
 export function openInitialWindows() {
   const windowsState = getWindowsState()
-  if (!Object.keys(windowsState).length) {
-    trpc.createAppWindow({routes: [{key: 'documents'}]})
+  const validWindowEntries = Object.entries(windowsState).filter(
+    ([windowId, window]) => {
+      if (window.routes.length === 0) return false
+      return window.routes.every((route) => {
+        return navRouteSchema.safeParse(route).success
+      })
+    },
+  )
+  if (!validWindowEntries.length) {
+    trpc.createAppWindow({routes: [defaultRoute]})
     return
   }
   try {
-    Object.entries(windowsState).forEach(([windowId, window]) => {
+    validWindowEntries.forEach(([windowId, window]) => {
       trpc.createAppWindow({
         routes: window.routes,
         routeIndex: window.routeIndex,
@@ -87,7 +95,7 @@ export function openInitialWindows() {
     })
   } catch (error) {
     info(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
-    trpc.createAppWindow({routes: [{key: 'documents'}]})
+    trpc.createAppWindow({routes: [defaultRoute]})
     return
   }
 }

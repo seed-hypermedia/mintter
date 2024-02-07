@@ -1,12 +1,13 @@
 import {useGRPCClient} from '@mintter/app/app-context'
 import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
-import {NavMode, NavRoute} from '@mintter/app/utils/navigation'
+import {NavMode} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {GroupVariant, PublicationVariant} from '@mintter/shared'
 import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import appError from '../errors'
+import {NavRoute} from '../utils/routes'
 
 export function useEditDraft(
   docId: string,

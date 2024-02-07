@@ -26,6 +26,7 @@ import {Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {useNavRoute, useNavigationDispatch} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
+import {defaultRoute} from '../utils/routes'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {WindowsLinuxWindowControls} from './window-controls'
 
@@ -150,7 +151,7 @@ export function SystemMenu() {
             id: 'newwindow',
             title: 'New Window',
             accelerator: 'Ctrl+Shift+N',
-            onSelect: () => spawn({key: 'documents'}),
+            onSelect: () => spawn(defaultRoute),
             icon: AddSquare,
           },
           {

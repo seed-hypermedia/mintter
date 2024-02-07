@@ -1,6 +1,7 @@
 // this menu is visible on macOS only
 // the keyboard shortcuts apply to every platform
 
+import {defaultRoute} from '@mintter/app/utils/routes'
 import {Menu, MenuItem} from 'electron'
 import {dispatchFocusedWindowAppEvent, openRoute, trpc} from './app-api'
 
@@ -65,7 +66,7 @@ export function createAppMenu() {
           label: 'New Window',
           accelerator: 'CmdOrCtrl+Shift+n',
           click: () => {
-            trpc.createAppWindow({routes: [{key: 'documents'}]})
+            trpc.createAppWindow({routes: [defaultRoute]})
           },
         },
         {type: 'separator'},
@@ -106,7 +107,7 @@ export function createAppMenu() {
           label: 'Documents',
           accelerator: 'CmdOrCtrl+1',
           click: () => {
-            openRoute({key: 'documents'})
+            openRoute({key: 'documents', tab: 'trusted'})
           },
         },
         {

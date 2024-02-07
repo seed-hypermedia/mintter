@@ -3,7 +3,8 @@ import {queryKeys} from '@mintter/app/models/query-keys'
 import {DocumentChange, GRPCClient, GroupVariant} from '@mintter/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
-import {DraftRoute, NavMode, useNavRoute} from './navigation'
+import {NavMode, useNavRoute} from './navigation'
+import {DraftRoute} from './routes'
 import {useNavigate} from './useNavigate'
 
 async function createDraft(

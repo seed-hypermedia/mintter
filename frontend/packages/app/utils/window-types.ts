@@ -1,4 +1,4 @@
-import {NavRoute} from './navigation'
+import {NavRoute} from './routes'
 
 export type WindowTypeInfo = {
   key: 'settings' | 'comment' | 'main'

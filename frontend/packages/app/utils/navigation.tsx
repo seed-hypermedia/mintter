@@ -1,10 +1,4 @@
-import {
-  GRPCClient,
-  GroupVariant,
-  PublicationVariant,
-  StateStream,
-  unpackDocId,
-} from '@mintter/shared'
+import {GRPCClient, StateStream, unpackDocId} from '@mintter/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
@@ -14,70 +8,9 @@ import {useStream, useStreamSelector} from '@mintter/ui'
 import {Buffer} from 'buffer'
 import {createContext, useContext} from 'react'
 import {useGRPCClient} from '../app-context'
+import {NavRoute, defaultRoute} from './routes'
 
 global.Buffer = global.Buffer || Buffer
-
-export type DocumentsRoute = {
-  key: 'documents'
-  tab?: null | 'all' | 'trusted' | 'drafts'
-}
-export type ContactsRoute = {key: 'contacts'}
-export type AccountRoute = {key: 'account'; accountId: string}
-
-export type EntityVersionsAccessory = {key: 'versions'}
-export type PublicationCitationsAccessory = {key: 'citations'}
-export type PublicationCommentsAccessory = {key: 'comments'}
-
-export type CommentRoute = {
-  key: 'comment'
-  commentId?: string
-  showThread?: boolean
-}
-export type CommentDraftRoute = {
-  key: 'comment-draft'
-  commentId?: string
-  showThread?: boolean
-}
-
-export type PublicationRoute = {
-  key: 'publication'
-  documentId: string
-  versionId?: string
-  variants?: PublicationVariant[]
-  blockId?: string
-  accessory?:
-    | null
-    | EntityVersionsAccessory
-    | PublicationCitationsAccessory
-    | PublicationCommentsAccessory
-  showFirstPublicationMessage?: boolean
-  immediatelyPromptPush?: boolean
-}
-export type DraftRoute = {
-  key: 'draft'
-  draftId?: string
-  variant?: GroupVariant | null
-  contextRoute?: NavRoute
-}
-export type SettingsRoute = {key: 'settings'}
-export type GroupsRoute = {key: 'groups'}
-export type GroupRoute = {
-  key: 'group'
-  groupId: string
-  version?: string
-  accessory?: null | EntityVersionsAccessory
-}
-export type NavRoute =
-  | ContactsRoute
-  | AccountRoute
-  | SettingsRoute
-  | GroupsRoute
-  | GroupRoute
-  | PublicationRoute
-  | DraftRoute
-  | DocumentsRoute
-  | CommentRoute
-  | CommentDraftRoute
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
@@ -218,7 +151,7 @@ export function useNavRoute() {
     throw new Error('useNavRoute must be used within a NavigationProvider')
   return useStreamSelector(
     nav.state,
-    (state) => state.routes[state.routeIndex] || {key: 'documents'},
+    (state) => state.routes[state.routeIndex] || defaultRoute,
   )
 }
 

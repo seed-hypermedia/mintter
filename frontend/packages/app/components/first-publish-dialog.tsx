@@ -11,7 +11,7 @@ import {
 import {useAppContext} from '../app-context'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useIsHMUrlReady} from '../models/networking'
-import {PublicationRoute} from '../utils/navigation'
+import {PublicationRoute} from '../utils/routes'
 
 export function FirstPublishDialog({
   input,

@@ -1,3 +1,4 @@
+import {defaultRoute} from '@mintter/app/utils/routes'
 import {IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
@@ -75,7 +76,7 @@ app.on('did-become-active', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     log.debug('[MAIN]: will open the home window')
     trpc.createAppWindow({
-      routes: [{key: 'documents'}],
+      routes: [defaultRoute],
     })
   }
 })
@@ -137,7 +138,7 @@ if (!gotTheLock) {
     if (BrowserWindow.getAllWindows().length === 0) {
       log.debug('[MAIN]: will open the home window')
       trpc.createAppWindow({
-        routes: [{key: 'documents'}],
+        routes: [defaultRoute],
       })
     }
   })

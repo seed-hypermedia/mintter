@@ -2,7 +2,7 @@ import {useHover} from '@mintter/shared'
 import {Button, ButtonProps, Tooltip} from '@mintter/ui'
 import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
-import {PublicationRoute} from '../utils/navigation'
+import {PublicationRoute} from '../utils/routes'
 
 export function PinAccountButton({accountId}: {accountId: string}) {
   const {isPinned, togglePin} = usePinAccount(accountId)

@@ -5,7 +5,7 @@ import {PanelCard} from '@mintter/ui'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useDocTextContent, usePublication} from '../models/documents'
-import {PublicationRoute} from '../utils/navigation'
+import {PublicationRoute} from '../utils/routes'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 

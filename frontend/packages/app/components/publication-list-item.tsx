@@ -14,7 +14,7 @@ import {
   XStack,
   copyTextToClipboard,
 } from '@mintter/ui'
-import {NavRoute} from '../utils/navigation'
+import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {ListItem, TimeAccessory} from './list-item'
