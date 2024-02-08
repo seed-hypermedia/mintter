@@ -387,6 +387,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
               childrenType: 'group',
             },
           },
+          {type: 'paragraph', text: '', props: {}},
         ],
         editor.topLevelBlocks.at(-1),
         'after',
