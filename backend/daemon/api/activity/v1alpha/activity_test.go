@@ -20,6 +20,7 @@ func TestListEvents(t *testing.T) {
 	events, err := alice.ListEvents(ctx, req)
 	require.NoError(t, err)
 	require.NotNil(t, events)
+	require.Len(t, events.Events, 0)
 }
 
 // TODO: update profile idempotent no change

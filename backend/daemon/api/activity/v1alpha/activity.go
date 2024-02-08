@@ -9,7 +9,6 @@ import (
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
 	"strconv"
-	sync "sync"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -28,9 +27,9 @@ type Repo interface {
 
 // Server implements the Activity gRPC API.
 type Server struct {
-	db        *sqlitex.Pool
-	startTime time.Time
-	mu        sync.Mutex // we only want one register request at a time.
+	db            *sqlitex.Pool
+	startTime     time.Time
+	NextPageToken string
 }
 
 // NewServer creates a new Server.
@@ -51,6 +50,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 			return nil, fmt.Errorf("Token not valid: %w", err)
 		}
 	}
+	fmt.Println(token)
 	conn, cancel, err := srv.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -59,15 +59,28 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 
 	var events []*activity.Event
 
-	var qGetEvents = dqb.Str(`
+	var qGetEventsTrusted = dqb.Str(`
 		SELECT structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		JOIN resources ON structural_blobs.resource=resources.id
-		WHERE structural_blobs.id >= ?;
+		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
+		ORDER BY blobs.id desc limit ?;
 	`)
-	err = sqlitex.Exec(conn, qGetEvents(), func(stmt *sqlite.Stmt) error {
+	var qGetEventsAll = dqb.Str(`
+		SELECT structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
+		FROM structural_blobs 
+		JOIN blobs ON blobs.id=structural_blobs.id 
+		JOIN public_keys ON structural_blobs.author=public_keys.id
+		JOIN resources ON structural_blobs.resource=resources.id
+		ORDER BY blobs.id desc limit ?;
+	`)
+	query := qGetEventsAll()
+	if req.TrustedOnly {
+		query = qGetEventsTrusted()
+	}
+	err = sqlitex.Exec(conn, query, func(stmt *sqlite.Stmt) error {
 		eventType := stmt.ColumnText(0)
 		author := stmt.ColumnBytes(1)
 		resource := stmt.ColumnText(2)
@@ -91,10 +104,18 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		}
 		events = append(events, &event)
 		return nil
-	}, token)
+	}, req.PageSize)
+	var pageSize int32 = 20
+	if req.PageSize != 0 {
+		pageSize = req.PageSize
+	}
+	var nextToken string
+	if pageSize < int32(len(events)) {
+		nextToken = strconv.Itoa(len(events))
+	}
 	return &activity.ListEventsResponse{
 		Events:        events,
-		NextPageToken: "",
+		NextPageToken: nextToken,
 	}, err
 
 }

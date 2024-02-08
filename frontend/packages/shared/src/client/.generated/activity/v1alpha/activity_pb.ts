@@ -26,6 +26,13 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
    */
   pageToken = "";
 
+  /**
+   * Optional. If we want events from trusted peers only. All peers by default.
+   *
+   * @generated from field: bool trusted_only = 3;
+   */
+  trustedOnly = false;
+
   constructor(data?: PartialMessage<ListEventsRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -36,6 +43,7 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "trusted_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListEventsRequest {

@@ -21,7 +21,9 @@ message ListEventsRequest {
   // Optional. The page token for requesting next pages.
   string page_token = 2;
 
-  // TODO: add filtering options.
+  // Optional. If we want events from trusted peers only. All peers by default.
+  bool trusted_only = 3;
+
 }
 
 // The response with the list of events.
