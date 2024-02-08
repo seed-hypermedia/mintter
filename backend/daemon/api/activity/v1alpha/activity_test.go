@@ -2,12 +2,8 @@ package activity
 
 import (
 	context "context"
-	"mintter/backend/core/coretest"
-	"mintter/backend/daemon/daemontest"
 	"mintter/backend/daemon/storage"
 	activity "mintter/backend/genproto/activity/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,17 +18,16 @@ func TestListEvents(t *testing.T) {
 		PageToken: "",
 	}
 	events, err := alice.ListEvents(ctx, req)
-	require.Error(t, err)
-	require.Nil(t, events)
+	require.NoError(t, err)
+	require.NotNil(t, events)
 }
 
 // TODO: update profile idempotent no change
 
 func newTestServer(t *testing.T, name string) *Server {
-	u := coretest.NewTester(name)
-	repo := daemontest.MakeTestRepo(t, u)
+	//u := coretest.NewTester(name)
+	//repo := daemontest.MakeTestRepo(t, u)
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
-
-	return NewServer(repo, blobs)
+	//blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	return NewServer(db)
 }
