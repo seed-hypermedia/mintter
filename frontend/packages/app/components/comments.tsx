@@ -106,12 +106,13 @@ export function CommentGroup({
             onReplyBlock={(blockId: string) => {
               if (!lastComment) return
               const targetId = unpackHmId(lastComment.id)
-              if (!targetId) return
+              const quotingCommentId = unpackHmId(comment.id)
+              if (!targetId || !quotingCommentId) return
               createComment(
                 targetDocEid,
                 targetDocVersion,
                 lastComment.id,
-                createHmId('c', targetId.eid, {
+                createHmId('c', quotingCommentId.eid, {
                   blockRef: blockId,
                 }),
               )
