@@ -64,7 +64,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
-		JOIN resources ON structural_blobs.resource=resources.id
+		LEFT JOIN resources ON structural_blobs.resource=resources.id
 		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
 		ORDER BY blobs.id desc limit ?;
 	`)
@@ -73,7 +73,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
-		JOIN resources ON structural_blobs.resource=resources.id
+		LEFT JOIN resources ON structural_blobs.resource=resources.id
 		ORDER BY blobs.id desc limit ?;
 	`)
 	query := qGetEventsAll()
@@ -90,7 +90,9 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		codec := stmt.ColumnInt64(6)
 		accountID := core.Principal(author).String()
 		id := cid.NewCidV1(uint64(codec), mhash)
-
+		if eventType == "Comment" {
+			resource = "hm://c/" + id.String()
+		}
 		event := activity.Event{
 			Data: &activity.Event_NewBlob{NewBlob: &activity.NewBlobEvent{
 				Cid:      id.String(),
