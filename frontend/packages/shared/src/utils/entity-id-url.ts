@@ -192,6 +192,32 @@ export type UnpackedHypermediaId = {
   latest?: boolean | null
 }
 
+export function hmId(
+  type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
+  eid: string,
+  opts: {
+    version?: string | null
+    blockRef?: string | null
+    groupPathName?: string | null
+    variants?: PublicationVariant[] | null
+    latest?: boolean | null
+    hostname?: string | null
+  } = {},
+): UnpackedHypermediaId {
+  return {
+    id: createHmId(type, eid, opts),
+    type,
+    eid,
+    qid: createHmId(type, eid),
+    groupPathName: opts.groupPathName || null,
+    version: opts.version || null,
+    blockRef: opts.blockRef || null,
+    hostname: opts.hostname || null,
+    scheme: null,
+    ...opts,
+  }
+}
+
 export function parseVariantsQuery(
   variantsString?: string[] | string | null,
 ): PublicationVariant[] | null {

@@ -1,4 +1,4 @@
-import {ReactNode} from 'react'
+import {ComponentProps, ReactNode} from 'react'
 import {styled, XStack, YStack} from 'tamagui'
 
 const variants = {
@@ -15,15 +15,18 @@ const variants = {
   },
 } as const
 
-export function PageContainer({children}: {children: ReactNode}) {
+export function PageContainer({
+  children,
+  ...props
+}: {children: ReactNode} & ComponentProps<typeof YStack>) {
   return (
     <XStack jc="center">
       <YStack
         f={1}
         paddingHorizontal="$4"
-        marginVertical="$6"
         maxWidth={898}
         alignSelf="center"
+        {...props}
       >
         {children}
       </YStack>

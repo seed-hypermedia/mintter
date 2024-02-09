@@ -168,7 +168,7 @@ function AccountPageHeader() {
   const isMe = myAccount.data?.id === accountId
   const editProfileDialog = useEditProfileDialog()
   return (
-    <PageContainer>
+    <PageContainer marginVertical="$6">
       <XStack gap="$4" alignItems="center" justifyContent="space-between">
         <XStack gap="$4" alignItems="center">
           <Avatar

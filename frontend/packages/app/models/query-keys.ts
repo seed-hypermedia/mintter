@@ -9,7 +9,7 @@ export const queryKeys = {
   // NOTE: Arguments to query keys documented in comments
 
   // feed
-  FEED: 'FEED',
+  FEED: 'FEED', // trustedOnly: boolean
 
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',

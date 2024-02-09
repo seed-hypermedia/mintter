@@ -136,7 +136,7 @@ function DocumentTabs() {
   if (route.key !== 'documents') throw new Error('invalid route')
   const replace = useNavigate('replace')
   return (
-    <PageContainer>
+    <PageContainer marginVertical="$6">
       <XStack>
         <RadioButtons
           value={route.tab}
