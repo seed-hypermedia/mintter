@@ -160,8 +160,13 @@ function notarizeMaybe() {
     return
   }
 
-  if (!process.env.CI) {
+  if (!process.env.CI || process.env.SMOKE_TEST) {
     console.log(`[FORGE CONFIG]: 🤖 Not in CI, skipping sign and notarization`)
+    return
+  }
+
+  if (process.env.SMOKE_TEST) {
+    console.log(`[FORGE CONFIG]: 🤖 Smoke test, skipping sign and notarization`)
     return
   }
 
