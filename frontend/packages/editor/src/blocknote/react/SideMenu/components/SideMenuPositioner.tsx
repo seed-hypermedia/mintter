@@ -100,7 +100,7 @@ export const SideMenuPositioner = <
       interactive={true}
       visible={show}
       animation={'fade'}
-      offset={[topOffset, 0]}
+      offset={[topOffset, 32]}
       placement={props.placement}
       popperOptions={popperOptions}
     />
