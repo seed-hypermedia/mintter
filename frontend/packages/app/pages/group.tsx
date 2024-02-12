@@ -86,8 +86,9 @@ import {
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
-import {GroupRoute, useNavRoute} from '../utils/navigation'
+import {useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
+import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication-content-provider'
@@ -185,9 +186,13 @@ export default function GroupPage() {
                         {siteBaseUrl && (
                           <XStack alignItems="center" gap="$2">
                             <Tooltip
-                              content={`Open group in the web (${syncStatus?.message(
-                                group.data,
-                              )})`}
+                              content={
+                                group.data
+                                  ? `Open group in the web (${syncStatus?.message(
+                                      group.data,
+                                    )})`
+                                  : ''
+                              }
                             >
                               <Button
                                 size="$2"
@@ -372,11 +377,13 @@ export default function GroupPage() {
                         {isMember && (
                           <EditDocButton
                             contextRoute={route}
-                            variant={{
-                              key: 'group',
-                              groupId,
-                              pathName: '/',
-                            }}
+                            variants={[
+                              {
+                                key: 'group',
+                                groupId,
+                                pathName: '/',
+                              },
+                            ]}
                             docId={frontPageId?.docId}
                             baseVersion={frontPageId?.version || undefined}
                             navMode="push"
@@ -391,11 +398,13 @@ export default function GroupPage() {
                             spawn({
                               key: 'publication',
                               documentId: frontPageId?.docId,
-                              variant: {
-                                key: 'group',
-                                groupId,
-                                pathName: '/',
-                              },
+                              variants: [
+                                {
+                                  key: 'group',
+                                  groupId,
+                                  pathName: '/',
+                                },
+                              ],
                             })
                           }}
                         />
@@ -522,7 +531,7 @@ function GroupContentItem({
             docTitle: pub.document?.title || '',
           })
         }}
-        variant={{key: 'group', groupId, pathName}}
+        variants={[{key: 'group', groupId, pathName}]}
         menuItems={() => [
           copyLinkMenuItem(
             idToUrl(docId, gwUrl.data, {
@@ -657,8 +666,9 @@ function InviteMemberDialog({
               <TagInputItem
                 onClick={() => {
                   let unpackedId = unpackHmId(value)
-                  if (unpackedId && unpackedId.type == 'a') {
-                    setMemberSelection((values) => [...values, unpackedId.eid])
+                  const eid = unpackedId?.eid
+                  if (eid && unpackedId?.type == 'a') {
+                    setMemberSelection((values) => [...values, eid])
                   }
                 }}
               >

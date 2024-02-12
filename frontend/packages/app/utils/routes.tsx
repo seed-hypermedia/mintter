@@ -72,16 +72,6 @@ export const publicationRouteSchema = z.object({
 })
 export type PublicationRoute = z.infer<typeof publicationRouteSchema>
 
-export const draftRouteSchema = z.object({
-  key: z.literal('draft'),
-  draftId: z.string().optional(),
-  variant: groupVariantSchema.nullable(),
-  contextRoute: z
-    .discriminatedUnion('key', [documentsRouteSchema, publicationRouteSchema])
-    .optional(),
-})
-export type DraftRoute = z.infer<typeof draftRouteSchema>
-
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
@@ -97,6 +87,21 @@ export const groupRouteSchema = z.object({
     .nullable()
     .optional(),
 })
+
+export const draftRouteSchema = z.object({
+  key: z.literal('draft'),
+  draftId: z.string().optional(),
+  variant: groupVariantSchema.nullable(),
+  contextRoute: z
+    .discriminatedUnion('key', [
+      documentsRouteSchema,
+      publicationRouteSchema,
+      groupRouteSchema,
+    ])
+    .optional(),
+})
+export type DraftRoute = z.infer<typeof draftRouteSchema>
+
 export type GroupRoute = z.infer<typeof groupRouteSchema>
 
 export const navRouteSchema = z.discriminatedUnion('key', [
