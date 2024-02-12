@@ -1,5 +1,5 @@
 import {ComponentProps, ReactNode} from 'react'
-import {styled, XStack, YStack} from 'tamagui'
+import {XStack, YStack, styled} from 'tamagui'
 
 const variants = {
   hide: {
@@ -20,7 +20,7 @@ export function PageContainer({
   ...props
 }: {children: ReactNode} & ComponentProps<typeof YStack>) {
   return (
-    <XStack jc="center">
+    <XStack jc="center" f={1}>
       <YStack
         f={1}
         paddingHorizontal="$4"
