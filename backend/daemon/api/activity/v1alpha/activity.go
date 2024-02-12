@@ -3,7 +3,9 @@ package activity
 
 import (
 	context "context"
+	"encoding/base64"
 	"fmt"
+	"math"
 	"mintter/backend/core"
 	activity "mintter/backend/genproto/activity/v1alpha"
 	"mintter/backend/pkg/dqb"
@@ -27,10 +29,12 @@ type Repo interface {
 
 // Server implements the Activity gRPC API.
 type Server struct {
-	db            *sqlitex.Pool
-	startTime     time.Time
-	NextPageToken string
+	db        *sqlitex.Pool
+	startTime time.Time
+	Cursor    uint
 }
+
+const tokenSalt = "Y0zO2O8RBYQ2QAzf" //nolint:gosec, not really a secret, just to obscure the token a bit.
 
 // NewServer creates a new Server.
 func NewServer(db *sqlitex.Pool) *Server {
@@ -42,15 +46,20 @@ func NewServer(db *sqlitex.Pool) *Server {
 
 // ListEvents list all the events seen locally.
 func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsRequest) (*activity.ListEventsResponse, error) {
-	var token uint64
+	var cursorBlobID int64 = math.MaxInt32
 	var err error
 	if req.PageToken != "" {
-		token, err = strconv.ParseUint(req.PageToken, 10, 32)
+		pageToken, _ := base64.StdEncoding.DecodeString(req.PageToken)
+		if err != nil {
+			return nil, fmt.Errorf("Token encoding not valid: %w", err)
+		}
+
+		token, err := strconv.ParseUint(string(pageToken), 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf("Token not valid: %w", err)
 		}
+		cursorBlobID = int64(token)
 	}
-	fmt.Println(token)
 	conn, cancel, err := srv.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -60,34 +69,36 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 	var events []*activity.Event
 
 	var qGetEventsTrusted = dqb.Str(`
-		SELECT structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
+		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
 		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
-		ORDER BY blobs.id desc limit ?;
+		WHERE blobs.id <= :idx ORDER BY blobs.id desc limit :page_token;
 	`)
 	var qGetEventsAll = dqb.Str(`
-		SELECT structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
+		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
-		ORDER BY blobs.id desc limit ?;
+		WHERE blobs.id <= :idx ORDER BY blobs.id desc limit :page_token;
 	`)
 	query := qGetEventsAll()
 	if req.TrustedOnly {
 		query = qGetEventsTrusted()
 	}
+	var lastBlobID int64
 	err = sqlitex.Exec(conn, query, func(stmt *sqlite.Stmt) error {
-		eventType := stmt.ColumnText(0)
-		author := stmt.ColumnBytes(1)
-		resource := stmt.ColumnText(2)
-		eventTime := stmt.ColumnInt64(3) * 1000 //Its in microseconds and we need nanos
-		observeTime := stmt.ColumnInt64(4)
-		mhash := stmt.ColumnBytes(5)
-		codec := stmt.ColumnInt64(6)
+		lastBlobID = stmt.ColumnInt64(0)
+		eventType := stmt.ColumnText(1)
+		author := stmt.ColumnBytes(2)
+		resource := stmt.ColumnText(3)
+		eventTime := stmt.ColumnInt64(4) * 1000 //Its in microseconds and we need nanos
+		observeTime := stmt.ColumnInt64(5)
+		mhash := stmt.ColumnBytes(6)
+		codec := stmt.ColumnInt64(7)
 		accountID := core.Principal(author).String()
 		id := cid.NewCidV1(uint64(codec), mhash)
 		if eventType == "Comment" {
@@ -106,14 +117,11 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		}
 		events = append(events, &event)
 		return nil
-	}, req.PageSize)
-	var pageSize int32 = 20
-	if req.PageSize != 0 {
-		pageSize = req.PageSize
-	}
+	}, cursorBlobID, req.PageSize)
+
 	var nextToken string
-	if pageSize < int32(len(events)) {
-		nextToken = strconv.Itoa(len(events))
+	if lastBlobID != 0 && req.PageSize == int32(len(events)) {
+		nextToken = base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(int(lastBlobID - 1))))
 	}
 	return &activity.ListEventsResponse{
 		Events:        events,
