@@ -36,7 +36,7 @@ export function useEditDraft(
       | GroupVariant[]
       | undefined
     const singleGroupVariant =
-      (groupVariants && groupVariants.length === 0
+      (groupVariants && groupVariants.length === 1
         ? groupVariants[0]
         : undefined) || null
     try {
