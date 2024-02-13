@@ -3,6 +3,8 @@ import {
   API_FILE_URL,
   ActivityEvent,
   BlocksContent,
+  Group,
+  Publication,
   PublicationContent,
   UnpackedHypermediaId,
   formattedDateLong,
@@ -29,6 +31,7 @@ import {ReactNode} from 'react'
 import Footer from '../components/footer'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAccount} from '../models/accounts'
+import {useChangeData} from '../models/changes'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useFeed} from '../models/feed'
@@ -45,7 +48,6 @@ const feedTabsOptions = [
 export default function FeedPage() {
   const route = useNavRoute()
   if (route.key !== 'feed') throw new Error('invalid route')
-  const replace = useNavigate('replace')
   return (
     <>
       <MainWrapperNoScroll>
@@ -56,13 +58,6 @@ export default function FeedPage() {
   )
 }
 
-function getEventKey(event: ActivityEvent) {
-  if (event.data.case === 'newBlob') {
-    return event.data.value.cid
-  }
-  return 'unknown event type'
-}
-
 const FeedItemInnerContainer = styled(YStack, {
   gap: '$2',
   backgroundColor: '$color1',
@@ -71,10 +66,32 @@ const FeedItemInnerContainer = styled(YStack, {
   overflow: 'hidden',
 })
 
-function FeedItemContainer({children}: {children: ReactNode}) {
+function FeedItemContainer({
+  children,
+  linkId,
+}: {
+  children: ReactNode
+  linkId?: UnpackedHypermediaId
+}) {
+  const navigate = useNavigate('push')
   return (
     <PageContainer f={1} marginVertical="$2">
-      <FeedItemInnerContainer>{children}</FeedItemInnerContainer>
+      <FeedItemInnerContainer
+        onPress={
+          linkId
+            ? () => {
+                const route = appRouteOfId(linkId)
+                if (route) {
+                  navigate(route)
+                } else {
+                  toast.error('Failed to resolve a route for this')
+                }
+              }
+            : undefined
+        }
+      >
+        {children}
+      </FeedItemInnerContainer>
     </PageContainer>
   )
 }
@@ -160,54 +177,136 @@ function FeedItemHeader({
   )
 }
 
+function FeedItemPublicationContent({publication}: {publication: Publication}) {
+  return (
+    <AppPublicationContentProvider>
+      <PublicationContent publication={publication} />
+    </AppPublicationContentProvider>
+  )
+}
+
 function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
   const pub = usePublication({id: id.qid, version: cid})
+  const linkId = hmId('d', id.eid, {version: cid})
   return (
-    <FeedItemContainer>
+    <FeedItemContainer linkId={linkId}>
       <FeedItemHeader
         author={author}
         eventTime={eventTime}
         message={
           <>
             updated{' '}
-            <EntityLink id={hmId('d', id.eid, {version: cid})}>
+            <EntityLink id={linkId}>
               {pub.data?.document?.title || 'Untitled Document'}
             </EntityLink>
           </>
         }
       />
-      {pub.data && (
-        <>
-          <AppPublicationContentProvider>
-            <PublicationContent publication={pub.data} />
-          </AppPublicationContentProvider>
-        </>
-      )}
+      {pub.data && <FeedItemPublicationContent publication={pub.data} />}
     </FeedItemContainer>
   )
 }
 
-function GroupChangeFeedItem({
+function GroupContentChangeFeedItem({
   id,
   eventTime,
   cid,
   author,
-}: ChangeFeedItemProps) {
-  const group = useGroup(id.qid, cid)
+  pathName,
+  contentUrl,
+  group,
+}: ChangeFeedItemProps & {pathName: string; contentUrl: string; group: Group}) {
+  const docId = unpackHmId(contentUrl)
+  const pub = usePublication({
+    id: docId?.qid,
+    version: docId?.version || undefined,
+  })
+  const linkId = docId
+    ? {
+        ...docId,
+        variants: [{key: 'group', groupId: group.id, pathName} as const],
+      }
+    : undefined
+  if (!docId)
+    return (
+      <ErrorFeedItem
+        message={`Unhandled Group Content Change: unrecognized content URL: ${contentUrl}`}
+      />
+    )
   return (
-    <FeedItemContainer>
+    <FeedItemContainer linkId={linkId}>
       <FeedItemHeader
         author={author}
         eventTime={eventTime}
         message={
           <>
             updated{' '}
+            {linkId ? (
+              <EntityLink id={linkId}>
+                {pub.data?.document?.title || 'Untitled Document'}
+              </EntityLink>
+            ) : (
+              'entry'
+            )}{' '}
+            in{' '}
             <EntityLink id={hmId('g', id.eid, {version: cid})}>
+              {group.title || 'Untitled Group'}
+            </EntityLink>
+          </>
+        }
+      />
+      {pub.data && <FeedItemPublicationContent publication={pub.data} />}
+    </FeedItemContainer>
+  )
+}
+
+function GroupChangeFeedItem(props: ChangeFeedItemProps) {
+  const {id, eventTime, cid, author} = props
+  const group = useGroup(id.qid, cid)
+  const groupChange = useChangeData(cid)
+  if (groupChange.isInitialLoading) return <Spinner />
+  if (groupChange.data?.action !== 'Update')
+    return (
+      <ErrorFeedItem message="Unrecognized Group Change: not an Update Action" />
+    )
+  const patchEntries = Object.entries(groupChange.data?.patch)
+  if (patchEntries.length === 0)
+    return (
+      <ErrorFeedItem message="Unrecognized Group Change: no patch entries" />
+    )
+  const contentPatch = patchEntries.find(([key]) => key === 'content')
+  const contentUpdate = contentPatch?.[1]
+  const contentEntries = Object.entries(contentUpdate || {})
+  const nonContentPatchEntries = patchEntries.filter(
+    ([key]) => key !== 'content',
+  )
+  if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
+    const [pathName, contentUrl] = contentEntries[0]
+    return (
+      <GroupContentChangeFeedItem
+        {...props}
+        pathName={pathName}
+        contentUrl={contentUrl}
+        group={group.data}
+      />
+    )
+  }
+  const linkId = hmId('g', id.eid, {version: cid})
+  return (
+    <FeedItemContainer linkId={linkId}>
+      <FeedItemHeader
+        author={author}
+        eventTime={eventTime}
+        message={
+          <>
+            updated{' '}
+            <EntityLink id={linkId}>
               {group.data?.title || 'Untitled Group'}
             </EntityLink>
           </>
         }
       />
+      <code>{JSON.stringify(nonContentPatchEntries, null, 2)}</code>
     </FeedItemContainer>
   )
 }
@@ -219,7 +318,7 @@ function AccountChangeFeedItem({
   author,
 }: ChangeFeedItemProps) {
   return (
-    <FeedItemContainer>
+    <FeedItemContainer linkId={id}>
       <FeedItemHeader
         author={author}
         eventTime={eventTime}
@@ -238,7 +337,7 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
     version: targetDocId?.version || undefined,
   })
   return (
-    <FeedItemContainer>
+    <FeedItemContainer linkId={id}>
       <FeedItemHeader
         author={author}
         eventTime={eventTime}
@@ -314,7 +413,6 @@ function Feed({tab}: {tab: 'trusted' | 'all'}) {
   return (
     <YStack f={1} gap="$3">
       <FeedList
-        f={1}
         header={
           <PageContainer marginVertical="$6">
             <XStack f={1} ai="center" gap="$3">

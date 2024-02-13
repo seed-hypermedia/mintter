@@ -1,4 +1,4 @@
-import {Change} from '@mintter/shared'
+import {Change, HTTP_PORT} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient} from '../app-context'
@@ -92,6 +92,20 @@ export function useChange(changeId?: string) {
         id: changeId || '',
       }),
     queryKey: [queryKeys.CHANGE, changeId],
+    enabled: !!changeId,
+  })
+}
+
+export function useChangeData(changeId?: string) {
+  return useQuery({
+    queryFn: async () => {
+      const res = await fetch(
+        `http://localhost:${HTTP_PORT}/debug/cid/${changeId}`,
+      )
+      const data = await res.json()
+      return data
+    },
+    queryKey: [queryKeys.CHANGE_DATA, changeId],
     enabled: !!changeId,
   })
 }
