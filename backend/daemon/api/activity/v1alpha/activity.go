@@ -29,36 +29,42 @@ type Repo interface {
 
 // Server implements the Activity gRPC API.
 type Server struct {
+	me        *future.ReadOnly[core.Identity]
 	db        *sqlitex.Pool
 	startTime time.Time
-	Cursor    uint
 }
 
-const tokenSalt = "Y0zO2O8RBYQ2QAzf" //nolint:gosec, not really a secret, just to obscure the token a bit.
-
 // NewServer creates a new Server.
-func NewServer(db *sqlitex.Pool) *Server {
+func NewServer(id *future.ReadOnly[core.Identity], db *sqlitex.Pool) *Server {
 	return &Server{
 		db:        db,
 		startTime: time.Now(),
+		me:        id,
 	}
 }
 
 // ListEvents list all the events seen locally.
 func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsRequest) (*activity.ListEventsResponse, error) {
+	me, ok := srv.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
+	}
 	var cursorBlobID int64 = math.MaxInt32
 	var err error
 	if req.PageToken != "" {
-		pageToken, _ := base64.StdEncoding.DecodeString(req.PageToken)
+		pageTokenBytes, _ := base64.StdEncoding.DecodeString(req.PageToken)
 		if err != nil {
 			return nil, fmt.Errorf("Token encoding not valid: %w", err)
 		}
-
-		token, err := strconv.ParseUint(string(pageToken), 10, 32)
+		clearPageToken, err := me.DeviceKey().Decrypt(pageTokenBytes)
 		if err != nil {
 			return nil, fmt.Errorf("Token not valid: %w", err)
 		}
-		cursorBlobID = int64(token)
+		pageToken, err := strconv.ParseUint(string(clearPageToken), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		cursorBlobID = int64(pageToken)
 	}
 	conn, cancel, err := srv.db.Conn(ctx)
 	if err != nil {
@@ -119,13 +125,18 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		return nil
 	}, cursorBlobID, req.PageSize)
 
-	var nextToken string
+	var PageTokenStr string
+
+	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
+	if err != nil {
+		return nil, err
+	}
 	if lastBlobID != 0 && req.PageSize == int32(len(events)) {
-		nextToken = base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(int(lastBlobID - 1))))
+		PageTokenStr = base64.StdEncoding.EncodeToString(pageToken)
 	}
 	return &activity.ListEventsResponse{
 		Events:        events,
-		NextPageToken: nextToken,
+		NextPageToken: PageTokenStr,
 	}, err
 
 }

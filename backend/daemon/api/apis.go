@@ -63,7 +63,7 @@ func New(
 	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, &lazyGwClient{net: node}, LogLevel)
 	return Server{
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
-		Activity:   activity.NewServer(db),
+		Activity:   activity.NewServer(repo.Identity(), db),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(blobs, node),
