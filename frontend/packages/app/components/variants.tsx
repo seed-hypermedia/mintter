@@ -1017,9 +1017,9 @@ function GroupVariants({
   const docGroups = useCurrentDocumentGroups(route.documentId)
   const replaceRoute = useNavigate('replace')
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
-  const activeGroupVariants = route.variants.filter(
+  const activeGroupVariants = (route.variants?.filter(
     (variant) => variant.key === 'group',
-  ) as GroupVariant[]
+  ) || []) as GroupVariant[]
   const activeGroupVariantKeys = new Set(
     activeGroupVariants.map(
       (variant) => `${variant.groupId}-${variant.pathName}`,

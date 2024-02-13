@@ -7,7 +7,7 @@ import {GroupVariant, PublicationVariant} from '@mintter/shared'
 import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import appError from '../errors'
-import {NavRoute} from '../utils/routes'
+import {DocumentsRoute, GroupRoute, PublicationRoute} from '../utils/routes'
 
 export function useEditDraft(
   docId: string,
@@ -19,7 +19,7 @@ export function useEditDraft(
   }: {
     version: string | undefined
     navMode?: NavMode
-    contextRoute: NavRoute
+    contextRoute: PublicationRoute | DocumentsRoute | GroupRoute
     variants?: PublicationVariant[]
   },
 ) {
@@ -36,7 +36,9 @@ export function useEditDraft(
       | GroupVariant[]
       | undefined
     const singleGroupVariant =
-      groupVariants && groupVariants.length === 0 ? groupVariants[0] : undefined
+      (groupVariants && groupVariants.length === 1
+        ? groupVariants[0]
+        : undefined) || null
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
@@ -88,7 +90,7 @@ export function EditDocButton({
 }: {
   docId: string
   navMode?: NavMode
-  contextRoute: NavRoute
+  contextRoute: PublicationRoute | DocumentsRoute | GroupRoute
   variants?: PublicationVariant[]
   baseVersion?: string
 }) {

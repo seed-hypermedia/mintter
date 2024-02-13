@@ -155,7 +155,9 @@ export function usePinDocument(route: PublicationRoute) {
     })
   }, [pins.data, route])
 
-  const singleGroupVariant: undefined | {pathName: string; groupId: string} =
+  const singleGroupVariant:
+    | undefined
+    | {pathName: string | null; groupId: string} =
     variants.authorVariants.length > 0 ||
     variants.groupVariants.length !== 1 ||
     variants.groupVariants[0]?.pathName === null
@@ -173,7 +175,7 @@ export function usePinDocument(route: PublicationRoute) {
     )
   const isPinned = isPinnedDoc || isPinnedGroup
   function pin() {
-    if (singleGroupVariant) {
+    if (singleGroupVariant && singleGroupVariant.pathName != null) {
       addGroupPin.mutate({
         groupId: singleGroupVariant.groupId,
         pathName: singleGroupVariant.pathName,
@@ -190,7 +192,7 @@ export function usePinDocument(route: PublicationRoute) {
     }
   }
   function unpin() {
-    if (singleGroupVariant) {
+    if (singleGroupVariant && singleGroupVariant.pathName != null) {
       removeGroupPin.mutate({
         groupId: singleGroupVariant.groupId,
         pathName: singleGroupVariant.pathName,
@@ -201,7 +203,7 @@ export function usePinDocument(route: PublicationRoute) {
         authors: variants.authorVariants.map((a) => a.author),
         groups: variants.groupVariants.map((g) => ({
           groupId: g.groupId,
-          pathName: g.pathName,
+          pathName: g.pathName || '',
         })),
       })
     }
