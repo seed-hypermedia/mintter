@@ -81,12 +81,12 @@ function getVariantsParamValue(variants: PublicationVariant[]): string {
       if (variant.key === 'group') {
         const groupId = unpackHmId(variant.groupId)
         if (!groupId) return false
-        return `g:${groupId.eid}${
-          variant.pathName ? `:${variant.pathName}` : ''
+        return `g/${groupId.eid}${
+          variant.pathName ? `/${variant.pathName}` : ''
         }`
       }
       if (variant.key === 'author') {
-        return `a:${variant.author}`
+        return `a/${variant.author}`
       }
       return false
     })
@@ -200,7 +200,7 @@ export function parseVariantsQuery(
   const variants: PublicationVariant[] = []
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
-    const [key, ...rest] = singleVariantString.split(':')
+    const [key, ...rest] = singleVariantString.split('/')
     if (key === 'g') {
       const [groupEid, pathName] = rest
       variants.push({
