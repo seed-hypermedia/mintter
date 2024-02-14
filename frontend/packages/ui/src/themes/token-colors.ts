@@ -1,4 +1,5 @@
 import {Variable} from '@tamagui/web'
+
 import {
   blue,
   blueDark,
@@ -6,6 +7,8 @@ import {
   grayDark,
   green,
   greenDark,
+  mint,
+  mintDark,
   orange,
   orangeDark,
   pink,
@@ -16,8 +19,6 @@ import {
   redDark,
   yellow,
   yellowDark,
-  mint,
-  mintDark,
 } from './colors'
 
 export {
@@ -31,15 +32,15 @@ export {
 
 export const colorTokens = {
   light: {
-    blue: blue,
-    gray: gray,
-    green: green,
-    orange: orange,
-    pink: pink,
-    purple: purple,
-    red: red,
-    yellow: yellow,
-    mint: mint, // customized in colors.ts
+    blue,
+    gray,
+    green,
+    orange,
+    pink,
+    purple,
+    red,
+    yellow,
+    mint,
   },
   dark: {
     blue: blueDark,

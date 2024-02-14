@@ -12,7 +12,7 @@ type ObjectEntries<OBJ_T> = // From https://stackoverflow.com/a/60142095
   }[keyof OBJ_T][]
 
 export const objectKeys = <O extends object>(obj: O) =>
-  Object.keys(obj) as Array<keyof O>
+  Object.keys(obj) as (keyof O)[]
 
 export function objectEntries<OBJ_T extends ObjectType>(
   obj: OBJ_T,
@@ -22,7 +22,7 @@ export function objectEntries<OBJ_T extends ObjectType>(
 
 type EntriesType =
   | [PropertyKey, unknown][]
-  | ReadonlyArray<readonly [PropertyKey, unknown]>
+  | readonly (readonly [PropertyKey, unknown])[]
 
 // Existing Utils
 type DeepWritable<OBJ_T> = {
