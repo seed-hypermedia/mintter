@@ -58,14 +58,17 @@ function normalizeDate(
   } else if (value instanceof Date) {
     date = value
   } else if (value?.toDate) {
+    console.log('HUH!?!', value)
     date = value.toDate()
   }
   return date
 }
 
-export function formattedDateLong(value?: Timestamp | Date) {
-  if (!value) return ''
-  let date = value instanceof Date ? value : value?.toDate()
+export function formattedDateLong(
+  value?: undefined | string | Date | Timestamp | HMTimestamp,
+) {
+  let date = normalizeDate(value)
+  if (!date) return ''
   return format(date, 'MMMM do yyyy, HH:mm:ss z')
 }
 
