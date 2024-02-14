@@ -64,4 +64,5 @@ export type HMLink = {
     version?: string
     blockId?: string
   }
+  isLatest?: boolean
 }
