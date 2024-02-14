@@ -137,12 +137,17 @@ export function PublicationPage({
   variants?: Array<PublicationVariant> | null
   latest?: boolean
 }) {
-  const publication = trpc.publication.getVariant.useQuery({
-    documentId: documentId,
-    versionId: version || '',
-    variants,
-    latest,
-  })
+  const publication = trpc.publication.getVariant.useQuery(
+    {
+      documentId: documentId,
+      versionId: version || '',
+      variants,
+      latest,
+    },
+    {
+      keepPreviousData: true,
+    },
+  )
   const authorVariants = (variants?.filter((v) => v.key === 'author') ||
     []) as AuthorVariant[]
   const groupVariants = (variants?.filter((v) => v.key === 'group') ||
@@ -167,10 +172,10 @@ export function PublicationPage({
     pubId && pubVersion
       ? `/api/content-image/${pubId.type}/${pubId.eid}/${pubVersion}/media.png`
       : undefined
+  if (!pub && publication.data?.enableDiscovery) {
+    return <DiscoveryPage id={documentId} version={version} />
+  }
   if (!pub && !publication.isLoading) {
-    if (process.env.NEXT_PUBLIC_ENABLE_GATEWAY) {
-      return <DiscoveryPage id={documentId} version={version} />
-    }
     return <DocumentNotFoundPage id={documentId} version={version} />
   }
   const contextGroupId = groupVariant?.groupId
