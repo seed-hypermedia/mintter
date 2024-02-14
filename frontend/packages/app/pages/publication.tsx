@@ -54,10 +54,17 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
   const editors = useAccounts(publication.document?.editors || [])
   const navigate = useNavigate()
   const docGroups = useCurrentDocumentGroups(publication.document?.id)
-  const selectedGroups = docGroups.data?.filter((groupItem) => {
+  const allSelectedGroups = docGroups.data?.filter((groupItem) => {
     const groupItemId = unpackDocId(groupItem.rawUrl)
     return !!groupItemId?.version && groupItemId.version === publication.version
   })
+  const selectedGroups = allSelectedGroups?.filter(
+    (item, index) =>
+      index ===
+      allSelectedGroups.findIndex(
+        (findItem) => findItem.groupId === item.groupId,
+      ),
+  )
   return (
     <YStack
       ai="flex-start"
