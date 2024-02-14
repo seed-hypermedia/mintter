@@ -1,8 +1,8 @@
-import {Timestamp} from '@bufbuild/protobuf'
-import {useAppContext, useQueryInvalidator} from '@mintter/app/app-context'
-import {useOpenUrl} from '@mintter/app/open-url'
-import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
-import {trpc} from '@mintter/desktop/src/trpc'
+import { Timestamp } from '@bufbuild/protobuf'
+import { useAppContext, useQueryInvalidator } from '@mintter/app/app-context'
+import { useOpenUrl } from '@mintter/app/open-url'
+import { slashMenuItems } from '@mintter/app/src/slash-menu-items'
+import { trpc } from '@mintter/desktop/src/trpc'
 import {
   BlockNoteEditor,
   Block as EditorBlock,
@@ -33,7 +33,7 @@ import {
   unpackHmId,
   writeableStateStream,
 } from '@mintter/shared'
-import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
+import { UpdateDraftResponse } from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   FetchQueryOptions,
   UseInfiniteQueryOptions,
@@ -44,23 +44,23 @@ import {
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
-import {Extension, findParentNode} from '@tiptap/core'
-import {NodeSelection} from '@tiptap/pm/state'
-import {useMachine} from '@xstate/react'
+import { Extension, findParentNode } from '@tiptap/core'
+import { NodeSelection } from '@tiptap/pm/state'
+import { useMachine } from '@xstate/react'
 import _ from 'lodash'
-import {useEffect, useMemo, useRef} from 'react'
-import {ContextFrom, fromPromise} from 'xstate'
-import {useGRPCClient} from '../app-context'
-import {useNavRoute} from '../utils/navigation'
-import {pathNameify} from '../utils/path'
-import {NavRoute} from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
-import {useAccounts, useAllAccounts, useMyAccount} from './accounts'
-import {DraftStatusContext, draftMachine} from './draft-machine'
-import {getBlockGroup, setGroupTypes} from './editor-utils'
-import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
-import {useGroupContent, useGroups} from './groups'
-import {queryKeys} from './query-keys'
+import { useEffect, useMemo, useRef } from 'react'
+import { ContextFrom, fromPromise } from 'xstate'
+import { useGRPCClient } from '../app-context'
+import { useNavRoute } from '../utils/navigation'
+import { pathNameify } from '../utils/path'
+import { NavRoute } from '../utils/routes'
+import { useNavigate } from '../utils/useNavigate'
+import { useAccounts, useAllAccounts, useMyAccount } from './accounts'
+import { DraftStatusContext, draftMachine } from './draft-machine'
+import { getBlockGroup, setGroupTypes } from './editor-utils'
+import { useGatewayUrl, useGatewayUrlStream } from './gateway-settings'
+import { useGroupContent, useGroups } from './groups'
+import { queryKeys } from './query-keys'
 
 export function usePublicationList(
   opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {

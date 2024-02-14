@@ -1,4 +1,4 @@
-import {Timestamp} from '@bufbuild/protobuf'
+import { Timestamp } from '@bufbuild/protobuf'
 import {
   API_FILE_URL,
   ActivityEvent,
@@ -32,19 +32,19 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
-import React, {PropsWithChildren, ReactNode} from 'react'
+import { ArrowRight, ChevronUp, Verified } from '@tamagui/lucide-icons'
+import React, { PropsWithChildren, ReactNode } from 'react'
 import Footer from '../components/footer'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
-import {useAccount} from '../models/accounts'
-import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
-import {useComment} from '../models/comments'
-import {usePublication} from '../models/documents'
-import {useFeedWithLatest, useResourceFeed} from '../models/feed'
-import {useGroup} from '../models/groups'
-import {appRouteOfId, useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { MainWrapperNoScroll } from '../components/main-wrapper'
+import { useAccount } from '../models/accounts'
+import { GroupSchema, ProfileSchema, useBlobData } from '../models/changes'
+import { useComment } from '../models/comments'
+import { usePublication } from '../models/documents'
+import { useFeedWithLatest, useResourceFeed } from '../models/feed'
+import { useGroup } from '../models/groups'
+import { appRouteOfId, useNavRoute } from '../utils/navigation'
+import { useNavigate } from '../utils/useNavigate'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 const feedTabsOptions = [
   {key: 'trusted', label: 'Trusted Content', icon: Verified},

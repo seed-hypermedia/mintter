@@ -1,8 +1,8 @@
-import {Change, HTTP_PORT} from '@mintter/shared'
-import {useQueries, useQuery} from '@tanstack/react-query'
-import {useMemo} from 'react'
-import {useGRPCClient} from '../app-context'
-import {queryKeys} from './query-keys'
+import { Change, HTTP_PORT } from '@mintter/shared'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useGRPCClient } from '../app-context'
+import { queryKeys } from './query-keys'
 
 export function useDocHistory(docId?: string, variantVersion?: string) {
   const {data} = useEntityTimeline(docId)

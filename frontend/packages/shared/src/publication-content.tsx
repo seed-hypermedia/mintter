@@ -1,5 +1,5 @@
-import {Timestamp} from '@bufbuild/protobuf'
-import {CitationLink} from '@mintter/app/models/content-graph'
+import { Timestamp } from '@bufbuild/protobuf'
+import { CitationLink } from '@mintter/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
@@ -57,11 +57,11 @@ import {
   YStack,
   YStackProps,
 } from '@mintter/ui'
-import {AlertCircle, Book, MessageSquare, Reply} from '@tamagui/lucide-icons'
+import { AlertCircle, Book, MessageSquare, Reply } from '@tamagui/lucide-icons'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import {common} from 'lowlight'
-import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
+import { common } from 'lowlight'
+import { nip19, nip21, validateEvent, verifySignature } from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
@@ -72,7 +72,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
+import { RiCheckFill, RiCloseCircleLine, RiRefreshLine } from 'react-icons/ri'
 import {
   QuotedTweet,
   TweetBody,
@@ -83,13 +83,13 @@ import {
   enrichTweet,
   useTweet,
 } from 'react-tweet'
-import {HMAccount, HMGroup} from './hm-types'
+import { HMAccount, HMGroup } from './hm-types'
 import {
   contentLayoutUnit,
   contentTextUnit,
 } from './publication-content-constants'
 import './publication-content.css'
-import {useRangeSelection} from './range-selection'
+import { useRangeSelection } from './range-selection'
 
 export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>

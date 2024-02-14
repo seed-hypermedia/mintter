@@ -1,16 +1,16 @@
-import {ConnectError} from '@connectrpc/connect'
-import {useGRPCClient, useQueryInvalidator} from '@mintter/app/app-context'
+import { ConnectError } from '@connectrpc/connect'
+import { useGRPCClient, useQueryInvalidator } from '@mintter/app/app-context'
 import appError from '@mintter/app/errors'
-import {useDaemonInfo} from '@mintter/app/models/daemon'
-import {queryKeys} from '@mintter/app/models/query-keys'
-import {Account, GRPCClient, Profile} from '@mintter/shared'
+import { useDaemonInfo } from '@mintter/app/models/daemon'
+import { queryKeys } from '@mintter/app/models/query-keys'
+import { Account, GRPCClient, Profile } from '@mintter/shared'
 import {
   UseMutationOptions,
   useMutation,
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
-import {useConnectedPeers} from './networking'
+import { useConnectedPeers } from './networking'
 
 export function useAccount(accountId?: string) {
   const grpcClient = useGRPCClient()

@@ -1,14 +1,14 @@
-import {useAppContext} from '@mintter/app/app-context'
-import {useOpenUrl} from '@mintter/app/open-url'
-import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
-import {client, trpc} from '@mintter/desktop/src/trpc'
+import { useAppContext } from '@mintter/app/app-context'
+import { useOpenUrl } from '@mintter/app/open-url'
+import { slashMenuItems } from '@mintter/app/src/slash-menu-items'
+import { client, trpc } from '@mintter/desktop/src/trpc'
 import {
   BlockNoteEditor,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
   useBlockNote,
 } from '@mintter/editor'
-import type {Block} from '@mintter/editor/src/blocknote/core/extensions/Blocks/api/blockTypes'
+import type { Block } from '@mintter/editor/src/blocknote/core/extensions/Blocks/api/blockTypes'
 import {
   HMComment,
   HMCommentDraft,
@@ -18,18 +18,18 @@ import {
   unpackHmId,
   writeableStateStream,
 } from '@mintter/shared'
-import {toast} from '@mintter/ui'
-import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
-import {Extension} from '@tiptap/core'
-import {useEffect, useMemo, useRef} from 'react'
-import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import { toast } from '@mintter/ui'
+import { UseQueryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { Extension } from '@tiptap/core'
+import { useEffect, useMemo, useRef } from 'react'
+import { useGRPCClient, useQueryInvalidator } from '../app-context'
 import appError from '../errors'
-import {useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {useAllAccounts} from './accounts'
-import {getBlockGroup, setGroupTypes} from './editor-utils'
-import {useGatewayUrlStream} from './gateway-settings'
-import {queryKeys} from './query-keys'
+import { useNavRoute } from '../utils/navigation'
+import { useNavigate } from '../utils/useNavigate'
+import { useAllAccounts } from './accounts'
+import { getBlockGroup, setGroupTypes } from './editor-utils'
+import { useGatewayUrlStream } from './gateway-settings'
+import { queryKeys } from './query-keys'
 
 function serverBlockNodesFromEditorBlocks(
   editor: BlockNoteEditor,

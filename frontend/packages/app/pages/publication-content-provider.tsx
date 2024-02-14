@@ -1,4 +1,4 @@
-import {useNavRoute} from '@mintter/app/utils/navigation'
+import { useNavRoute } from '@mintter/app/utils/navigation'
 import {
   API_FILE_URL,
   BlockRange,
@@ -9,7 +9,7 @@ import {
   contentTextUnit,
 } from '@mintter/shared'
 import 'allotment/dist/style.css'
-import {useAppContext} from '../app-context'
+import { useAppContext } from '../app-context'
 import {
   AppInlineEmbed,
   EmbedAccount,
@@ -18,9 +18,9 @@ import {
   EmbedPublicationCard,
   EmbedPublicationContent,
 } from '../components/app-embeds'
-import {useFullReferenceUrl} from '../components/titlebar-common'
-import {useExperiments} from '../models/experiments'
-import {useOpenUrl} from '../open-url'
+import { useFullReferenceUrl } from '../components/titlebar-common'
+import { useExperiments } from '../models/experiments'
+import { useOpenUrl } from '../open-url'
 
 export function AppPublicationContentProvider({
   children,

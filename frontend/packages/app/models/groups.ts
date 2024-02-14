@@ -11,7 +11,7 @@ import {
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
-import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import { ListDocumentGroupsResponse_Item } from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
   UseInfiniteQueryOptions,
   UseMutationOptions,
@@ -21,13 +21,13 @@ import {
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
-import {useMemo} from 'react'
-import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import { useMemo } from 'react'
+import { useGRPCClient, useQueryInvalidator } from '../app-context'
 import appError from '../errors'
-import {useAllAccounts, useMyAccount} from './accounts'
-import {queryPublication, sortDocuments, usePublication} from './documents'
+import { useAllAccounts, useMyAccount } from './accounts'
+import { queryPublication, sortDocuments, usePublication } from './documents'
 
-import {PartialMessage} from '@bufbuild/protobuf'
+import { PartialMessage } from '@bufbuild/protobuf'
 import {
   DocumentChange,
   HMBlockNode,
@@ -35,7 +35,7 @@ import {
   hmDocument,
   hmIdWithVersion,
 } from '@mintter/shared'
-import {queryKeys} from './query-keys'
+import { queryKeys } from './query-keys'
 
 export function useAllGroups(
   opts?: UseInfiniteQueryOptions<ListGroupsResponse>,
