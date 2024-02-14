@@ -124,7 +124,9 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		events = append(events, &event)
 		return nil
 	}, cursorBlobID, req.PageSize)
-
+	if err != nil {
+		return nil, fmt.Errorf("Problem collecting activity feed, Probably no feed or token out of range: %w", err)
+	}
 	var PageTokenStr string
 
 	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
@@ -138,5 +140,4 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		Events:        events,
 		NextPageToken: PageTokenStr,
 	}, err
-
 }
