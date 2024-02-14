@@ -45,7 +45,7 @@ export function AppPublicationContentProvider({
         onLinkClick={(href, e) => {
           e.preventDefault()
           e.stopPropagation()
-          openUrl(href)
+          openUrl(href, e.metaKey)
         }}
         onCopyBlock={(blockId: string) => {
           if (blockId && reference) {

@@ -143,8 +143,9 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
       }
     }
   }
-
-  editHyperlink(url: string, text: string) {
+  // the latest param here is to change the latest HM param without closing the link modal.
+  // it should be TRUE if you DON't want to close the modal when called.
+  editHyperlink(url: string, text: string, latest: boolean) {
     const tr = this.pmView.state.tr.insertText(
       text,
       this.hyperlinkMarkRange!.from,
@@ -156,9 +157,11 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
       this.pmView.state.schema.mark('link', {href: url}),
     )
     this.pmView.dispatch(tr)
-    this.pmView.focus()
+    if (!latest) {
+      this.pmView.focus()
+    }
 
-    if (this.hyperlinkToolbarState?.show) {
+    if (!latest && this.hyperlinkToolbarState?.show) {
       this.hyperlinkToolbarState.show = false
       this.updateHyperlinkToolbar()
     }
@@ -298,8 +301,8 @@ export class HyperlinkToolbarProsemirrorPlugin<
   /**
    * Edit the currently hovered hyperlink.
    */
-  public editHyperlink = (url: string, text: string) => {
-    this.view!.editHyperlink(url, text)
+  public editHyperlink = (url: string, text: string, latest: boolean) => {
+    this.view!.editHyperlink(url, text, latest)
   }
 
   /**
