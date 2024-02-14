@@ -1,4 +1,4 @@
-import {GRPC_PORT, HTTP_PORT, P2P_PORT} from '@mintter/shared'
+import {GRPC_PORT, HTTP_PORT, P2P_PORT, VERSION} from '@mintter/shared'
 import {spawn} from 'child_process'
 import {app} from 'electron'
 import path from 'path'
@@ -68,6 +68,7 @@ export function startMainDaemon() {
     cwd: path.join(process.cwd(), '../../..'),
     env: {
       ...process.env,
+      SENTRY_RELEASE: VERSION,
     },
     stdio: 'pipe',
   })
