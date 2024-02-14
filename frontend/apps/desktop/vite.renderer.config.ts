@@ -4,6 +4,20 @@ import react from '@vitejs/plugin-react'
 import {defineConfig, loadEnv} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 
+const extensions = [
+  '.web.tsx',
+  '.tsx',
+  '.web.ts',
+  '.ts',
+  '.web.jsx',
+  '.jsx',
+  '.web.js',
+  '.js',
+  '.css',
+  '.json',
+  '.mjs',
+]
+
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
   // Load env file based on `mode` in the current working directory.
@@ -40,6 +54,17 @@ export default defineConfig(({command, mode}) => {
         },
       }),
     ],
+    resolve: {
+      extensions,
+    },
+    alias: {
+      'react-native': 'react-native-web',
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        resolveExtensions: extensions,
+      },
+    },
   }
 
   if (command == 'build') {

@@ -8,8 +8,7 @@ export const palettes = (() => {
   const transparent = (hsl: string, opacity = 0) =>
     hsl.replace(`%)`, `%, ${opacity})`).replace(`hsl(`, `hsla(`)
 
-  // @ts-ignore
-  const getColorPalette = (colors: object, color = colors[0]): string[] => {
+  const getColorPalette = (colors: object, color: string): string[] => {
     const colorPalette = Object.values(colors)
 
     // were re-ordering these

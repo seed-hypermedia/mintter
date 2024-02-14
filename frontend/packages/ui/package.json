@@ -13,8 +13,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tamagui-build ./src",
-    "watch": "tamagui-build --watch",
+    "build": "tamagui-build --skip-types",
+    "watch": "tamagui-build --skip-types --watch",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
     "clean:build": "tamagui-build clean:build",
@@ -25,24 +25,25 @@
   "dependencies": {
     "@hookform/resolvers": "3.3.1",
     "@mintter/shared": "*",
-    "@tamagui/animations-moti": "1.79.1",
-    "@tamagui/animations-react-native": "1.79.1",
-    "@tamagui/cli": "1.79.1",
-    "@tamagui/config": "1.79.1",
-    "@tamagui/create-theme": "1.79.1",
-    "@tamagui/font-inter": "1.79.1",
-    "@tamagui/helpers-icon": "1.79.1",
-    "@tamagui/lucide-icons": "1.79.1",
-    "@tamagui/react-native-media-driver": "1.79.1",
-    "@tamagui/shorthands": "1.79.1",
-    "@tamagui/theme-builder": "1.79.1",
-    "@tamagui/themes": "1.79.1",
-    "@tamagui/web": "1.79.1",
+    "@tamagui/animations-moti": "1.89.20",
+    "@tamagui/animations-react-native": "1.89.20",
+    "@tamagui/cli": "1.89.20",
+    "@tamagui/config": "1.89.20",
+    "@tamagui/create-theme": "1.89.20",
+    "@tamagui/font-inter": "1.89.20",
+    "@tamagui/helpers-icon": "1.89.20",
+    "@tamagui/lucide-icons": "1.89.20",
+    "@tamagui/react-native-media-driver": "1.89.20",
+    "@tamagui/shorthands": "1.89.20",
+    "@tamagui/theme-builder": "1.89.20",
+    "@tamagui/themes": "1.89.20",
+    "@tamagui/web": "1.89.20",
+    "react-native-reanimated": "^3.7.0",
     "react-virtuoso": "4.6.2",
-    "tamagui": "1.79.1"
+    "tamagui": "1.89.20"
   },
   "devDependencies": {
     "@mintter/prettier": "*",
-    "@tamagui/build": "1.79.1"
+    "@tamagui/build": "1.89.20"
   }
 }

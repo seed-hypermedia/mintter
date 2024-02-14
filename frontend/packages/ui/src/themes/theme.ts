@@ -1,10 +1,9 @@
 import {createThemeBuilder} from '@tamagui/theme-builder'
 
-import {componentThemeDefinitions} from './componentThemeDefinitions'
 import {masks} from './masks'
 import {palettes} from './palettes'
 import {shadows} from './shadows'
-import {maskOptions, templates} from './templates'
+import {templates} from './templates'
 import {darkColors, lightColors} from './token-colors'
 
 const colorThemeDefinition = (colorName: string) => [
@@ -52,25 +51,25 @@ const themesBuilder = createThemeBuilder()
     pink: colorThemeDefinition('pink'),
     red: colorThemeDefinition('red'),
   })
-  .addChildThemes({
-    alt1: {
-      mask: 'soften',
-      ...maskOptions.alt,
-    },
-    alt2: {
-      mask: 'soften2',
-      ...maskOptions.alt,
-    },
-    active: {
-      mask: 'soften3',
-      skip: {
-        color: 1,
-      },
-    },
-  })
-  .addChildThemes(componentThemeDefinitions, {
-    // to save bundle size but make alt themes not work on components
-    // avoidNestingWithin: ['alt1', 'alt2'],
-  })
+// .addChildThemes({
+//   alt1: {
+//     mask: 'soften',
+//     ...maskOptions.alt,
+//   },
+//   alt2: {
+//     mask: 'soften2',
+//     ...maskOptions.alt,
+//   },
+//   active: {
+//     mask: 'soften3',
+//     skip: {
+//       color: 1,
+//     },
+//   },
+// })
+// .addChildThemes(componentThemeDefinitions, {
+//   // to save bundle size but make alt themes not work on components
+//   // avoidNestingWithin: ['alt1', 'alt2'],
+// })
 
 export const themes = themesBuilder.build()

@@ -12,6 +12,20 @@ const _tamaguiPlugin = tamaguiPlugin({
   },
 })
 
+const extensions = [
+  '.web.tsx',
+  '.tsx',
+  '.web.ts',
+  '.ts',
+  '.web.jsx',
+  '.jsx',
+  '.web.js',
+  '.js',
+  '.css',
+  '.json',
+  '.mjs',
+]
+
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
   // Load env file based on `mode` in the current working directory.
@@ -39,6 +53,7 @@ export default defineConfig(({command, mode}) => {
       // Some libs that can run in both Web and Node.js, such as `axios`, we need to tell Vite to build them in Node.js.
       browserField: false,
       mainFields: ['module', 'jsnext:main', 'jsnext'],
+      extensions,
     },
     plugins:
       command == 'build'
@@ -53,5 +68,13 @@ export default defineConfig(({command, mode}) => {
             _tamaguiPlugin,
           ]
         : [tsConfigPaths(), _tamaguiPlugin],
+    alias: {
+      'react-native': 'react-native-web',
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        resolveExtensions: extensions,
+      },
+    },
   }
 })
