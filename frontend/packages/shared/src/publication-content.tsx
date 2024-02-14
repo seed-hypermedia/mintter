@@ -1,4 +1,4 @@
-import {PartialMessage, Timestamp} from '@bufbuild/protobuf'
+import {Timestamp} from '@bufbuild/protobuf'
 import {
   API_HTTP_URL,
   Block,
@@ -10,7 +10,7 @@ import {
   HMInlineContent,
   HMPublication,
   MttLink,
-  Publication,
+  clipContentBlocks,
   formatBytes,
   formattedDate,
   getCIDFromIPFSUrl,
@@ -211,9 +211,11 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
 
 export function PublicationContent({
   publication,
+  maxBlockCount,
   ...props
 }: XStackProps & {
-  publication: Publication | HMPublication
+  maxBlockCount?: number
+  publication: HMPublication
 }) {
   const {layoutUnit} = usePublicationContentContext()
   const allBlocks = publication.document?.children || []
@@ -223,7 +225,10 @@ export function PublicationContent({
     (!allBlocks[0]?.children || allBlocks[0]?.children?.length == 0) &&
     allBlocks[0]?.block?.text &&
     allBlocks[0]?.block?.text === publication.document?.title
-  const displayBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
+  const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
+  const displayBlocks = maxBlockCount
+    ? clipContentBlocks(displayableBlocks, maxBlockCount)
+    : displayableBlocks
   return (
     <YStack
       paddingHorizontal={layoutUnit / 2}
@@ -235,14 +240,7 @@ export function PublicationContent({
   )
 }
 
-export function BlocksContent({
-  blocks,
-}: {
-  blocks:
-    | (BlockNode[] & PartialMessage<BlockNode>[])
-    | HMBlockNode[]
-    | undefined
-}) {
+export function BlocksContent({blocks}: {blocks?: HMBlockNode[] | null}) {
   if (!blocks) return null
   return (
     <BlockNodeList childrenType={'group'}>

@@ -47,11 +47,15 @@ export function AppPublicationContentProvider({
           e.stopPropagation()
           openUrl(href, e.metaKey)
         }}
-        onCopyBlock={(blockId: string) => {
-          if (blockId && reference) {
-            reference.onCopy(blockId)
-          }
-        }}
+        onCopyBlock={
+          reference
+            ? (blockId: string) => {
+                if (blockId && reference) {
+                  reference.onCopy(blockId)
+                }
+              }
+            : null
+        }
         ipfsBlobPrefix={`${API_FILE_URL}/`}
         saveCidAsFile={saveCidAsFile}
         {...overrides}

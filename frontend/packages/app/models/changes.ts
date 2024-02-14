@@ -95,17 +95,63 @@ export function useChange(changeId?: string) {
     enabled: !!changeId,
   })
 }
+export type IPLDRef = {
+  '/': string
+}
+export type IPLDBytes = {
+  '/': {
+    bytes: string
+  }
+}
+export type IPLDNode = IPLDRef | IPLDBytes
 
-export function useChangeData(changeId?: string) {
+export type ChangeBlob<EntitySchema> = {
+  '@type': 'Change'
+  // action: 'Update', // seems to appear on group changes but not account changes
+  delegation: IPLDRef
+  deps: IPLDRef[]
+  entity: string // entity id like hm://d/123
+  hlcTime: number
+  patch: Partial<EntitySchema>
+  sig: IPLDBytes
+  signer: IPLDRef
+}
+
+export type ProfileSchema = {
+  alias: string
+  bio: string
+  avatar: IPLDRef
+}
+export enum GroupRole {
+  Owner = 1,
+  Editor = 2,
+}
+export type GroupSchema = {
+  title: string
+  description: string
+  members: Record<
+    string, // accountId
+    GroupRole
+  >
+  content: Record<
+    string, // pathName
+    string // hm://d/123?v=123
+  >
+}
+
+// todo, add KeyDelegationData CommentData and any other JSON blobs
+export type ChangeData = ChangeBlob<ProfileSchema> | ChangeBlob<GroupSchema> // todo: add DocumentSchema
+export type BlobData = ChangeData
+
+export function useBlobData(cid?: string) {
   return useQuery({
     queryFn: async () => {
-      const res = await fetch(
-        `http://localhost:${HTTP_PORT}/debug/cid/${changeId}`,
-      )
+      const res = await fetch(`http://localhost:${HTTP_PORT}/debug/cid/${cid}`)
       const data = await res.json()
-      return data
+      console.log('blob data', data)
+      return data as BlobData
     },
-    queryKey: [queryKeys.CHANGE_DATA, changeId],
-    enabled: !!changeId,
+    queryKey: [queryKeys.BLOB_DATA, cid],
+    enabled: !!cid,
   })
 }

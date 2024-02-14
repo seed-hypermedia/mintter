@@ -140,6 +140,7 @@ export function useCreateGroup(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUPS])
     },
   })
@@ -162,6 +163,7 @@ export function useUpdateGroup(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUPS])
       invalidate([queryKeys.GET_GROUP, input.id])
       invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
@@ -188,6 +190,7 @@ export function usePublishGroupToSite(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUPS])
       invalidate([queryKeys.GET_GROUP, input.groupId])
     },
@@ -230,6 +233,7 @@ export function usePublishDocToGroup(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
       invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
       invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, input.docId])
@@ -259,6 +263,7 @@ export function useRemoveDocFromGroup(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
       invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
       invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT])
@@ -298,6 +303,7 @@ export function useRenameGroupDoc(
     onSuccess: (result, input, context) => {
       const docId = unpackDocId(result)
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
       invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, docId?.docId])
     },
@@ -570,6 +576,7 @@ export function useAddGroupMember(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUP_MEMBERS, input.groupId])
     },
   })
@@ -597,6 +604,7 @@ export function useRemoveGroupMember(
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_GROUP_MEMBERS, input.groupId])
     },
   })

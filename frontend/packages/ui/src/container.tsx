@@ -1,4 +1,4 @@
-import {ComponentProps, ReactNode} from 'react'
+import {ComponentProps} from 'react'
 import {XStack, YStack, styled} from 'tamagui'
 
 const variants = {
@@ -18,7 +18,7 @@ const variants = {
 export function PageContainer({
   children,
   ...props
-}: {children: ReactNode} & ComponentProps<typeof YStack>) {
+}: ComponentProps<typeof YStack>) {
   return (
     <XStack jc="center" f={1}>
       <YStack

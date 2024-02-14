@@ -56,9 +56,11 @@ export const queryKeys = {
 
   // changes
   CHANGE: 'CHANGE', //, changeId: string
-  CHANGE_DATA: 'CHANGE_DATA', //, changeId: string
   ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
   DOCUMENT_TEXT_CONTENT: 'DOCUMENT_TEXT_CONTENT',
+
+  // cid
+  BLOB_DATA: 'BLOB_DATA', //, cid: string
 
   LIGHTNING_ACCOUNT_CHECK: 'LIGHTNING_ACCOUNT_CHECK', //, accountId: string
 } as const

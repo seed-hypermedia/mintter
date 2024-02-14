@@ -1,5 +1,6 @@
 export * from './client'
 export * from './constants'
+export * from './content'
 export * from './grpc-client'
 export * from './hm-documents'
 export * from './publication-content'

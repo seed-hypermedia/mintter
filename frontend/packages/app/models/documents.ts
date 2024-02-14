@@ -18,6 +18,7 @@ import {
   GRPCClient,
   GroupVariant,
   HMBlock,
+  HMPublication,
   ListPublicationsResponse,
   Publication,
   fromHMBlock,
@@ -164,7 +165,7 @@ export function usePublication({
   id,
   version,
   ...options
-}: UseQueryOptions<Publication> & {
+}: UseQueryOptions<HMPublication> & {
   id?: string
   version?: string
 }) {
@@ -179,7 +180,7 @@ export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
-): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
+): UseQueryOptions<HMPublication> | FetchQueryOptions<HMPublication> {
   return {
     queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
     enabled: !!documentId,
@@ -187,11 +188,15 @@ export function queryPublication(
     // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
     retry: 10,
     // about 15 seconds total right now
-    queryFn: () =>
-      grpcClient.publications.getPublication({
+    queryFn: async () => {
+      const pub = await grpcClient.publications.getPublication({
         documentId,
         version: versionId,
-      }),
+      })
+      const hmPub = hmPublication(pub)
+      if (!hmPub) throw new Error('Failed to produce HMPublication')
+      return hmPub
+    },
   }
 }
 
@@ -337,6 +342,7 @@ export function usePublishDraft(
       const documentId = result.pub.document?.id
       const {groupVariant} = result
       opts?.onSuccess?.(result, variables, context)
+      invalidate([queryKeys.FEED])
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])
