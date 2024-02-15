@@ -191,6 +191,7 @@ const publicationRouter = router({
       if (!resolvedPub) {
         return {enableDiscovery, publication: null}
       }
+      console.log('haha', process.env.NEXT_PUBLIC_IS_GATEWAY)
       return {
         enableDiscovery,
         publication: hmPublication(resolvedPub) || null,

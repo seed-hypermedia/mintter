@@ -342,7 +342,7 @@ function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
   const embedId = unpackHmId(url)
   const documentId =
     embedId?.type === 'd' ? createHmId(embedId.type, embedId.eid) : undefined
-  const pub = trpc.publication.get.useQuery(
+  const pub = trpc.publication.getVariant.useQuery(
     {
       documentId,
       versionId: embedId?.version || undefined,

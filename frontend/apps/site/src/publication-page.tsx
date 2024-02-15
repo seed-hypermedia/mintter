@@ -20,6 +20,7 @@ import {
 import {
   ArrowRight,
   Button,
+  Paragraph,
   SideSection,
   SideSectionTitle,
   SizableText,
@@ -28,11 +29,13 @@ import {
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
+import Link from 'next/link'
+import {EntityNotFoundPage} from 'pages/404'
 import {useEffect} from 'react'
 import {BasicOGMeta, OGImageMeta, getPublicationDescription} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
-import {ErrorPage, SmallContainer} from './error-page'
+import {SmallContainer} from './error-page'
 import {OpenInAppLink} from './metadata'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
@@ -54,21 +57,15 @@ export type PublicationPageData = {
   editors: Array<Account | string | null> | null
 }
 
-function DocumentNotFoundPage({
+function DiscoveryPage({
   id,
   version,
+  variants,
 }: {
   id: string
   version?: string | null
+  variants?: Array<PublicationVariant> | null
 }) {
-  return (
-    <ErrorPage title="Document not found" description={`Document Id: ${id}`}>
-      <SizableText color="$color9">version: {version}</SizableText>
-    </ErrorPage>
-  )
-}
-
-function DiscoveryPage({id, version}: {id: string; version?: string | null}) {
   const entityId = unpackHmId(id)
   const entityTypeName = entityId
     ? HYPERMEDIA_ENTITY_TYPES[entityId.type]
@@ -93,19 +90,20 @@ function DiscoveryPage({id, version}: {id: string; version?: string | null}) {
       console.log('discovery complete')
     })
   }, [id, version])
-  if (!discover.isLoading && !discover.error) {
-    return <DocumentNotFoundPage id={id} version={version} />
+  const fullId =
+    entityId && createHmId(entityId.type, entityId.eid, {version, variants})
+  if (!discover.isLoading && !discover.error && fullId) {
+    return <EntityNotFoundPage id={fullId} version={version} />
   }
   return (
     <MainSiteLayout head={<SiteHead pageTitle={`Searching...`} />}>
-      <SmallContainer>
+      <SmallContainer alignItems="flex-start">
         <SizableText size="$5" fontWeight="800" textAlign="center">
           Looking for this {entityTypeName}
         </SizableText>
-
         {discover.isLoading ? (
           <>
-            <SizableText color="$color9" textAlign="center">
+            <SizableText color="$color9">
               This was not found on the gateway right now. Trying to find a peer
               on the network who has this content...
             </SizableText>
@@ -119,6 +117,18 @@ function DiscoveryPage({id, version}: {id: string; version?: string | null}) {
             </SizableText>
           </>
         ) : null}
+        <Paragraph>
+          You might be able to find it in the{' '}
+          <Link href="/download-mintter-hypermedia" target="_blank">
+            Mintter App
+          </Link>{' '}
+          if you are connected to a peer who has it.
+        </Paragraph>
+        {fullId && (
+          <Link passHref href={fullId} style={{textDecoration: 'none'}}>
+            <Button>Open in Mintter App</Button>
+          </Link>
+        )}
       </SmallContainer>
     </MainSiteLayout>
   )
@@ -173,10 +183,21 @@ export function PublicationPage({
       ? `/api/content-image/${pubId.type}/${pubId.eid}/${pubVersion}/media.png`
       : undefined
   if (!pub && publication.data?.enableDiscovery) {
-    return <DiscoveryPage id={documentId} version={version} />
+    return (
+      <DiscoveryPage id={documentId} version={version} variants={variants} />
+    )
   }
-  if (!pub && !publication.isLoading) {
-    return <DocumentNotFoundPage id={documentId} version={version} />
+  const id = unpackHmId(documentId)
+  if (!pub && !publication.isLoading && id) {
+    return (
+      <EntityNotFoundPage
+        id={createHmId(id.type, id.eid, {
+          version,
+          variants,
+        })}
+        version={version}
+      />
+    )
   }
   const contextGroupId = groupVariant?.groupId
     ? unpackHmId(groupVariant?.groupId)
