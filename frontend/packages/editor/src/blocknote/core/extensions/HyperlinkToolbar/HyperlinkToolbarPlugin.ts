@@ -2,7 +2,7 @@ import {getMarkRange, posToDOMRect, Range} from '@tiptap/core'
 import {EditorView} from '@tiptap/pm/view'
 import {Mark} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
+import type {BlockNoteEditor} from '../../BlockNoteEditor'
 import {BaseUiElementState} from '../../shared/BaseUiElementTypes'
 import {EventEmitter} from '../../shared/EventEmitter'
 import {BlockSchema} from '../Blocks/api/blockTypes'
@@ -18,7 +18,7 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
   private hyperlinkToolbarState?: HyperlinkToolbarState
   public updateHyperlinkToolbar: () => void
 
-  menuUpdateTimer: NodeJS.Timeout | undefined
+  menuUpdateTimer: ReturnType<typeof setTimeout> | undefined
   startMenuUpdateTimer: () => void
   stopMenuUpdateTimer: () => void
 
@@ -157,11 +157,10 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
       this.pmView.state.schema.mark('link', {href: url}),
     )
     this.pmView.dispatch(tr)
-    if (!latest) {
-      this.pmView.focus()
-    }
 
-    if (!latest && this.hyperlinkToolbarState?.show) {
+    this.pmView.focus()
+
+    if (this.hyperlinkToolbarState?.show) {
       this.hyperlinkToolbarState.show = false
       this.updateHyperlinkToolbar()
     }
