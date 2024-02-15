@@ -31,8 +31,8 @@ import './root.tsx'
 
 if (IS_PROD_DESKTOP) {
   Sentry.init({
-    dsn: 'https://8d3089ffb71045dc911bc66efbd3463a@o4504088793841664.ingest.sentry.io/4505527460429824',
-    debug: true,
+    dsn: process.env.HM_SENTRY_DESKTOP_DSN,
+    debug: false,
     integrations: [new Sentry.Replay()],
     // Session Replay
     replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
