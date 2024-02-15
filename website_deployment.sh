@@ -61,17 +61,16 @@ hostname="${hostname%/}"
 mkdir -p ${workspace}
 rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
-
+curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/docker-compose.yml
 
 install_docker
-if [ -n "$metrics" ]; then
+if [ -n "$profile" ]; then
 	mkdir -p ${workspace}/monitoring/grafana/dashboards/libp2p
 	mkdir -p ${workspace}/monitoring/grafana/dashboards/mintter
 	mkdir -p ${workspace}/monitoring/grafana/dashboards/system
 	mkdir -p ${workspace}/monitoring/grafana/provisioning/dashboards
 	mkdir -p ${workspace}/monitoring/grafana/provisioning/datasources
 	mkdir -p ${workspace}/monitoring/prometheus
-	curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/docker-compose.yml
 	curl -s -o ${workspace}/monitoring/grafana/provisioning/datasources/main.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/datasources/main.yaml
 	curl -s -o ${workspace}/monitoring/grafana/provisioning/dashboards/main.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/dashboards/main.yml
 	curl -s -o ${workspace}/monitoring/grafana/dashboards/libp2p/resource-manager.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/libp2p/resource-manager.json
@@ -137,5 +136,5 @@ MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SI
 
 timeout 15 docker logs -f minttersite 2> /dev/null | sed '/Site Invitation secret token: / q' | awk -F ': ' '{print $2}'
 
-rm ${workspace}/mttsite.yml
+rm -f ${workspace}/mttsite.yml
 exit 0
