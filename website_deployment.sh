@@ -61,22 +61,24 @@ hostname="${hostname%/}"
 mkdir -p ${workspace}
 rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
-mkdir -p ${workspace}/monitoring/grafana/dashboards/libp2p
-mkdir -p ${workspace}/monitoring/grafana/dashboards/mintter
-mkdir -p ${workspace}/monitoring/grafana/dashboards/system
-mkdir -p ${workspace}/monitoring/grafana/provisioning/dashboards
-mkdir -p ${workspace}/monitoring/grafana/provisioning/datasources
-mkdir -p ${workspace}/monitoring/prometheus
+
 
 install_docker
-curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/docker-compose.yml
-curl -s -o ${workspace}/monitoring/grafana/provisioning/datasources/main.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/datasources/main.yaml
-curl -s -o ${workspace}/monitoring/grafana/provisioning/dashboards/main.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/dashboards/main.yml
-curl -s -o ${workspace}/monitoring/grafana/dashboards/libp2p/resource-manager.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/libp2p/resource-manager.json
-curl -s -o ${workspace}/monitoring/grafana/dashboards/mintter/main.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/mintter/main.json
-curl -s -o ${workspace}/monitoring/grafana/dashboards/system/full-host.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/system/full-host.json
-curl -s -o ${workspace}/monitoring/prometheus/prometheus.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/prometheus/prometheus.yaml
-
+if [ -n "$metrics" ]; then
+	mkdir -p ${workspace}/monitoring/grafana/dashboards/libp2p
+	mkdir -p ${workspace}/monitoring/grafana/dashboards/mintter
+	mkdir -p ${workspace}/monitoring/grafana/dashboards/system
+	mkdir -p ${workspace}/monitoring/grafana/provisioning/dashboards
+	mkdir -p ${workspace}/monitoring/grafana/provisioning/datasources
+	mkdir -p ${workspace}/monitoring/prometheus
+	curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/docker-compose.yml
+	curl -s -o ${workspace}/monitoring/grafana/provisioning/datasources/main.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/datasources/main.yaml
+	curl -s -o ${workspace}/monitoring/grafana/provisioning/dashboards/main.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/dashboards/main.yml
+	curl -s -o ${workspace}/monitoring/grafana/dashboards/libp2p/resource-manager.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/libp2p/resource-manager.json
+	curl -s -o ${workspace}/monitoring/grafana/dashboards/mintter/main.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/mintter/main.json
+	curl -s -o ${workspace}/monitoring/grafana/dashboards/system/full-host.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/system/full-host.json
+	curl -s -o ${workspace}/monitoring/prometheus/prometheus.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/prometheus/prometheus.yaml
+fi
 docker stop nextjs minttersite proxy grafana prometheus 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 docker rm nextjs minttersite proxy grafana prometheus 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 
@@ -109,7 +111,7 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 
 reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
-reverse_proxy @metrics grafana:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+reverse_proxy @metrics grafana:{\$MTT_SITE_MONITORING_PORT:3001}
 
 route @version {
     rewrite /.well-known/hypermedia-site/version /debug/version
@@ -130,7 +132,7 @@ if [ $auto_update -eq 1 ]; then
   docker run -d --restart unless-stopped --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
 fi
 
-MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" MTT_SITE_MONITORING_WORKDIR="${workspace}/monitoring" docker compose -f ${workspace}/mttsite.yml --profile "$profile" up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
+MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" MTT_SITE_MONITORING_WORKDIR="${workspace}/monitoring" MTT_SITE_MONITORING_PORT="$MTT_SITE_MONITORING_PORT" docker compose -f ${workspace}/mttsite.yml --profile "$profile" up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 # MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 
 timeout 15 docker logs -f minttersite 2> /dev/null | sed '/Site Invitation secret token: / q' | awk -F ': ' '{print $2}'
