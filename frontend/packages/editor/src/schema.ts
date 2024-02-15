@@ -1,17 +1,20 @@
+import {common, createLowlight} from 'lowlight'
 import {
   BlockSchema,
   TypesMatch,
   defaultBlockSchema,
   defaultProps,
 } from './blocknote'
-import {CodeBlock} from './code-block'
 import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {HMHeadingBlockContent} from './heading-component-plugin'
 import {ImageBlock} from './image'
 import {ImagePlaceholder} from './image-placeholder'
 import {NostrBlock} from './nostr'
+import CodeBlockLowlight from './tiptap-extension-code-block'
 import {VideoBlock} from './video'
+
+const lowlight = createLowlight(common)
 
 export const hmBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
@@ -34,7 +37,12 @@ export const hmBlockSchema: BlockSchema = {
       ...defaultProps,
       language: {default: ''},
     },
-    node: CodeBlock,
+    // @ts-ignore
+    node: CodeBlockLowlight.configure({
+      defaultLanguage: 'plaintext',
+      lowlight: lowlight,
+      languageClassPrefix: 'language-',
+    }),
   },
   embed: EmbedBlock,
   video: VideoBlock,

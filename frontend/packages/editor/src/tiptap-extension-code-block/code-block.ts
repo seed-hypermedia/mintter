@@ -1,8 +1,13 @@
 import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
-import {Editor, mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
+import {
+  Editor,
+  mergeAttributes,
+  Node,
+  textblockTypeInputRule,
+} from '@tiptap/core'
 import {Fragment, Slice} from '@tiptap/pm/model'
 import {Plugin, PluginKey, TextSelection} from '@tiptap/pm/state'
-import {createTipTapBlock, getBlockInfoFromPos, mergeCSSClasses} from '.'
+import {BlockNoteDOMAttributes, getBlockInfoFromPos, mergeCSSClasses} from '..'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -22,12 +27,33 @@ declare module '@tiptap/core' {
 export const backtickInputRegex = /^```([a-z]+)?[\s\n]$/
 export const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/
 
-export const CodeBlock = createTipTapBlock<'codeBlock'>({
+export interface CodeBlockOptions {
+  /**
+   * Adds a prefix to language classes that are applied to code tags.
+   * Defaults to `'language-'`.
+   */
+  languageClassPrefix: string
+  /**
+   * BlockNote's default DOM attributes
+   */
+  domAttributes?: BlockNoteDOMAttributes
+}
+
+export const CodeBlock = Node.create<CodeBlockOptions>({
   name: 'codeBlock',
+
+  addOptions() {
+    return {
+      languageClassPrefix: 'language-',
+      domAttributes: {},
+    }
+  },
 
   content: 'text*',
 
   marks: '',
+
+  group: 'blockContent',
 
   code: true,
 
@@ -37,20 +63,20 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
     return {
       language: {
         default: '',
-        // parseHTML: (element) => {
-        //   const {languageClassPrefix} = this.options
-        //   const classNames = [...(element.firstElementChild?.classList || [])]
-        //   const languages = classNames
-        //     .filter((className) => className.startsWith(languageClassPrefix))
-        //     .map((className) => className.replace(languageClassPrefix, ''))
-        //   const language = languages[0]
+        parseHTML: (element) => {
+          const {languageClassPrefix} = this.options
+          const classNames = [...(element.firstElementChild?.classList || [])]
+          const languages = classNames
+            .filter((className) => className.startsWith(languageClassPrefix))
+            .map((className) => className.replace(languageClassPrefix, ''))
+          const language = languages[0]
 
-        //   if (!language) {
-        //     return ''
-        //   }
+          if (!language) {
+            return ''
+          }
 
-        //   return language
-        // },
+          return language
+        },
         rendered: false,
       },
     }
@@ -61,14 +87,11 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
       {
         tag: 'pre',
         preserveWhitespace: 'full',
-        attrs: {
-          class: 'FOOO',
-        },
       },
     ]
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({HTMLAttributes, node}) {
     const blockContentDOMAttributes =
       this.options.domAttributes?.blockContent || {}
     const inlineContentDOMAttributes =
@@ -81,6 +104,9 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
         class: mergeCSSClasses(
           styles.blockContent,
           blockContentDOMAttributes.class,
+          node.attrs.language.length
+            ? this.options.languageClassPrefix + node.attrs.language
+            : '',
         ),
         'data-content-type': this.name,
         'data-language': HTMLAttributes.language,

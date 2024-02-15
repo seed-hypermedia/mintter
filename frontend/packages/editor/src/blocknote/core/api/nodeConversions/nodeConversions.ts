@@ -158,13 +158,10 @@ export function blockToNode<BSchema extends BlockSchema>(
   } else {
     let nodes: Node[] = []
     // Don't want hard breaks inserted as nodes in codeblock
-    if (block.type === 'codeBlock') {
-      console.log(`== ~ block.content:`, block.content)
+    if (block.type === 'codeBlock' && block.content.length) {
       // @ts-ignore
-      if (block.content.length) {
-        const textNode = schema.text(block.content[0].text)
-        nodes.push(textNode)
-      }
+      const textNode = schema.text(block.content[0].text)
+      nodes.push(textNode)
     } else nodes = inlineContentToNodes(block.content, schema)
     contentNode = schema.nodes[type].create(block.props, nodes)
   }
@@ -394,9 +391,12 @@ export function nodeToBlock<BSchema extends BlockSchema>(
   })) {
     const blockSpec = blockSchema[blockInfo.contentType.name]
     if (!blockSpec) {
-      throw Error(
-        'Block is of an unrecognized type: ' + blockInfo.contentType.name,
-      )
+      if (blockInfo.contentType.name === 'codeBlock') {
+        break
+      } else
+        throw Error(
+          'Block is of an unrecognized type: ' + blockInfo.contentType.name,
+        )
     }
 
     const propSchema = blockSpec.propSchema
