@@ -47,13 +47,18 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
       chromeless
       group="item"
       tag="li"
+      bg="$backgroundStrong"
+      hoverStyle={{
+        backgroundColor: '$backgroundHover',
+        borderColor: '$backgroundHover',
+      }}
       onPress={() => {
         navigate({key: 'account', accountId: account.id})
       }}
     >
       <XStack alignItems="center" gap="$4" flex={1}>
         <Avatar
-          size={36}
+          size={24}
           id={account.id}
           label={account.profile?.alias}
           url={getAvatarUrl(account.profile?.avatar)}

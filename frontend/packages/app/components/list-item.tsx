@@ -31,47 +31,47 @@ export function ListItem({
     typeof menuItems === 'function' ? undefined : menuItems,
   )
   return (
-    <Button
-      onPointerEnter={() => {
-        onPointerEnter?.()
-        if (!currentMenuItems && typeof menuItems === 'function') {
-          setMenuItems(menuItems())
-        }
-      }}
-      group="item"
-      chromeless
-      onPress={onPress}
-      {...hoverProps}
-      maxWidth={900}
-      f={1}
-      width="100%"
-    >
-      <ButtonText
-        onPress={(e) => {
-          e.stopPropagation()
-          onPress?.(e)
+    <XStack paddingVertical="$1.5" w="100%" maxWidth={900} group="item">
+      <Button
+        onPointerEnter={() => {
+          onPointerEnter?.()
+          if (!currentMenuItems && typeof menuItems === 'function') {
+            setMenuItems(menuItems())
+          }
         }}
-        fontWeight="700"
-        flex={2}
-        textAlign="left"
+        chromeless
+        onPress={onPress}
+        {...hoverProps}
+        maxWidth={900}
+        f={1}
+        width="100%"
+        bg="$backgroundStrong"
       >
-        {title}
-      </ButtonText>
-      {accessory && (
-        <XStack flexShrink={0} paddingHorizontal="$2">
-          {accessory}
+        <ButtonText
+          onPress={(e) => {
+            e.stopPropagation()
+            onPress?.(e)
+          }}
+          fontWeight="700"
+          flex={2}
+          textAlign="left"
+        >
+          {title}
+        </ButtonText>
+        {accessory && (
+          <XStack flexShrink={0} paddingHorizontal="$2">
+            {accessory}
+          </XStack>
+        )}
+        <XStack opacity={hover ? 1 : 0} $group-item-hover={{opacity: 1}}>
+          {currentMenuItems ? (
+            <OptionsDropdown hover={hover} menuItems={currentMenuItems} />
+          ) : (
+            <View width={20} />
+          )}
         </XStack>
-      )}
-      {currentMenuItems ? (
-        <OptionsDropdown
-          hover={hover}
-          hiddenUntilItemHover
-          menuItems={currentMenuItems}
-        />
-      ) : (
-        <View width={20} />
-      )}
-    </Button>
+      </Button>
+    </XStack>
   )
 }
 

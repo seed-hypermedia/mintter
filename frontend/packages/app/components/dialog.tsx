@@ -13,7 +13,15 @@ import {NavContextProvider, useNavigation} from '../utils/navigation'
 
 export function DialogOverlay(props) {
   // for somer reason this is required for the overlay to go behind the DialogContent. maybe because of the DialogContent position:fixed below
-  return <Dialog.Overlay zIndex="$max" {...props} />
+  return (
+    <Dialog.Overlay
+      zIndex="$zIndex.1"
+      animation="medium"
+      enterStyle={{opacity: 0}}
+      exitStyle={{opacity: 0}}
+      {...props}
+    />
+  )
 }
 
 export function DialogContent(props: YStackProps) {
@@ -122,12 +130,12 @@ export function AppDialog({
       <Component.Portal>
         <NavContextProvider value={nav}>
           <Component.Overlay
-            backgroundColor={'#00000088'}
             height="100vh"
+            bg={'#00000088'}
             width="100vw"
             onPress={() => setIsOpen(false)}
           />
-          <Component.Content backgroundColor={'$background'}>
+          <Component.Content zIndex="$zIndex.5" backgroundColor={'$background'}>
             <ContentComponent
               isOpen={isOpen}
               onClose={() => {
@@ -177,8 +185,29 @@ export function useAppDialog<DialogInput>(
         >
           <Component.Portal>
             <NavContextProvider value={nav}>
-              <Component.Overlay height="100vh" width="100vw" onPress={close} />
-              <Component.Content backgroundColor={'$background'}>
+              <Component.Overlay
+                height="100vh"
+                bg={'#00000088'}
+                width="100vw"
+                animation="fast"
+                opacity={0.8}
+                enterStyle={{opacity: 0}}
+                exitStyle={{opacity: 0}}
+                onPress={close}
+              />
+              <Component.Content
+                backgroundColor={'$background'}
+                animation={[
+                  'fast',
+                  {
+                    opacity: {
+                      overshootClamping: true,
+                    },
+                  },
+                ]}
+                enterStyle={{y: -10, opacity: 0}}
+                exitStyle={{y: -10, opacity: 0}}
+              >
                 {openState && (
                   <DialogContentComponent
                     input={openState}

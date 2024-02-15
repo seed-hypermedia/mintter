@@ -412,7 +412,7 @@ export default function GroupPage() {
                     </XStack>
                   </XStack>
                 )}
-                <YStack paddingVertical="$4" gap="$4">
+                <YStack paddingVertical="$4">
                   {//Object.entries(groupContent.data?.content || {})
                   groupContent.data?.items.map(
                     ({key, pub, author, editors, id}) => {

@@ -31,18 +31,12 @@ export function OptionsDropdown({
             // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
             e.stopPropagation()
           }}
-          $group-item-hover={{
-            opacity: 1,
-          }}
           icon={MoreHorizontal}
         />
       </Popover.Trigger>
       <Popover.Content
         padding={0}
         elevation="$2"
-        enterStyle={{y: -10, opacity: 0}}
-        exitStyle={{y: -10, opacity: 0}}
-        elevate={true}
         animation={[
           'fast',
           {
@@ -51,6 +45,9 @@ export function OptionsDropdown({
             },
           },
         ]}
+        enterStyle={{y: -10, opacity: 0}}
+        exitStyle={{y: -10, opacity: 0}}
+        elevate={true}
       >
         <YGroup separator={<Separator />}>
           {menuItems.map(
