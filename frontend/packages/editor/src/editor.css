@@ -11,6 +11,10 @@
   margin-bottom: 60px;
 }
 
+.block-heading + [data-node-type='blockGroup'] {
+  margin-left: 0;
+}
+
 #editor-title textarea {
   border-color: transparent !important;
   outline: none !important;
@@ -101,4 +105,16 @@
   font-size: 0.8em;
   line-height: 1.5;
   /* padding: 2px var(--space-7); */
+}
+
+[data-node-type='block-outer']::marker {
+  color: hsl(0, 0%, 42.5%);
+}
+
+ol > [data-node-type='block-outer']::marker {
+  font-size: 0.8em;
+}
+
+.block-heading + [data-node-type='blockGroup'] {
+  margin-left: 0;
 }

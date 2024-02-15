@@ -24,16 +24,15 @@ export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
 
   addInputRules() {
     return [
-      ...['1', '2', '3'].map((level) => {
-        // Creates a heading of appropriate level when starting with "#", "##", or "###".
+      ...['1'].map((level) => {
         return new InputRule({
-          find: new RegExp(`^(#{${parseInt(level)}})\\s$`),
+          find: new RegExp(`^#\\s$`),
           handler: ({state, chain, range}) => {
             chain()
               .BNUpdateBlock(state.selection.from, {
                 type: 'heading',
                 props: {
-                  level: '2',
+                  level: '3',
                 },
               })
               // Removes the "#" character(s) used to set the heading.
@@ -48,12 +47,12 @@ export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
     return [
       {
         tag: 'h1',
-        attrs: {level: 2},
+        attrs: {level: 1},
         node: 'heading',
       },
       {
         tag: 'h2',
-        attrs: {level: 3},
+        attrs: {level: 2},
         node: 'heading',
       },
       {
@@ -61,17 +60,41 @@ export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
         attrs: {level: 3},
         node: 'heading',
       },
+      {
+        tag: 'h4',
+        attrs: {level: 4},
+        node: 'heading',
+      },
+      {
+        tag: 'h5',
+        attrs: {level: 5},
+        node: 'heading',
+      },
+      {
+        tag: 'h6',
+        attrs: {level: 6},
+        node: 'heading',
+      },
     ]
   },
 
-  renderHTML({node, HTMLAttributes}) {
+  renderHTML({HTMLAttributes, node}) {
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
-        class: styles.blockContent,
+        class: `${styles.blockContent} block-heading`,
         'data-content-type': this.name,
       }),
-      [`h${node.attrs.level}`, {class: styles.inlineContent}, 0],
+      [`p`, {class: `${styles.inlineContent} heading-content`}, 0],
     ]
   },
 })
+
+export const Heading = {
+  propSchema: {
+    listLevel: {
+      default: '1',
+    },
+  },
+  node: HMHeadingBlockContent,
+}

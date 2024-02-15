@@ -1,6 +1,7 @@
 import {mergeAttributes, Node} from '@tiptap/core'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
 import {
+  EditorState,
   NodeSelection,
   Plugin,
   PluginKey,
@@ -14,6 +15,7 @@ import {
 
 import {HMBlockChildrenType} from '@mintter/shared'
 import {ResolvedPos} from '@tiptap/pm/model'
+import {EditorView} from '@tiptap/pm/view'
 import {mergeCSSClasses} from '../../../shared/utils'
 import {
   BlockNoteDOMAttributes,
@@ -22,13 +24,13 @@ import {
 } from '../api/blockTypes'
 import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
 import {getGroupInfoFromPos} from '../helpers/getGroupInfoFromPos'
-import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
 
 const SelectionPluginKey = new PluginKey('selectionPluginKey')
 const ClickSelectionPluginKey = new PluginKey('clickSelectionPluginKey')
 const PastePluginKey = new PluginKey('pastePluginKey')
+const headingGroupPluginKey = new PluginKey('HeadingGroupPlugin')
 
 const SelectionPlugin = new Plugin({
   key: SelectionPluginKey,
@@ -120,6 +122,118 @@ const PastePlugin = new Plugin({
   },
 })
 
+const headingGroupPlugin = new Plugin({
+  key: headingGroupPluginKey,
+  view(editorView) {
+    return new HeadingGroupPlugin(editorView)
+  },
+})
+
+class HeadingGroupPlugin {
+  private line: HTMLElement
+  constructor(view: EditorView) {
+    this.line = document.createElement('div')
+    this.line.style.transition = 'all 0.15s ease-in-out'
+    this.line.style.pointerEvents = 'none'
+    this.line.style.display = ''
+    this.line.style.opacity = '0'
+    view.dom.parentNode?.appendChild(this.line)
+
+    this.update(view, null)
+  }
+
+  update(view: EditorView, lastState: EditorState | null) {
+    let state = view.state
+    // Don't do anything if the document/selection didn't change
+    if (
+      lastState &&
+      lastState.doc.eq(state.doc) &&
+      lastState.selection.eq(state.selection)
+    )
+      return
+
+    let res = getNearestHeadingFromPos(state, state.selection.from)
+
+    if (res && res.heading?.type.name == 'heading') {
+      let {node} = view.domAtPos(res.groupStartPos)
+
+      let rect = (node as HTMLElement).getBoundingClientRect()
+      let editorRect = view.dom.getBoundingClientRect()
+
+      this.line.style.position = 'absolute'
+      this.line.style.top = `${rect.top - editorRect.top}px`
+      this.line.style.left = `${rect.left - 30 - editorRect.left}px`
+      this.line.style.width = `3px`
+      this.line.style.height = `${rect.height}px`
+      this.line.style.backgroundColor = 'blue'
+      this.line.style.opacity = '0.4'
+    } else {
+      this.line.style.opacity = '0'
+      return
+    }
+  }
+
+  destroy() {
+    this.line.remove()
+  }
+}
+
+function getNearestHeadingFromPos(state: EditorState, pos: number) {
+  const $pos = state.doc.resolve(pos)
+  const maxDepth = $pos.depth
+  let group = $pos.node(maxDepth)
+  let heading = group.firstChild
+  let depth = maxDepth
+
+  if (maxDepth > 3) {
+    while (true) {
+      if (depth < 0) {
+        break
+      }
+
+      if (
+        group.type.name == 'blockContainer' &&
+        heading?.type.name == 'heading'
+      ) {
+        break
+      }
+
+      depth -= 1
+      group = $pos.node(depth)
+      heading = group.firstChild
+    }
+    return {
+      depth,
+      groupStartPos: $pos.start(depth),
+      heading,
+      group,
+      $pos,
+    }
+  }
+
+  return
+}
+
+export function getParentBlockFromPos(state: EditorState, pos: number) {
+  const $pos = state.doc.resolve(pos)
+  const depth = $pos.depth
+
+  // if (depth > 3 && container.type.name == 'blockContainer') {
+  if (depth > 3) {
+    let parent = $pos.node(depth - 3)
+    let parentGroup = $pos.node(depth - 2)
+    let parentPos = $pos.start(depth - 3)
+    return {
+      parentGroup,
+      parentBlock: parent.firstChild,
+      parentPos,
+      depth,
+      $pos,
+    }
+  }
+
+  return
+}
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     block: {
@@ -127,6 +241,7 @@ declare module '@tiptap/core' {
       BNDeleteBlock: (posInBlock: number) => ReturnType
       BNMergeBlocks: (posBetweenBlocks: number) => ReturnType
       BNSplitBlock: (posInBlock: number, keepType: boolean) => ReturnType
+      BNSplitHeadingBlock: (posInBlock: number) => ReturnType
       BNUpdateBlock: <BSchema extends BlockSchema>(
         posInBlock: number,
         block: PartialBlock<BSchema>,
@@ -488,6 +603,79 @@ export const BlockContainer = Node.create<{
 
           return true
         },
+      // Splits a block at a given position. Content after the position is moved to a new block below, at the same
+      // nesting level.
+      BNSplitHeadingBlock:
+        (posInBlock) =>
+        ({state, dispatch}) => {
+          const blockInfo = getBlockInfoFromPos(state.doc, posInBlock)
+          if (blockInfo === undefined) {
+            return false
+          }
+          let {node, startPos, contentNode, depth} = blockInfo
+          if (node.childCount == 1) {
+            setTimeout(() => {
+              this.editor
+                .chain()
+                .deleteSelection()
+                .BNSplitBlock(state.selection.from, false)
+                .sinkListItem('blockContainer')
+                .UpdateGroup(-1, blockInfo.node.attrs.listType, true, undefined)
+                .run()
+            })
+          } else {
+            const originalBlockContent = state.doc.cut(
+              startPos + 1,
+              state.selection.from,
+            )
+            let newBlockContent = state.doc.cut(
+              state.selection.from,
+              startPos + contentNode.nodeSize - 1,
+            )
+            const newBlock =
+              state.schema.nodes['blockContainer'].createAndFill()!
+            const newBlockInsertionPos = startPos + contentNode.nodeSize + 1
+            const newBlockContentPos = newBlockInsertionPos + 2
+
+            if (dispatch) {
+              // Creates a new block. Since the schema requires it to have a content node, a paragraph node is created
+              // automatically, spanning newBlockContentPos to newBlockContentPos + 1.
+              state.tr.insert(newBlockInsertionPos, newBlock)
+
+              // // Replaces the content of the newly created block's content node. Doesn't replace the whole content node so
+              // // its type doesn't change.
+              state.tr.replace(
+                newBlockContentPos,
+                newBlockContentPos + 1,
+                newBlockContent.content.size > 0
+                  ? new Slice(
+                      Fragment.from(newBlockContent),
+                      depth + 2,
+                      depth + 2,
+                    )
+                  : undefined,
+              )
+
+              // Sets the selection to the start of the new block's content node.
+              state.tr.setSelection(
+                new TextSelection(state.doc.resolve(newBlockContentPos)),
+              )
+
+              state.tr.replace(
+                startPos + 1,
+                startPos + contentNode.nodeSize - 1,
+                originalBlockContent.content.size > 0
+                  ? new Slice(
+                      Fragment.from(originalBlockContent),
+                      depth + 2,
+                      depth + 2,
+                    )
+                  : undefined,
+              )
+            }
+          }
+          return true
+        },
       // Updates group's child groups.
       UpdateGroupChildren:
         (group, groupPos, groupLevel, listType, indent) =>
@@ -676,10 +864,11 @@ export const BlockContainer = Node.create<{
 
   addProseMirrorPlugins() {
     return [
-      PreviousBlockTypePlugin(),
+      // PreviousBlockTypePlugin(),
       SelectionPlugin,
       ClickSelectionPlugin,
       PastePlugin,
+      headingGroupPlugin,
     ]
   },
 
@@ -691,6 +880,75 @@ export const BlockContainer = Node.create<{
         () => commands.deleteSelection(),
         // Undoes an input rule if one was triggered in the last editor state change.
         () => commands.undoInputRule(),
+        () =>
+          commands.command(({state, dispatch, chain}) => {
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+            const blockInfo = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+
+            const isParagraph = blockInfo.contentType.name === 'paragraph'
+            let parentInfo = getParentBlockFromPos(state, state.selection.from)
+
+            if (selectionAtBlockStart && isParagraph && parentInfo) {
+              let {parentBlock, parentGroup, parentPos} = parentInfo
+              let isFirstChild =
+                blockInfo.node.attrs.id == parentGroup.firstChild?.attrs.id
+              let isParentBlockHeading = parentBlock?.type.name == 'heading'
+
+              if (
+                // is the first child of the parent group
+                isFirstChild &&
+                // the parent of the current block is type "heading"
+                isParentBlockHeading &&
+                // parentBlock is defined
+                parentBlock
+              ) {
+                const {startPos, node, depth, endPos, contentNode} = blockInfo
+
+                // the position in which we are inserting the current block content
+                const parentInsertPos = parentPos + parentBlock?.nodeSize - 1
+
+                // lift any children of current block (if any)
+                if (node.childCount == 2) {
+                  // the current block has children, we need to re-parent
+                  const childBlocksStart = state.doc.resolve(
+                    startPos + contentNode.nodeSize + 1,
+                  )
+                  const childBlocksEnd = state.doc.resolve(endPos - 1)
+                  const childBlocksRange =
+                    childBlocksStart.blockRange(childBlocksEnd)
+
+                  // Moves the block group node inside the block into the block group node that the current block is in.
+                  if (dispatch) {
+                    state.tr.lift(childBlocksRange!, depth - 1)
+                  }
+                }
+
+                if (dispatch) {
+                  dispatch(
+                    state.tr
+                      // delete the current block content
+                      .deleteRange(startPos, startPos + contentNode.nodeSize)
+                      // insert the current block content into the parent heading
+                      .insert(parentInsertPos, contentNode.content),
+                  )
+
+                  // set the selection to the join between the previous heading content and the new content inserted
+                  // this needs to happen after the transaction above because the document now is "different", hence we need to set
+                  // the selection to a new pos.
+                  state.tr.setSelection(
+                    new TextSelection(state.doc.resolve(parentInsertPos)),
+                  )
+                }
+
+                return true
+              }
+            }
+            return false
+          }),
         () =>
           commands.command(({state, view}) => {
             const {group, container, depth, $pos} = getGroupInfoFromPos(
@@ -928,11 +1186,34 @@ export const BlockContainer = Node.create<{
 
             return false
           }),
+        // when the current block is a heading, do a special splitBlock to suggest heading hierarchy
+        () =>
+          commands.command(({state, chain}) => {
+            const {contentNode} = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+
+            // if selection is not in the beginning of the heading and is a heading,
+            // we need to check what we need to do
+            if (!selectionAtBlockStart && contentNode.type.name == 'heading') {
+              chain()
+                .deleteSelection()
+                .BNSplitHeadingBlock(state.selection.from)
+                .run()
+              return true
+            }
+
+            return false
+          }),
         // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
         // of the block.
         () =>
           commands.command(({state}) => {
-            const {node, depth, endPos} = getBlockInfoFromPos(
+            const {node, depth} = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
             )!
@@ -987,30 +1268,7 @@ export const BlockContainer = Node.create<{
             }
 
             return false
-          }), // add a block on top of the current one so the block ID will follow the content
-        // () =>
-        //   commands.command(({state, chain}) => {
-        //     const data = getBlockInfoFromPos(state.doc, state.selection.from)!
-
-        //     const selectionAtBlockStart =
-        //       state.selection.$anchor.parentOffset === 0
-        //     const selectionEmpty =
-        //       state.selection.anchor === state.selection.head
-        //     const blockEmpty = data.node.textContent.length === 0
-        //     const newBlockInsertionPos = data.startPos - 1
-
-        //     if (selectionAtBlockStart && selectionEmpty && !blockEmpty) {
-        //       return true
-        //       chain()
-        //         .BNCreateBlock(newBlockInsertionPos)
-        //         // .setTextSelection(newBlockContentPos)
-        //         .run()
-
-        //       return true
-        //     }
-
-        //     return false
-        //   }),
+          }),
 
         // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
         // empty & at the start of the block.
