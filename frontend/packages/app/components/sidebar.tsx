@@ -440,7 +440,7 @@ function SidebarItem({
         textAlign="left"
         outlineColor="transparent"
         space="$2"
-        backgroundColor={active ? '$blue4' : undefined}
+        backgroundColor={active ? '$blue4' : '$backgroundStrong'}
         hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
         userSelect="none"
         group="item"

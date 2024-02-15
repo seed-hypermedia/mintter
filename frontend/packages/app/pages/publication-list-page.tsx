@@ -54,7 +54,6 @@ export const PublicationListPage = memo(PublicationListPageUnmemo)
 export function PublicationListPageUnmemo() {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
-  const trustedOnly = route.tab === 'trusted' || route.tab == null
   const draftsOnly = route.tab === 'drafts'
 
   let content = <PublicationsList />

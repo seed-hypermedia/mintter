@@ -20,6 +20,7 @@ export function List<Item>({
     <YStack
       f={1}
       alignSelf="stretch"
+      gap="$2"
       height={'100%'}
       onLayout={(e) => {
         setContainerHeight(e.nativeEvent.layout.height)

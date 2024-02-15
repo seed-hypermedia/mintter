@@ -17,13 +17,13 @@ function DeleteDraftDialog({
     onSuccess: input.onSuccess,
   })
   return (
-    <YStack space backgroundColor="$background" padding="$4" borderRadius="$3">
+    <YStack gap="$4" padding="$4" borderRadius="$3">
       <AlertDialog.Title>Discard Draft</AlertDialog.Title>
       <AlertDialog.Description>
         Permanently delete this draft document?
       </AlertDialog.Description>
 
-      <XStack space="$3" justifyContent="flex-end">
+      <XStack gap="$3" justifyContent="flex-end">
         <AlertDialog.Cancel asChild>
           <Button
             onPress={() => {
