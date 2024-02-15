@@ -64,3 +64,51 @@ services:
       - "-syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true}"
       - "-syncing.no-pull=${MTT_SITE_NO_PULL:-true}"
       - "${MTT_SITE_HOSTNAME:-http://nextjs}"
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    container_name: prometheus
+    profiles:
+      - metrics
+    networks:
+      - internal_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    restart: unless-stopped
+    container_name: node_exporter
+    profiles:
+      - metrics
+    command:
+      - '--path.rootfs=/host'
+    networks:
+      - internal_network
+    volumes:
+      - '/:/host:ro,rslave'
+
+  grafana:
+    image: grafana/grafana:main
+    restart: unless-stopped
+    container_name: grafana
+    profiles:
+      - metrics
+    networks:
+      - internal_network
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      GF_LOG_MODE: console
+      GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"
+      GF_SERVER_HTTP_PORT: ${MTT_SITE_MONITORING_PORT:-3001}
+
+volumes:
+  grafana-data: {}
+  prometheus-data: {}

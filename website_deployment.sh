@@ -18,6 +18,7 @@ workspace="${HOME}/.mtt-site"
 hostname=""
 tag="latest"
 auto_update=0
+profile=""
 allow_push="false"
 clean_images_cron="0 3 * * * docker rmi \$(docker images | grep -E 'mintter/mintter-site|mintter/sitegw' | awk '{print \$3}') # mintter site cleanup"
 
@@ -29,6 +30,7 @@ usage()
 	echo  "-t --tag T          :Image tag to pull. Latest by default"
 	echo  "-g --gateway        :Site behaves as a gateway, storing all data. False by default."
 	echo  "-a --auto-update    :Updates containers whenever a new image is available. Disabled by default"
+	echo  "-m --monitoring     :Sets up monitoring system"
     echo  "-h --help           :Shows help and exit"
 }
 
@@ -38,6 +40,8 @@ while [ "$1" != "" ]; do
                                 exit
                                 ;;
         -a | --auto-update )    auto_update=1
+                                ;;
+        -m | --monitoring )     profile="metrics"
                                 ;;
         -g | --gateway )        allow_push="true"
                                 ;;
@@ -75,6 +79,11 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 	path /ipfs/*
 }
 
+@metrics {
+	method GET HEAD OPTIONS
+	path /.well-known/metrics
+}
+
 @wellknown {
 	method GET HEAD OPTIONS
 	path /.well-known/hypermedia-site
@@ -86,6 +95,8 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 }
 
 reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+
+reverse_proxy @metrics grafana:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 route @version {
     rewrite /.well-known/hypermedia-site/version /debug/version
@@ -106,7 +117,7 @@ if [ $auto_update -eq 1 ]; then
   docker run -d --restart unless-stopped --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
 fi
 
-MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
+MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_ALLOW_PUSH="$allow_push" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml --profile '$profile' up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 # MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 
 timeout 15 docker logs -f minttersite 2> /dev/null | sed '/Site Invitation secret token: / q' | awk -F ': ' '{print $2}'
