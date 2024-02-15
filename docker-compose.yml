@@ -77,7 +77,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - prometheus-data:/prometheus
-      - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -102,8 +102,8 @@ services:
       - internal_network
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/etc/grafana/dashboards
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/provisioning:/etc/grafana/provisioning
     environment:
       GF_LOG_MODE: console
       GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"
