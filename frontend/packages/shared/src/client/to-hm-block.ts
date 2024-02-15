@@ -330,7 +330,7 @@ export function toHMBlock(
         type: 'embed',
         id: serverBlock.block.id,
         props: {
-          ref: serverBlock.block.ref,
+          url: serverBlock.block.ref,
           sourceUrl: serverBlock.block.attributes.sourceUrl || '',
           sourceRef: serverBlock.block.attributes.sourceRef || '',
           latest: serverBlock.block.attributes.latest || false,

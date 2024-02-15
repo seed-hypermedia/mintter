@@ -228,7 +228,7 @@ export function fromHMBlock(
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'embed',
-      ref: editorBlock.props.ref,
+      ref: editorBlock.props.url,
       text: '',
       annotations: [],
       attributes: {
