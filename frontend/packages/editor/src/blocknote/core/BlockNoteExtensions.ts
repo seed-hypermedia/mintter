@@ -4,7 +4,6 @@ import {Extensions, extensions} from '@tiptap/core'
 import {BlockNoteEditor} from './BlockNoteEditor'
 
 import {LocalMediaPastePlugin} from '@/handle-local-media-paste-plugin'
-import {HMBlockContainer} from '@/hypermedia-block-container'
 import Link from '@/tiptap-extension-link'
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
@@ -114,21 +113,10 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),
     // should be handled before Enter handlers in other components like splitListItem
     TrailingNode,
+    BlockContainer.configure({
+      domAttributes: opts.domAttributes,
+    }),
   ]
-
-  if (opts.editable) {
-    ret.push(
-      BlockContainer.configure({
-        domAttributes: opts.domAttributes,
-      }),
-    )
-  } else {
-    ret.push(
-      HMBlockContainer.configure({
-        domAttributes: opts.domAttributes,
-      }),
-    )
-  }
 
   if (opts.collaboration) {
     ret.push(

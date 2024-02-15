@@ -37,7 +37,7 @@ export const BlockGroup = Node.create<{
             const offset = 0.65 * attributes.start.toString().length
             return {
               start: attributes.start,
-              style: `margin-left: calc(1em + ${offset}em);`,
+              // style: `margin-left: calc(1em + ${offset}em);`,
             }
           }
         },
