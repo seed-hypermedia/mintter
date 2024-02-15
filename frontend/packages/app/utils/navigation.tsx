@@ -179,6 +179,7 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
       documentId: createHmId('d', id.eid),
       versionId: id.version || undefined,
       blockId: id.blockRef || undefined,
+      variants: id.variants || undefined,
     }
   } else if (id?.type === 'g') {
     navRoute = {

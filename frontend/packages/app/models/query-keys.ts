@@ -8,6 +8,9 @@ export const queryKeys = {
 
   // NOTE: Arguments to query keys documented in comments
 
+  // feed
+  FEED: 'FEED', // trustedOnly: boolean
+
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
 
@@ -55,6 +58,9 @@ export const queryKeys = {
   CHANGE: 'CHANGE', //, changeId: string
   ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
   DOCUMENT_TEXT_CONTENT: 'DOCUMENT_TEXT_CONTENT',
+
+  // cid
+  BLOB_DATA: 'BLOB_DATA', //, cid: string
 
   LIGHTNING_ACCOUNT_CHECK: 'LIGHTNING_ACCOUNT_CHECK', //, accountId: string
 } as const

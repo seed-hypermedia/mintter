@@ -1,6 +1,8 @@
 package core
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding"
@@ -11,6 +13,14 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
+)
+
+const (
+	// KeyBytes is the length of GCM key.
+	KeyBytes = 32
+
+	// NonceBytes is the length of GCM nonce.
+	NonceBytes = 12
 )
 
 // Ensure interface implementations.
@@ -223,6 +233,54 @@ func (kp KeyPair) SignatureSize() int {
 	default:
 		panic("BUG: unsupported key type")
 	}
+}
+
+// Encrypt uses private key of the key pair and performs AES-256 GCM encryption on plaintext.
+func (kp KeyPair) Encrypt(plaintext []byte) ([]byte, error) {
+	privKey, err := kp.k.Raw()
+	if err != nil {
+		return nil, err
+	}
+	block, err := aes.NewCipher(privKey[:KeyBytes])
+	if err != nil {
+		return nil, err
+	}
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce := make([]byte, NonceBytes)
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, err
+	}
+	ciphertext := aesgcm.Seal(nil, nonce, plaintext, nil)
+	ciphertext = append(nonce[:], ciphertext...)
+	return ciphertext, nil
+}
+
+// Decrypt uses private key of the key pair to perform AES-256 GCM decryption on ciphertext.
+func (kp KeyPair) Decrypt(ciphertext []byte) ([]byte, error) {
+	privKey, err := kp.k.Raw()
+	if err != nil {
+		return nil, err
+	}
+	block, err := aes.NewCipher(privKey[:KeyBytes])
+	if err != nil {
+		return nil, err
+	}
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	if len(ciphertext) < NonceBytes {
+		return nil, fmt.Errorf("malformed cipher text")
+	}
+	nonce := ciphertext[:NonceBytes]
+	plain, err := aesgcm.Open(nil, nonce, ciphertext[NonceBytes:], nil)
+	if err != nil {
+		return nil, err
+	}
+	return plain, nil
 }
 
 // Wrapped returns the wrapped libp2p key.

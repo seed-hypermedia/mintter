@@ -1,7 +1,13 @@
 import {groupVariantSchema, publicationVariantSchema} from '@mintter/shared'
 import {z} from 'zod'
 
-export const defaultRoute: NavRoute = {key: 'documents', tab: 'trusted'}
+export const defaultRoute: NavRoute = {key: 'feed', tab: 'trusted'}
+
+export const feedRouteSchema = z.object({
+  key: z.literal('feed'),
+  tab: z.union([z.literal('all'), z.literal('trusted')]),
+})
+export type FeedRoute = z.infer<typeof feedRouteSchema>
 
 export const documentsRouteSchema = z.object({
   key: z.literal('documents'),
@@ -105,6 +111,7 @@ export type DraftRoute = z.infer<typeof draftRouteSchema>
 export type GroupRoute = z.infer<typeof groupRouteSchema>
 
 export const navRouteSchema = z.discriminatedUnion('key', [
+  feedRouteSchema,
   contactsRouteSchema,
   accountRouteSchema,
   settingsRouteSchema,

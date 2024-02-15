@@ -335,6 +335,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       targetDocId &&
         invalidate([queryKeys.PUBLICATION_COMMENTS, targetDocId.eid])
       invalidate(['trpc.comments.getCommentDrafts'])
+      invalidate([queryKeys.FEED])
       if (route.key !== 'comment-draft')
         throw new Error('not in comment-draft route')
       replace({

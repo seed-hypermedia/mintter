@@ -80,6 +80,10 @@ export type {
   PeerInfo,
 } from './.generated/networking/v1alpha/networking_pb'
 
+export * from './.generated/activity/v1alpha/activity_connect'
+export * from './.generated/activity/v1alpha/activity_pb'
+export {Event as ActivityEvent} from './.generated/activity/v1alpha/activity_pb'
+
 export {
   Accounts,
   Changes,

@@ -5,6 +5,7 @@ import {
   HMBlockNode,
   HMGroup,
   HMPublication,
+  clipContentBlocks,
   createHmId,
   getCIDFromIPFSUrl,
   toHMInlineContent,
@@ -268,42 +269,6 @@ function GroupCard({
   )
 }
 
-// type HMBlockNode = {
-//   block: HMBlock
-//   children?: Array<HMBlockNode>
-// }
-
-// HMBlockNodes are recursive values. we want the output to have the same shape, but limit the total number of blocks
-// the first blocks will be included up until the totalBlock value is reached
-function clipContent(
-  content: HMBlockNode[] | undefined,
-  totalBlocks: number,
-): HMBlockNode[] | null {
-  if (!content) return null
-  const output: HMBlockNode[] = []
-  let blocksRemaining: number = totalBlocks
-  function walk(currentNode: HMBlockNode, outputNode: HMBlockNode[]): void {
-    if (blocksRemaining <= 0) {
-      return
-    }
-    let newNode: HMBlockNode = {
-      block: currentNode.block,
-      children: currentNode.children ? [] : undefined,
-    }
-    outputNode.push(newNode)
-    blocksRemaining--
-    if (currentNode.children && newNode.children) {
-      for (let child of currentNode.children) {
-        walk(child, newNode.children)
-      }
-    }
-  }
-  for (let root of content) {
-    walk(root, output)
-  }
-  return output
-}
-
 function PublicationCard({
   publication,
   editors,
@@ -311,7 +276,7 @@ function PublicationCard({
   publication: HMPublication
   editors: {account: HMAccount | null}[]
 }) {
-  const clippedContent = clipContent(
+  const clippedContent = clipContentBlocks(
     publication.document?.children,
     8, // render a maximum of 8 blocks in the OG image
   )

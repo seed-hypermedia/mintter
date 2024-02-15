@@ -105,10 +105,12 @@ const publicationRouter = router({
       }),
     )
     .query(async ({input}) => {
+      const enableDiscovery = !!process.env.NEXT_PUBLIC_ENABLE_GATEWAY
+
       // KEEP THIS LOGIC IN SYNC WITH packages/app/models/publication.ts usePublicationVariant
       const {variants, versionId, documentId, latest} = input
       if (!documentId) {
-        return {publication: null}
+        return {enableDiscovery, publication: null}
       }
       let variantVersion = null
       const exactVersion = latest ? undefined : versionId
@@ -187,9 +189,11 @@ const publicationRouter = router({
         })
         .catch((e) => undefined)
       if (!resolvedPub) {
-        return {publication: null}
+        return {enableDiscovery, publication: null}
       }
+      console.log('haha', process.env.NEXT_PUBLIC_IS_GATEWAY)
       return {
+        enableDiscovery,
         publication: hmPublication(resolvedPub) || null,
         variantVersion,
       }

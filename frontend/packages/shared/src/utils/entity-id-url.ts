@@ -81,12 +81,12 @@ function getVariantsParamValue(variants: PublicationVariant[]): string {
       if (variant.key === 'group') {
         const groupId = unpackHmId(variant.groupId)
         if (!groupId) return false
-        return `g:${groupId.eid}${
-          variant.pathName ? `:${variant.pathName}` : ''
+        return `g/${groupId.eid}${
+          variant.pathName ? `/${variant.pathName}` : ''
         }`
       }
       if (variant.key === 'author') {
-        return `a:${variant.author}`
+        return `a/${variant.author}`
       }
       return false
     })
@@ -192,6 +192,32 @@ export type UnpackedHypermediaId = {
   latest?: boolean | null
 }
 
+export function hmId(
+  type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
+  eid: string,
+  opts: {
+    version?: string | null
+    blockRef?: string | null
+    groupPathName?: string | null
+    variants?: PublicationVariant[] | null
+    latest?: boolean | null
+    hostname?: string | null
+  } = {},
+): UnpackedHypermediaId {
+  return {
+    id: createHmId(type, eid, opts),
+    type,
+    eid,
+    qid: createHmId(type, eid),
+    groupPathName: opts.groupPathName || null,
+    version: opts.version || null,
+    blockRef: opts.blockRef || null,
+    hostname: opts.hostname || null,
+    scheme: null,
+    ...opts,
+  }
+}
+
 export function parseVariantsQuery(
   variantsString?: string[] | string | null,
 ): PublicationVariant[] | null {
@@ -200,7 +226,7 @@ export function parseVariantsQuery(
   const variants: PublicationVariant[] = []
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
-    const [key, ...rest] = singleVariantString.split(':')
+    const [key, ...rest] = singleVariantString.split('/')
     if (key === 'g') {
       const [groupEid, pathName] = rest
       variants.push({

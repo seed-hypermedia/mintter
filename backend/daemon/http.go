@@ -70,7 +70,7 @@ func setupDebugHandlers(r *Router, blobs *hyper.Storage) {
 	r.Handle("/debug/grpc", grpcLogsHandler(), RouteNav)
 	r.Handle("/debug/buildinfo", buildInfoHandler(), RouteNav)
 	r.Handle("/debug/version", gitVersionHandler(), RouteNav)
-	r.Handle("/debug/cid/{cid}", makeBlobDebugHandler(blobs.IPFSBlockstore()), 0)
+	r.Handle("/debug/cid/{cid}", corsMiddleware(makeBlobDebugHandler(blobs.IPFSBlockstore())), 0)
 	r.Handle("/debug/traces", eztrc.Handler(), RouteNav)
 }
 

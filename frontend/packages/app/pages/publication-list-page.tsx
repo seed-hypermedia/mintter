@@ -9,9 +9,8 @@ import {
   DialogTitle,
   List,
   PageContainer,
-  Separator,
+  RadioButtons,
   Spinner,
-  XGroup,
   XStack,
 } from '@mintter/ui'
 
@@ -30,7 +29,7 @@ import {
   BadgeCheck as Verified,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, memo} from 'react'
+import {memo} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
@@ -68,31 +67,6 @@ export function PublicationListPageUnmemo() {
       <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
       <Footer />
     </>
-  )
-}
-
-function ToggleGroupItem({
-  label,
-  icon,
-  active,
-  onPress,
-}: {
-  label: string
-  icon: ComponentProps<typeof Button>['icon'] | undefined
-  active: boolean
-  onPress: () => void
-}) {
-  return (
-    <XGroup.Item>
-      <Button
-        disabled={active}
-        icon={icon}
-        backgroundColor={active ? '$color7' : undefined}
-        onPress={onPress}
-      >
-        {label}
-      </Button>
-    </XGroup.Item>
   )
 }
 
@@ -151,59 +125,26 @@ export function PublishedFirstDocDialog({
     </>
   )
 }
+const documentTabsOptions = [
+  {key: 'trusted', label: 'Trusted Creators', icon: Verified},
+  {key: 'all', label: 'All Creators', icon: Globe},
+  {key: 'drafts', label: 'My Drafts', icon: Pencil},
+] as const
 
 function DocumentTabs() {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
-  const trustedOnly = route.tab === 'trusted' || route.tab == null
-  const draftsOnly = route.tab === 'drafts'
-  const allDocs = !trustedOnly && !draftsOnly
   const replace = useNavigate('replace')
-
   return (
-    <PageContainer>
+    <PageContainer marginVertical="$6">
       <XStack>
-        <XGroup separator={<Separator backgroundColor={'red'} />}>
-          <ToggleGroupItem
-            label="Trusted Creators"
-            icon={Verified}
-            active={trustedOnly}
-            onPress={() => {
-              if (!trustedOnly) {
-                replace({
-                  ...route,
-                  tab: null,
-                })
-              }
-            }}
-          />
-          <ToggleGroupItem
-            label="All Creators"
-            icon={Globe}
-            active={allDocs}
-            onPress={() => {
-              if (!allDocs) {
-                replace({
-                  ...route,
-                  tab: 'all',
-                })
-              }
-            }}
-          />
-          <ToggleGroupItem
-            label="My Drafts"
-            icon={Pencil}
-            active={draftsOnly}
-            onPress={() => {
-              if (!draftsOnly) {
-                replace({
-                  ...route,
-                  tab: 'drafts',
-                })
-              }
-            }}
-          />
-        </XGroup>
+        <RadioButtons
+          value={route.tab}
+          options={documentTabsOptions}
+          onValue={(tab) => {
+            replace({...route, tab})
+          }}
+        />
       </XStack>
     </PageContainer>
   )

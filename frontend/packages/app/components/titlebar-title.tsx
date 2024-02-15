@@ -2,14 +2,18 @@ import {useDraftTitle} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
+  Book,
+  Contact,
   ErrorIcon,
+  FileText,
   FontSizeTokens,
+  Home,
+  Library,
   SizableText,
   Spinner,
   TitleText,
   XStack,
 } from '@mintter/ui'
-import {Book, Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
@@ -39,6 +43,24 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       // window.windowInfo.setTitle(title)
     })
   }, [route])
+
+  if (route.key === 'feed') {
+    let subtitle: string | null = null
+    if (route.tab === 'all') {
+      subtitle = '- All Content'
+    } else {
+      subtitle = '- Trusted Content'
+    }
+    return (
+      <>
+        <Home size={12} />
+        <TitleText size={size} fontWeight="bold" data-testid="titlebar-title">
+          Home Feed
+        </TitleText>
+        <SizableText>{subtitle}</SizableText>
+      </>
+    )
+  }
 
   if (route.key === 'documents') {
     let subtitle: string | null = null
