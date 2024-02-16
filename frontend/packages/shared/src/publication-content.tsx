@@ -510,13 +510,7 @@ export function BlockNodeContent({
       </XStack>
       {bnChildren ? (
         <BlockNodeList
-          paddingLeft={layoutUnit}
-          // onHoverIn={() =>
-          //   props.embedDepth ? undefined : hoverProps.onHoverIn()
-          // }
-          // onHoverOut={() =>
-          //   props.embedDepth ? undefined : hoverProps.onHoverOut()
-          // }
+          paddingLeft={blockNode.block?.type != 'heading' ? layoutUnit : 0}
           childrenType={childrenType as HMBlockChildrenType}
           start={props.start}
           display="block"
