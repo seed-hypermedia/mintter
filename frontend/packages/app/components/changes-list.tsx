@@ -295,6 +295,7 @@ function ActiveGroupButton({
       paddingHorizontal="$2"
       borderColor="$blue11"
       color="$blue11"
+      bg="$backgroundTransparent"
       hoverStyle={{
         borderColor: '$blue8',
       }}

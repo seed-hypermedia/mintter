@@ -8,7 +8,6 @@ import {
   createHmId,
   formattedDateMedium,
   unpackHmId,
-  useHover,
 } from '@mintter/shared'
 import {
   Button,
@@ -250,14 +249,9 @@ export function CommentPresentation({
   onReplyBlock?: (blockId: string) => void
 }) {
   const account = useAccount(comment.author)
-  const {hover, ...hoverProps} = useHover()
+
   return (
-    <YStack
-      group="item"
-      marginVertical="$3"
-      paddingHorizontal="$3"
-      {...hoverProps}
-    >
+    <YStack group="item" marginVertical="$3" paddingHorizontal="$3">
       <XStack jc="space-between" paddingHorizontal="$2" marginBottom="$2">
         <XStack gap="$2">
           <UIAvatar
@@ -271,13 +265,8 @@ export function CommentPresentation({
           />
           <SizableText>{account.data?.profile?.alias}</SizableText>
         </XStack>
-
         {menuItems ? (
-          <OptionsDropdown
-            menuItems={menuItems || []}
-            hiddenUntilItemHover
-            hover={hover}
-          />
+          <OptionsDropdown menuItems={menuItems || []} hiddenUntilItemHover />
         ) : null}
       </XStack>
       {comment.createTime ? (

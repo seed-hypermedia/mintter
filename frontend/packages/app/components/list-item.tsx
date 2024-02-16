@@ -45,7 +45,12 @@ export function ListItem({
         maxWidth={900}
         f={1}
         width="100%"
-        bg="$backgroundStrong"
+        bg="$colo7"
+        hoverStyle={{
+          bg: '$backgroundFocus',
+          borderColor: '$backgroundFocus',
+          borderWidth: 1,
+        }}
       >
         <ButtonText
           onPress={(e) => {
