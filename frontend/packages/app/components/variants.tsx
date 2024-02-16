@@ -890,40 +890,46 @@ function AuthorVariantItem({
             </SizableText>
           </YStack>
         </XStack>
-        <Button
-          size="$2"
-          chromeless
-          paddingHorizontal="$1"
-          onPress={(e) => {
-            if (!canPressCheck) return
-            e.stopPropagation()
-            const newAuthors = isVariantActive
-              ? activeAuthors.filter((a) => a !== authorVersion.author)
-              : [...activeAuthors, authorVersion.author]
-            navigate({
-              ...route,
-              versionId: undefined,
-              variants: newAuthors.map((author) => ({
-                key: 'author',
-                author,
-              })),
-            })
-          }}
-          borderColor="transparent"
-          disabled={!canPressCheck}
-          minWidth={30}
+        <XStack
+          borderWidth={1}
           hoverStyle={{
             borderColor: canPressCheck ? '$color11' : 'transparent',
           }}
           $group-item-hover={{
             borderColor: canPressCheck ? '$color8' : 'transparent',
           }}
+          borderRadius={4}
+          borderColor="$colorTransparent"
         >
-          <Check
-            color={isVariantActive ? '$blue11' : 'transparent'}
-            size="$1"
-          />
-        </Button>
+          <Button
+            size="$2"
+            chromeless
+            paddingHorizontal="$1"
+            onPress={(e) => {
+              if (!canPressCheck) return
+              e.stopPropagation()
+              const newAuthors = isVariantActive
+                ? activeAuthors.filter((a) => a !== authorVersion.author)
+                : [...activeAuthors, authorVersion.author]
+              navigate({
+                ...route,
+                versionId: undefined,
+                variants: newAuthors.map((author) => ({
+                  key: 'author',
+                  author,
+                })),
+              })
+            }}
+            borderColor="transparent"
+            disabled={!canPressCheck}
+            minWidth={30}
+          >
+            <Check
+              color={isVariantActive ? '$blue11' : 'transparent'}
+              size="$1"
+            />
+          </Button>
+        </XStack>
       </XStack>
     </Button>
   )
