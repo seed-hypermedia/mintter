@@ -1,5 +1,5 @@
 import {Change, HTTP_PORT} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
+import {useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient} from '../app-context'
 import {queryKeys} from './query-keys'
@@ -143,15 +143,24 @@ export type GroupSchema = {
 export type ChangeData = ChangeBlob<ProfileSchema> | ChangeBlob<GroupSchema> // todo: add DocumentSchema
 export type BlobData = ChangeData
 
-export function useBlobData(cid?: string) {
-  return useQuery({
+function queryBlob(cid: string | undefined) {
+  return {
     queryFn: async () => {
       const res = await fetch(`http://localhost:${HTTP_PORT}/debug/cid/${cid}`)
       const data = await res.json()
-      console.log('blob data', data)
       return data as BlobData
     },
     queryKey: [queryKeys.BLOB_DATA, cid],
     enabled: !!cid,
+  }
+}
+
+export function useBlobsData(cids?: string[]) {
+  return useQueries({
+    queries: cids?.map((cid) => queryBlob(cid)) || [],
   })
+}
+
+export function useBlobData(cid?: string) {
+  return useQuery(queryBlob(cid))
 }

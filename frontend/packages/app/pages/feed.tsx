@@ -639,18 +639,7 @@ function Feed({tab}: {tab: 'trusted' | 'all'}) {
             </XStack>
           )
         }
-        items={
-          feed.data?.pages
-            .map((page) => page.events)
-            .flat()
-            .filter((item) => {
-              if (item.data.case === 'newBlob') {
-                if (item.data.value.blobType === 'KeyDelegation') return false
-                return true
-              }
-              return true
-            }) || []
-        }
+        items={feed.data || []}
         renderItem={({item}) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
