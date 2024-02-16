@@ -117,6 +117,9 @@ ol > [data-node-type='block-outer']::marker {
 
 .block-heading + [data-node-type='blockGroup'] {
   margin-left: 0;
+}
+
+
 .hljs-comment,
 .hljs-quote {
   color: var(--gray10);

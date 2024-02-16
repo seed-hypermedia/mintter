@@ -14,8 +14,6 @@ import {NostrBlock} from './nostr'
 import CodeBlockLowlight from './tiptap-extension-code-block'
 import {VideoBlock} from './video'
 
-const lowlight = createLowlight(common)
-
 export const hmBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
   // heading: defaultBlockSchema.heading,
@@ -40,7 +38,7 @@ export const hmBlockSchema: BlockSchema = {
     // @ts-ignore
     node: CodeBlockLowlight.configure({
       defaultLanguage: 'plaintext',
-      lowlight: lowlight,
+      lowlight: createLowlight(common),
       languageClassPrefix: 'language-',
     }),
   },
