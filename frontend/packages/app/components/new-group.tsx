@@ -82,7 +82,14 @@ const NewGroupButton = forwardRef(function NewGroupButton(
   ref: ForwardedRef<HTMLButtonElement>,
 ) {
   return (
-    <Button chromeless size="$2" ref={ref} icon={Plus} {...props}>
+    <Button
+      chromeless
+      backgroundColor="$colorTransparent"
+      size="$2"
+      ref={ref}
+      icon={Plus}
+      {...props}
+    >
       {props.children}
     </Button>
   )

@@ -579,6 +579,7 @@ export function NavigationButtons() {
             size="$2"
             onPress={() => dispatch({type: 'pop'})}
             chromeless
+            cursor={state.routeIndex <= 0 ? 'default' : 'pointer'}
             disabled={state.routeIndex <= 0}
             opacity={state.routeIndex <= 0 ? 0.5 : 1}
             icon={Back}
@@ -589,6 +590,11 @@ export function NavigationButtons() {
             size="$2"
             onPress={() => dispatch({type: 'forward'})}
             chromeless
+            cursor={
+              state.routeIndex >= state.routes.length - 1
+                ? 'default'
+                : 'pointer'
+            }
             disabled={state.routeIndex >= state.routes.length - 1}
             opacity={state.routeIndex >= state.routes.length - 1 ? 0.5 : 1}
             icon={Forward}
@@ -638,6 +644,7 @@ export function NavMenuButton({left}: {left?: ReactNode}) {
           key={key} // use this key to make sure the component is unmounted when changes, to blur the button and make tooltip disappear
         >
           <Button
+            backgroundColor="$colorTransparent"
             size="$2"
             key={key}
             icon={icon}

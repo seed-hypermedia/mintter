@@ -22,7 +22,13 @@ export function PinAccountButton({accountId}: {accountId: string}) {
   )
 }
 
-export function UnpinButton({onPress}: {onPress: ButtonProps['onPress']}) {
+export function UnpinButton({
+  onPress,
+  chromeless,
+}: {
+  onPress: ButtonProps['onPress']
+  chromeless?: boolean
+}) {
   const {hover, ...hoverProps} = useHover()
   return (
     <Tooltip content="Unpin from Sidebar">
@@ -32,16 +38,29 @@ export function UnpinButton({onPress}: {onPress: ButtonProps['onPress']}) {
         theme={hover ? 'red' : undefined}
         onPress={onPress}
         chromeless
+        bg={chromeless ? '$colorTransparent' : '$color4'}
         {...hoverProps}
       />
     </Tooltip>
   )
 }
 
-function PinButton({onPress}: {onPress: () => void}) {
+function PinButton({
+  onPress,
+  chromeless,
+}: {
+  onPress: () => void
+  chromeless?: boolean
+}) {
   return (
     <Tooltip content="Pin to Sidebar">
-      <Button icon={Pin} size="$2" onPress={onPress} chromeless />
+      <Button
+        icon={Pin}
+        size="$2"
+        onPress={onPress}
+        chromeless
+        bg={chromeless ? '$colorTransparent' : '$color4'}
+      />
     </Tooltip>
   )
 }

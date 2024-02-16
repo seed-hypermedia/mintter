@@ -16,7 +16,7 @@ import {
   YStackProps,
   toast,
 } from '@mintter/ui'
-import {Check, ChevronDown, Upload} from '@tamagui/lucide-icons'
+import {Check, ChevronDown, ChevronUp, Upload} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect} from 'react'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount} from '../models/accounts'
@@ -204,11 +204,15 @@ export default function CommitDraftButton() {
         </XGroup.Item>
         <ContextPopover {...publishPopover}>
           {hasUpdateError ? null : (
-            <XGroup.Item>
-              <Popover.Trigger asChild>
-                <Button theme="green" size="$2" icon={ChevronDown} />
-              </Popover.Trigger>
-            </XGroup.Item>
+            <Popover.Trigger>
+              <XGroup.Item>
+                <Button
+                  theme="green"
+                  size="$2"
+                  icon={publishPopover.open ? ChevronUp : ChevronDown}
+                />
+              </XGroup.Item>
+            </Popover.Trigger>
           )}
 
           <ContextPopoverContent>

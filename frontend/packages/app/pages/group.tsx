@@ -524,13 +524,17 @@ function GroupContentItem({
         author={author}
         hasDraft={hasDraft}
         pathName={pathName}
-        onPathNamePress={() => {
-          renameDialog.open({
-            pathName,
-            groupId,
-            docTitle: pub.document?.title || '',
-          })
-        }}
+        onPathNamePress={
+          userRole > 0
+            ? () => {
+                renameDialog.open({
+                  pathName,
+                  groupId,
+                  docTitle: pub.document?.title || '',
+                })
+              }
+            : undefined
+        }
         variants={[{key: 'group', groupId, pathName}]}
         menuItems={() => [
           copyLinkMenuItem(
