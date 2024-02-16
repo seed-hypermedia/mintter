@@ -34,9 +34,6 @@ export function DialogContent(props: YStackProps) {
       }
       // @ts-expect-error
       position={'fixed'}
-      top={'50%'}
-      left={'50%'}
-      transform={'translate(-50%, -50%)'}
       width={'90vw'}
       maxWidth={'500px'}
       maxHeight={'85vh'}
@@ -44,6 +41,7 @@ export function DialogContent(props: YStackProps) {
       display={'flex'}
       gap={'$4'}
       borderWidth={0}
+      zIndex="$zIndex.2"
       {...props}
     />
   )

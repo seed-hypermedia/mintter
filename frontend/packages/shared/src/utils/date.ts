@@ -58,7 +58,6 @@ function normalizeDate(
   } else if (value instanceof Date) {
     date = value
   } else if (value?.toDate) {
-    console.log('HUH!?!', value)
     date = value.toDate()
   }
   return date

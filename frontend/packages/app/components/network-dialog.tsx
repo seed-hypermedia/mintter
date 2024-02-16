@@ -8,7 +8,6 @@ import {
   Dialog,
   ExternalLink,
   List,
-  Separator,
   SizableText,
   Spinner,
   toast,
@@ -80,21 +79,14 @@ export function NetworkDialog() {
   return (
     <>
       <Dialog.Title>Network Connections</Dialog.Title>
-      <XStack
-        space
-        // @ts-expect-error gray theme is working, but type failing idk
-        theme="gray"
-      >
+      <XStack>
         <IndicationTag
           label={isOnline ? 'Device Online' : 'Device Offline'}
           status={isOnline ? 2 : 1}
         />
         {isOnline ? <GatewayIndicationTag /> : null}
       </XStack>
-      <XGroup
-        size="$2"
-        separator={<Separator vertical backgroundColor="$color7" />}
-      >
+      <XGroup size="$2">
         <XGroup.Item>
           <Button
             size="$2"
@@ -165,12 +157,12 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
     <XStack
       jc="space-between"
       f={1}
-      space
+      p="$2"
       minHeight={'$2'}
       ai="center"
       group="item"
     >
-      <XStack space="$2" ai="center">
+      <XStack gap="$2" ai="center">
         <Tooltip content={connectionStatus ? 'Connected' : 'Disconnected'}>
           <XStack
             backgroundColor={connectionStatus ? '$green10' : '$gray8'}
@@ -186,8 +178,8 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
           </ButtonText>
         </Tooltip>
       </XStack>
-      <XStack space marginHorizontal="$3">
-        <XStack space="$2">
+      <XStack gap="$3" marginHorizontal="$3">
+        <XStack gap="$2">
           {account && !isSite ? (
             <UIAvatar
               size={20}

@@ -1,5 +1,5 @@
 import {ComponentProps} from 'react'
-import {Button, Separator, XGroup} from 'tamagui'
+import {Button, Theme, XGroup} from 'tamagui'
 
 export function RadioButtons<
   Options extends ReadonlyArray<{
@@ -17,19 +17,21 @@ export function RadioButtons<
   onValue: (value: Options[number]['key']) => void
 }) {
   return (
-    <XGroup separator={<Separator vertical backgroundColor={'$color8'} />}>
-      {options.map((option) => (
-        <RadioButton
-          key={option.key}
-          label={option.label}
-          icon={option.icon}
-          active={value === option.key}
-          onPress={() => {
-            onValue(option.key)
-          }}
-        />
-      ))}
-    </XGroup>
+    <Theme name="blue">
+      <XGroup borderColor="$color4" borderWidth={1}>
+        {options.map((option) => (
+          <RadioButton
+            key={option.key}
+            label={option.label}
+            icon={option.icon}
+            active={value === option.key}
+            onPress={() => {
+              onValue(option.key)
+            }}
+          />
+        ))}
+      </XGroup>
+    </Theme>
   )
 }
 function RadioButton({
@@ -48,7 +50,7 @@ function RadioButton({
       <Button
         disabled={active}
         icon={icon}
-        backgroundColor={active ? '$color7' : undefined}
+        backgroundColor={active ? '$backgroundFocus' : '$backgroundStrong'}
         onPress={onPress}
       >
         {label}

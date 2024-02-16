@@ -1,4 +1,11 @@
-import {Button, MoreHorizontal, Popover, Separator, YGroup} from '@mintter/ui'
+import {
+  Button,
+  MoreHorizontal,
+  Popover,
+  Separator,
+  XStack,
+  YGroup,
+} from '@mintter/ui'
 import {FC} from 'react'
 import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
@@ -20,54 +27,60 @@ export function OptionsDropdown({
 }) {
   const popoverState = usePopoverState()
   return (
-    <Popover {...popoverState} placement="bottom-end">
-      <Popover.Trigger asChild>
-        <Button
-          size="$1"
-          circular
-          data-trigger
-          opacity={!popoverState.open && hiddenUntilItemHover ? 0 : 1}
-          onPress={(e) => {
-            // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
-            e.stopPropagation()
-          }}
-          icon={MoreHorizontal}
-        />
-      </Popover.Trigger>
-      <Popover.Content
-        padding={0}
-        elevation="$2"
-        animation={[
-          'fast',
-          {
-            opacity: {
-              overshootClamping: true,
+    <XStack
+      opacity={!popoverState.open && hiddenUntilItemHover ? 0 : 1}
+      $group-item-hover={{
+        opacity: 1,
+      }}
+    >
+      <Popover {...popoverState} placement="bottom-end">
+        <Popover.Trigger asChild>
+          <Button
+            size="$1"
+            circular
+            data-trigger
+            onPress={(e) => {
+              // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
+              e.stopPropagation()
+            }}
+            icon={MoreHorizontal}
+          />
+        </Popover.Trigger>
+        <Popover.Content
+          padding={0}
+          elevation="$2"
+          animation={[
+            'fast',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
             },
-          },
-        ]}
-        enterStyle={{y: -10, opacity: 0}}
-        exitStyle={{y: -10, opacity: 0}}
-        elevate={true}
-      >
-        <YGroup separator={<Separator />}>
-          {menuItems.map(
-            (item) =>
-              item && (
-                <YGroup.Item key={item.key}>
-                  <MenuItem
-                    onPress={(e) => {
-                      e.stopPropagation()
-                      popoverState.onOpenChange(false)
-                      item.onPress()
-                    }}
-                    title={item.label}
-                    icon={item.icon}
-                  />
-                </YGroup.Item>
-              ),
-          )}
-        </YGroup>
-      </Popover.Content>
-    </Popover>
+          ]}
+          enterStyle={{y: -10, opacity: 0}}
+          exitStyle={{y: -10, opacity: 0}}
+          elevate={true}
+        >
+          <YGroup separator={<Separator />}>
+            {menuItems.map(
+              (item) =>
+                item && (
+                  <YGroup.Item key={item.key}>
+                    <MenuItem
+                      onPress={(e) => {
+                        e.stopPropagation()
+                        popoverState.onOpenChange(false)
+                        item.onPress()
+                      }}
+                      title={item.label}
+                      icon={item.icon}
+                    />
+                  </YGroup.Item>
+                ),
+            )}
+          </YGroup>
+        </Popover.Content>
+      </Popover>
+    </XStack>
   )
 }

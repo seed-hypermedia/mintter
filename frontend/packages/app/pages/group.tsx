@@ -364,7 +364,7 @@ export default function GroupPage() {
                       gap="$2"
                       position="absolute"
                       right={0}
-                      top={'$4'}
+                      top="$4"
                       alignItems="center"
                     >
                       {frontDocMenuItems.length ? (

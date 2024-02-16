@@ -1,8 +1,13 @@
 export * from 'tamagui'
 export {config} from './tamagui.config'
 
-export {Paragraph as TParagraph, Tooltip as TTooltip} from 'tamagui'
+export {
+  Paragraph as TParagraph,
+  Button as TTButton,
+  Tooltip as TTooltip,
+} from 'tamagui'
 export * from './avatar'
+export {Button} from './button'
 export * from './checkbox-field'
 export * from './container'
 export * from './copy-to-clipboard'
