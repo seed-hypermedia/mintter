@@ -357,6 +357,7 @@ function NewDocumentButton({
       <Button
         size="$2"
         chromeless
+        backgroundColor="$colorTransparent"
         iconAfter={Plus}
         onPress={(e) => {
           e.stopPropagation()
@@ -557,6 +558,7 @@ function PinnedAccount({accountId}: {accountId: string}) {
         indented
         rightHover={[
           <UnpinButton
+            chromeless
             key="pin"
             onPress={(e) => {
               e.stopPropagation()
@@ -588,6 +590,7 @@ function PinnedGroup(props: {group: {groupId: string}}) {
         title={group.data?.title}
         rightHover={[
           <UnpinButton
+            chromeless
             key="pin"
             onPress={(e) => {
               e.stopPropagation()
@@ -672,6 +675,7 @@ function PinnedDocument({
         indented
         rightHover={[
           <UnpinButton
+            chromeless
             key="pin"
             onPress={(e) => {
               e.stopPropagation()
