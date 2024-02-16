@@ -32,8 +32,13 @@ scrape_configs:
       - targets: ["host.docker.internal:55001"] # dev local testnet
       - targets: ["host.docker.internal:56001"] # dev local mainnet
       - targets: ["minttersite:56001"] # production site deployment
-  - job_name: 'node'
+  - job_name: "node"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ['host.docker.internal:9100'] # dev node_exporter
-      - targets: ['node_exporter:9100'] # production node_exporter
+      - targets: ["host.docker.internal:9100"] # dev node_exporter
+      - targets: ["node_exporter:9100"] # production node_exporter
+  - job_name: electron
+    metrics_path: /debug/metrics
+    static_configs:
+      - targets: ["host.docker.internal:55003"]
+      - targets: ["host.docker.internal:56003"]

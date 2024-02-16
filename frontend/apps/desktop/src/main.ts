@@ -1,5 +1,5 @@
 import {defaultRoute} from '@mintter/app/utils/routes'
-import {IS_PROD_DESKTOP} from '@mintter/shared'
+import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
@@ -12,6 +12,7 @@ import {
   trpc,
 } from './app-api'
 import {createAppMenu} from './app-menu'
+import {startMetricsServer} from './app-metrics'
 import {initPaths} from './app-paths'
 import autoUpdate from './auto-update'
 import {startMainDaemon} from './daemon'
@@ -20,6 +21,11 @@ import {saveCidAsFile} from './save-cid-as-file'
 const OS_REGISTER_SCHEME = 'hm'
 
 initPaths()
+
+const metricsServer = startMetricsServer(ELECTRON_HTTP_PORT)
+app.on('quit', async () => {
+  await metricsServer.close()
+})
 
 if (IS_PROD_DESKTOP) {
   if (squirrelStartup) {
