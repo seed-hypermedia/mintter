@@ -74,7 +74,7 @@ if [ -n "$profile" ]; then
 	curl -s -o ${workspace}/monitoring/grafana/provisioning/datasources/main.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/datasources/main.yaml
 	curl -s -o ${workspace}/monitoring/grafana/provisioning/dashboards/main.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/dashboards/main.yml
 	curl -s -o ${workspace}/monitoring/grafana/dashboards/libp2p/resource-manager.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/libp2p/resource-manager.json
-	curl -s -o ${workspace}/monitoring/grafana/dashboards/mintter/main.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/mintter/main.json
+	curl -s -o ${workspace}/monitoring/grafana/dashboards/mintter/p2p.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/mintter/p2p.json
 	curl -s -o ${workspace}/monitoring/grafana/dashboards/system/full-host.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/system/full-host.json
 	curl -s -o ${workspace}/monitoring/prometheus/prometheus.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/prometheus/prometheus.yaml
 fi
