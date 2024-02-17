@@ -17,10 +17,12 @@ export function ListItem({
   accessory,
   title,
   onPress,
+  icon,
   onPointerEnter,
   menuItems = [],
 }: {
   accessory?: ReactElement
+  icon?: ReactElement
   title: string
   onPress: ButtonProps['onPress'] | ComponentProps<typeof ButtonText>['onPress']
   onPointerEnter?: () => void
@@ -52,6 +54,7 @@ export function ListItem({
           borderWidth: 1,
         }}
       >
+        {icon}
         <ButtonText
           onPress={(e) => {
             e.stopPropagation()
@@ -64,7 +67,7 @@ export function ListItem({
           {title}
         </ButtonText>
         {accessory && (
-          <XStack flexShrink={0} paddingHorizontal="$2">
+          <XStack flexShrink={0} gap="$2" paddingHorizontal="$2">
             {accessory}
           </XStack>
         )}
