@@ -7,6 +7,7 @@ import {
   GRPCClient,
   HYPERMEDIA_SCHEME,
   extractBlockRefOfUrl,
+  getDocumentTitle,
   hmIdWithVersion,
   isHypermediaScheme,
 } from '@mintter/shared'
@@ -192,7 +193,7 @@ export function QuickSwitcher() {
             return (
               <Command.Item
                 key={draft.id}
-                value={(draft.title || 'Untitled Document') + draft.id}
+                value={getDocumentTitle(draft) + draft.id}
                 onSelect={() => {
                   setOpen(false)
                   navigate({
@@ -201,9 +202,7 @@ export function QuickSwitcher() {
                   })
                 }}
               >
-                <span className="cmdk-mtt-text">
-                  {draft.title || 'Untitled Document'}
-                </span>
+                <span className="cmdk-mtt-text">{getDocumentTitle(draft)}</span>
                 <span className="cmdk-mtt-type">Draft</span>
               </Command.Item>
             )
