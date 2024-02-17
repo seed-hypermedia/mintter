@@ -1,6 +1,7 @@
 import {useDraftTitle} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {useNavRoute} from '@mintter/app/utils/navigation'
+import {getDocumentTitle} from '@mintter/shared'
 import {
   Book,
   Contact,
@@ -24,7 +25,6 @@ import {
   NavRoute,
   PublicationRoute,
 } from '../utils/routes'
-import {getDocumentTitle} from './publication-list-item'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
