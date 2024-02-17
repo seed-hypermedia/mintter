@@ -6,7 +6,12 @@ import {
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
-import {GroupVariant, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {
+  GroupVariant,
+  createPublicWebHmUrl,
+  hmId,
+  unpackHmId,
+} from '@mintter/shared'
 import {
   Back,
   Button,
@@ -276,10 +281,12 @@ export function useFullReferenceUrl(route: NavRoute): {
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(variantGroupId)
   const gwUrl = useGatewayUrl()
-  const [copyDialogContent, onCopyPublicDoc, gatewayHost] =
+  const [copyDialogContent, onCopyPublic, gatewayHost] =
     useCopyGatewayReference()
 
   if (groupRoute) {
+    const groupId = unpackHmId(groupRoute.groupId)
+    if (!groupId) return null
     const groupExactVersion = groupRoute?.version || group?.data?.version
     const baseUrl = group.data?.siteInfo?.baseUrl
     if (baseUrl) {
@@ -295,17 +302,20 @@ export function useFullReferenceUrl(route: NavRoute): {
         },
       }
     }
-    const ref = getReferenceUrlOfRoute(
-      route,
-      gwUrl.data,
-      groupExactVersion || group.data?.version,
-    )
-    if (!ref) return null
+    let hostname = group.data?.siteInfo?.baseUrl || gwUrl.data
     return {
-      ...ref,
-      content: null,
+      label: 'Group',
+      url: createPublicWebHmUrl('g', groupId.eid, {
+        hostname: hostname || null,
+        version: groupExactVersion || group.data?.version || null,
+      }),
+      content: copyDialogContent,
       onCopy: () => {
-        copyUrlToClipboardWithFeedback(ref.url, ref.label)
+        onCopyPublic({
+          ...groupId,
+          hostname: hostname || null,
+          version: groupExactVersion || group.data?.version || null,
+        })
       },
     }
   }
@@ -388,12 +398,26 @@ export function useFullReferenceUrl(route: NavRoute): {
       label: hostname ? 'Site Version' : 'Doc Version',
       content: copyDialogContent,
       onCopy: (blockId: string | undefined) => {
-        onCopyPublicDoc({
+        onCopyPublic({
           ...docId,
           hostname: hostname || null,
           version: pub.data?.publication?.version || null,
           blockRef: blockId || null,
           variants: pubRoute.variants,
+        })
+      },
+    }
+  }
+
+  if (route.key === 'account') {
+    const accountId = hmId('a', route.accountId)
+    return {
+      label: 'Account',
+      url: createPublicWebHmUrl('a', route.accountId, {}),
+      content: copyDialogContent,
+      onCopy: () => {
+        onCopyPublic({
+          ...accountId,
         })
       },
     }

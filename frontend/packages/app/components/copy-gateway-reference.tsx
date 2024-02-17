@@ -1,6 +1,8 @@
 import {
+  HYPERMEDIA_ENTITY_TYPES,
   StateStream,
   UnpackedHypermediaId,
+  unpackHmId,
   writeableStateStream,
 } from '@mintter/shared'
 import {
@@ -47,7 +49,7 @@ export function useCopyGatewayReference() {
   const pushOnCopy = usePushOnCopy()
   const push = usePushPublication()
   function onCopy(input: UnpackedHypermediaId) {
-    const publicUrl = createPublicWebHmUrl('d', input.eid, {
+    const publicUrl = createPublicWebHmUrl(input.type, input.eid, {
       version: input.version,
       blockRef: input.blockRef,
       variants: input.variants,
@@ -60,7 +62,8 @@ export function useCopyGatewayReference() {
     fetchWebLinkMeta(publicUrl)
       .then((meta) => {
         // toast.success(JSON.stringify(meta))
-        const correctId = meta?.hmId === createHmId('d', input.eid)
+        const destId = createHmId(input.type, input.eid)
+        const correctId = meta?.hmId === destId
         const correctVersion =
           !input.version || meta?.hmVersion === input.version
         if (correctId && correctVersion) {
@@ -70,7 +73,7 @@ export function useCopyGatewayReference() {
           if (pushOnCopy.data === 'always') {
             setPushingState(true)
             push
-              .mutateAsync(createHmId('d', input.eid))
+              .mutateAsync(destId)
               .then(() => {
                 setIsPublished(true)
                 setPushingState(null)
@@ -96,7 +99,7 @@ export function useCopyGatewayReference() {
         host={gatewayHost}
         isPublished={isPublished}
         pushingState={pushingState}
-        docId={createHmId(input.type, input.eid)}
+        hmId={createHmId(input.type, input.eid)}
       />,
       {duration: 8000},
     )
@@ -108,30 +111,32 @@ function CopiedToast({
   isPublished,
   pushingState,
   host,
-  docId,
+  hmId,
 }: {
   isPublished: StateStream<IsPublishedState>
   pushingState: StateStream<PushingState>
   host: string
-  docId: string
+  hmId: string
 }) {
   const published = useStream(isPublished)
   const pushing = useStream(pushingState)
   const push = usePushPublication()
+  const id = unpackHmId(hmId)
+  const entityType = id?.type ? HYPERMEDIA_ENTITY_TYPES[id.type] : 'Entity'
   let indicator: ReactNode = null
   let message: string = ''
   if (pushing === true) {
     indicator = <Spinner />
-    message = `Copied Document URL, pushing to ${host}...`
+    message = `Copied ${entityType} URL, pushing to ${host}...`
   } else if (published === null) {
     indicator = <Spinner />
-    message = `Copied Document URL, checking ${host}...`
+    message = `Copied ${entityType} URL, checking ${host}...`
   } else if (published === true) {
     indicator = <SuccessToastDecoration />
-    message = `Copied Document URL, available on ${host}`
+    message = `Copied ${entityType} URL, available on ${host}`
   } else {
     indicator = <ErrorToastDecoration />
-    message = `Copied Document URL, not available on ${host}`
+    message = `Copied ${entityType} URL, not available on ${host}`
   }
   return (
     <YStack f={1} gap="$3">
@@ -144,7 +149,7 @@ function CopiedToast({
           <Button
             size="$2"
             onPress={() => {
-              toast.promise(push.mutateAsync(docId), {
+              toast.promise(push.mutateAsync(hmId), {
                 loading: `Pushing to ${host}...`,
                 success: `Pushed to ${host}`,
                 error: (err) => `Failed to push to ${host}: ${err.message}`,
@@ -173,6 +178,9 @@ export function PushToGatewayDialog({
   const [shouldDoAlways, setShouldDoAlways] = useState(false)
   const setPushOnCopy = useSetPushOnCopy()
   const setPushOnPublish = useSetPushOnPublish()
+  const entityType = input?.type
+    ? HYPERMEDIA_ENTITY_TYPES[input.type]
+    : 'Entity'
   function setDoEveryTime(everyTime: 'always' | 'never') {
     if (input.context === 'copy') {
       setPushOnCopy.mutate(everyTime)
@@ -181,13 +189,12 @@ export function PushToGatewayDialog({
     }
   }
   let title = `Push to ${input.host}`
-  let description = 'Push this document to the public web gateway?'
+  let description = `Push this ${entityType.toLowerCase()} to the public web gateway?`
   if (input.context === 'copy') {
-    title = `Document URL Copied. Push to ${input.host}?`
-    description =
-      'Could not verify this document is publicly available. Would you like to push it now?'
+    title = `${entityType} URL Copied. Push to ${input.host}?`
+    description = `Could not verify this ${entityType.toLowerCase()} is publicly available. Would you like to push it now?`
   } else if (input.context === 'publish') {
-    title = `Document Published. Push to ${input.host}?`
+    title = `${entityType} Published. Push to ${input.host}?`
   }
   return (
     <>
@@ -207,7 +214,7 @@ export function PushToGatewayDialog({
           onPress={() => {
             if (shouldDoAlways) setDoEveryTime('always')
             push
-              .mutateAsync(createHmId('d', input.eid))
+              .mutateAsync(createHmId(input.type, input.eid))
               .then(() => {
                 onClose()
                 toast.success(`Pushed to ${input.host}`)
