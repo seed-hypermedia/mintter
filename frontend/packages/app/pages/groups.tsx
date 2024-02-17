@@ -4,6 +4,7 @@ import {
   ButtonText,
   Container,
   ExternalLink,
+  List,
   Spinner,
   Text,
   XStack,
@@ -17,12 +18,12 @@ import {
   TimeAccessory,
   copyLinkMenuItem,
 } from '../components/list-item'
-import {MainWrapper} from '../components/main-wrapper'
+import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useGroupMembers, useGroups} from '../models/groups'
 import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
-import {GroupRoute} from '../utils/navigation'
+import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
@@ -175,25 +176,26 @@ export default function GroupsPage() {
   const groupQuery = useGroups()
   const groups = groupQuery.data?.groups || []
   let content = groupQuery.isLoading ? (
-    <Spinner />
+    <Container>
+      <Spinner />
+    </Container>
   ) : groups.length > 0 ? (
-    groups.map((group) => {
-      return <GroupListItem group={group} key={group.id} />
-    })
+    <List
+      items={groups}
+      renderItem={({item}) => <GroupListItem group={item} />}
+    />
   ) : (
-    <YStack gap="$5" paddingVertical="$8">
-      <Text fontFamily="$body" fontSize="$3">
-        You have no Groups yet.
-      </Text>
-    </YStack>
+    <Container>
+      <YStack gap="$5" paddingVertical="$8">
+        <Text fontFamily="$body" fontSize="$3">
+          You have no Groups yet.
+        </Text>
+      </YStack>
+    </Container>
   )
   return (
     <>
-      <MainWrapper>
-        <Container>
-          <YStack>{content}</YStack>
-        </Container>
-      </MainWrapper>
+      <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
       <Footer />
     </>
   )
