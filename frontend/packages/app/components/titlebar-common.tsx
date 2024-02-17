@@ -413,11 +413,14 @@ export function useFullReferenceUrl(route: NavRoute): {
     const accountId = hmId('a', route.accountId)
     return {
       label: 'Account',
-      url: createPublicWebHmUrl('a', route.accountId, {}),
+      url: createPublicWebHmUrl('a', route.accountId, {
+        hostname: gwUrl.data,
+      }),
       content: copyDialogContent,
       onCopy: () => {
         onCopyPublic({
           ...accountId,
+          hostname: gwUrl.data || null,
         })
       },
     }
