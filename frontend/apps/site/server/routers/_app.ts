@@ -484,6 +484,18 @@ const accountRouter = router({
         account,
       }
     }),
+  listPublications: procedure
+    .input(
+      z.object({
+        accountId: z.string(),
+      }),
+    )
+    .query(async ({input}) => {
+      const result = await queryClient.publications.listAccountPublications({
+        accountId: input.accountId,
+      })
+      return result.publications.map(hmPublication)
+    }),
 })
 
 const siteInfoRouter = router({

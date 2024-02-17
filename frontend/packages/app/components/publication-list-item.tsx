@@ -4,8 +4,9 @@ import {
   Account,
   Document,
   GroupVariant,
-  Publication,
+  HMPublication,
   PublicationVariant,
+  getDocumentTitle,
 } from '@mintter/shared'
 import {
   ArrowUpRight,
@@ -20,11 +21,6 @@ import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {ListItem, TimeAccessory} from './list-item'
 import {MenuItemType} from './options-dropdown'
 
-export function getDocumentTitle(document?: Document) {
-  let res = document?.title || 'Untitled Document'
-  return res
-}
-
 export function PublicationListItem({
   publication,
   hasDraft,
@@ -37,7 +33,7 @@ export function PublicationListItem({
   author,
   editors,
 }: {
-  publication: Publication
+  publication: HMPublication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   variants?: PublicationVariant[]

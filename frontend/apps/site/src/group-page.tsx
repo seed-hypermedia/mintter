@@ -258,7 +258,7 @@ export function ContentListItem({
 }: {
   accessory: ReactElement
   title: string
-  href: string
+  href?: string | null
 }) {
   return (
     <>
@@ -279,7 +279,7 @@ export function ContentListItem({
   )
 }
 
-function ListviewWrapper({children}: {children: ReactNode}) {
+export function ListviewWrapper({children}: {children: ReactNode}) {
   return (
     <YStack
       paddingHorizontal="$2"

@@ -93,6 +93,9 @@ export const getAccountStaticProps: GetStaticProps<EveryPageProps> = async (
       accountId,
     }),
   )
+  if (accountId) {
+    await helpers.account.listPublications.prefetch({accountId})
+  }
   return {
     props: await getPageProps(helpers, context, {}),
     revalidate: 30 * 60, // 30 minutes, content doesn't change very often with this account page design
