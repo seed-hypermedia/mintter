@@ -61,6 +61,17 @@ var (
 		Name: "mintter_syncing_connects_in_flight",
 		Help: "Number of connection attempts in progress.",
 	})
+
+	mSyncingTickDuration = promauto.NewSummary(prometheus.SummaryOpts{
+		Name: "mintter_syncing_worker_tick_duration_seconds",
+		Help: "Duration of a single worker tick.",
+		Objectives: map[float64]float64{
+			0.25: 0.05,
+			0.5:  0.05,
+			0.9:  0.01,
+			0.99: 0.001,
+		},
+	})
 )
 
 // Force metric to appear even if there's no blobs to sync.

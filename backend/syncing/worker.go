@@ -122,7 +122,7 @@ func (sw *worker) start(ctx context.Context, wg *sync.WaitGroup, interval time.D
 		select {
 		case <-ctx.Done():
 			return
-		case <-t.C:
+		case tick := <-t.C:
 			state := sCheckConnection
 
 		FSM:
@@ -166,6 +166,8 @@ func (sw *worker) start(ctx context.Context, wg *sync.WaitGroup, interval time.D
 					panic("BUG: invalid worker state")
 				}
 			}
+
+			mSyncingTickDuration.Observe(time.Since(tick).Seconds())
 		}
 	}
 }
