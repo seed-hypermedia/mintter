@@ -20,6 +20,7 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
+	"mintter/backend/pkg/procmetrics"
 	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
@@ -41,6 +42,9 @@ import (
 
 func init() {
 	prometheus.MustRegister(collectors.NewBuildInfoCollector())
+	prometheus.Unregister(collectors.NewGoCollector())
+	prometheus.MustRegister(collectors.NewGoCollector(collectors.WithGoCollectorRuntimeMetrics(collectors.MetricsAll)))
+	prometheus.MustRegister(procmetrics.NewCollector("mintter"))
 }
 
 // App is the main Mintter Daemon application, holding all of its dependencies
