@@ -110,7 +110,7 @@ services:
       GF_SERVER_HTTP_PORT: ${MTT_SITE_MONITORING_PORT:-3001}
       GF_SERVER_PROTOCOL: "http"
       GF_SERVER_DOMAIN: ${MTT_SITE_DNS:-localhost:3001}
-      GF_SERVER_ROOT_URL: ${MTT_SITE_HOSTNAME:-http://localhost}/.well-known/metrics
+      GF_SERVER_ROOT_URL: ${MTT_SITE_HOSTNAME:-http://localhost}/.metrics
       GF_SERVER_SERVE_FROM_SUB_PATH: True
 
 volumes:

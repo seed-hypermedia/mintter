@@ -105,7 +105,7 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 
 reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
-reverse_proxy /.well-known/metrics* grafana:{\$MTT_SITE_MONITORING_PORT:3001}
+reverse_proxy /.metrics* grafana:{\$MTT_SITE_MONITORING_PORT:3001}
 
 route @version {
     rewrite /.well-known/hypermedia-site/version /debug/version
