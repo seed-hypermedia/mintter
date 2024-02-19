@@ -570,7 +570,7 @@ function DraftError({
         padding="$4"
         borderRadius="$5"
         borderColor="$color5"
-        borderWidth={1}
+        borderWidth={2}
         backgroundColor="$color3"
         gap="$3"
         alignItems="center"

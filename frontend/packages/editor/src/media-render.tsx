@@ -523,7 +523,7 @@ function MediaForm({
       //@ts-ignore
       contentEditable={false}
       position="relative"
-      borderWidth={0}
+      borderWidth={2}
       outlineWidth={0}
     >
       <Popover

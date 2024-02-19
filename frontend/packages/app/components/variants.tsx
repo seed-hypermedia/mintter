@@ -315,7 +315,7 @@ export function ContextPopoverContent(props) {
       padding={0}
       width={350}
       name={'ContextPopoverContent'}
-      borderWidth={1}
+      borderWidth={2}
       borderColor={'$borderColor'}
       backgroundColor={'$background'}
       elevation={'$2'}
