@@ -117,6 +117,7 @@ function FullAppSidebar() {
           backgroundColor={'$color11'}
           width={HoverRegionWidth + 20} // this 20 is to make sure the rounded radius is not visible on the edge
           top={top}
+          zi={99999}
           opacity={0}
           hoverStyle={{
             opacity: 0.1,
