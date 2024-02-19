@@ -42,9 +42,14 @@ import (
 
 func init() {
 	prometheus.MustRegister(collectors.NewBuildInfoCollector())
+
+	// Unregister default Go runtime collector, and register it again with more metrics.
 	prometheus.Unregister(collectors.NewGoCollector())
 	prometheus.MustRegister(collectors.NewGoCollector(collectors.WithGoCollectorRuntimeMetrics(collectors.MetricsAll)))
-	prometheus.MustRegister(procmetrics.NewCollector("mintter"))
+
+	// Unregister default process collector and register our own that supports macOS.
+	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	prometheus.MustRegister(procmetrics.NewProcessCollector(procmetrics.ProcessCollectorOpts{}))
 }
 
 // App is the main Mintter Daemon application, holding all of its dependencies
