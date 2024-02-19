@@ -565,7 +565,11 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
     <>
       <ContextPopover {...popoverState}>
         <PopoverTrigger asChild>
-          <Button size="$2" className="no-window-drag">
+          <Button
+            size="$2"
+            className="no-window-drag"
+            iconAfter={popoverState.open ? ChevronUp : ChevronDown}
+          >
             {realVariants && (
               <VariantState
                 variants={realVariants}
