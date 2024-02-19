@@ -900,7 +900,7 @@ function WalletCard({
       hoverStyle={{scale: 1}}
       pressStyle={{scale: 0.95}}
       borderRadius="$4"
-      borderWidth={1}
+      borderWidth={2}
       borderColor="$borderColor"
       elevation="$2"
       {...props}

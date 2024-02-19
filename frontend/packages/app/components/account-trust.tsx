@@ -20,12 +20,15 @@ export function AccountTrustButton({
     : hover
     ? 'Untrust Account'
     : 'Trusted Account'
+
   if (!isTrusted) {
     return (
       <Tooltip content={label}>
         <Button
           size="$2"
           theme="green"
+          backgroundColor={isTrusted ? '$background' : '$backgroundTransparent'}
+          borderColor="$borderColor"
           icon={PlusCircle}
           onPress={(e) => {
             e.stopPropagation()
@@ -43,6 +46,7 @@ export function AccountTrustButton({
         size="$2"
         theme={hover ? 'red' : 'green'}
         icon={hover ? XCircle : CheckCircle}
+        borderColor="$borderColor"
         onPress={(e) => {
           e.stopPropagation()
           setTrusted.mutate({accountId, isTrusted: false})

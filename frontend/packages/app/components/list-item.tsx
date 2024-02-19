@@ -50,8 +50,7 @@ export function ListItem({
         bg="$colo7"
         hoverStyle={{
           bg: '$backgroundFocus',
-          borderColor: '$backgroundFocus',
-          borderWidth: 1,
+          borderColor: '$background',
         }}
       >
         {icon}
