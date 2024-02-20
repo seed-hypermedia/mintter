@@ -1270,36 +1270,6 @@ export const BlockContainer = Node.create<{
             return false
           }),
 
-        // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
-        // empty & at the start of the block.
-        () =>
-          commands.command(({state, chain}) => {
-            const {node, endPos} = getBlockInfoFromPos(
-              state.doc,
-              state.selection.from,
-            )!
-
-            const selectionAtBlockStart =
-              state.selection.$anchor.parentOffset === 0
-            const selectionEmpty =
-              state.selection.anchor === state.selection.head
-            const blockEmpty = node.textContent.length === 0
-
-            if (selectionAtBlockStart && selectionEmpty && blockEmpty) {
-              const newBlockInsertionPos = endPos + 1
-              const newBlockContentPos = newBlockInsertionPos + 2
-
-              chain()
-                .BNCreateBlock(newBlockInsertionPos)
-                .setTextSelection(newBlockContentPos)
-                .run()
-
-              return true
-            }
-
-            return false
-          }),
-
         // Splits the current block, moving content inside that's after the cursor to a new text block below. Also
         // deletes the selection beforehand, if it's not empty.
         () =>

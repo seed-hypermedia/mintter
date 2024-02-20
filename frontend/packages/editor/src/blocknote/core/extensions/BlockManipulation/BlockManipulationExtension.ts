@@ -9,6 +9,42 @@ import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 export const BlockManipulationExtension = Extension.create({
   name: 'BlockManupulation',
 
+  addKeyboardShortcuts() {
+    return {
+      // 'Shift-Enter': () => {
+      //   const {view, state} = this.editor
+      //   const {selection} = state
+      //   if (selection instanceof NodeSelection) {
+      //     const prevBlockInfo = findPreviousBlock(view, selection.from)
+      //     if (prevBlockInfo) {
+      //       const $pos = state.doc.resolve(prevBlockInfo.prevBlockPos)
+      //       this.editor
+      //         .chain()
+      //         .BNCreateBlock($pos.end() + 1)
+      //         .setTextSelection($pos.end() + 3)
+      //         .run()
+      //       return true
+      //     }
+      //   }
+      //   return false
+      // },
+      Enter: () => {
+        const {state} = this.editor
+        const {selection} = state
+        if (selection instanceof NodeSelection) {
+          const $pos = state.doc.resolve(selection.from + 1)
+          this.editor
+            .chain()
+            .BNCreateBlock($pos.end() + 2)
+            .setTextSelection($pos.end() + 3)
+            .run()
+          return true
+        }
+        return false
+      },
+    }
+  },
+
   addProseMirrorPlugins() {
     return [
       new Plugin({
