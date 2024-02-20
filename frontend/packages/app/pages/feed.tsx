@@ -18,26 +18,28 @@ import {
   Button,
   ButtonText,
   FeedList,
+  FeedListHandle,
   Globe,
   PageContainer,
   RadioButtons,
   SizableText,
   Spinner,
+  Theme,
   UIAvatar,
   XStack,
   YStack,
   styled,
   toast,
 } from '@mintter/ui'
-import {ArrowRight, Verified} from '@tamagui/lucide-icons'
-import {PropsWithChildren, ReactNode} from 'react'
+import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
+import {PropsWithChildren, ReactNode, useRef} from 'react'
 import Footer from '../components/footer'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAccount} from '../models/accounts'
 import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
-import {useFeed} from '../models/feed'
+import {useFeedWithLatest} from '../models/feed'
 import {useGroup} from '../models/groups'
 import {appRouteOfId, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -603,13 +605,15 @@ function FeedItem({event}: {event: ActivityEvent}) {
 }
 
 function Feed({tab}: {tab: 'trusted' | 'all'}) {
-  const feed = useFeed(tab === 'trusted')
+  const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
+  const scrollRef = useRef<FeedListHandle>(null)
   if (route.key !== 'feed') throw new Error('invalid route')
   return (
     <YStack f={1} gap="$3">
       <FeedList
+        ref={scrollRef}
         header={
           <PageContainer marginVertical="$6">
             <XStack f={1} ai="center" gap="$3">
@@ -645,6 +649,29 @@ function Feed({tab}: {tab: 'trusted' | 'all'}) {
           feed.fetchNextPage()
         }}
       />
+      {feed.hasNewItems && (
+        <XStack
+          position="absolute"
+          top={0}
+          right={0}
+          left={0}
+          padding="$4"
+          jc="center"
+        >
+          <Theme inverse>
+            <Button
+              size="$2"
+              onPress={() => {
+                scrollRef.current?.scrollTo({top: 0})
+                feed.refetch()
+              }}
+              icon={ChevronUp}
+            >
+              New Updates
+            </Button>
+          </Theme>
+        </XStack>
+      )}
     </YStack>
   )
 }

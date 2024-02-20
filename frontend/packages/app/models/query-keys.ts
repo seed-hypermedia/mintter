@@ -10,6 +10,7 @@ export const queryKeys = {
 
   // feed
   FEED: 'FEED', // trustedOnly: boolean
+  FEED_LATEST_EVENT: 'FEED_LATEST_EVENT', // trustedOnly: boolean
 
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',

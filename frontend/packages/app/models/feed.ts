@@ -1,9 +1,43 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {useInfiniteQuery} from '@tanstack/react-query'
+import {Event} from '@mintter/shared'
+import {useInfiniteQuery, useQuery} from '@tanstack/react-query'
 import {unpackHmId} from '../../shared/src'
 import {useGRPCClient} from '../app-context'
 import {ChangeBlob, GroupSchema, useBlobsData} from './changes'
 import {queryKeys} from './query-keys'
+
+export function feedEventId(e: Event | undefined) {
+  if (!e) return 'empty'
+  if (e.data.case === 'newBlob') {
+    return e.data.value.cid
+  }
+}
+
+export function useFeedWithLatest(trustedOnly: boolean = false) {
+  const grpcClient = useGRPCClient()
+  const latestQuery = useQuery({
+    queryKey: [queryKeys.FEED_LATEST_EVENT, trustedOnly],
+    queryFn: async (context) => {
+      const result = await grpcClient.activityFeed.listEvents({
+        pageSize: 1,
+      })
+      const event: Event | undefined = result.events[0]
+      return feedEventId(event)
+    },
+    refetchInterval: 1000 * 10,
+  })
+  const feed = useFeed(trustedOnly)
+  const firstFeedEvent: Event | undefined = feed.data?.[0]
+  const firstFeedEventId = feedEventId(firstFeedEvent)
+  return {
+    ...feed,
+    hasNewItems:
+      firstFeedEventId !== 'empty' &&
+      !!latestQuery.data &&
+      firstFeedEventId !== latestQuery.data,
+    // hasNewItems: true,
+  }
+}
 
 export function useFeed(trustedOnly: boolean = false) {
   const grpcClient = useGRPCClient()
