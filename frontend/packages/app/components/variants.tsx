@@ -1,3 +1,4 @@
+import {zodResolver} from '@hookform/resolvers/zod'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {getDefaultShortname} from '@mintter/app/models/documents'
 import {
@@ -38,13 +39,10 @@ import {
   DialogDescription,
   DialogProps,
   DialogTitle,
-  Fieldset,
   Form,
   Input,
-  Label,
   Popover,
   PopoverTrigger,
-  Select,
   SizableText,
   Spinner,
   Tooltip,
@@ -54,21 +52,10 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {
-  ArrowRight,
-  Book,
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  Upload,
-} from '@tamagui/lucide-icons'
-import {
-  ComponentProps,
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import {ArrowRight, Book, Pencil, Upload} from '@tamagui/lucide-icons'
+import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
+import {SubmitHandler, useForm} from 'react-hook-form'
+import {z} from 'zod'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -80,6 +67,9 @@ import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
 import {EditDocButton, useEditDraft} from './edit-doc-button'
+import {FormInput} from './form-input'
+import {FormErrors, FormField} from './forms'
+import {SelectInput} from './select-input'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -138,6 +128,21 @@ export function RenameShortnameDialog({
   )
 }
 
+const publishToGroupFormSchema = z.object({
+  groupId: z.string(),
+  pathName: z
+    .string()
+    .min(2, {message: 'Path name must be 2 characters or longer'})
+    .refine(
+      (pathName) => {
+        return pathName[0] !== '.'
+      },
+      {message: 'Path name cannot start with a dot'},
+    ),
+})
+
+type PublishToGroupFields = z.infer<typeof publishToGroupFormSchema>
+
 export function GroupPublishDialog({
   input,
   onClose,
@@ -154,142 +159,117 @@ export function GroupPublishDialog({
   const account = useMyAccount()
   const accountId = account.data?.id
   const myGroups = useAccountGroups(accountId)
-  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>()
-  useEffect(() => {
-    if (myGroups?.data?.items?.length && !selectedGroupId)
-      setSelectedGroupId(myGroups.data?.items?.[0]?.group?.id)
-  }, [myGroups.data, selectedGroupId])
   const defaultPathName = getDefaultShortname(input.docTitle || '', input.docId)
-  const [pathName, setPathName] = useState(defaultPathName)
   const route = useNavRoute()
   const navigate = useNavigate('replace')
   const draftRoute = route.key === 'draft' ? route : null
   const pubRoute = route.key === 'publication' ? route : null
   const publishToGroup = usePublishDocToGroup()
-  if (!myGroups.data || !selectedGroupId) return <Spinner />
-  return (
-    <Form
-      onSubmit={() => {
-        if (!selectedGroupId) {
-          toast.error('Please select a group')
-          return
-        }
-        if (pubRoute && input.version) {
-          // we are in a publication and we are expected to immediately put this in the group
-          toast
-            .promise(
-              publishToGroup
-                .mutateAsync({
-                  groupId: selectedGroupId,
-                  docId: input.docId,
-                  version: input.version,
-                  pathName,
-                })
-                .then((didChange: boolean) => {
-                  navigate({
-                    ...pubRoute,
-                    variants: [
-                      {
-                        key: 'group',
-                        groupId: selectedGroupId,
-                        pathName,
-                      },
-                    ],
-                  })
-                  return didChange
-                }),
-              {
-                loading: 'Publishing...',
-                success: (result) => {
-                  if (result) return 'Published to Group'
-                  else return 'Already Published Here'
-                },
-                error: 'Failed to Publish!',
-              },
-            )
-            .finally(() => {
-              onClose()
-              input.onComplete?.()
-            })
-        } else if (draftRoute) {
-          // we are in a draft and we are only setting the group ID and pathName in the route
-          navigate({
-            ...draftRoute,
-            variant: {
-              key: 'group',
-              groupId: selectedGroupId,
+
+  const {
+    control,
+    handleSubmit,
+    setFocus,
+    formState: {errors},
+  } = useForm<PublishToGroupFields>({
+    resolver: zodResolver(publishToGroupFormSchema),
+    defaultValues: {
+      groupId: undefined,
+      pathName: defaultPathName,
+    },
+  })
+  //  useEffect(() => {
+  //     if (myGroups?.data?.items?.length && !selectedGroupId)
+  //       setSelectedGroupId(myGroups.data?.items?.[0]?.group?.id)
+  //   }, [myGroups.data, selectedGroupId])
+  const onSubmit: SubmitHandler<PublishToGroupFields> = (data) => {
+    const {groupId, pathName} = data
+    if (!groupId) {
+      toast.error('Please select a group')
+      return
+    }
+    if (pubRoute && input.version) {
+      // we are in a publication and we are expected to immediately put this in the group
+      toast
+        .promise(
+          publishToGroup
+            .mutateAsync({
+              groupId,
+              docId: input.docId,
+              version: input.version,
               pathName,
+            })
+            .then((didChange: boolean) => {
+              navigate({
+                ...pubRoute,
+                variants: [
+                  {
+                    key: 'group',
+                    groupId,
+                    pathName,
+                  },
+                ],
+              })
+              return didChange
+            }),
+          {
+            loading: 'Publishing...',
+            success: (result) => {
+              if (result) return 'Published to Group'
+              else return 'Already Published Here'
             },
-          })
+            error: 'Failed to Publish!',
+          },
+        )
+        .finally(() => {
           onClose()
           input.onComplete?.()
-        }
-      }}
-    >
+        })
+    } else if (draftRoute) {
+      // we are in a draft and we are only setting the group ID and pathName in the route
+      navigate({
+        ...draftRoute,
+        variant: {
+          key: 'group',
+          groupId,
+          pathName,
+        },
+      })
+      onClose()
+      input.onComplete?.()
+    }
+  }
+  if (!myGroups.data) return <Spinner />
+  const groupOptions: {label: string; value: string}[] = myGroups.data.items
+    .map((item) => ({
+      label: item.group?.title || '',
+      value: item.group?.id || '',
+    }))
+    .filter((item) => !!item.value)
+
+  return (
+    <Form onSubmit={handleSubmit(onSubmit)}>
       <DialogTitle>Publish to Group</DialogTitle>
 
-      <Fieldset gap="$2" horizontal borderColor="transparent">
-        <Label htmlFor="group">Group</Label>
-        <Select
-          id="group-id"
-          value={selectedGroupId}
-          onValueChange={setSelectedGroupId}
-        >
-          <Select.Trigger width={265}>
-            <Select.Value placeholder="Select Group.." />
-          </Select.Trigger>
-          <Select.Content zIndex={200000}>
-            <Select.ScrollUpButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height="$3"
-            >
-              <YStack zIndex={10}>
-                <ChevronUp size={20} />
-              </YStack>
-            </Select.ScrollUpButton>
-            <Select.Viewport
-              animation="fast"
-              // animateOnly={['transform', 'opacity']}
-              enterStyle={{opacity: 0, y: -10}}
-              exitStyle={{opacity: 0, y: 10}}
-              minWidth={200}
-            >
-              {myGroups?.data?.items?.map((item, index) => {
-                if (!item.group) return null
-                return (
-                  <Select.Item
-                    index={index}
-                    value={item.group?.id}
-                    key={item.group.id}
-                  >
-                    <Select.ItemText>{item.group.title}</Select.ItemText>
-                  </Select.Item>
-                )
-              })}
-            </Select.Viewport>
+      <FormErrors errors={errors} />
 
-            <Select.ScrollDownButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height="$3"
-            >
-              <YStack zIndex={10}>
-                <ChevronDown size={20} />
-              </YStack>
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select>
-      </Fieldset>
+      <FormField name="groupId" label="Group" errors={errors}>
+        <SelectInput control={control} name="groupId" options={groupOptions} />
+      </FormField>
 
-      <Fieldset gap="$4" horizontal borderColor="transparent">
-        <Label htmlFor="path">Path / Shortname</Label>
-        <Input id="path" value={pathName} onChangeText={setPathName} />
-      </Fieldset>
+      <FormField name="pathName" label="Path / Shortname" errors={errors}>
+        <FormInput
+          placeholder={'Path / Shortname'}
+          control={control}
+          transformInput={(input) => {
+            const namified = pathNameify(input)
+            if (input.at(-1) === ' ' && namified.at(-1) !== '-')
+              return `${pathNameify(input)}-`
+            return namified
+          }}
+          name="pathName"
+        />
+      </FormField>
 
       <Form.Trigger asChild>
         <Button>Submit</Button>
