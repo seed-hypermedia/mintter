@@ -6,23 +6,27 @@ import {
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Account} from '@mintter/shared'
 import {
+  ArrowUpRight,
   Container,
   Heading,
   HeadingProps,
   List,
   Spinner,
   Text,
-  View,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import {AccountTrustButton} from '../components/account-trust'
 import {Avatar} from '../components/avatar'
 import {OnlineIndicator} from '../components/indicator'
-import {ListItem} from '../components/list-item'
+import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
 import {useMyAccount} from '../models/accounts'
+import {useGatewayUrl} from '../models/gateway-settings'
+import {usePinAccount} from '../models/pins'
 import {getAvatarUrl} from '../utils/account-url'
+import {AccountRoute} from '../utils/routes'
 
 function PageHeading(props: HeadingProps) {
   return (
@@ -39,8 +43,13 @@ function PageHeading(props: HeadingProps) {
 
 function ContactItem({account}: {account: Account; isTrusted: boolean}) {
   const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
   const isConnected = useAccountIsConnected(account)
+  const pin = usePinAccount(account.id)
   const alias = account.profile?.alias
+  const gwUrl = useGatewayUrl()
+  const openRoute: AccountRoute = {key: 'account', accountId: account.id}
+  console.log('=== account', gwUrl.data)
   if (!alias) return null // hide contacts without an alias because this is confusing for users
   return (
     <ListItem
@@ -53,14 +62,17 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
         />
       }
       onPress={() => {
-        navigate({key: 'account', accountId: account.id})
+        navigate(openRoute)
       }}
       title={alias || account.id.slice(0, 5) + '...' + account.id.slice(-5)}
       accessory={
         <>
-          <View opacity={0} $group-item-hover={{opacity: 1}}>
+          <XStack
+            opacity={pin.isPinned ? 1 : 0}
+            $group-item-hover={pin.isPinned ? undefined : {opacity: 1}}
+          >
             <PinAccountButton accountId={account.id} />
-          </View>
+          </XStack>
           <AccountTrustButton
             accountId={account.id}
             isTrusted={account.isTrusted}
@@ -68,6 +80,23 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
           <OnlineIndicator online={isConnected} />
         </>
       }
+      menuItems={() => [
+        {
+          key: 'spawn',
+          label: 'Open in New Window',
+          icon: ArrowUpRight,
+          onPress: () => {
+            spawn(openRoute)
+          },
+        },
+        copyLinkMenuItem(
+          // TODO: use the function to create links on the codebase
+          `${gwUrl.data}/a/${account.id}`,
+          account.profile?.alias
+            ? `${account.profile.alias}'s Profile`
+            : `Profile`,
+        ),
+      ]}
     />
   )
 }
