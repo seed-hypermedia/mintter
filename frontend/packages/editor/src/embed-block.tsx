@@ -18,13 +18,15 @@ import {
   Check,
   ChevronDown,
   ExternalLink,
+  ListItem,
   Popover,
+  Separator,
   Tooltip,
   XStack,
+  YGroup,
 } from '@mintter/ui'
 import {useCallback, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {ListItem, Separator, YGroup} from 'tamagui'
 import {Block, BlockNoteEditor, HMBlockSchema} from '.'
 import {createReactBlockSpec} from './blocknote/react'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
@@ -234,7 +236,7 @@ function EmbedControl({
       position="absolute"
       x={0}
       y={0}
-      zIndex={100}
+      zIndex="$zIndex.5"
       width="100%"
       ai="center"
       jc="flex-end"
@@ -279,6 +281,7 @@ function EmbedControl({
                   iconAfter={block.props.view == 'content' ? Check : null}
                   hoverStyle={{
                     cursor: 'pointer',
+                    bg: '$backgroundHover',
                   }}
                 />
               </YGroup.Item>
@@ -289,6 +292,10 @@ function EmbedControl({
                   title="as Card"
                   onPress={handleViewSelect('card')}
                   iconAfter={block.props.view == 'card' ? Check : null}
+                  hoverStyle={{
+                    cursor: 'pointer',
+                    bg: '$backgroundHover',
+                  }}
                 />
               </YGroup.Item>
             </YGroup>
@@ -312,13 +319,17 @@ function EmbedControl({
             >{`version: ${versionValue}`}</Button>
           </Popover.Trigger>
           <Popover.Content asChild>
-            <YGroup padding={0} width={120}>
+            <YGroup padding={0} width={120} elevation="$4">
               <YGroup.Item>
                 <ListItem
                   size="$2"
                   title="Latest"
                   onPress={handleVersionSelect('latest')}
                   iconAfter={isVersionLatest ? Check : null}
+                  hoverStyle={{
+                    cursor: 'pointer',
+                    bg: '$backgroundHover',
+                  }}
                 />
               </YGroup.Item>
               <Separator />
@@ -328,6 +339,10 @@ function EmbedControl({
                   title="Exact"
                   onPress={handleVersionSelect('exact')}
                   iconAfter={!isVersionLatest ? Check : null}
+                  hoverStyle={{
+                    cursor: 'pointer',
+                    bg: '$backgroundHover',
+                  }}
                 />
               </YGroup.Item>
             </YGroup>

@@ -298,7 +298,7 @@ function MediaComponent({
   }
 
   return (
-    <YStack gap="$2">
+    <YStack gap="$2" group="item">
       {drag && mediaType !== 'embed' ? (
         <XStack
           position="absolute"
