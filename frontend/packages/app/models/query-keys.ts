@@ -46,9 +46,6 @@ export const queryKeys = {
   COMMENT: 'COMMENT', //, commentId: string
   PUBLICATION_COMMENTS: 'PUBLICATION_COMMENTS', //, docEid: string
 
-  // changes
-  PUBLICATION_CHANGES: 'PUBLICATION_CHANGES', //, docId: string
-
   // content-graph
   PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS', //, docId: string
 
@@ -58,11 +55,11 @@ export const queryKeys = {
   // changes
   CHANGE: 'CHANGE', //, changeId: string
   ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
-  DOCUMENT_TEXT_CONTENT: 'DOCUMENT_TEXT_CONTENT',
 
   // cid
   BLOB_DATA: 'BLOB_DATA', //, cid: string
 
+  // lightning
   LIGHTNING_ACCOUNT_CHECK: 'LIGHTNING_ACCOUNT_CHECK', //, accountId: string
 } as const
 
@@ -70,6 +67,12 @@ export function labelOfQueryKey(key: QueryKey) {
   const discriminator = key[0]
   const arg1 = key[1] as string | undefined
   switch (discriminator) {
+    // feed
+    case queryKeys.FEED:
+      return 'Activity Feed'
+    case queryKeys.FEED_LATEST_EVENT:
+      return 'Activity Feed Latest Event'
+
     // daemon
     case queryKeys.GET_DAEMON_INFO:
       return 'Daemon Info'
@@ -86,9 +89,31 @@ export function labelOfQueryKey(key: QueryKey) {
     case queryKeys.GET_ACCOUNT:
       return `Account ${abbreviateCid(arg1)}`
 
+    // groups
+    case queryKeys.GET_GROUPS:
+      return 'Groups'
+    case queryKeys.GET_GROUP:
+      return 'Group'
+    case queryKeys.GET_GROUP_CONTENT:
+      return 'GET_GROUP_CONTENT'
+    case queryKeys.GET_GROUP_MEMBERS:
+      return 'GET_GROUP_MEMBERS'
+    case queryKeys.GET_GROUPS_FOR_DOCUMENT:
+      return 'GET_GROUPS_FOR_DOCUMENT'
+    case queryKeys.GET_GROUPS_FOR_ACCOUNT:
+      return 'GET_GROUPS_FOR_ACCOUNT'
+    case queryKeys.GET_HOST_GROUP:
+      return 'GET_HOST_GROUP'
+
+    // entities
+    case queryKeys.ENTITY_TIMELINE:
+      return 'Entity Timeline'
+
     // documents
     case queryKeys.GET_DRAFT_LIST:
       return 'Drafts'
+    case queryKeys.GET_ACCOUNT_PUBLICATIONS:
+      return 'Account Publications'
     case queryKeys.GET_PUBLICATION_LIST:
       return 'Publications'
     case queryKeys.EDITOR_DRAFT:
@@ -97,12 +122,10 @@ export function labelOfQueryKey(key: QueryKey) {
       return `Publication ${abbreviateCid(arg1)}`
 
     // comments
-    case queryKeys.GET_PUBLICATION_CONVERSATIONS:
-      return `Conversations in Doc ${abbreviateCid(arg1)}`
-
-    // changes
-    case queryKeys.PUBLICATION_CHANGES:
-      return `Changes of Doc ${abbreviateCid(arg1)}`
+    case queryKeys.COMMENT:
+      return 'Comment'
+    case queryKeys.PUBLICATION_COMMENTS:
+      return 'Publication Comments'
 
     // content-graph
     case queryKeys.PUBLICATION_CITATIONS:
@@ -112,14 +135,29 @@ export function labelOfQueryKey(key: QueryKey) {
     case queryKeys.GET_URL:
       return `URL ${arg1}`
 
-    case queryKeys.ENTITY_TIMELINE:
-      return 'Entity Timeline'
+    // changes
+    case queryKeys.CHANGE:
+      return 'Change'
+    case queryKeys.ALL_ENTITY_CHANGES:
+      return 'Entity Changes'
 
-    case queryKeys.GET_GROUPS_FOR_DOCUMENT:
-      return `Groups for this Document`
+    // cid
+    case queryKeys.BLOB_DATA:
+      return 'Blab Data'
+
+    // lightning
+    case queryKeys.LIGHTNING_ACCOUNT_CHECK:
+      return 'Lightning Account'
 
     default:
       // return 'unknown'
       return discriminator
   }
+}
+
+export function fullInvalidate(invalidate: (key: QueryKey) => void) {
+  Object.keys(queryKeys).forEach((key) => {
+    if (key === 'FEED') return // the feed does not need to be invalidated, because GEED_LATEST_EVENT is invalidated and the user will be prompted for new items
+    invalidate([key])
+  })
 }

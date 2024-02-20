@@ -347,7 +347,6 @@ export function usePublishDraft(
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
-      invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       if (groupVariant) {
