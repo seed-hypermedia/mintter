@@ -49,7 +49,6 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
   const alias = account.profile?.alias
   const gwUrl = useGatewayUrl()
   const openRoute: AccountRoute = {key: 'account', accountId: account.id}
-  console.log('=== account', gwUrl.data)
   if (!alias) return null // hide contacts without an alias because this is confusing for users
   return (
     <ListItem
