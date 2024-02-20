@@ -26,7 +26,10 @@ export function AppBanner({
       transform={[{translateY: 0}]}
       opacity={1}
       padding="$1"
-      borderColor={'$gray4'}
+      borderColor="$borderColor"
+      hoverStyle={{
+        borderColor: '$borderColorHover',
+      }}
       borderBottomWidth={1}
       paddingHorizontal="$3"
       userSelect="none"
