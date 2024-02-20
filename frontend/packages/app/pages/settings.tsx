@@ -419,12 +419,6 @@ type ExperimentType = {
 }
 const EXPERIMENTS: ExperimentType[] = [
   {
-    key: 'commenting',
-    label: 'Commenting',
-    emoji: '💬',
-    description: 'Enable commenting on documents.',
-  },
-  {
     key: 'webImporting',
     label: 'Web Importing',
     emoji: '🛰️',
