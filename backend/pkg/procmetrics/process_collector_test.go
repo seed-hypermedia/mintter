@@ -26,6 +26,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/expfmt"
 	"github.com/prometheus/procfs"
 
@@ -37,7 +38,7 @@ func TestProcessCollector(t *testing.T) {
 		t.Skipf("skipping TestProcessCollector, procfs not available: %s", err)
 	}
 
-	registry := NewRegistry()
+	registry := prometheus.NewRegistry()
 	if err := registry.Register(NewCollector(Opts{})); err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +88,7 @@ func TestProcessCollector(t *testing.T) {
 		ReportErrors: true,
 	})
 
-	ch := make(chan Metric)
+	ch := make(chan prometheus.Metric)
 	go func() {
 		brokenProcessCollector.Collect(ch)
 		close(ch)
