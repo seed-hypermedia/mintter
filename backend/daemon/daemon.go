@@ -49,7 +49,7 @@ func init() {
 
 	// Unregister default process collector and register our own that supports macOS.
 	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
-	prometheus.MustRegister(procmetrics.NewProcessCollector(procmetrics.ProcessCollectorOpts{}))
+	prometheus.MustRegister(procmetrics.NewCollector(procmetrics.Opts{}))
 }
 
 // App is the main Mintter Daemon application, holding all of its dependencies

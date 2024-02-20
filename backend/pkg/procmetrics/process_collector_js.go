@@ -16,13 +16,11 @@
 
 package procmetrics
 
-import "github.com/prometheus/client_golang/prometheus"
-
 func canCollectProcess() bool {
 	return false
 }
 
-func (c *processCollector) processCollect(ch chan<- prometheus.Metric) {
+func (c *processCollector) processCollect(ch chan<- Metric) {
 	// noop on this platform
 	return
 }

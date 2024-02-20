@@ -36,9 +36,9 @@ type processCollector struct {
 	cpuCount        *prometheus.Desc
 }
 
-// ProcessCollectorOpts defines the behavior of a process metrics collector
-// created with NewProcessCollector.
-type ProcessCollectorOpts struct {
+// Opts defines the behavior of a process metrics collector
+// created with NewCollector.
+type Opts struct {
 	// PidFn returns the PID of the process the collector collects metrics
 	// for. It is called upon each collection. By default, the PID of the
 	// current process is used, as determined on construction time by
@@ -57,13 +57,13 @@ type ProcessCollectorOpts struct {
 	ReportErrors bool
 }
 
-// NewProcessCollector returns a collector which exports the current state of
+// NewCollector returns a collector which exports the current state of
 // process metrics including CPU, memory and file descriptor usage as well as
 // the process start time. The detailed behavior is defined by the provided
 // ProcessCollectorOpts. The zero value of ProcessCollectorOpts creates a
 // collector for the current process with an empty namespace string and no error
 // reporting.
-func NewProcessCollector(opts ProcessCollectorOpts) prometheus.Collector {
+func NewCollector(opts Opts) prometheus.Collector {
 	ns := ""
 	if len(opts.Namespace) > 0 {
 		ns = opts.Namespace + "_"

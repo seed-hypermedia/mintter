@@ -19,15 +19,16 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/expfmt"
 )
 
 func TestWindowsProcessCollector(t *testing.T) {
-	registry := NewRegistry()
-	if err := registry.Register(NewProcessCollector(ProcessCollectorOpts{})); err != nil {
+	registry := prometheus.NewRegistry()
+	if err := registry.Register(NewCollector(Opts{})); err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.Register(NewProcessCollector(ProcessCollectorOpts{
+	if err := registry.Register(NewCollector(Opts{
 		PidFn:        func() (int, error) { return os.Getpid(), nil },
 		Namespace:    "foobar",
 		ReportErrors: true, // No errors expected, just to see if none are reported.

@@ -38,10 +38,10 @@ func TestProcessCollector(t *testing.T) {
 	}
 
 	registry := NewRegistry()
-	if err := registry.Register(NewProcessCollector(ProcessCollectorOpts{})); err != nil {
+	if err := registry.Register(NewCollector(Opts{})); err != nil {
 		t.Fatal(err)
 	}
-	if err := registry.Register(NewProcessCollector(ProcessCollectorOpts{
+	if err := registry.Register(NewCollector(Opts{
 		PidFn:        func() (int, error) { return os.Getpid(), nil },
 		Namespace:    "foobar",
 		ReportErrors: true, // No errors expected, just to see if none are reported.
@@ -82,7 +82,7 @@ func TestProcessCollector(t *testing.T) {
 		}
 	}
 
-	brokenProcessCollector := NewProcessCollector(ProcessCollectorOpts{
+	brokenProcessCollector := NewCollector(Opts{
 		PidFn:        func() (int, error) { return 0, errors.New("boo") },
 		ReportErrors: true,
 	})

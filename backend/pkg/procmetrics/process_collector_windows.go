@@ -17,6 +17,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sys/windows"
 )
 
@@ -78,7 +79,7 @@ func getProcessHandleCount(handle windows.Handle) (uint32, error) {
 	}
 }
 
-func (c *processCollector) processCollect(ch chan<- Metric) {
+func (c *processCollector) processCollect(ch chan<- prometheus.Metric) {
 	h, err := windows.GetCurrentProcess()
 	if err != nil {
 		c.reportError(ch, nil, err)
@@ -91,24 +92,24 @@ func (c *processCollector) processCollect(ch chan<- Metric) {
 		c.reportError(ch, nil, err)
 		return
 	}
-	ch <- MustNewConstMetric(c.startTime, GaugeValue, float64(startTime.Nanoseconds()/1e9))
-	ch <- MustNewConstMetric(c.cpuTotal, CounterValue, fileTimeToSeconds(kernelTime)+fileTimeToSeconds(userTime))
+	ch <- prometheus.MustNewConstMetric(c.startTime, prometheus.GaugeValue, float64(startTime.Nanoseconds()/1e9))
+	ch <- prometheus.MustNewConstMetric(c.cpuTotal, prometheus.CounterValue, fileTimeToSeconds(kernelTime)+fileTimeToSeconds(userTime))
 
 	mem, err := getProcessMemoryInfo(h)
 	if err != nil {
 		c.reportError(ch, nil, err)
 		return
 	}
-	ch <- MustNewConstMetric(c.vsize, GaugeValue, float64(mem.PrivateUsage))
-	ch <- MustNewConstMetric(c.rss, GaugeValue, float64(mem.WorkingSetSize))
+	ch <- prometheus.MustNewConstMetric(c.vsize, prometheus.GaugeValue, float64(mem.PrivateUsage))
+	ch <- prometheus.MustNewConstMetric(c.rss, prometheus.GaugeValue, float64(mem.WorkingSetSize))
 
 	handles, err := getProcessHandleCount(h)
 	if err != nil {
 		c.reportError(ch, nil, err)
 		return
 	}
-	ch <- MustNewConstMetric(c.openFDs, GaugeValue, float64(handles))
-	ch <- MustNewConstMetric(c.maxFDs, GaugeValue, float64(16*1024*1024)) // Windows has a hard-coded max limit, not per-process.
+	ch <- prometheus.MustNewConstMetric(c.openFDs, prometheus.GaugeValue, float64(handles))
+	ch <- prometheus.MustNewConstMetric(c.maxFDs, prometheus.GaugeValue, float64(16*1024*1024)) // Windows has a hard-coded max limit, not per-process.
 }
 
 func fileTimeToSeconds(ft windows.Filetime) float64 {
