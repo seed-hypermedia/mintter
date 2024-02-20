@@ -28,6 +28,10 @@ type EntitiesClient interface {
 	GetEntityTimeline(ctx context.Context, in *GetEntityTimelineRequest, opts ...grpc.CallOption) (*EntityTimeline, error)
 	// Triggers a best-effort discovery of an entity.
 	DiscoverEntity(ctx context.Context, in *DiscoverEntityRequest, opts ...grpc.CallOption) (*DiscoverEntityResponse, error)
+	// Finds the list of local entities whose titles match the input string.
+	// A fuzzy search is performed among documents, groups and accounts.
+	// For groups and documents, we match the title, while we match alias in accounts.
+	SearchLocalEntites(ctx context.Context, in *SearchLocalEntitesRequest, opts ...grpc.CallOption) (*SearchLocalEntitesResponse, error)
 }
 
 type entitiesClient struct {
@@ -65,6 +69,15 @@ func (c *entitiesClient) DiscoverEntity(ctx context.Context, in *DiscoverEntityR
 	return out, nil
 }
 
+func (c *entitiesClient) SearchLocalEntites(ctx context.Context, in *SearchLocalEntitesRequest, opts ...grpc.CallOption) (*SearchLocalEntitesResponse, error) {
+	out := new(SearchLocalEntitesResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/SearchLocalEntites", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EntitiesServer is the server API for Entities service.
 // All implementations should embed UnimplementedEntitiesServer
 // for forward compatibility
@@ -75,6 +88,10 @@ type EntitiesServer interface {
 	GetEntityTimeline(context.Context, *GetEntityTimelineRequest) (*EntityTimeline, error)
 	// Triggers a best-effort discovery of an entity.
 	DiscoverEntity(context.Context, *DiscoverEntityRequest) (*DiscoverEntityResponse, error)
+	// Finds the list of local entities whose titles match the input string.
+	// A fuzzy search is performed among documents, groups and accounts.
+	// For groups and documents, we match the title, while we match alias in accounts.
+	SearchLocalEntites(context.Context, *SearchLocalEntitesRequest) (*SearchLocalEntitesResponse, error)
 }
 
 // UnimplementedEntitiesServer should be embedded to have forward compatible implementations.
@@ -89,6 +106,9 @@ func (UnimplementedEntitiesServer) GetEntityTimeline(context.Context, *GetEntity
 }
 func (UnimplementedEntitiesServer) DiscoverEntity(context.Context, *DiscoverEntityRequest) (*DiscoverEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DiscoverEntity not implemented")
+}
+func (UnimplementedEntitiesServer) SearchLocalEntites(context.Context, *SearchLocalEntitesRequest) (*SearchLocalEntitesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchLocalEntites not implemented")
 }
 
 // UnsafeEntitiesServer may be embedded to opt out of forward compatibility for this service.
@@ -156,6 +176,24 @@ func _Entities_DiscoverEntity_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Entities_SearchLocalEntites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchLocalEntitesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).SearchLocalEntites(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/SearchLocalEntites",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).SearchLocalEntites(ctx, req.(*SearchLocalEntitesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Entities_ServiceDesc is the grpc.ServiceDesc for Entities service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -174,6 +212,10 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DiscoverEntity",
 			Handler:    _Entities_DiscoverEntity_Handler,
+		},
+		{
+			MethodName: "SearchLocalEntites",
+			Handler:    _Entities_SearchLocalEntites_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

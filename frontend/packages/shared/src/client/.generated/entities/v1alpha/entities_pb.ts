@@ -412,3 +412,147 @@ export class AuthorVersion extends Message<AuthorVersion> {
   }
 }
 
+/**
+ * A change to an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.Entity
+ */
+export class Entity extends Message<Entity> {
+  /**
+   * EID of the entity.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Title of the entity, depending onf the type:
+   * Alias in the case of account. 
+   * Title in the case of groups and documents 
+   * Empty in the case of comments.
+   *
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  constructor(data?: PartialMessage<Entity>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.Entity";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Entity {
+    return new Entity().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Entity {
+    return new Entity().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Entity {
+    return new Entity().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Entity | PlainMessage<Entity> | undefined, b: Entity | PlainMessage<Entity> | undefined): boolean {
+    return proto3.util.equals(Entity, a, b);
+  }
+}
+
+/**
+ * Request to 
+ *
+ * @generated from message com.mintter.entities.v1alpha.SearchLocalEntitesRequest
+ */
+export class SearchLocalEntitesRequest extends Message<SearchLocalEntitesRequest> {
+  /**
+   * Title of the entities to look for. Since we use 
+   * Fuzzy search, a single title may return multiple 
+   * entities.
+   *
+   * @generated from field: string title = 1;
+   */
+  title = "";
+
+  constructor(data?: PartialMessage<SearchLocalEntitesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.SearchLocalEntitesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchLocalEntitesRequest {
+    return new SearchLocalEntitesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchLocalEntitesRequest {
+    return new SearchLocalEntitesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchLocalEntitesRequest {
+    return new SearchLocalEntitesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchLocalEntitesRequest | PlainMessage<SearchLocalEntitesRequest> | undefined, b: SearchLocalEntitesRequest | PlainMessage<SearchLocalEntitesRequest> | undefined): boolean {
+    return proto3.util.equals(SearchLocalEntitesRequest, a, b);
+  }
+}
+
+/**
+ * A list of entities matching the request. 
+ *
+ * @generated from message com.mintter.entities.v1alpha.SearchLocalEntitesResponse
+ */
+export class SearchLocalEntitesResponse extends Message<SearchLocalEntitesResponse> {
+  /**
+   * Entities matching the input title
+   *
+   * @generated from field: repeated com.mintter.entities.v1alpha.Entity entities = 1;
+   */
+  entities: Entity[] = [];
+
+  /**
+   * Token for the next page if there's any.
+   *
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken = "";
+
+  constructor(data?: PartialMessage<SearchLocalEntitesResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.SearchLocalEntitesResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "entities", kind: "message", T: Entity, repeated: true },
+    { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchLocalEntitesResponse {
+    return new SearchLocalEntitesResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchLocalEntitesResponse {
+    return new SearchLocalEntitesResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchLocalEntitesResponse {
+    return new SearchLocalEntitesResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchLocalEntitesResponse | PlainMessage<SearchLocalEntitesResponse> | undefined, b: SearchLocalEntitesResponse | PlainMessage<SearchLocalEntitesResponse> | undefined): boolean {
+    return proto3.util.equals(SearchLocalEntitesResponse, a, b);
+  }
+}
+

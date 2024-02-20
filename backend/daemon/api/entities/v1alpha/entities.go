@@ -355,3 +355,58 @@ func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEnti
 
 	return &entities.DiscoverEntityResponse{}, nil
 }
+
+/*
+var qGetEntityTitles = dqb.Str(`
+	SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
+	FROM structural_blobs
+	JOIN blobs ON blobs.id=structural_blobs.id
+	JOIN public_keys ON structural_blobs.author=public_keys.id
+	LEFT JOIN resources ON structural_blobs.resource=resources.id
+	WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
+`)
+*/
+// SearchLocalEntites implements the Fuzzy search of entities.
+func (api *Server) SearchLocalEntites(ctx context.Context, in *entities.SearchLocalEntitesRequest) (*entities.SearchLocalEntitesResponse, error) {
+	/*
+		var events []*entities.Entity
+		if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+
+			err := sqlitex.Exec(conn, qGetEntityTitles, func(stmt *sqlite.Stmt) error {
+				lastBlobID = stmt.ColumnInt64(0)
+				eventType := stmt.ColumnText(1)
+				author := stmt.ColumnBytes(2)
+				resource := stmt.ColumnText(3)
+				eventTime := stmt.ColumnInt64(4) * 1000 //Its in microseconds and we need nanos
+				observeTime := stmt.ColumnInt64(5)
+				mhash := stmt.ColumnBytes(6)
+				codec := stmt.ColumnInt64(7)
+				accountID := core.Principal(author).String()
+				id := cid.NewCidV1(uint64(codec), mhash)
+				if eventType == "Comment" {
+					resource = "hm://c/" + id.String()
+				}
+				event := activity.Event{
+					Data: &activity.Event_NewBlob{NewBlob: &activity.NewBlobEvent{
+						Cid:      id.String(),
+						BlobType: eventType,
+						Author:   accountID,
+						Resource: resource,
+					}},
+					Account:     accountID,
+					EventTime:   &timestamppb.Timestamp{Seconds: eventTime / 1000000000, Nanos: int32(eventTime % 1000000000)},
+					ObserveTime: &timestamppb.Timestamp{Seconds: observeTime},
+				}
+				events = append(events, &event)
+				return nil
+			}, cursorBlobID, req.PageSize)
+			if err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	*/
+	return nil, status.Error(codes.FailedPrecondition, "Hold on Eric, method not ready Yet.")
+}
