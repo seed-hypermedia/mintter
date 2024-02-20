@@ -6,6 +6,7 @@ import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
+import {fullInvalidate} from './query-keys'
 
 export function useContactsList() {
   const grpcClient = useGRPCClient()
@@ -120,13 +121,13 @@ export function useConnectPeer(
     ...opts,
     onSuccess: (data, ...rest) => {
       if (opts.aggressiveInvalidation) {
-        // invalidate frequently for 2 minutes while initial sync completes
+        // invalidate frequently for 4 minutes while initial sync completes
         const invalidationInterval = setInterval(() => {
-          invalidate([])
-        }, 4_000)
+          fullInvalidate(invalidate)
+        }, 6_000)
         setTimeout(() => {
           clearInterval(invalidationInterval)
-        }, 120_000)
+        }, 4 * 60_000)
       }
       invalidate([queryKeys.GET_PEERS])
       opts?.onSuccess?.(data, ...rest)
