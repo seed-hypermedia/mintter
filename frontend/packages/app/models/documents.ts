@@ -342,7 +342,7 @@ export function usePublishDraft(
       const documentId = result.pub.document?.id
       const {groupVariant} = result
       opts?.onSuccess?.(result, variables, context)
-      invalidate([queryKeys.FEED])
+      invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])

@@ -1,5 +1,5 @@
-import {ReactNode, useRef, useState} from 'react'
-import {Virtuoso} from 'react-virtuoso'
+import {ReactNode, forwardRef, useRef, useState} from 'react'
+import {Virtuoso, VirtuosoHandle} from 'react-virtuoso'
 import {View, XStack, YStack} from 'tamagui'
 
 export function List<Item>({
@@ -60,20 +60,24 @@ export function List<Item>({
   )
 }
 
-export function FeedList<Item>({
-  items,
-  renderItem,
-  header,
-  footer,
-  onEndReached,
-}: {
-  items: Item[]
-  renderItem: (row: {item: Item; containerWidth: number}) => ReactNode
-  header?: ReactNode | null
-  footer?: ReactNode | null
-  onEndReached?: () => void
-}) {
-  const virtuoso = useRef(null)
+export type FeedListHandle = VirtuosoHandle
+
+export const FeedList = forwardRef(function FeedListComponent<Item>(
+  {
+    items,
+    renderItem,
+    header,
+    footer,
+    onEndReached,
+  }: {
+    items: Item[]
+    renderItem: (row: {item: Item; containerWidth: number}) => ReactNode
+    header?: ReactNode | null
+    footer?: ReactNode | null
+    onEndReached?: () => void
+  },
+  ref: React.Ref<VirtuosoHandle>,
+) {
   const [containerWidth, setContainerWidth] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
   return (
@@ -87,7 +91,7 @@ export function FeedList<Item>({
       }}
     >
       <Virtuoso
-        ref={virtuoso}
+        ref={ref}
         endReached={() => {
           onEndReached?.()
         }}
@@ -119,4 +123,4 @@ export function FeedList<Item>({
       />
     </YStack>
   )
-}
+})
