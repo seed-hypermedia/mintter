@@ -20,7 +20,6 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/procmetrics"
 	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
@@ -29,8 +28,6 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/boxo/exchange/offline"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/multierr"
@@ -39,18 +36,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
-
-func init() {
-	prometheus.MustRegister(collectors.NewBuildInfoCollector())
-
-	// Unregister default Go runtime collector, and register it again with more metrics.
-	prometheus.Unregister(collectors.NewGoCollector())
-	prometheus.MustRegister(collectors.NewGoCollector(collectors.WithGoCollectorRuntimeMetrics(collectors.MetricsAll)))
-
-	// Unregister default process collector and register our own that supports macOS.
-	prometheus.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
-	prometheus.MustRegister(procmetrics.NewCollector(procmetrics.Opts{}))
-}
 
 // App is the main Mintter Daemon application, holding all of its dependencies
 // which can be used for embedding the daemon in other apps or for testing.

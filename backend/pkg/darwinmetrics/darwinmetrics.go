@@ -1,27 +1,16 @@
-// Copyright 2015 The Prometheus Authors
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package procmetrics
+// Package darwinmetrics provides a Prometheus collector for Darwin-specific metrics,
+// because the built-in Prometheus process collector only supports Linux and Windows.
+package darwinmetrics
 
 import (
 	"errors"
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 type processCollector struct {
@@ -33,7 +22,7 @@ type processCollector struct {
 	vsize, maxVsize *prometheus.Desc
 	rss             *prometheus.Desc
 	startTime       *prometheus.Desc
-	cpuCount        *prometheus.Desc
+	proc            *process.Process
 }
 
 // Opts defines the behavior of a process metrics collector
@@ -106,26 +95,36 @@ func NewCollector(opts Opts) prometheus.Collector {
 			"Start time of the process since unix epoch in seconds.",
 			nil, nil,
 		),
-		cpuCount: prometheus.NewDesc(
-			ns+"process_num_cpus",
-			"Number of CPU cores available in the system.",
-			nil, nil,
-		),
 	}
 
 	if opts.PidFn == nil {
-		c.pidFn = getPIDFn()
+		c.pidFn = func() (int, error) {
+			return os.Getpid(), nil
+		}
 	} else {
 		c.pidFn = opts.PidFn
 	}
 
-	// Set up process metric collection if supported by the runtime.
-	if canCollectProcess() {
-		c.collectFn = c.processCollect
-	} else {
+	if err := func() error {
+		pid, err := c.pidFn()
+		if err != nil {
+			return err
+		}
+
+		proc, err := process.NewProcess(int32(pid))
+		if err != nil {
+			return err
+		}
+
+		c.proc = proc
+
+		return nil
+	}(); err != nil {
 		c.collectFn = func(ch chan<- prometheus.Metric) {
 			c.reportError(ch, nil, errors.New("process metrics not supported on this platform"))
 		}
+	} else {
+		c.collectFn = c.processCollect
 	}
 
 	return c
@@ -140,13 +139,11 @@ func (c *processCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.maxVsize
 	ch <- c.rss
 	ch <- c.startTime
-	ch <- c.cpuCount
 }
 
 // Collect returns the current state of all metrics of the collector.
 func (c *processCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectFn(ch)
-	ch <- prometheus.MustNewConstMetric(c.cpuCount, prometheus.GaugeValue, float64(runtime.NumCPU()))
 }
 
 func (c *processCollector) reportError(ch chan<- prometheus.Metric, desc *prometheus.Desc, err error) {
@@ -173,5 +170,21 @@ func NewPidFileFn(pidFilePath string) func() (int, error) {
 		}
 
 		return pid, nil
+	}
+}
+
+func (c *processCollector) processCollect(ch chan<- prometheus.Metric) {
+	times, err := c.proc.Times()
+	if err != nil {
+		c.reportError(ch, c.cpuTotal, err)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.cpuTotal, prometheus.CounterValue, times.System+times.User)
+	}
+
+	ctime, err := c.proc.CreateTime()
+	if err != nil {
+		c.reportError(ch, c.startTime, err)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.startTime, prometheus.GaugeValue, float64(ctime)/1000)
 	}
 }
