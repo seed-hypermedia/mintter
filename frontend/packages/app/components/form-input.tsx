@@ -1,3 +1,4 @@
+import {Input, Text, TextArea} from '@mintter/ui'
 import {
   Control,
   FieldErrors,
@@ -5,18 +6,32 @@ import {
   Path,
   useController,
 } from 'react-hook-form'
-import {Input, Text, TextArea} from '@mintter/ui'
 
 export function FormInput<Fields extends FieldValues>({
   control,
   name,
+  transformInput,
   ...props
 }: React.ComponentProps<typeof Input> & {
   control: Control<Fields>
   name: Path<Fields>
+  transformInput?: (input: string) => string
 }) {
   const c = useController({control, name})
-  return <Input {...c.field} {...props} />
+  const {onChange, ...inputProps} = c.field
+  return (
+    <Input
+      {...inputProps}
+      onChangeText={(text) => {
+        if (transformInput) {
+          onChange(transformInput(text))
+        } else {
+          onChange(text)
+        }
+      }}
+      {...props}
+    />
+  )
 }
 
 export function FormTextArea<Fields extends FieldValues>({

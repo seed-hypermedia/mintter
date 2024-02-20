@@ -33,6 +33,7 @@ import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 import {DialogTitle} from './dialog'
+import {FormErrors, FormField} from './forms'
 
 const cloneGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),
@@ -219,20 +220,23 @@ function CloneGroupForm({
       <DialogTitle>Clone &quot;{group.title}&quot;</DialogTitle>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <YStack space marginBottom="$4">
-          <Label htmlFor="title">Title</Label>
-          <FormInput
-            placeholder={'Group Name'}
-            control={control}
-            name="title"
-          />
-          <Label htmlFor="description">Description</Label>
-          <FormInput
-            multiline
-            minHeight={60}
-            placeholder={'About this group...'}
-            control={control}
-            name="description"
-          />
+          <FormErrors errors={errors} />
+          <FormField name="title" label="Title" errors={errors}>
+            <FormInput
+              placeholder={'Group Name'}
+              control={control}
+              name="title"
+            />
+          </FormField>
+          <FormField name="description" label="Description" errors={errors}>
+            <FormInput
+              multiline
+              minHeight={60}
+              placeholder={'About this group...'}
+              control={control}
+              name="description"
+            />
+          </FormField>
           <Label htmlFor="members">Members</Label>
           <MembersInput control={control} groupId={group.id} />
         </YStack>
