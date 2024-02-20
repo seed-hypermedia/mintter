@@ -135,6 +135,7 @@ function FullAppSidebar() {
         borderColor={'$color4'}
         animation="fast"
         position="absolute"
+        zi={99999}
         x={isVisible ? 0 : -SidebarWidth}
         width="100%"
         maxWidth={SidebarWidth}

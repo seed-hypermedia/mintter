@@ -6,7 +6,6 @@ import {
   ButtonText,
   Link,
   Tooltip,
-  View,
   XStack,
   copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
@@ -70,13 +69,13 @@ export function ListItem({
             {accessory}
           </XStack>
         )}
-        <XStack opacity={hover ? 1 : 0} $group-item-hover={{opacity: 1}}>
-          {currentMenuItems ? (
+        {currentMenuItems && currentMenuItems.length ? (
+          <XStack opacity={hover ? 1 : 0} $group-item-hover={{opacity: 1}}>
             <OptionsDropdown hover={hover} menuItems={currentMenuItems} />
-          ) : (
-            <View width={20} />
-          )}
-        </XStack>
+          </XStack>
+        ) : (
+          <XStack width={20} />
+        )}
       </Button>
     </XStack>
   )
