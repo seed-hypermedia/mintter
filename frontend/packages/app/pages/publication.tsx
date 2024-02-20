@@ -264,29 +264,24 @@ export default function PublicationPage() {
                           return replace({...route, accessory: null})
                         replace({...route, accessory: {key: 'citations'}})
                       }}
-                      onBlockComment={
-                        experiments.data?.commenting
-                          ? (blockId) => {
-                              replace({...route, accessory: {key: 'comments'}})
-                              const version =
-                                publication.data?.publication?.version
-                              if (!id) throw new Error('invalid doc id')
-                              if (!version)
-                                throw new Error(
-                                  'no publication version for commenting',
-                                )
-                              createComment(
-                                id.eid,
-                                version,
-                                undefined,
-                                createHmId('d', id.eid, {
-                                  version,
-                                  blockRef: blockId,
-                                }),
-                              )
-                            }
-                          : null
-                      }
+                      onBlockComment={(blockId) => {
+                        replace({...route, accessory: {key: 'comments'}})
+                        const version = publication.data?.publication?.version
+                        if (!id) throw new Error('invalid doc id')
+                        if (!version)
+                          throw new Error(
+                            'no publication version for commenting',
+                          )
+                        createComment(
+                          id.eid,
+                          version,
+                          undefined,
+                          createHmId('d', id.eid, {
+                            version,
+                            blockRef: blockId,
+                          }),
+                        )
+                      }}
                     >
                       <PublicationHeading
                         right={
@@ -363,9 +358,7 @@ export default function PublicationPage() {
               />
             ) : null}
 
-            {experiments.data?.commenting ? (
-              <PublicationCommentaryButton />
-            ) : null}
+            <PublicationCommentaryButton />
           </Footer>
         </CitationsProvider>
       </ErrorBoundary>

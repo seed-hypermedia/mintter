@@ -9,7 +9,6 @@ const experimentsZ = z.object({
   nostr: z.boolean().optional(),
   developerTools: z.boolean().optional(),
   pubContentDevMenu: z.boolean().optional(),
-  commenting: z.boolean().optional(),
 })
 type Experiments = z.infer<typeof experimentsZ>
 let experimentsState: Experiments = appStore.get(EXPERIMENTS_STORAGE_KEY) || {}
