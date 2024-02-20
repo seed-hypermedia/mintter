@@ -1,5 +1,14 @@
-import * as http from 'http'
+import http from 'node:http'
+import os from 'node:os'
 import * as prom from 'prom-client'
+
+new prom.Gauge({
+  name: 'process_num_cpus',
+  help: 'Number of CPU cores available in the system.',
+  collect() {
+    this.set(os.cpus().length)
+  },
+})
 
 prom.collectDefaultMetrics()
 

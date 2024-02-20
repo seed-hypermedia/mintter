@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -32,6 +33,7 @@ type processCollector struct {
 	vsize, maxVsize *prometheus.Desc
 	rss             *prometheus.Desc
 	startTime       *prometheus.Desc
+	cpuCount        *prometheus.Desc
 }
 
 // ProcessCollectorOpts defines the behavior of a process metrics collector
@@ -104,6 +106,11 @@ func NewProcessCollector(opts ProcessCollectorOpts) prometheus.Collector {
 			"Start time of the process since unix epoch in seconds.",
 			nil, nil,
 		),
+		cpuCount: prometheus.NewDesc(
+			ns+"process_num_cpus",
+			"Number of CPU cores available in the system.",
+			nil, nil,
+		),
 	}
 
 	if opts.PidFn == nil {
@@ -133,11 +140,13 @@ func (c *processCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.maxVsize
 	ch <- c.rss
 	ch <- c.startTime
+	ch <- c.cpuCount
 }
 
 // Collect returns the current state of all metrics of the collector.
 func (c *processCollector) Collect(ch chan<- prometheus.Metric) {
 	c.collectFn(ch)
+	ch <- prometheus.MustNewConstMetric(c.cpuCount, prometheus.GaugeValue, float64(runtime.NumCPU()))
 }
 
 func (c *processCollector) reportError(ch chan<- prometheus.Metric, desc *prometheus.Desc, err error) {
