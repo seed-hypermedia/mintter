@@ -11,13 +11,7 @@ export function PinAccountButton({accountId}: {accountId: string}) {
   }
   return (
     <Tooltip content="Pin to Sidebar">
-      <Button
-        icon={Pin}
-        size="$2"
-        onPress={() => {
-          togglePin()
-        }}
-      />
+      <Button icon={Pin} size="$2" onPress={togglePin} />
     </Tooltip>
   )
 }
@@ -70,15 +64,7 @@ export function PinGroupButton({groupId}: {groupId: string}) {
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }
-  return (
-    <Button
-      icon={Pin}
-      size="$2"
-      onPress={() => {
-        togglePin()
-      }}
-    />
-  )
+  return <Button icon={Pin} size="$2" onPress={togglePin} />
 }
 
 export function PinDocumentButton({route}: {route: PublicationRoute}) {

@@ -25,7 +25,8 @@ export function usePinAccount(accountId: string) {
   })
   const pins = trpc.pins.get.useQuery()
   const isPinned = pins.data?.accounts.indexOf(accountId) !== -1
-  function togglePin() {
+  function togglePin(e) {
+    e.stopPropagation()
     if (isPinned) {
       removePin.mutate(accountId)
     } else {
