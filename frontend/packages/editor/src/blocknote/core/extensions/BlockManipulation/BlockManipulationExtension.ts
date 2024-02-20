@@ -1,3 +1,4 @@
+import {findNextBlock, findPreviousBlock} from '@/block-utils'
 import {Extension} from '@tiptap/core'
 import {ResolvedPos} from '@tiptap/pm/model'
 import {EditorView} from '@tiptap/pm/view'
@@ -11,7 +12,7 @@ export const BlockManipulationExtension = Extension.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey('SelectPlugin'),
+        key: new PluginKey('CursorSelectPlugin'),
         props: {
           handleClickOn: (
             view: EditorView,
@@ -38,11 +39,12 @@ export const BlockManipulationExtension = Extension.create({
         },
       }),
       new Plugin({
-        key: new PluginKey('DeletePlugin'),
+        key: new PluginKey('KeyboardShortcutsSelectPlugin'),
         props: {
           handleKeyDown(view, event) {
+            const {state} = view
             if (event.key === 'Delete') {
-              const {doc, selection, tr} = view.state
+              const {doc, selection, tr} = state
               if (selection.empty) {
                 const $pos = selection.$anchor
                 const isEnd = $pos.pos === $pos.end()
@@ -100,6 +102,74 @@ export const BlockManipulationExtension = Extension.create({
                     return true
                   }
                   return false
+                }
+              }
+            } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+              const prevBlockInfo = findPreviousBlock(
+                view,
+                state.selection.from,
+              )
+              if (prevBlockInfo) {
+                const {prevBlock, prevBlockPos} = prevBlockInfo
+                const prevNode = prevBlock.firstChild!
+                const prevNodePos = prevBlockPos + 1
+                if (event.key === 'ArrowLeft') {
+                  const blockInfo = getBlockInfoFromPos(
+                    state.doc,
+                    state.selection.from,
+                  )!
+                  if (
+                    state.selection.$anchor.parentOffset !== 0 &&
+                    !['image', 'file', 'embed', 'video'].includes(
+                      blockInfo.contentType.name,
+                    )
+                  ) {
+                    return false
+                  }
+                }
+                if (
+                  ['image', 'file', 'embed', 'video'].includes(
+                    prevNode.type.name,
+                  )
+                ) {
+                  const selection = NodeSelection.create(state.doc, prevNodePos)
+                  view.dispatch(state.tr.setSelection(selection))
+                  return true
+                }
+              }
+              return false
+            } else if (
+              event.key === 'ArrowDown' ||
+              event.key === 'ArrowRight'
+            ) {
+              const nextBlockInfo = findNextBlock(view, state.selection.from)
+              if (nextBlockInfo) {
+                const {nextBlock, nextBlockPos} = nextBlockInfo
+                const nextNode = nextBlock.firstChild!
+                const nextNodePos = nextBlockPos + 1
+                if (event.key === 'ArrowRight') {
+                  const blockInfo = getBlockInfoFromPos(
+                    state.doc,
+                    state.selection.from,
+                  )!
+                  if (
+                    state.selection.$anchor.pos + 1 !==
+                      blockInfo.startPos + blockInfo.contentNode.nodeSize &&
+                    !['image', 'file', 'embed', 'video'].includes(
+                      blockInfo.contentType.name,
+                    )
+                  ) {
+                    return false
+                  }
+                }
+                if (
+                  ['image', 'file', 'embed', 'video'].includes(
+                    nextNode.type.name,
+                  )
+                ) {
+                  const selection = NodeSelection.create(state.doc, nextNodePos)
+                  view.dispatch(state.tr.setSelection(selection))
+                  return true
                 }
               }
             }
