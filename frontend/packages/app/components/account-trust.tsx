@@ -27,7 +27,8 @@ export function AccountTrustButton({
           size="$2"
           theme="green"
           icon={PlusCircle}
-          onPress={() => {
+          onPress={(e) => {
+            e.stopPropagation()
             setTrusted.mutate({accountId, isTrusted: true})
           }}
         >
@@ -42,7 +43,8 @@ export function AccountTrustButton({
         size="$2"
         theme={hover ? 'red' : 'green'}
         icon={hover ? XCircle : CheckCircle}
-        onPress={() => {
+        onPress={(e) => {
+          e.stopPropagation()
           setTrusted.mutate({accountId, isTrusted: false})
         }}
         {...hoverProps}
