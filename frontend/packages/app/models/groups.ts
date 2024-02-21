@@ -142,6 +142,7 @@ export function useCreateGroup(
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_GROUPS])
+      invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
     },
   })
 }
