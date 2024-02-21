@@ -96,19 +96,30 @@ function getComponent(isAlert?: boolean) {
   return Component
 }
 
-export function AppDialog({
+export function AppDialog<
+  TriggerComponentProps extends {},
+  ContentComponentProps extends {},
+>({
   TriggerComponent,
   ContentComponent,
   isAlert,
   triggerLabel,
+  triggerComponentProps,
+  contentComponentProps,
 }: {
-  TriggerComponent: React.FC<{
-    onPress?: (e: any) => void
-    children: React.ReactNode
-  }>
-  ContentComponent: React.FC<{onClose?: () => void; isOpen?: boolean}>
+  TriggerComponent: React.FC<
+    {
+      onPress?: (e: any) => void
+      children: React.ReactNode
+    } & TriggerComponentProps
+  >
+  ContentComponent: React.FC<
+    {onClose: () => void; isOpen: boolean} & ContentComponentProps
+  >
   isAlert?: boolean
   triggerLabel?: string
+  triggerComponentProps: TriggerComponentProps
+  contentComponentProps: ContentComponentProps
 }) {
   const Component = getComponent(isAlert)
   const [isOpen, setIsOpen] = useState(false)
@@ -118,9 +129,10 @@ export function AppDialog({
       <Component.Trigger asChild>
         <TriggerComponent
           onPress={(e) => {
-            e.preventDefault()
+            e.stopPropagation()
             setIsOpen(true)
           }}
+          {...triggerComponentProps}
         >
           {triggerLabel}
         </TriggerComponent>
@@ -139,6 +151,7 @@ export function AppDialog({
               onClose={() => {
                 setIsOpen(false)
               }}
+              {...contentComponentProps}
             />
           </Component.Content>
         </NavContextProvider>

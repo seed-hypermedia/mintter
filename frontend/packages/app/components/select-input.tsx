@@ -1,18 +1,25 @@
 import {ChevronDown, ChevronUp} from '@tamagui/lucide-icons'
 import {Control, FieldValues, Path, useController} from 'react-hook-form'
-import {Select, YStack} from 'tamagui'
+import {Select, SizableText, YStack} from 'tamagui'
 
 export function SelectInput<Fields extends FieldValues>({
   control,
   name,
   options,
+  noOptionsMessage,
+  placeholder,
   ...props
 }: {
   options: {value: string; label: string}[]
   control: Control<Fields>
   name: Path<Fields>
+  placeholder?: string
+  noOptionsMessage?: string
 }) {
   const c = useController({control, name})
+  if (options.length === 0 && noOptionsMessage) {
+    return <SizableText color="$red10">{noOptionsMessage}</SizableText>
+  }
   return (
     <Select
       id="name"
@@ -24,7 +31,7 @@ export function SelectInput<Fields extends FieldValues>({
       // disabled={c.field.disabled}
     >
       <Select.Trigger width={265}>
-        <Select.Value placeholder="Select Group.." />
+        <Select.Value placeholder={placeholder} />
       </Select.Trigger>
       <Select.Content zIndex={200000}>
         <Select.ScrollUpButton
