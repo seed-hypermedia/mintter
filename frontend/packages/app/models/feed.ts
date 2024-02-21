@@ -20,6 +20,7 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
     queryFn: async (context) => {
       const result = await grpcClient.activityFeed.listEvents({
         pageSize: 1,
+        trustedOnly,
       })
       const event: Event | undefined = result.events[0]
       return feedEventId(event)
@@ -27,15 +28,12 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
     refetchInterval: 1000 * 10,
   })
   const feed = useFeed(trustedOnly)
-  const firstFeedEvent: Event | undefined = feed.data?.[0]
-  const firstFeedEventId = feedEventId(firstFeedEvent)
   return {
     ...feed,
     hasNewItems:
-      firstFeedEventId !== 'empty' &&
+      feed.firstEventId !== 'empty' &&
       !!latestQuery.data &&
-      firstFeedEventId !== latestQuery.data,
-    // hasNewItems: true,
+      feed.firstEventId !== latestQuery.data,
   }
 }
 
@@ -95,6 +93,7 @@ export function useFeed(trustedOnly: boolean = false) {
   })
   return {
     ...feedQuery,
+    firstEventId: feedEventId(allEvents[0]),
     data: allEvents.filter((event) => {
       if (event.data.case === 'newBlob') {
         if (event.data.value.blobType === 'KeyDelegation') return false
