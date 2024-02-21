@@ -7,6 +7,7 @@ import {
   HMComment,
   HMPublication,
   PublicationContent,
+  PublicationVariant,
   UnpackedHypermediaId,
   clipContentBlocks,
   formattedDateLong,
@@ -374,9 +375,6 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
   const contentPatch = patchEntries.find(([key]) => key === 'content')
   const contentUpdate = contentPatch?.[1]
   const contentEntries = Object.entries(contentUpdate || {})
-  const nonContentPatchEntries = patchEntries.filter(
-    ([key]) => key !== 'content',
-  )
   if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
     const [pathName, contentUrl] = contentEntries[0]
     return (
@@ -389,7 +387,9 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
     )
   }
   // @ts-expect-error
-  const updates = getPatchedGroupEntries(groupChange.data?.patch || {})
+  const updates = getPatchedGroupEntries(groupChange.data?.patch || {}, id.qid)
+  if (groupChange.data && updates.length === 0)
+    console.warn('No updates found for group change', groupChange.data?.patch)
   const linkId = hmId('g', id.eid, {version: cid})
   return (
     <FeedItemContainer
@@ -430,11 +430,7 @@ function UpdatesList({
             marginHorizontal="$8"
           >
             <SizableText fontWeight="bold">{entry.labelKey}</SizableText>
-            {typeof entry.content === 'string' ? (
-              <SizableText>{entry.content}</SizableText>
-            ) : (
-              entry.content
-            )}
+            {entry.content}
           </XStack>
         )
       })}
@@ -447,10 +443,16 @@ function getPatchedAccountEntries(
 ): {labelKey: string; content: ReactNode}[] {
   const entries: {labelKey: string; content: ReactNode}[] = []
   if (patch.alias) {
-    entries.push({labelKey: 'Alias', content: patch.alias})
+    entries.push({
+      labelKey: 'Alias',
+      content: <SizableText>{patch.alias}</SizableText>,
+    })
   }
   if (patch.bio) {
-    entries.push({labelKey: 'Bio', content: patch.bio})
+    entries.push({
+      labelKey: 'Bio',
+      content: <SizableText>{patch.bio}</SizableText>,
+    })
   }
   if (patch.avatar) {
     entries.push({
@@ -470,28 +472,77 @@ function AccountEntityLink({id}: {id: string}) {
   )
 }
 
+function PublicationLink({
+  id,
+  variants,
+}: {
+  id: UnpackedHypermediaId
+  variants: PublicationVariant[] | undefined
+}) {
+  const pub = usePublication({
+    id: id?.qid,
+    version: id?.version || undefined,
+  })
+  return (
+    <EntityLink id={{...id, variants}}>{pub.data?.document?.title}</EntityLink>
+  )
+}
+
 function getPatchedGroupEntries(
   patch: Partial<GroupSchema>,
+  groupId: string,
 ): {labelKey: string; content: ReactNode}[] {
   const entries: {labelKey: string; content: ReactNode}[] = []
   if (patch.title) {
-    entries.push({labelKey: 'Title', content: patch.title})
+    entries.push({
+      labelKey: 'Title',
+      content: <SizableText>{patch.title}</SizableText>,
+    })
   }
   if (patch.description) {
-    entries.push({labelKey: 'Description', content: patch.description})
+    entries.push({
+      labelKey: 'Description',
+      content: <SizableText>{patch.description}</SizableText>,
+    })
   }
   if (patch.members) {
     const memberEntries = Object.entries(patch.members)
     entries.push({
       labelKey: `Added ${pluralS(memberEntries.length, 'Editor')}`,
-      content: memberEntries
-        .map(([accountId, groupRole], index) => {
-          return [
-            <AccountEntityLink id={accountId} />,
-            index === memberEntries.length - 1 ? '' : ', ',
-          ]
+      content: (
+        <SizableText>
+          {memberEntries
+            .map(([accountId, groupRole], index) => {
+              return [
+                <AccountEntityLink key={index} id={accountId} />,
+                index === memberEntries.length - 1 ? '' : ', ',
+              ]
+            })
+            .flat()}
+        </SizableText>
+      ),
+    })
+  }
+  if (patch.siteURL) {
+    entries.push({
+      labelKey: 'Site URL',
+      content: <SizableText>{patch.siteURL}</SizableText>,
+    })
+  }
+  if (patch.content) {
+    Object.entries(patch.content).forEach(([pathName, contentUrl]) => {
+      const labelKey = pathName === '/' ? 'Front Page' : pathName
+      const docId = unpackHmId(contentUrl)
+      if (docId)
+        entries.push({
+          labelKey,
+          content: (
+            <PublicationLink
+              id={docId}
+              variants={[{key: 'group', groupId, pathName}]}
+            />
+          ),
         })
-        .flat(),
     })
   }
   return entries
@@ -657,6 +708,7 @@ function Feed({tab}: {tab: 'trusted' | 'all'}) {
           left={0}
           padding="$4"
           jc="center"
+          pointerEvents="box-none"
         >
           <Theme inverse>
             <Button
