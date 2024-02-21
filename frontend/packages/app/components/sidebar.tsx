@@ -237,7 +237,7 @@ function FullAppSidebar() {
                 <Tooltip content="New Group" key="newGroup">
                   {/* Tooltip broken without this extra child View */}
                   <View>
-                    <CreateGroupButton />
+                    <CreateGroupButton chromeless />
                   </View>
                 </Tooltip>,
               ]}

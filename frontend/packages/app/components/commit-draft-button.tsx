@@ -286,23 +286,41 @@ export default function CommitDraftButton() {
                   )
                 })}
               </YStack>
-              <YStack padding="$2" alignSelf="stretch">
-                <Button
-                  onPress={() => {
-                    publishPopover.onOpenChange(false)
-                    publishToGroupDialog.open({
-                      docId: draftId,
-                      docTitle: draftTitle,
-                      onComplete: () => {},
-                    })
-                  }}
-                  icon={Upload}
-                  size="$2"
-                  chromeless
+              {publishableGroups?.length ? (
+                <YStack padding="$2" alignSelf="stretch">
+                  <Button
+                    onPress={() => {
+                      publishPopover.onOpenChange(false)
+                      publishToGroupDialog.open({
+                        docId: draftId,
+                        docTitle: draftTitle,
+                        onComplete: () => {},
+                      })
+                    }}
+                    icon={Upload}
+                    size="$2"
+                    chromeless
+                  >
+                    Publish to Gro1up...
+                  </Button>
+                </YStack>
+              ) : (
+                <YStack
+                  paddingBottom="$4"
+                  paddingHorizontal="$4"
+                  alignSelf="stretch"
+                  gap="$2"
                 >
-                  Publish to Group...
-                </Button>
-              </YStack>
+                  <SizableText>You don't have any groups yet</SizableText>
+                  {/* This is disabled because we can not focus text fields in the dialog. Uncomment to see the issue.
+                  <CreateGroupButton 
+                    triggerLabel="Create Group"
+                    onComplete={() => {
+                      // do nothing because this dialog should still be open. by providing this callback we will avoid navigation to the new group.
+                    }}
+                  /> */}
+                </YStack>
+              )}
             </YStack>
           </ContextPopoverContent>
         </ContextPopover>

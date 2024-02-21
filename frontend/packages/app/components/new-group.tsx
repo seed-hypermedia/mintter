@@ -18,9 +18,11 @@ type NewGroupFields = z.infer<typeof newGroupSchema>
 function AddGroupForm({
   onClose,
   isOpen,
+  onComplete,
 }: {
   onClose: () => void
   isOpen: boolean
+  onComplete?: (groupId: string) => void
 }) {
   const {mutateAsync} = useCreateGroup()
   const navigate = useNavigate()
@@ -41,10 +43,12 @@ function AddGroupForm({
     onClose()
     toast.promise(
       mutateAsync(data).then((groupId) => {
-        navigate({
-          key: 'group',
-          groupId,
-        })
+        if (onComplete) onComplete(groupId)
+        else
+          navigate({
+            key: 'group',
+            groupId,
+          })
       }),
       {
         loading: 'Creating...',
@@ -83,8 +87,7 @@ const NewGroupButton = forwardRef(function NewGroupButton(
 ) {
   return (
     <Button
-      chromeless
-      backgroundColor="$colorTransparent"
+      backgroundColor={props.chromeless ? '$colorTransparent' : '$color4'}
       size="$2"
       ref={ref}
       icon={Plus}
@@ -97,13 +100,19 @@ const NewGroupButton = forwardRef(function NewGroupButton(
 
 export function CreateGroupButton({
   triggerLabel = '',
+  chromeless,
+  onComplete,
 }: {
   triggerLabel?: string
+  chromeless?: boolean
+  onComplete?: (groupId: string) => void
 }) {
   return (
     <AppDialog
       TriggerComponent={NewGroupButton}
+      triggerComponentProps={{chromeless}}
       ContentComponent={AddGroupForm}
+      contentComponentProps={{onComplete}}
       triggerLabel={triggerLabel}
     />
   )

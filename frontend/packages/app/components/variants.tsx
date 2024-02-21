@@ -256,7 +256,13 @@ export function GroupPublishDialog({
       <FormErrors errors={errors} />
 
       <FormField name="groupId" label="Group" errors={errors}>
-        <SelectInput control={control} name="groupId" options={groupOptions} />
+        <SelectInput
+          control={control}
+          name="groupId"
+          placeholder="Select Group.."
+          noOptionsMessage="You are not the editor or owner of any groups. Create a group to publish to."
+          options={groupOptions}
+        />
       </FormField>
 
       <FormField name="pathName" label="Path / Shortname" errors={errors}>
