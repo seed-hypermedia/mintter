@@ -2,6 +2,7 @@ import {defaultRoute} from '@mintter/app/utils/routes'
 import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
+import contextMenu from 'electron-context-menu'
 import log from 'electron-log/main'
 import squirrelStartup from 'electron-squirrel-startup'
 import path from 'node:path'
@@ -21,6 +22,10 @@ import {saveCidAsFile} from './save-cid-as-file'
 const OS_REGISTER_SCHEME = 'hm'
 
 initPaths()
+
+contextMenu({
+  showInspectElement: !IS_PROD_DESKTOP,
+})
 
 const metricsServer = startMetricsServer(ELECTRON_HTTP_PORT)
 app.on('quit', async () => {

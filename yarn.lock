@@ -4855,15 +4855,16 @@ __metadata:
     cheerio: 1.0.0-rc.12
     console-log-colors: 0.4.0
     electron: 26.0.0
+    electron-context-menu: 3.6.1
     electron-log: beta
     electron-playwright-helpers: 1.6.0
     electron-squirrel-startup: 1.0.0
     electron-store: 8.1.0
     electron-trpc: 0.5.2
     fs-extra: 11.1.1
-    loglevel: ^1.8.1
+    loglevel: 1.8.1
     match-sorter: 6.3.1
-    prom-client: ^15.1.0
+    prom-client: 15.1.0
     react: 18.2.0
     react-devtools: 4.28.0
     react-dom: 18.2.0
@@ -4871,8 +4872,8 @@ __metadata:
     tamagui: 1.90.2
     vite: 4.4.9
     vite-tsconfig-paths: 4.2.0
-    winston: ^3.11.0
-    winston-daily-rotate-file: ^4.7.1
+    winston: 3.11.0
+    winston-daily-rotate-file: 4.7.1
     xvfb-maybe: 0.2.1
     zod: 3.22.2
   languageName: unknown
@@ -14652,6 +14653,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"electron-context-menu@npm:3.6.1":
+  version: 3.6.1
+  resolution: "electron-context-menu@npm:3.6.1"
+  dependencies:
+    cli-truncate: ^2.1.0
+    electron-dl: ^3.2.1
+    electron-is-dev: ^2.0.0
+  checksum: b967151089f4b43431713f505942c9cf00069dfb158a87a41e3b924d8e7bff7a53595a9277fb232baa7f9d4d08b1e0b522cfacec0d5d6f06e23bfaf9792075ee
+  languageName: node
+  linkType: hard
+
+"electron-dl@npm:^3.2.1":
+  version: 3.5.2
+  resolution: "electron-dl@npm:3.5.2"
+  dependencies:
+    ext-name: ^5.0.0
+    pupa: ^2.0.1
+    unused-filename: ^2.1.0
+  checksum: 7714599f74f6036bf36f19a20a56dbc407d3e05518b4a38f5c9ce23a251f4d7442bf47dec4fa9cabb02509b4fe4c58752702b85deded016d213303bb16d230a2
+  languageName: node
+  linkType: hard
+
 "electron-installer-common@npm:^0.10.2":
   version: 0.10.3
   resolution: "electron-installer-common@npm:0.10.3"
@@ -14721,6 +14744,13 @@ __metadata:
   bin:
     electron-installer-redhat: src/cli.js
   conditions: (os=darwin | os=linux)
+  languageName: node
+  linkType: hard
+
+"electron-is-dev@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "electron-is-dev@npm:2.0.0"
+  checksum: 7393f46f06153d70a427ea904c60a092e50fbf1015c26c342cebb8324ada8c9e0c0f1f02867af56d9cc76f47be17da8cb311ea6bdc83343e7ebd2323ec4014c8
   languageName: node
   linkType: hard
 
@@ -15658,6 +15688,25 @@ __metadata:
     utils-merge: 1.0.1
     vary: ~1.1.2
   checksum: 3c4b9b076879442f6b968fe53d85d9f1eeacbb4f4c41e5f16cc36d77ce39a2b0d81b3f250514982110d815b2f7173f5561367f9110fcc541f9371948e8c8b037
+  languageName: node
+  linkType: hard
+
+"ext-list@npm:^2.0.0":
+  version: 2.2.2
+  resolution: "ext-list@npm:2.2.2"
+  dependencies:
+    mime-db: ^1.28.0
+  checksum: 9b2426bea312e674eeced62c5f18407ab9a8653bbdfbde36492331c7973dab7fbf9e11d6c38605786168b42da333910314988097ca06eee61f1b9b57efae3f18
+  languageName: node
+  linkType: hard
+
+"ext-name@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "ext-name@npm:5.0.0"
+  dependencies:
+    ext-list: ^2.0.0
+    sort-keys-length: ^1.0.0
+  checksum: f598269bd5de4295540ea7d6f8f6a01d82a7508f148b7700a05628ef6121648d26e6e5e942049e953b3051863df6b54bd8fe951e7877f185e34ace5d44370b33
   languageName: node
   linkType: hard
 
@@ -18464,6 +18513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-plain-obj@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "is-plain-obj@npm:1.1.0"
+  checksum: 0ee04807797aad50859652a7467481816cbb57e5cc97d813a7dcd8915da8195dc68c436010bf39d195226cde6a2d352f4b815f16f26b7bf486a5754290629931
+  languageName: node
+  linkType: hard
+
 "is-plain-obj@npm:^2.0.0":
   version: 2.1.0
   resolution: "is-plain-obj@npm:2.1.0"
@@ -19691,10 +19747,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loglevel@npm:^1.8.1":
-  version: 1.9.1
-  resolution: "loglevel@npm:1.9.1"
-  checksum: e1c8586108c4d566122e91f8a79c8df728920e3a714875affa5120566761a24077ec8ec9e5fc388b022e39fc411ec6e090cde1b5775871241b045139771eeb06
+"loglevel@npm:1.8.1":
+  version: 1.8.1
+  resolution: "loglevel@npm:1.8.1"
+  checksum: a1a62db40291aaeaef2f612334c49e531bff71cc1d01a2acab689ab80d59e092f852ab164a5aedc1a752fdc46b7b162cb097d8a9eb2cf0b299511106c29af61d
   languageName: node
   linkType: hard
 
@@ -20683,7 +20739,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-db@npm:1.52.0, mime-db@npm:>= 1.43.0 < 2":
+"mime-db@npm:1.52.0, mime-db@npm:>= 1.43.0 < 2, mime-db@npm:^1.28.0":
   version: 1.52.0
   resolution: "mime-db@npm:1.52.0"
   checksum: 0d99a03585f8b39d68182803b12ac601d9c01abfa28ec56204fa330bc9f3d1c5e14beb049bafadb3dbdf646dfb94b87e24d4ec7b31b7279ef906a8ea9b6a513f
@@ -21018,6 +21074,13 @@ __metadata:
     pkg-types: ^1.0.3
     ufo: ^1.3.2
   checksum: 82fda663265628ee83a31e99950553371f42f6995838795d44320c78497bf17ab04d1f26c49998944178e4e2416f6f0a580bbca3e272114ee597ae9f3c128b47
+  languageName: node
+  linkType: hard
+
+"modify-filename@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "modify-filename@npm:1.1.0"
+  checksum: a1d104cf99ade063c05c79e4db47ef6263a116386568d7661ae4a00a390da72d5944070a64dba09867231a8eb6cbab57498ada99cb4b5ae0fded10831995079b
   languageName: node
   linkType: hard
 
@@ -23222,7 +23285,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prom-client@npm:^15.1.0":
+"prom-client@npm:15.1.0":
   version: 15.1.0
   resolution: "prom-client@npm:15.1.0"
   dependencies:
@@ -23596,7 +23659,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pupa@npm:^2.1.1":
+"pupa@npm:^2.0.1, pupa@npm:^2.1.1":
   version: 2.1.1
   resolution: "pupa@npm:2.1.1"
   dependencies:
@@ -25994,6 +26057,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sort-keys-length@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "sort-keys-length@npm:1.0.1"
+  dependencies:
+    sort-keys: ^1.0.0
+  checksum: f9acac5fb31580a9e3d43b419dc86a1b75e85b79036a084d95dd4d1062b621c9589906588ac31e370a0dd381be46d8dbe900efa306d087ca9c912d7a59b5a590
+  languageName: node
+  linkType: hard
+
+"sort-keys@npm:^1.0.0":
+  version: 1.1.2
+  resolution: "sort-keys@npm:1.1.2"
+  dependencies:
+    is-plain-obj: ^1.0.0
+  checksum: 5963fd191a2a185a5ec86f06e47721e8e04713eda43bb04ae60d2a8afb21241553dd5bc9d863ed2bd7c3d541b609b0c8d0e58836b1a3eb6764c09c094bcc8b00
+  languageName: node
+  linkType: hard
+
 "sort-object-keys@npm:^1.1.3":
   version: 1.1.3
   resolution: "sort-object-keys@npm:1.1.3"
@@ -28030,6 +28111,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unused-filename@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "unused-filename@npm:2.1.0"
+  dependencies:
+    modify-filename: ^1.1.0
+    path-exists: ^4.0.0
+  checksum: 66fb62b5043a6a87dc30960778ba3d836fb45fef9b7e29a842fce12f25ffc5936e350dc281b79a73ff5498c515504538e72b529993759178156398fcdb8491a5
+  languageName: node
+  linkType: hard
+
 "unzip-response@npm:^2.0.1":
   version: 2.0.1
   resolution: "unzip-response@npm:2.0.1"
@@ -29250,7 +29341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"winston-daily-rotate-file@npm:^4.7.1":
+"winston-daily-rotate-file@npm:4.7.1":
   version: 4.7.1
   resolution: "winston-daily-rotate-file@npm:4.7.1"
   dependencies:
@@ -29275,7 +29366,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"winston@npm:^3.11.0":
+"winston@npm:3.11.0":
   version: 3.11.0
   resolution: "winston@npm:3.11.0"
   dependencies:
