@@ -16,9 +16,9 @@ import {
   Styles,
   ToggledStyle,
 } from '../../extensions/Blocks/api/inlineContentTypes'
+import {getBlockInfo} from '../../extensions/Blocks/helpers/getBlockInfoFromPos'
 import UniqueID from '../../extensions/UniqueID/UniqueID'
 import {UnreachableCaseError} from '../../shared/utils'
-import {getBlockInfo} from '../../extensions/Blocks/helpers/getBlockInfoFromPos'
 
 const toggleStyles = new Set<ToggledStyle>([
   'bold',
@@ -159,9 +159,12 @@ export function blockToNode<BSchema extends BlockSchema>(
     let nodes: Node[] = []
     // Don't want hard breaks inserted as nodes in codeblock
     if (block.type === 'codeBlock') {
+      console.log(`== ~ block.content:`, block.content)
       // @ts-ignore
-      const textNode = schema.text(block.content[0].text)
-      nodes.push(textNode)
+      if (block.content.length) {
+        const textNode = schema.text(block.content[0].text)
+        nodes.push(textNode)
+      }
     } else nodes = inlineContentToNodes(block.content, schema)
     contentNode = schema.nodes[type].create(block.props, nodes)
   }
