@@ -31,7 +31,7 @@ type EntitiesClient interface {
 	// Finds the list of local entities whose titles match the input string.
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
-	SearchLocalEntites(ctx context.Context, in *SearchLocalEntitesRequest, opts ...grpc.CallOption) (*SearchLocalEntitesResponse, error)
+	SearchEntities(ctx context.Context, in *SearchEntitiesRequest, opts ...grpc.CallOption) (*SearchEntitiesResponse, error)
 }
 
 type entitiesClient struct {
@@ -69,9 +69,9 @@ func (c *entitiesClient) DiscoverEntity(ctx context.Context, in *DiscoverEntityR
 	return out, nil
 }
 
-func (c *entitiesClient) SearchLocalEntites(ctx context.Context, in *SearchLocalEntitesRequest, opts ...grpc.CallOption) (*SearchLocalEntitesResponse, error) {
-	out := new(SearchLocalEntitesResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/SearchLocalEntites", in, out, opts...)
+func (c *entitiesClient) SearchEntities(ctx context.Context, in *SearchEntitiesRequest, opts ...grpc.CallOption) (*SearchEntitiesResponse, error) {
+	out := new(SearchEntitiesResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/SearchEntities", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ type EntitiesServer interface {
 	// Finds the list of local entities whose titles match the input string.
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
-	SearchLocalEntites(context.Context, *SearchLocalEntitesRequest) (*SearchLocalEntitesResponse, error)
+	SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error)
 }
 
 // UnimplementedEntitiesServer should be embedded to have forward compatible implementations.
@@ -107,8 +107,8 @@ func (UnimplementedEntitiesServer) GetEntityTimeline(context.Context, *GetEntity
 func (UnimplementedEntitiesServer) DiscoverEntity(context.Context, *DiscoverEntityRequest) (*DiscoverEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DiscoverEntity not implemented")
 }
-func (UnimplementedEntitiesServer) SearchLocalEntites(context.Context, *SearchLocalEntitesRequest) (*SearchLocalEntitesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SearchLocalEntites not implemented")
+func (UnimplementedEntitiesServer) SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchEntities not implemented")
 }
 
 // UnsafeEntitiesServer may be embedded to opt out of forward compatibility for this service.
@@ -176,20 +176,20 @@ func _Entities_DiscoverEntity_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Entities_SearchLocalEntites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SearchLocalEntitesRequest)
+func _Entities_SearchEntities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchEntitiesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntitiesServer).SearchLocalEntites(ctx, in)
+		return srv.(EntitiesServer).SearchEntities(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.entities.v1alpha.Entities/SearchLocalEntites",
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/SearchEntities",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntitiesServer).SearchLocalEntites(ctx, req.(*SearchLocalEntitesRequest))
+		return srv.(EntitiesServer).SearchEntities(ctx, req.(*SearchEntitiesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -214,8 +214,8 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Entities_DiscoverEntity_Handler,
 		},
 		{
-			MethodName: "SearchLocalEntites",
-			Handler:    _Entities_SearchLocalEntites_Handler,
+			MethodName: "SearchEntities",
+			Handler:    _Entities_SearchEntities_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

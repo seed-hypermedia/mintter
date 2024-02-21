@@ -20,7 +20,7 @@ service Entities {
   // Finds the list of local entities whose titles match the input string.
   // A fuzzy search is performed among documents, groups and accounts. 
   // For groups and documents, we match the title, while we match alias in accounts.
-  rpc SearchLocalEntites(SearchLocalEntitesRequest) returns (SearchLocalEntitesResponse);
+  rpc SearchEntities(SearchEntitiesRequest) returns (SearchEntitiesResponse);
 }
 
 // Request to get a change by ID.
@@ -119,7 +119,7 @@ message Entity {
   // EID of the entity.
   string id = 1;
 
-  // Title of the entity, depending onf the type:
+  // Title of the entity, depending on the type:
   // Alias in the case of account. 
   // Title in the case of groups and documents 
   // Empty in the case of comments.
@@ -127,15 +127,15 @@ message Entity {
 }
 
 // Request to 
-message SearchLocalEntitesRequest {
-  // Title of the entities to look for. Since we use 
-  // Fuzzy search, a single title may return multiple 
+message SearchEntitiesRequest {
+  // Query to find. Since we use 
+  // Fuzzy search, a single query may return multiple 
   // entities.
-  string title = 1;
+  string query = 1;
 }
 
 // A list of entities matching the request. 
-message SearchLocalEntitesResponse {
+message SearchEntitiesResponse {
   // Entities matching the input title
   repeated Entity entities = 1;
 

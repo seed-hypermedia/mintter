@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, SearchLocalEntitesRequest, SearchLocalEntitesResponse } from "./entities_pb";
+import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -52,12 +52,12 @@ export const Entities = {
      * A fuzzy search is performed among documents, groups and accounts. 
      * For groups and documents, we match the title, while we match alias in accounts.
      *
-     * @generated from rpc com.mintter.entities.v1alpha.Entities.SearchLocalEntites
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.SearchEntities
      */
-    searchLocalEntites: {
-      name: "SearchLocalEntites",
-      I: SearchLocalEntitesRequest,
-      O: SearchLocalEntitesResponse,
+    searchEntities: {
+      name: "SearchEntities",
+      I: SearchEntitiesRequest,
+      O: SearchEntitiesResponse,
       kind: MethodKind.Unary,
     },
   }

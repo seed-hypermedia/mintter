@@ -426,7 +426,7 @@ export class Entity extends Message<Entity> {
   id = "";
 
   /**
-   * Title of the entity, depending onf the type:
+   * Title of the entity, depending on the type:
    * Alias in the case of account. 
    * Title in the case of groups and documents 
    * Empty in the case of comments.
@@ -467,52 +467,52 @@ export class Entity extends Message<Entity> {
 /**
  * Request to 
  *
- * @generated from message com.mintter.entities.v1alpha.SearchLocalEntitesRequest
+ * @generated from message com.mintter.entities.v1alpha.SearchEntitiesRequest
  */
-export class SearchLocalEntitesRequest extends Message<SearchLocalEntitesRequest> {
+export class SearchEntitiesRequest extends Message<SearchEntitiesRequest> {
   /**
-   * Title of the entities to look for. Since we use 
-   * Fuzzy search, a single title may return multiple 
+   * Query to find. Since we use 
+   * Fuzzy search, a single query may return multiple 
    * entities.
    *
-   * @generated from field: string title = 1;
+   * @generated from field: string query = 1;
    */
-  title = "";
+  query = "";
 
-  constructor(data?: PartialMessage<SearchLocalEntitesRequest>) {
+  constructor(data?: PartialMessage<SearchEntitiesRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.entities.v1alpha.SearchLocalEntitesRequest";
+  static readonly typeName = "com.mintter.entities.v1alpha.SearchEntitiesRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchLocalEntitesRequest {
-    return new SearchLocalEntitesRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchEntitiesRequest {
+    return new SearchEntitiesRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchLocalEntitesRequest {
-    return new SearchLocalEntitesRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchEntitiesRequest {
+    return new SearchEntitiesRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchLocalEntitesRequest {
-    return new SearchLocalEntitesRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchEntitiesRequest {
+    return new SearchEntitiesRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: SearchLocalEntitesRequest | PlainMessage<SearchLocalEntitesRequest> | undefined, b: SearchLocalEntitesRequest | PlainMessage<SearchLocalEntitesRequest> | undefined): boolean {
-    return proto3.util.equals(SearchLocalEntitesRequest, a, b);
+  static equals(a: SearchEntitiesRequest | PlainMessage<SearchEntitiesRequest> | undefined, b: SearchEntitiesRequest | PlainMessage<SearchEntitiesRequest> | undefined): boolean {
+    return proto3.util.equals(SearchEntitiesRequest, a, b);
   }
 }
 
 /**
  * A list of entities matching the request. 
  *
- * @generated from message com.mintter.entities.v1alpha.SearchLocalEntitesResponse
+ * @generated from message com.mintter.entities.v1alpha.SearchEntitiesResponse
  */
-export class SearchLocalEntitesResponse extends Message<SearchLocalEntitesResponse> {
+export class SearchEntitiesResponse extends Message<SearchEntitiesResponse> {
   /**
    * Entities matching the input title
    *
@@ -527,32 +527,32 @@ export class SearchLocalEntitesResponse extends Message<SearchLocalEntitesRespon
    */
   nextPageToken = "";
 
-  constructor(data?: PartialMessage<SearchLocalEntitesResponse>) {
+  constructor(data?: PartialMessage<SearchEntitiesResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.entities.v1alpha.SearchLocalEntitesResponse";
+  static readonly typeName = "com.mintter.entities.v1alpha.SearchEntitiesResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "entities", kind: "message", T: Entity, repeated: true },
     { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchLocalEntitesResponse {
-    return new SearchLocalEntitesResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchEntitiesResponse {
+    return new SearchEntitiesResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchLocalEntitesResponse {
-    return new SearchLocalEntitesResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchEntitiesResponse {
+    return new SearchEntitiesResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchLocalEntitesResponse {
-    return new SearchLocalEntitesResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchEntitiesResponse {
+    return new SearchEntitiesResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: SearchLocalEntitesResponse | PlainMessage<SearchLocalEntitesResponse> | undefined, b: SearchLocalEntitesResponse | PlainMessage<SearchLocalEntitesResponse> | undefined): boolean {
-    return proto3.util.equals(SearchLocalEntitesResponse, a, b);
+  static equals(a: SearchEntitiesResponse | PlainMessage<SearchEntitiesResponse> | undefined, b: SearchEntitiesResponse | PlainMessage<SearchEntitiesResponse> | undefined): boolean {
+    return proto3.util.equals(SearchEntitiesResponse, a, b);
   }
 }
 

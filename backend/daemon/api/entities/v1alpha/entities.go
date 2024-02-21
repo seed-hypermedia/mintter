@@ -356,18 +356,8 @@ func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEnti
 	return &entities.DiscoverEntityResponse{}, nil
 }
 
-/*
-var qGetEntityTitles = dqb.Str(`
-	SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
-	FROM structural_blobs
-	JOIN blobs ON blobs.id=structural_blobs.id
-	JOIN public_keys ON structural_blobs.author=public_keys.id
-	LEFT JOIN resources ON structural_blobs.resource=resources.id
-	WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
-`)
-*/
-// SearchLocalEntites implements the Fuzzy search of entities.
-func (api *Server) SearchLocalEntites(ctx context.Context, in *entities.SearchLocalEntitesRequest) (*entities.SearchLocalEntitesResponse, error) {
+// SearchEntities implements the Fuzzy search of entities.
+func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntitiesRequest) (*entities.SearchEntitiesResponse, error) {
 	/*
 		var events []*entities.Entity
 		if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
@@ -410,3 +400,14 @@ func (api *Server) SearchLocalEntites(ctx context.Context, in *entities.SearchLo
 	*/
 	return nil, status.Error(codes.FailedPrecondition, "Hold on Eric, method not ready Yet.")
 }
+
+/*
+var qGetEntityTitles = dqb.Str(`
+	SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
+	FROM structural_blobs
+	JOIN blobs ON blobs.id=structural_blobs.id
+	JOIN public_keys ON structural_blobs.author=public_keys.id
+	LEFT JOIN resources ON structural_blobs.resource=resources.id
+	WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
+`)
+*/
