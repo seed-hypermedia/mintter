@@ -23,7 +23,7 @@
     "devtools": "react-devtools",
     "test": "NODE_ENV=test yarn package:test && yarn e2e",
     "test:only": "NODE_ENV=test yarn e2e",
-    "package:test": "NODE_ENV=test VITE_DESKTOP_P2P_PORT=5800 VITE_DESKTOP_HTTP_PORT=58001 VITE_DESKTOP_GRPC_PORT=58002 VITE_DESKTOP_APPDATA=appData.test.local NODE_ENV=test yarn package",
+    "package:test": "NODE_ENV=test VITE_DESKTOP_P2P_PORT=5800 VITE_DESKTOP_HTTP_PORT=58001 VITE_DESKTOP_GRPC_PORT=58002 VITE_DESKTOP_APPDATA=appData.test.local yarn package",
     "e2e": "NODE_ENV=test npx playwright test --project=e2e",
     "e2e:debug": "NODE_ENV=test PWDEBUG=1 yarn e2e",
     "e2e:report": "NODE_ENV=test npx playwright show-report"
