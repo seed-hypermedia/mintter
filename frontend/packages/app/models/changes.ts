@@ -127,6 +127,9 @@ export enum GroupRole {
   Editor = 2,
 }
 export type GroupSchema = {
+  siteURL: string
+  owner: IPLDBytes
+  nonce: IPLDBytes
   title: string
   description: string
   members: Record<
