@@ -187,4 +187,12 @@ func (c *processCollector) processCollect(ch chan<- prometheus.Metric) {
 	} else {
 		ch <- prometheus.MustNewConstMetric(c.startTime, prometheus.GaugeValue, float64(ctime)/1000)
 	}
+
+	mem, err := c.proc.MemoryInfo()
+	if err != nil {
+		c.reportError(ch, c.rss, err)
+	} else {
+		ch <- prometheus.MustNewConstMetric(c.rss, prometheus.GaugeValue, float64(mem.RSS))
+		ch <- prometheus.MustNewConstMetric(c.vsize, prometheus.GaugeValue, float64(mem.VMS))
+	}
 }
