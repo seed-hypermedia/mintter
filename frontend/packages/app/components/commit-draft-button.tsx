@@ -301,7 +301,7 @@ export default function CommitDraftButton() {
                     size="$2"
                     chromeless
                   >
-                    Publish to Gro1up...
+                    Publish to Group...
                   </Button>
                 </YStack>
               ) : (
