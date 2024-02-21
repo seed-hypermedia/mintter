@@ -81,7 +81,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
 		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
-		WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
+		WHERE blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token;
 	`)
 	var qGetEventsAll = dqb.Str(`
 		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
@@ -89,7 +89,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
-		WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
+		WHERE blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token;
 	`)
 	query := qGetEventsAll()
 	if req.TrustedOnly {
