@@ -26,6 +26,80 @@
                 "type": "prometheus",
                 "uid": "${DS_PROMETHEUS}"
             },
+            "description": "Shows the current uptime if the program is running. Otherwise shows the uptime from the last run.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "s",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 4,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "text": {},
+                "textMode": "value_and_name",
+                "wideLayout": false
+            },
+            "pluginVersion": "10.4.0-158935",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "(time() - process_start_time_seconds{job=~\"mintterd|electron\", instance=~\"$instance\"}) and on (job, instance) (up == 1)",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{job}} - {{instance}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Uptime (Last or Current)",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -86,7 +160,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 0
+                "y": 5
             },
             "id": 1,
             "options": {
@@ -193,7 +267,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 0
+                "y": 5
             },
             "id": 3,
             "options": {
@@ -217,11 +291,11 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "prometheus"
+                        "uid": "${DS_PROMETHEUS}"
                     },
                     "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "process_resident_memory_bytes{job=~\"mintterd|electron\"}",
+                    "editorMode": "code",
+                    "expr": "process_resident_memory_bytes{job=~\"mintterd|electron\", instance=~\"$instance\"}",
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
                     "instant": false,
@@ -298,7 +372,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 8
+                "y": 13
             },
             "id": 2,
             "options": {
@@ -372,15 +446,16 @@
                     "type": "prometheus",
                     "uid": "${DS_PROMETHEUS}"
                 },
-                "definition": "label_values(up, instance)",
+                "definition": "label_values(up{job=~\"mintterd|electron\"},instance)",
                 "hide": 0,
                 "includeAll": true,
                 "multi": true,
                 "name": "instance",
                 "options": [],
                 "query": {
-                    "query": "label_values(up, instance)",
-                    "refId": "StandardVariableQuery"
+                    "qryType": 1,
+                    "query": "label_values(up{job=~\"mintterd|electron\"},instance)",
+                    "refId": "PrometheusVariableQueryEditor-VariableQuery"
                 },
                 "refresh": 1,
                 "regex": "",
@@ -397,7 +472,7 @@
     "timepicker": {},
     "timezone": "browser",
     "title": "Mintter Desktop Overview",
-    "uid": "fddcgb2ygow00d",
-    "version": 1,
+    "uid": "dddh3zotqe22od",
+    "version": 2,
     "weekStart": ""
 }
