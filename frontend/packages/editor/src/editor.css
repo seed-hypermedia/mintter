@@ -118,3 +118,56 @@ ol > [data-node-type='block-outer']::marker {
 .block-heading + [data-node-type='blockGroup'] {
   margin-left: 0;
 }
+
+
+.hljs-comment,
+.hljs-quote {
+  color: var(--gray10);
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute,
+.hljs-tag,
+.hljs-name,
+.hljs-regexp,
+.hljs-link,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--red10);
+}
+
+.hljs-number,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params {
+  color: var(--orange10);
+}
+
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet {
+  color: var(--green10);
+}
+
+.hljs-title,
+.hljs-section {
+  color: var(--yellow10);
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: var(--blue10);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}

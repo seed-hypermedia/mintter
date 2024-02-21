@@ -20,6 +20,7 @@ import {
   toHMInlineContent,
   unpackHmId,
   useHover,
+  useLowlight,
 } from '@mintter/shared'
 import {
   BlockQuote,
@@ -49,10 +50,12 @@ import {
   YStackProps,
 } from '@mintter/ui'
 import {AlertCircle, Book, MessageSquare, Reply} from '@tamagui/lucide-icons'
+import {common} from 'lowlight'
 import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
+  createElement,
   useContext,
   useMemo,
   useState,
@@ -1442,6 +1445,38 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentCode({block, ...props}: BlockContentProps) {
   const {layoutUnit, debug, textUnit} = usePublicationContentContext()
+  function getHighlightNodes(result: any) {
+    return result.value || result.children || []
+  }
+
+  const CodeHighlight = ({node}: {node: any}) => {
+    if (node.type === 'text') {
+      return node.value
+    }
+
+    if (node.type === 'element') {
+      const {tagName, properties, children} = node
+      if (properties.className && Array.isArray(properties.className)) {
+        properties.className = properties.className[0]
+      }
+      return createElement(
+        tagName,
+        {...properties},
+        children &&
+          children.map((child: any, index: number) => (
+            <CodeHighlight key={index} node={child} />
+          )),
+      )
+    }
+
+    return null
+  }
+  const lowlight = useLowlight(common)
+  const language = block.attributes?.language
+  const nodes: any[] =
+    language && language.length > 0
+      ? getHighlightNodes(lowlight.highlight(language, block.text))
+      : []
 
   return (
     <YStack
@@ -1465,7 +1500,11 @@ export function BlockContentCode({block, ...props}: BlockContentProps) {
           lineHeight={textUnit * 1.5}
           fontSize={textUnit * 0.85}
         >
-          {block.text}
+          {nodes.length > 0
+            ? nodes.map((node, index) => (
+                <CodeHighlight key={index} node={node} />
+              ))
+            : block.text}
         </Text>
       </XStack>
     </YStack>
