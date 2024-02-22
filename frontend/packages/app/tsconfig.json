@@ -6,7 +6,8 @@
     "jsx": "preserve",
     "paths": {
       "@mintter/app/*": ["*", "frontend/packages/app/src/*"],
-      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"]
+      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"],
+      "@mintter/ui": ["*", "frontend/packages/ui/src/index.ts"]
     }
   },
   "references": []
