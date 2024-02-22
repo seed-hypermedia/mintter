@@ -25,7 +25,7 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
       const event: Event | undefined = result.events[0]
       return feedEventId(event)
     },
-    refetchInterval: 1000 * 10,
+    refetchInterval: 30_000,
   })
   const feed = useFeed(trustedOnly)
   return {

@@ -116,7 +116,7 @@ function queryPeerInfo(
     onError: (err) => {
       console.error(`queryPeerInfo Error: `, err)
     },
-    refetchInterval: 1500,
+    refetchInterval: 15_000,
     // refetchIntervalInBackground: true,
   }
 }

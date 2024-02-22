@@ -195,7 +195,7 @@ export function Toaster() {
           )
           .map((item) => item.key),
       })
-    }, 300)
+    }, 5_000)
     return () => {
       clearInterval(interval)
     }

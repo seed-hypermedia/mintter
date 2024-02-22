@@ -39,7 +39,7 @@ export function useNetworkDialog() {
 export function NetworkDialog() {
   const contacts = useAllAccounts()
   const peers = usePeers(false, {
-    refetchInterval: 2_000,
+    refetchInterval: 20_000,
   })
   const accounts = Object.fromEntries(
     contacts.data?.accounts.map((account) => [account.id, account]) || [],

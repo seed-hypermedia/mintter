@@ -268,10 +268,7 @@ function MainApp({
                 />
               </DaemonStatusProvider>
             </NavigationContainer>
-            <Toaster
-            // position="bottom-center"
-            // toastOptions={{className: 'toaster'}}
-            />
+            <Toaster />
           </ErrorBoundary>
         </Suspense>
       </AppContextProvider>
