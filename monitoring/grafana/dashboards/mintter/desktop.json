@@ -22,6 +22,19 @@
     "liveNow": false,
     "panels": [
         {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 6,
+            "panels": [],
+            "title": "Process Info",
+            "type": "row"
+        },
+        {
             "datasource": {
                 "type": "prometheus",
                 "uid": "${DS_PROMETHEUS}"
@@ -51,7 +64,7 @@
                 "h": 5,
                 "w": 24,
                 "x": 0,
-                "y": 0
+                "y": 1
             },
             "id": 4,
             "options": {
@@ -86,7 +99,7 @@
                     "hide": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{job}} - {{instance}}",
+                    "legendFormat": "{{instance}} - {{job}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -100,6 +113,7 @@
                 "type": "prometheus",
                 "uid": "${DS_PROMETHEUS}"
             },
+            "description": "CPU usage over a time window. Measured as number of CPU cores being used, because we want to monitor behavior of the program, not the performance of the machine.",
             "fieldConfig": {
                 "defaults": {
                     "color": {
@@ -147,11 +161,11 @@
                             },
                             {
                                 "color": "red",
-                                "value": 0.3
+                                "value": 1.8
                             }
                         ]
                     },
-                    "unit": "percentunit",
+                    "unit": "none",
                     "unitScale": true
                 },
                 "overrides": []
@@ -160,20 +174,22 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 5
+                "y": 6
             },
             "id": 1,
             "options": {
                 "legend": {
                     "calcs": [
-                        "last",
                         "mean",
+                        "last",
                         "min",
                         "max"
                     ],
                     "displayMode": "table",
                     "placement": "bottom",
-                    "showLegend": true
+                    "showLegend": true,
+                    "sortBy": "Mean",
+                    "sortDesc": true
                 },
                 "tooltip": {
                     "mode": "single",
@@ -187,12 +203,12 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "rate(process_cpu_seconds_total{job=~\"mintterd|electron\", instance=~\"$instance\"}[$__rate_interval]) / on(job, instance) process_num_cpus",
+                    "editorMode": "code",
+                    "expr": "rate(process_cpu_seconds_total{job=~\"mintterd|electron\", instance=~\"$instance\"}[$__rate_interval])",
                     "fullMetaSearch": false,
                     "includeNullMetadata": false,
                     "instant": false,
-                    "legendFormat": "{{job}} - {{instance}}",
+                    "legendFormat": "{{instance}} - CPU Cores Busy",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -267,20 +283,22 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 5
+                "y": 6
             },
             "id": 3,
             "options": {
                 "legend": {
                     "calcs": [
-                        "last",
                         "mean",
+                        "last",
                         "min",
                         "max"
                     ],
                     "displayMode": "table",
                     "placement": "bottom",
-                    "showLegend": true
+                    "showLegend": true,
+                    "sortBy": "Mean",
+                    "sortDesc": true
                 },
                 "tooltip": {
                     "mode": "single",
@@ -299,7 +317,7 @@
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{job}} - {{instance}}",
+                    "legendFormat": "{{instance}} - Resident Memory",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -307,6 +325,19 @@
             ],
             "title": "Memory Usage",
             "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 14
+            },
+            "id": 7,
+            "panels": [],
+            "title": "IPFS / Libp2p",
+            "type": "row"
         },
         {
             "datasource": {
@@ -372,20 +403,22 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 13
+                "y": 15
             },
             "id": 2,
             "options": {
                 "legend": {
                     "calcs": [
-                        "last",
                         "mean",
+                        "last",
                         "min",
                         "max"
                     ],
                     "displayMode": "table",
                     "placement": "bottom",
-                    "showLegend": true
+                    "showLegend": true,
+                    "sortBy": "Mean",
+                    "sortDesc": true
                 },
                 "tooltip": {
                     "mode": "single",
@@ -403,12 +436,118 @@
                     "expr": "libp2p_open_connections{job=\"mintterd\", instance=~\"$instance\"}",
                     "format": "time_series",
                     "instant": false,
-                    "legendFormat": "Open Connections - {{instance}}",
+                    "legendFormat": "{{instance}} - Open Connections",
                     "range": true,
                     "refId": "A"
                 }
             ],
             "title": "Libp2p Connections",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "none",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 15
+            },
+            "id": 5,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "mean",
+                        "last",
+                        "min",
+                        "max"
+                    ],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "sortBy": "Mean",
+                    "sortDesc": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "rate(mintter_ipfs_blockstore_calls_total{job=~\"mintterd\", instance=~\"$instance\"}[$__rate_interval])",
+                    "format": "time_series",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{instance}} - {{method}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "IPFS Blockstore Calls",
             "type": "timeseries"
         }
     ],
@@ -439,8 +578,12 @@
             {
                 "current": {
                     "selected": false,
-                    "text": "All",
-                    "value": "$__all"
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
                 },
                 "datasource": {
                     "type": "prometheus",
@@ -466,13 +609,13 @@
         ]
     },
     "time": {
-        "from": "now-30m",
+        "from": "now-15m",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "browser",
     "title": "Mintter Desktop Overview",
     "uid": "dddh3zotqe22od",
-    "version": 2,
+    "version": 5,
     "weekStart": ""
 }

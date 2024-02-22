@@ -15,6 +15,15 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/klauspost/compress/zstd"
 	"github.com/multiformats/go-multihash"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	mCallsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "mintter_ipfs_blockstore_calls_total",
+		Help: "The total of method calls on the IPFS' Blockstore public interface.",
+	}, []string{"method"})
 )
 
 var _ blockstore.Blockstore = (*blockStore)(nil)
@@ -49,6 +58,8 @@ func newBlockstore(db *sqlitex.Pool) *blockStore {
 
 // Has implements blockstore.Blockstore interface.
 func (b *blockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+	mCallsTotal.WithLabelValues("Has").Inc()
+
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return false, err
@@ -73,6 +84,8 @@ func (b *blockStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
 
 // Get implements blockstore.Blockstore interface.
 func (b *blockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	mCallsTotal.WithLabelValues("Get").Inc()
+
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -117,6 +130,8 @@ func (b *blockStore) decompress(data []byte, originalSize int) ([]byte, error) {
 
 // GetSize implements blockstore.Blockstore interface.
 func (b *blockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+	mCallsTotal.WithLabelValues("GetSize").Inc()
+
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return 0, err
@@ -137,6 +152,8 @@ func (b *blockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 
 // Put implements blockstore.Blockstore interface.
 func (b *blockStore) Put(ctx context.Context, block blocks.Block) error {
+	mCallsTotal.WithLabelValues("Put").Inc()
+
 	return b.withConn(ctx, func(conn *sqlite.Conn) error {
 		return sqlitex.WithTx(conn, func() error {
 			codec, hash := ipfs.DecodeCID(block.Cid())
@@ -148,6 +165,8 @@ func (b *blockStore) Put(ctx context.Context, block blocks.Block) error {
 
 // PutMany implements blockstore.Blockstore interface.
 func (b *blockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
+	mCallsTotal.WithLabelValues("PutMany").Inc()
+
 	return b.withConn(ctx, func(conn *sqlite.Conn) error {
 		return sqlitex.WithTx(conn, func() error {
 			for _, blk := range blocks {
@@ -244,6 +263,8 @@ var qBlobsUpdateMissingData = dqb.Str(`
 
 // DeleteBlock implements blockstore.Blockstore interface.
 func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
+	mCallsTotal.WithLabelValues("DeleteBlock").Inc()
+
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -261,6 +282,8 @@ func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) (oldid int64, err
 
 // AllKeysChan implements. blockstore.Blockstore interface.
 func (b *blockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
+	mCallsTotal.WithLabelValues("AllKeysChan").Inc()
+
 	c := make(chan cid.Cid, 10) // The buffer is arbitrary.
 
 	conn, release, err := b.db.Conn(ctx)
