@@ -34,8 +34,11 @@ export function getQueryClient(ipc: AppIPC): AppQueryClient {
       },
     }),
     defaultOptions: {
+      mutations: {
+        networkMode: 'always',
+      },
       queries: {
-        networkMode: 'offlineFirst',
+        networkMode: 'always',
         useErrorBoundary: true,
         retryOnMount: false,
         staleTime: Infinity,
