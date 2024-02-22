@@ -59,7 +59,6 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@playwright/test": "1.40.1",
     "@storybook/nextjs": "7.0.26",
     "babel-plugin-react-native-web": "0.19.9",
     "concurrently": "8.2.1",

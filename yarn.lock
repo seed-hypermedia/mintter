@@ -20905,7 +20905,6 @@ __metadata:
     "@connectrpc/protoc-gen-connect-es": 1.1.3
     "@manypkg/cli": 0.19.2
     "@nderscore/tamagui-typescript-plugin": 0.5.4
-    "@playwright/test": 1.40.1
     "@storybook/nextjs": 7.0.26
     "@tamagui/cli": 1.90.2
     babel-plugin-react-native-web: 0.19.9
