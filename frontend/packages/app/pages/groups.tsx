@@ -11,7 +11,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {Pin, PinOff} from '@tamagui/lucide-icons'
-import {useMemo} from 'react'
+import React, {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {
@@ -119,7 +119,11 @@ function SiteUrlButton({group}: {group: Group}) {
   )
 }
 
-function GroupListItem({group, onCopy}: {group: Group; onCopy: () => void}) {
+const GroupListItem = React.memo(function GroupListItem({
+  group,
+}: {
+  group: Group
+}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)
@@ -171,7 +175,7 @@ function GroupListItem({group, onCopy}: {group: Group; onCopy: () => void}) {
       ]}
     />
   )
-}
+})
 
 export default function GroupsPage() {
   const groupQuery = useGroups()

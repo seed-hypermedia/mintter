@@ -15,9 +15,7 @@ export function Tooltip({
 }) {
   return (
     <TTooltip placement={placement} delay={delay}>
-      {/* @ts-ignore */}
       <TTooltip.Trigger asChild>{children}</TTooltip.Trigger>
-      {/* @ts-ignore */}
       <Theme inverse>
         <TTooltip.Content
           maxWidth="350px"

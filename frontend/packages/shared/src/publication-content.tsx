@@ -93,6 +93,7 @@ export type PublicationContentContextValue = {
   debug: boolean
   ffSerif?: boolean
   comment?: boolean
+  renderOnly?: boolean
 }
 
 export const publicationContentContext =
@@ -108,6 +109,7 @@ export function PublicationContentProvider({
   debugTop = 0,
   showDevMenu = false,
   comment = false,
+  renderOnly = false,
   ...PubContentContext
 }: PropsWithChildren<
   PublicationContentContextValue & {
@@ -129,6 +131,7 @@ export function PublicationContentProvider({
         debug,
         ffSerif,
         comment,
+        renderOnly,
       }}
     >
       {showDevMenu ? (
@@ -346,11 +349,10 @@ export function BlockNodeContent({
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
 }) {
-  const {layoutUnit} = usePublicationContentContext()
+  const {layoutUnit, renderOnly} = usePublicationContentContext()
   const headingMarginStyles = useHeadingMarginStyles(depth, layoutUnit)
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
-
   const {onCitationClick, onBlockComment, onCopyBlock, onReplyBlock, debug} =
     usePublicationContentContext()
 
@@ -380,6 +382,8 @@ export function BlockNodeContent({
 
   const isEmbed = blockNode.block?.type == 'embed'
 
+  const interactiveProps = !renderOnly ? hoverProps : {}
+
   return (
     <YStack
       className="blocknode-content"
@@ -402,8 +406,12 @@ export function BlockNodeContent({
           index={props.index}
           start={props.start}
         />
-        <BlockContent block={blockNode.block!} depth={depth} {...hoverProps} />
-        {!props.embedDepth ? (
+        <BlockContent
+          block={blockNode.block!}
+          depth={depth}
+          {...interactiveProps}
+        />
+        {!props.embedDepth && !renderOnly ? (
           <XStack
             position="absolute"
             top={layoutUnit / 4}
@@ -548,8 +556,8 @@ function inlineContentSize(unit: number): TextProps {
 export type BlockContentProps = {
   block: Block | HMBlock
   depth: number
-  onHoverIn: () => void
-  onHoverOut: () => void
+  onHoverIn?: () => void
+  onHoverOut?: () => void
 }
 
 function BlockContent(props: BlockContentProps) {

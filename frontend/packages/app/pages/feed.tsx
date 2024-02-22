@@ -33,7 +33,7 @@ import {
   toast,
 } from '@mintter/ui'
 import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
-import {PropsWithChildren, ReactNode, useRef} from 'react'
+import React, {PropsWithChildren, ReactNode, useRef} from 'react'
 import Footer from '../components/footer'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAccount} from '../models/accounts'
@@ -220,7 +220,7 @@ function FeedItemPublicationContent({
   publication: HMPublication
 }) {
   return (
-    <AppPublicationContentProvider>
+    <AppPublicationContentProvider renderOnly>
       <PublicationContent
         publication={publication}
         maxBlockCount={FEED_MAX_BLOCK_COUNT}
@@ -231,7 +231,7 @@ function FeedItemPublicationContent({
 
 function FeedItemCommentContent({comment}: {comment: HMComment}) {
   return (
-    <AppPublicationContentProvider>
+    <AppPublicationContentProvider renderOnly>
       <BlocksContent
         blocks={clipContentBlocks(comment.content, FEED_MAX_BLOCK_COUNT)}
       />
@@ -648,7 +648,7 @@ function ErrorFeedItem({message}: {message: string}) {
   )
 }
 
-function FeedItem({event}: {event: ActivityEvent}) {
+const FeedItem = React.memo(function FeedItem({event}: {event: ActivityEvent}) {
   const {data, eventTime} = event
   if (data.case === 'newBlob') {
     const {cid, author, resource, blobType} = data.value
@@ -675,9 +675,9 @@ function FeedItem({event}: {event: ActivityEvent}) {
     return <ErrorFeedItem message={`Unknown blob type: ${blobType}`} />
   }
   return <ErrorFeedItem message={`Unknown event type: ${event.data.case}`} />
-}
+})
 
-function Feed({tab}: {tab: 'trusted' | 'all'}) {
+const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
@@ -748,4 +748,4 @@ function Feed({tab}: {tab: 'trusted' | 'all'}) {
       )}
     </YStack>
   )
-}
+})
