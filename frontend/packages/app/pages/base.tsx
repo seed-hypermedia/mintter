@@ -8,3 +8,11 @@ export function NotFoundPage() {
     </YStack>
   )
 }
+
+export function BaseLoading() {
+  return (
+    <YStack padding="$6">
+      <Spinner />
+    </YStack>
+  )
+}

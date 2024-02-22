@@ -4,7 +4,7 @@ import {AppErrorPage} from '@mintter/app//components/app-error'
 import {TitleBar} from '@mintter/app/components/titlebar'
 import {getRouteKey, useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Spinner, YStack} from '@mintter/ui'
+import {YStack} from '@mintter/ui'
 import {ReactElement, lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Launcher} from '../components/launcher'
@@ -13,7 +13,7 @@ import {DraftStatusContext} from '../models/draft-machine'
 import {SidebarContextProvider} from '../src/sidebar-context'
 import {NavRoute} from '../utils/routes'
 import {getWindowType} from '../utils/window-types'
-import {NotFoundPage} from './base'
+import {BaseLoading, NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
@@ -29,10 +29,56 @@ var Settings = lazy(() => import('@mintter/app/pages/settings'))
 var Comment = lazy(() => import('@mintter/app/pages/comment'))
 var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 
-function BaseLoading() {
+export default function Main({className}: {className?: string}) {
+  const navR = useNavRoute()
+  const isSettings = navR?.key == 'settings'
+  const navigate = useNavigate()
+  const {PageComponent, Fallback} = useMemo(
+    () => getPageComponent(navR),
+    [navR],
+  )
+  const routeKey = useMemo(() => getRouteKey(navR), [navR])
+  useListen<NavRoute>(
+    'open_route',
+    (event) => {
+      const route = event.payload
+      navigate(route)
+    },
+    [navigate],
+  )
+  const windowType = getWindowType()
+  let titlebar: ReactElement | null = null
+  let sidebar: ReactElement | null = null
+  let launcher: ReactElement | null = null
+  if (windowType === 'main') {
+    titlebar = <TitleBar />
+    sidebar = <AppSidebar />
+  } else if (windowType === 'settings') {
+    titlebar = <TitleBar clean />
+  }
+
+  if (!isSettings) {
+    launcher = <Launcher />
+  }
+
   return (
-    <YStack padding="$6">
-      <Spinner />
+    <YStack fullscreen className={className}>
+      <SidebarContextProvider>
+        <ErrorBoundary
+          key={routeKey}
+          FallbackComponent={AppErrorPage}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
+          <DraftStatusContext.Provider>
+            {titlebar}
+            <PageComponent />
+            {launcher}
+          </DraftStatusContext.Provider>
+        </ErrorBoundary>
+        {sidebar}
+      </SidebarContextProvider>
     </YStack>
   )
 }
@@ -100,50 +146,4 @@ function getPageComponent(navRoute: NavRoute) {
         Fallback: BaseLoading,
       }
   }
-}
-
-export default function Main({className}: {className?: string}) {
-  const navR = useNavRoute()
-  const isSettings = navR?.key == 'settings'
-  const navigate = useNavigate()
-  const {PageComponent, Fallback} = useMemo(
-    () => getPageComponent(navR),
-    [navR],
-  )
-  const routeKey = useMemo(() => getRouteKey(navR), [navR])
-  useListen<NavRoute>(
-    'open_route',
-    (event) => {
-      const route = event.payload
-      navigate(route)
-    },
-    [navigate],
-  )
-  const windowType = getWindowType()
-  let titlebar: ReactElement | null = null
-  if (windowType === 'main') {
-    titlebar = <TitleBar />
-  } else if (windowType === 'settings') {
-    titlebar = <TitleBar clean />
-  }
-  return (
-    <YStack fullscreen className={className}>
-      <SidebarContextProvider>
-        <ErrorBoundary
-          key={routeKey}
-          FallbackComponent={AppErrorPage}
-          onReset={() => {
-            window.location.reload()
-          }}
-        >
-          <DraftStatusContext.Provider>
-            {titlebar}
-            <PageComponent />
-            {!isSettings ? <Launcher /> : null}
-          </DraftStatusContext.Provider>
-        </ErrorBoundary>
-        {windowType === 'main' ? <AppSidebar /> : null}
-      </SidebarContextProvider>
-    </YStack>
-  )
 }
