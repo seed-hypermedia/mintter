@@ -8,6 +8,7 @@ import {
   Button,
   ButtonProps,
   CheckboxField,
+  ChevronDown,
   Copy,
   ErrorIcon,
   Fieldset,
@@ -228,10 +229,20 @@ function Mnemonics(props: OnboardingStepProps) {
               }}
             >
               <Tabs.List>
-                <Tabs.Tab value="generated" flex={1} id="btn-tab-generated">
+                <Tabs.Tab
+                  value="generated"
+                  flex={1}
+                  id="btn-tab-generated"
+                  bg={useOwnSeed ? '$background' : '$backgroundFocus'}
+                >
                   <SizableText>Generate new words</SizableText>
                 </Tabs.Tab>
-                <Tabs.Tab value="ownwords" flex={1} id="btn-tab-ownwords">
+                <Tabs.Tab
+                  value="ownwords"
+                  flex={1}
+                  id="btn-tab-ownwords"
+                  bg={useOwnSeed ? '$backgroundFocus' : '$background'}
+                >
                   <SizableText>Use my own words</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
@@ -288,6 +299,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   </XStack>
                   <CheckboxField
                     value={check1}
+                    id="check1"
                     onValue={(v) => setCheck1(!!v)}
                     labelProps={{
                       unstyled: true,
@@ -298,6 +310,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     I have stored my 12-word recovery phrase in a safe place.
                   </CheckboxField>
                   <CheckboxField
+                    id="check2"
                     value={check2}
                     onValue={(v) => setCheck2(!!v)}
                     labelProps={{
@@ -341,6 +354,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     />
                   </XStack>
                   <CheckboxField
+                    id="check3"
                     value={check3}
                     onValue={(v) => setCheck3(!!v)}
                     labelProps={{
@@ -519,6 +533,7 @@ function NewDevice(props: OnboardingStepProps) {
                 />
               </XStack>
               <CheckboxField
+                id="check1"
                 value={check1}
                 onValue={(v) => setCheck1(!!v)}
                 labelProps={{
@@ -721,7 +736,9 @@ function Wallet(props: OnboardingStepProps) {
   )
 }
 
-const SuggestedSites = ['mintter.com', 'hyper.media']
+const SuggestedSites = import.meta.env.DEV
+  ? ['test.hyper.media']
+  : ['mintter.com', 'hyper.media']
 
 function ConnectSite(props: OnboardingStepProps) {
   const isDaemonReady = useDaemonReady()
@@ -777,7 +794,7 @@ function ConnectSite(props: OnboardingStepProps) {
                   }
                 }}
               >
-                <Select.Trigger>
+                <Select.Trigger iconAfter={ChevronDown}>
                   <Select.Value placeholder="..." />
                 </Select.Trigger>
                 <Select.Content>

@@ -7,18 +7,19 @@ export function CheckboxField({
   onValue,
   labelProps,
   children,
+  id,
   ...props
 }: {
   value: boolean
   onValue: (value: boolean) => void
   labelProps?: React.ComponentProps<typeof Label>
   children: React.ReactNode | string
+  id: string
 } & React.ComponentProps<typeof XStack>) {
-  const fieldId = React.useId()
   return (
     <XStack {...props} gap="$3" ai="center">
       <Checkbox
-        id={fieldId}
+        id={id}
         value={value ? 'checked' : ''}
         onCheckedChange={onValue}
       >
@@ -26,7 +27,7 @@ export function CheckboxField({
           <Check />
         </Checkbox.Indicator>
       </Checkbox>
-      <Label color="$color10" {...labelProps} htmlFor={fieldId}>
+      <Label color="$color10" {...labelProps} htmlFor={id}>
         {children}
       </Label>
     </XStack>
