@@ -4,16 +4,26 @@ import {fetchWebLink} from '@mintter/app/models/web-links'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
+  Account,
+  Document,
   GRPCClient,
+  Group,
   HYPERMEDIA_SCHEME,
+  Publication,
   extractBlockRefOfUrl,
-  getDocumentTitle,
   hmIdWithVersion,
   isHypermediaScheme,
 } from '@mintter/shared'
-import {Spinner, YStack, toast} from '@mintter/ui'
-import {Command} from 'cmdk'
-import {useState} from 'react'
+import {
+  Button,
+  Input,
+  ScrollView,
+  SizableText,
+  XStack,
+  YStack,
+  toast,
+} from '@mintter/ui'
+import {useEffect, useState} from 'react'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {useConnectPeer, useContactsList} from '../models/contacts'
@@ -28,7 +38,7 @@ import {
 } from '../utils/navigation'
 import {NavRoute} from '../utils/routes'
 import {useListenAppEvent} from '../utils/window-events'
-import './quick-switcher.css'
+import {useAppDialog} from './dialog'
 
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
@@ -99,183 +109,248 @@ function useURLHandler() {
   }
 }
 
-export function QuickSwitcher() {
-  const [open, setOpen] = useState(false)
-  const {data: drafts} = useDraftList()
-  const {data: publications} = usePublicationList({
-    enabled: open,
-    trustedOnly: false,
-  })
-  const {data: groups} = useGroups({
-    enabled: open,
-  })
-  const {data: contacts} = useContactsList()
+type SwitcherItem = {
+  key: string
+  title: string
+  type?: string
+  onSelect: () => void
+}
+function QuickSwitcherContent({
+  input,
+  onClose,
+}: {
+  input: {
+    groups: Group[]
+    accounts: Account[]
+    publications: Publication[]
+    drafts: Document[]
+  }
+  onClose: () => void
+}) {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
-
-  useListenAppEvent('openQuickSwitcher', () => {
-    setOpen(true)
-  })
-
   const grpcClient = useGRPCClient()
   const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
   const gwHost = useGatewayHost()
   const handleUrl = useURLHandler()
+  // const searchResults = useSearch(search, {})
+  let queryItem: null | SwitcherItem = null
+  if (
+    isHypermediaScheme(search) ||
+    search.startsWith('http://') ||
+    search.startsWith('https://') ||
+    search.includes('.')
+  ) {
+    queryItem = {
+      key: 'mtt-link',
+      title: search,
+      onSelect: async () => {
+        const searched = await resolveHmIdToAppRoute(search, grpcClient)
+        if (
+          (searched?.scheme === HYPERMEDIA_SCHEME ||
+            searched?.hostname === gwHost) &&
+          searched?.navRoute
+        ) {
+          onClose()
+          navigate(searched?.navRoute)
+        } else if (
+          search.startsWith('http://') ||
+          search.startsWith('https://') ||
+          search.includes('.')
+        ) {
+          setActionPromise(
+            handleUrl(queryClient, grpcClient, search)
+              .then((navRoute) => {
+                if (navRoute) {
+                  onClose()
+                  navigate(navRoute)
+                }
+              })
+              .catch((error) => {
+                appError(`QuickSwitcher Error: ${error}`, {error})
+              })
+              .finally(() => {
+                setActionPromise(null)
+              }),
+          )
+        }
+      },
+    }
+  }
+  const allItems: SwitcherItem[] = [
+    ...input.groups.map((group) => {
+      return {
+        key: group.id,
+        title: group.title,
+        type: 'Group',
+        onSelect: () => {
+          onClose()
+          navigate({
+            key: 'group',
+            groupId: group.id,
+          })
+        },
+      }
+    }),
+    ...input.accounts.map((account) => {
+      return {
+        key: account.id,
+        title: account.profile?.alias || account.id,
+        type: 'Account',
+        onSelect: () => {
+          onClose()
+          navigate({
+            key: 'account',
+            accountId: account.id,
+          })
+        },
+      }
+    }),
+    ...input.publications
+      .map((publication) => {
+        const docId = publication.document?.id
+        const ownerId = publication.document?.author
+        const title = publication.document?.title || 'Untitled Publication'
 
+        if (!docId || !title || !ownerId) return null
+
+        return {
+          key: docId,
+          title,
+          type: 'Publication',
+          onSelect: () => {
+            onClose()
+            navigate({
+              key: 'publication',
+              documentId: docId,
+              variant: {key: 'authors', authors: [ownerId]},
+              // versionId not included here, we will navigate to the latest version in the global context
+            })
+          },
+        }
+      })
+      .filter((item) => item !== null),
+    ...input.drafts.map((draft) => {
+      return {
+        key: `draft-${draft.id}`,
+        title: draft.title || 'Untitled Document',
+        type: 'Draft',
+        onSelect: () => {
+          onClose()
+          navigate({
+            key: 'draft',
+            draftId: draft.id,
+          })
+        },
+      }
+    }),
+  ]
+  const filterItems = allItems.filter((item) => {
+    return item.title.match(search.toLowerCase())
+  })
+  const [focusedIndex, setFocusedIndex] = useState(0)
+  useEffect(() => {
+    const keyPressHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+      if (e.nativeEvent.key === 'Enter') {
+        const item = filterItems[focusedIndex]
+        if (item) {
+          item.onSelect()
+        }
+      }
+      if (e.nativeEvent.key === 'ArrowDown') {
+        setFocusedIndex((prev) => (prev + 1) % filterItems.length)
+      }
+      if (e.nativeEvent.key === 'ArrowUp') {
+        setFocusedIndex(
+          (prev) => (prev - 1 + filterItems.length) % filterItems.length,
+        )
+      }
+    }
+    window.addEventListener('keydown', keyPressHandler)
+    return () => {
+      window.removeEventListener('keydown', keyPressHandler)
+    }
+  }, [])
   return (
-    <Command.Dialog
-      open={open}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen)
-        if (!isOpen) setActionPromise(null)
-      }}
-      label="Quick Switcher"
-    >
-      <Command.Input
+    <YStack>
+      <Input
+        autoFocus
         value={search}
-        onValueChange={setSearch}
+        onChangeText={setSearch}
         placeholder="Query URL, Search Documents, Groups, Accounts..."
         disabled={!!actionPromise}
+        onKeyPress={(e) => {
+          if (e.nativeEvent.key === 'Escape') {
+            onClose()
+          }
+          if (e.nativeEvent.key === 'Enter') {
+            const item = filterItems[focusedIndex]
+            if (item) {
+              item.onSelect()
+            }
+          }
+          if (e.nativeEvent.key === 'ArrowDown') {
+            setFocusedIndex((prev) => (prev + 1) % filterItems.length)
+          }
+          if (e.nativeEvent.key === 'ArrowUp') {
+            setFocusedIndex(
+              (prev) => (prev - 1 + filterItems.length) % filterItems.length,
+            )
+          }
+        }}
       />
-      {actionPromise ? (
-        <YStack padding="$6">
-          <Spinner />
-        </YStack>
-      ) : (
-        <Command.List>
-          <Command.Empty>No results found.</Command.Empty>
-          {(isHypermediaScheme(search) ||
-            search.startsWith('http://') ||
-            search.startsWith('https://') ||
-            search.includes('.')) && (
-            <Command.Item
-              key="mtt-link"
-              value={search}
-              onSelect={async () => {
-                const searched = await resolveHmIdToAppRoute(search, grpcClient)
-                if (
-                  (searched?.scheme === HYPERMEDIA_SCHEME ||
-                    searched?.hostname === gwHost) &&
-                  searched?.navRoute
-                ) {
-                  setOpen(false)
-                  navigate(searched?.navRoute)
-                } else if (
-                  search.startsWith('http://') ||
-                  search.startsWith('https://') ||
-                  search.includes('.')
-                ) {
-                  setActionPromise(
-                    handleUrl(queryClient, grpcClient, search)
-                      .then((navRoute) => {
-                        if (navRoute) {
-                          setOpen(false)
-                          navigate(navRoute)
-                        }
-                      })
-                      .catch((error) => {
-                        appError(`QwickSwitcher Error: ${error}`, {error})
-                      })
-                      .finally(() => {
-                        setActionPromise(null)
-                      }),
-                  )
+      <ScrollView maxHeight={600}>
+        <YStack gap="$2" marginVertical="$2">
+          {filterItems.map((item, itemIndex) => {
+            return (
+              <Button
+                key={item.key}
+                onPress={item.onSelect}
+                backgroundColor={
+                  focusedIndex === itemIndex ? '$blue4' : undefined
                 }
-              }}
-            >
-              Query{' '}
-              {`${search.length > 28 ? search.substring(0, 25) : search}...`}
-            </Command.Item>
-          )}
-
-          {drafts?.documents.map((draft) => {
-            return (
-              <Command.Item
-                key={draft.id}
-                value={getDocumentTitle(draft) + draft.id}
-                onSelect={() => {
-                  setOpen(false)
-                  navigate({
-                    key: 'draft',
-                    draftId: draft.id,
-                  })
+                onFocus={() => {
+                  setFocusedIndex(itemIndex)
                 }}
               >
-                <span className="cmdk-mtt-text">{getDocumentTitle(draft)}</span>
-                <span className="cmdk-mtt-type">Draft</span>
-              </Command.Item>
+                <XStack f={1} justifyContent="space-between">
+                  <SizableText>{item.title}</SizableText>
+
+                  <SizableText color="$color10">{item.type}</SizableText>
+                </XStack>
+              </Button>
             )
           })}
-
-          {groups?.groups.map((group) => {
-            return (
-              <Command.Item
-                key={group.id}
-                value={group.title + group.id}
-                onSelect={() => {
-                  setOpen(false)
-                  navigate({
-                    key: 'group',
-                    groupId: group.id,
-                  })
-                }}
-              >
-                <span className="cmdk-mtt-text">{group.title}</span>
-                <span className="cmdk-mtt-type">Group</span>
-              </Command.Item>
-            )
-          })}
-
-          {contacts?.accounts.map((account) => {
-            return (
-              <Command.Item
-                key={account.id}
-                value={account.profile?.alias + account.id}
-                onSelect={() => {
-                  setOpen(false)
-                  navigate({
-                    key: 'account',
-                    accountId: account.id,
-                  })
-                }}
-              >
-                <span className="cmdk-mtt-text">{account.profile?.alias}</span>
-                <span className="cmdk-mtt-type">Account</span>
-              </Command.Item>
-            )
-          })}
-
-          {publications?.publications.map((publication) => {
-            const docId = publication.document?.id
-            const ownerId = publication.document?.author
-            const title = publication.document?.title || 'Untitled Publication'
-
-            if (!docId || !title || !ownerId) return null
-
-            return (
-              <Command.Item
-                key={docId}
-                value={title + docId}
-                onSelect={() => {
-                  setOpen(false)
-                  navigate({
-                    key: 'publication',
-                    documentId: docId,
-                    variant: {key: 'authors', authors: [ownerId]},
-                    // versionId not included here, we will navigate to the latest version in the global context
-                  })
-                }}
-              >
-                <span className="cmdk-mtt-text">
-                  {publication.document?.title}
-                </span>
-                <span className="cmdk-mtt-type">Publication</span>
-              </Command.Item>
-            )
-          })}
-        </Command.List>
-      )}
-    </Command.Dialog>
+        </YStack>
+      </ScrollView>
+    </YStack>
   )
+}
+
+export function QuickSwitcher() {
+  const quickSwitcher = useAppDialog(QuickSwitcherContent)
+  const {data: drafts} = useDraftList()
+  const {data: publications} = usePublicationList({
+    enabled: true,
+    trustedOnly: false,
+  })
+  const {data: groups} = useGroups({
+    enabled: true,
+  })
+  const {data: contacts} = useContactsList()
+  const allData = {
+    contacts: contacts?.accounts || [],
+    groups: groups?.groups || [],
+    publications: publications?.publications || [],
+    drafts: drafts?.documents || [],
+    accounts: contacts?.accounts || [],
+  }
+  useListenAppEvent('openQuickSwitcher', () => {
+    quickSwitcher.open(allData)
+  })
+  return quickSwitcher.content
 }

@@ -61,6 +61,9 @@ export const queryKeys = {
 
   // lightning
   LIGHTNING_ACCOUNT_CHECK: 'LIGHTNING_ACCOUNT_CHECK', //, accountId: string
+
+  // search
+  SEARCH: 'SEARCH', //, query: string
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {
@@ -148,6 +151,10 @@ export function labelOfQueryKey(key: QueryKey) {
     // lightning
     case queryKeys.LIGHTNING_ACCOUNT_CHECK:
       return 'Lightning Account'
+
+    // search
+    case queryKeys.SEARCH:
+      return `Search "${arg1}"`
 
     default:
       // return 'unknown'
