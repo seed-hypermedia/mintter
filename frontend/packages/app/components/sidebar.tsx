@@ -324,7 +324,7 @@ function FullAppSidebar() {
           <YGroup.Item>
             <SidebarItem
               onPress={() => {
-                triggerFocusedWindow('openQuickSwitcher')
+                triggerFocusedWindow('openLauncher')
               }}
               title="Search / Open"
               icon={Search}

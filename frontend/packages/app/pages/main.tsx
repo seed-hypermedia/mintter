@@ -7,7 +7,7 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Spinner, YStack} from '@mintter/ui'
 import {ReactElement, lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {QuickSwitcher} from '../components/quick-switcher'
+import {Launcher} from '../components/launcher'
 import {AppSidebar} from '../components/sidebar'
 import {DraftStatusContext} from '../models/draft-machine'
 import {SidebarContextProvider} from '../src/sidebar-context'
@@ -139,7 +139,7 @@ export default function Main({className}: {className?: string}) {
           <DraftStatusContext.Provider>
             {titlebar}
             <PageComponent />
-            {!isSettings ? <QuickSwitcher /> : null}
+            {!isSettings ? <Launcher /> : null}
           </DraftStatusContext.Provider>
         </ErrorBoundary>
         {windowType === 'main' ? <AppSidebar /> : null}

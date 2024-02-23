@@ -1,7 +1,6 @@
 import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
 import {NavRoute, defaultRoute, navRouteSchema} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
-import {observable} from '@trpc/server/observable'
 import {
   BrowserWindow,
   NativeImage,
@@ -19,8 +18,10 @@ import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
 import {gatewaySettingsApi} from './app-gateway-settings'
 import {grpcClient} from './app-grpc'
+import {invalidateQueries, queryInvalidation} from './app-invalidation'
 import {userDataPath} from './app-paths'
 import {pinsApi} from './app-pins'
+import {recentsApi} from './app-recents'
 import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
 import {welcomingApi} from './app-welcoming'
@@ -34,10 +35,8 @@ import {
 } from './app-windows'
 import {info, loggingDir} from './logger'
 
-const invalidationHandlers = new Set<(queryKey: any) => void>()
-
 ipcMain.on('invalidate_queries', (_event, info) => {
-  invalidationHandlers.forEach((handler) => handler(info))
+  invalidateQueries(info)
 })
 
 ipcMain.on('focusedWindowAppEvent', (_event, info) => {
@@ -124,6 +123,7 @@ export const router = t.router({
   pins: pinsApi,
   comments: commentsApi,
   gatewaySettings: gatewaySettingsApi,
+  recents: recentsApi,
   closeAppWindow: t.procedure.input(z.string()).mutation(async ({input}) => {
     closeAppWindow(input)
     return null
@@ -220,17 +220,7 @@ export const router = t.router({
       return {uploadedPNG, uploadedPDF, uploadedHTML, htmlValue}
     }),
 
-  queryInvalidation: t.procedure.subscription(() => {
-    return observable((emit) => {
-      function handler(value: unknown[]) {
-        emit.next(value)
-      }
-      invalidationHandlers.add(handler)
-      return () => {
-        invalidationHandlers.delete(handler)
-      }
-    })
-  }),
+  queryInvalidation,
 
   getDaemonInfo: t.procedure.query(async () => {
     const buildInfoUrl = `${process.env.VITE_DESKTOP_HOSTNAME}:${process.env.VITE_DESKTOP_HTTP_PORT}/debug/buildinfo`

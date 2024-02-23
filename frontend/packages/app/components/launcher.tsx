@@ -13,6 +13,7 @@ import {
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
+  unpackHmId,
 } from '@mintter/shared'
 import {
   Button,
@@ -29,9 +30,11 @@ import appError from '../errors'
 import {useConnectPeer, useContactsList} from '../models/contacts'
 import {useGatewayHost} from '../models/gateway-settings'
 import {useGroups} from '../models/groups'
+import {useRecents} from '../models/recents'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
 import {
+  appRouteOfId,
   isHttpUrl,
   resolveHmIdToAppRoute,
   useHmIdToAppRouteResolver,
@@ -112,10 +115,10 @@ function useURLHandler() {
 type SwitcherItem = {
   key: string
   title: string
-  type?: string
+  subtitle?: string
   onSelect: () => void
 }
-function QuickSwitcherContent({
+function LauncherContent({
   input,
   onClose,
 }: {
@@ -134,6 +137,7 @@ function QuickSwitcherContent({
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
   const gwHost = useGatewayHost()
   const handleUrl = useURLHandler()
+  const recents = useRecents()
   // const searchResults = useSearch(search, {})
   let queryItem: null | SwitcherItem = null
   if (
@@ -168,7 +172,7 @@ function QuickSwitcherContent({
                 }
               })
               .catch((error) => {
-                appError(`QuickSwitcher Error: ${error}`, {error})
+                appError(`Launcher Error: ${error}`, {error})
               })
               .finally(() => {
                 setActionPromise(null)
@@ -183,7 +187,7 @@ function QuickSwitcherContent({
       return {
         key: group.id,
         title: group.title,
-        type: 'Group',
+        subtitle: 'Group',
         onSelect: () => {
           onClose()
           navigate({
@@ -197,7 +201,7 @@ function QuickSwitcherContent({
       return {
         key: account.id,
         title: account.profile?.alias || account.id,
-        type: 'Account',
+        subtitle: 'Account',
         onSelect: () => {
           onClose()
           navigate({
@@ -218,13 +222,13 @@ function QuickSwitcherContent({
         return {
           key: docId,
           title,
-          type: 'Publication',
+          subtitle: 'Publication',
           onSelect: () => {
             onClose()
             navigate({
               key: 'publication',
               documentId: docId,
-              variant: {key: 'authors', authors: [ownerId]},
+              variants: [{key: 'author', author: ownerId}],
               // versionId not included here, we will navigate to the latest version in the global context
             })
           },
@@ -235,12 +239,13 @@ function QuickSwitcherContent({
       return {
         key: `draft-${draft.id}`,
         title: draft.title || 'Untitled Document',
-        type: 'Draft',
+        subtitle: 'Draft',
         onSelect: () => {
           onClose()
           navigate({
             key: 'draft',
             draftId: draft.id,
+            variant: null,
           })
         },
       }
@@ -249,24 +254,50 @@ function QuickSwitcherContent({
   const filterItems = allItems.filter((item) => {
     return item.title.match(search.toLowerCase())
   })
+
+  const recentItems = recents.data?.map(
+    ({url, title, subtitle, type, variants}) => {
+      return {
+        key: url,
+        title,
+        subtitle,
+        onSelect: () => {
+          const id = unpackHmId(url)
+          if (!id) {
+            toast.error('Failed to open recent: ' + url)
+            return
+          }
+          const openId = id.type === 'd' ? {...id, variants} : id
+          const appRoute = appRouteOfId(openId)
+          if (!appRoute) {
+            toast.error('Failed to open recent: ' + url)
+            return
+          }
+          navigate(appRoute)
+        },
+      }
+    },
+  )
+  const isDisplayingRecents = !search.length
+  const activeItems = isDisplayingRecents ? recentItems : filterItems
   const [focusedIndex, setFocusedIndex] = useState(0)
   useEffect(() => {
     const keyPressHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
       }
-      if (e.nativeEvent.key === 'Enter') {
-        const item = filterItems[focusedIndex]
+      if (e.key === 'Enter') {
+        const item = activeItems[focusedIndex]
         if (item) {
           item.onSelect()
         }
       }
-      if (e.nativeEvent.key === 'ArrowDown') {
-        setFocusedIndex((prev) => (prev + 1) % filterItems.length)
+      if (e.key === 'ArrowDown') {
+        setFocusedIndex((prev) => (prev + 1) % activeItems.length)
       }
-      if (e.nativeEvent.key === 'ArrowUp') {
+      if (e.key === 'ArrowUp') {
         setFocusedIndex(
-          (prev) => (prev - 1 + filterItems.length) % filterItems.length,
+          (prev) => (prev - 1 + activeItems.length) % activeItems.length,
         )
       }
     }
@@ -288,24 +319,29 @@ function QuickSwitcherContent({
             onClose()
           }
           if (e.nativeEvent.key === 'Enter') {
-            const item = filterItems[focusedIndex]
+            const item = activeItems[focusedIndex]
             if (item) {
               item.onSelect()
             }
           }
           if (e.nativeEvent.key === 'ArrowDown') {
-            setFocusedIndex((prev) => (prev + 1) % filterItems.length)
+            setFocusedIndex((prev) => (prev + 1) % activeItems.length)
           }
           if (e.nativeEvent.key === 'ArrowUp') {
             setFocusedIndex(
-              (prev) => (prev - 1 + filterItems.length) % filterItems.length,
+              (prev) => (prev - 1 + activeItems.length) % activeItems.length,
             )
           }
         }}
       />
       <ScrollView maxHeight={600}>
         <YStack gap="$2" marginVertical="$2">
-          {filterItems.map((item, itemIndex) => {
+          {isDisplayingRecents ? (
+            <SizableText marginTop="$2" marginHorizontal="$4" color="$color10">
+              Recent Resources
+            </SizableText>
+          ) : null}
+          {activeItems?.map((item, itemIndex) => {
             return (
               <Button
                 key={item.key}
@@ -313,14 +349,21 @@ function QuickSwitcherContent({
                 backgroundColor={
                   focusedIndex === itemIndex ? '$blue4' : undefined
                 }
+                hoverStyle={{
+                  backgroundColor:
+                    focusedIndex === itemIndex ? '$blue4' : undefined,
+                }}
                 onFocus={() => {
+                  setFocusedIndex(itemIndex)
+                }}
+                onMouseEnter={() => {
                   setFocusedIndex(itemIndex)
                 }}
               >
                 <XStack f={1} justifyContent="space-between">
                   <SizableText>{item.title}</SizableText>
 
-                  <SizableText color="$color10">{item.type}</SizableText>
+                  <SizableText color="$color10">{item.subtitle}</SizableText>
                 </XStack>
               </Button>
             )
@@ -331,8 +374,8 @@ function QuickSwitcherContent({
   )
 }
 
-export function QuickSwitcher() {
-  const quickSwitcher = useAppDialog(QuickSwitcherContent)
+export function Launcher() {
+  const launcher = useAppDialog(LauncherContent)
   const {data: drafts} = useDraftList()
   const {data: publications} = usePublicationList({
     enabled: true,
@@ -349,8 +392,8 @@ export function QuickSwitcher() {
     drafts: drafts?.documents || [],
     accounts: contacts?.accounts || [],
   }
-  useListenAppEvent('openQuickSwitcher', () => {
-    quickSwitcher.open(allData)
+  useListenAppEvent('openLauncher', () => {
+    launcher.open(allData)
   })
-  return quickSwitcher.content
+  return launcher.content
 }

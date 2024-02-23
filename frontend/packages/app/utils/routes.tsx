@@ -1,4 +1,8 @@
-import {groupVariantSchema, publicationVariantSchema} from '@mintter/shared'
+import {
+  createHmId,
+  groupVariantSchema,
+  publicationVariantSchema,
+} from '@mintter/shared'
 import {z} from 'zod'
 
 export const defaultRoute: NavRoute = {key: 'feed', tab: 'trusted'}
@@ -128,3 +132,12 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   commentDraftRouteSchema,
 ])
 export type NavRoute = z.infer<typeof navRouteSchema>
+
+export function getRecentsRouteEntityUrl(route: NavRoute) {
+  // this is used to uniquely identify an item for the recents list. So it references the entity without specifying version or variant
+  if (route.key === 'account') return createHmId('a', route.accountId)
+  if (route.key === 'group') return route.groupId
+  if (route.key === 'publication') return route.documentId
+  // comments do not show up in the recents list, we do not know how to display them
+  return null
+}

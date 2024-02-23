@@ -5,7 +5,7 @@ export type AppWindowSimpleEvent =
   | 'back'
   | 'forward'
   | 'triggerPeerSync'
-  | 'openQuickSwitcher'
+  | 'openLauncher'
 
 export type AppWindowEvent =
   | AppWindowSimpleEvent

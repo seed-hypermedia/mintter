@@ -5,6 +5,7 @@ import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
 import {BrowserWindow, app, nativeTheme} from 'electron'
 import path from 'node:path'
+import {updateRecentRoute} from './app-recents'
 import {appStore} from './app-store'
 import {getDaemonState, subscribeDaemonState} from './daemon'
 import {childLogger, info, warn} from './logger'
@@ -286,6 +287,7 @@ export function createAppWindow(input: {
         routeIndex,
         sidebarLocked: sidebarLocked || false,
       }))
+      updateRecentRoute(routes[routeIndex])
     },
   )
 
@@ -306,6 +308,13 @@ export function createAppWindow(input: {
   })
   browserWindow.on('focus', () => {
     windowFocused(windowId)
+    const navState = windowNavState[windowId]
+    const activeRoute = navState
+      ? navState.routes[navState.routeIndex]
+      : undefined
+    if (activeRoute) {
+      updateRecentRoute(activeRoute)
+    }
   })
   browserWindow.on('blur', () => {
     windowBlurred(windowId)

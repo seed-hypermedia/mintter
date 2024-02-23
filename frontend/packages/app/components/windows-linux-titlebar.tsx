@@ -112,7 +112,7 @@ export function SystemMenu() {
             id: 'quickswitcher',
             title: 'Search / Open',
             accelerator: 'Ctrl+K',
-            onSelect: () => triggerFocusedWindow('openQuickSwitcher'),
+            onSelect: () => triggerFocusedWindow('openLauncher'),
             icon: Search,
           },
           {

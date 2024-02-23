@@ -26,7 +26,7 @@ export function createAppMenu() {
           label: 'Search / Open',
           accelerator: 'CmdOrCtrl+k',
           click: () => {
-            dispatchFocusedWindowAppEvent('openQuickSwitcher')
+            dispatchFocusedWindowAppEvent('openLauncher')
           },
         },
         {type: 'separator'},

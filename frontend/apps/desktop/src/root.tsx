@@ -203,6 +203,10 @@ function MainApp({
           utils.gatewaySettings.getPushOnCopy.invalidate()
         } else if (value[0] === 'trpc.gatewaySettings.getPushOnPublish') {
           utils.gatewaySettings.getPushOnPublish.invalidate()
+        } else if (value[0] === 'trpc.recents.getRecents') {
+          utils.recents.getRecents.invalidate()
+        } else if (value[0] === 'trpc.recents.getDocVariants') {
+          utils.recents.getDocVariants.invalidate()
         } else if (queryClient.client) {
           queryClient.client.invalidateQueries(value)
         }
