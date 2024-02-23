@@ -831,7 +831,7 @@ export function useDocTextContent(pub?: Publication) {
     function extractBlockText({block, children}: BlockNode) {
       let content = ''
       if (!block) return content
-      content += block.text
+      if (block.text) content += block.text
 
       if (children?.length) {
         let nc = extractContent(children)
