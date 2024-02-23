@@ -88,7 +88,7 @@ export function getLinkMenuItems({
             if (!selection.empty) return
             const node = schema.nodes.embed.create(
               {
-                ref: ref,
+                url: ref,
                 view: 'card',
               },
               schema.text(' '),
@@ -121,7 +121,7 @@ export function getLinkMenuItems({
             if (!selection.empty) return
             const node = schema.nodes.embed.create(
               {
-                ref: ref,
+                url: ref,
               },
               schema.text(' '),
             )
