@@ -98,6 +98,7 @@ func (idx *indexingCtx) SaveBlob(id int64, b structuralBlob) error {
 		blobAuthor   maybe.Value[int64]
 		blobResource maybe.Value[int64]
 		blobTime     maybe.Value[int64]
+		title        maybe.Value[string]
 	)
 
 	if b.Author != nil {
@@ -125,7 +126,7 @@ func (idx *indexingCtx) SaveBlob(id int64, b structuralBlob) error {
 		blobTime = maybe.New(b.Time.UnixMicro())
 	}
 
-	if err := hypersql.StructuralBlobsInsert(idx.conn, id, b.Type, blobAuthor, blobResource, blobTime); err != nil {
+	if err := hypersql.StructuralBlobsInsert(idx.conn, id, b.Type, blobAuthor, blobResource, blobTime, title); err != nil {
 		return err
 	}
 

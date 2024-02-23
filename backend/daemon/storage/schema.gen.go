@@ -239,6 +239,7 @@ const (
 	StructuralBlobs         sqlitegen.Table  = "structural_blobs"
 	StructuralBlobsAuthor   sqlitegen.Column = "structural_blobs.author"
 	StructuralBlobsID       sqlitegen.Column = "structural_blobs.id"
+	StructuralBlobsMeta     sqlitegen.Column = "structural_blobs.meta"
 	StructuralBlobsResource sqlitegen.Column = "structural_blobs.resource"
 	StructuralBlobsTs       sqlitegen.Column = "structural_blobs.ts"
 	StructuralBlobsType     sqlitegen.Column = "structural_blobs.type"
@@ -249,6 +250,7 @@ const (
 	T_StructuralBlobs         = "structural_blobs"
 	C_StructuralBlobsAuthor   = "structural_blobs.author"
 	C_StructuralBlobsID       = "structural_blobs.id"
+	C_StructuralBlobsMeta     = "structural_blobs.meta"
 	C_StructuralBlobsResource = "structural_blobs.resource"
 	C_StructuralBlobsTs       = "structural_blobs.ts"
 	C_StructuralBlobsType     = "structural_blobs.type"
@@ -388,6 +390,7 @@ var Schema = sqlitegen.Schema{
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		StructuralBlobsAuthor:           {Table: StructuralBlobs, SQLType: "INTEGER"},
 		StructuralBlobsID:               {Table: StructuralBlobs, SQLType: "INTEGER"},
+		StructuralBlobsMeta:             {Table: StructuralBlobs, SQLType: "TEXT"},
 		StructuralBlobsResource:         {Table: StructuralBlobs, SQLType: "INTEGER"},
 		StructuralBlobsTs:               {Table: StructuralBlobs, SQLType: "INTEGER"},
 		StructuralBlobsType:             {Table: StructuralBlobs, SQLType: "TEXT"},

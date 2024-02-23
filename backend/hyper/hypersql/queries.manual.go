@@ -126,17 +126,17 @@ var qCheckEntityHasChanges = dqb.Str(`
 `)
 
 // StructuralBlobsInsert inserts a structural blob.
-func StructuralBlobsInsert(conn *sqlite.Conn, id int64, blobType string, author, resource, ts maybe.Value[int64]) error {
+func StructuralBlobsInsert(conn *sqlite.Conn, id int64, blobType string, author, resource, ts maybe.Value[int64], meta maybe.Value[string]) error {
 	if id == 0 {
 		return fmt.Errorf("must specify blob ID")
 	}
 
-	return sqlitex.Exec(conn, qStructuralBlobsInsert(), nil, id, blobType, author.Any(), resource.Any(), ts.Any())
+	return sqlitex.Exec(conn, qStructuralBlobsInsert(), nil, id, blobType, author.Any(), resource.Any(), ts.Any(), meta.Any())
 }
 
 var qStructuralBlobsInsert = dqb.Str(`
-	INSERT INTO structural_blobs (id, type, author, resource, ts)
-	VALUES (?, ?, ?, ?, ?);
+	INSERT INTO structural_blobs (id, type, author, resource, ts, meta)
+	VALUES (?, ?, ?, ?, ?, ?);
 `)
 
 // ResourcesMaybeSetOwner sets the owner of a resource if it's not set.

@@ -49,11 +49,15 @@ CREATE TABLE structural_blobs (
     author INTEGER REFERENCES public_keys (id),
     -- For blobs that refer to some hypermedia resource
     -- this is the reference to the resource.
-    resource INTEGER REFERENCES resources (id)
+    resource INTEGER REFERENCES resources (id),
+    -- Metadata about the content of the blob.
+    -- The title of the document or group. The bio of the Account.
+    meta TEXT
 ) WITHOUT ROWID;
 
 CREATE INDEX structural_blobs_by_author ON structural_blobs (author, resource) WHERE author IS NOT NULL;
 CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource, author) WHERE resource IS NOT NULL;
+CREATE INDEX structural_blobs_by_ts ON structural_blobs(ts, resource) WHERE ts IS NOT NULL;
 
 -- View of structural blobs with dereferences foreign keys.
 CREATE VIEW structural_blobs_view AS

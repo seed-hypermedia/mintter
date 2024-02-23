@@ -403,11 +403,12 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 
 /*
 var qGetEntityTitles = dqb.Str(`
-	SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
-	FROM structural_blobs
-	JOIN blobs ON blobs.id=structural_blobs.id
-	JOIN public_keys ON structural_blobs.author=public_keys.id
-	LEFT JOIN resources ON structural_blobs.resource=resources.id
-	WHERE blobs.id <= :idx AND resources.id NOT IN (SELECT resource from drafts) ORDER BY blobs.id desc limit :page_token;
+	SELECT sb.meta
+	FROM structural_blobs sb
+	INNER JOIN (
+		SELECT resource, MAX(ts) AS max_ts
+		FROM structural_blobs
+		GROUP BY resource
+	) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts;
 `)
 */

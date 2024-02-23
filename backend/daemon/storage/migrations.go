@@ -342,6 +342,13 @@ var migrations = []migration{
 			PRAGMA integrity_check;
 		`))
 	}},
+	{Version: "2024-02-23.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			ALTER TABLE structural_blobs ADD COLUMN meta TEXT;
+			CREATE INDEX structural_blobs_by_ts ON structural_blobs(ts, resource) WHERE ts IS NOT NULL;
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (
