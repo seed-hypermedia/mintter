@@ -1,10 +1,12 @@
 import {abbreviateCid} from '@mintter/shared'
 import {SizableText, UIAvatar, XStack} from '@mintter/ui'
 import Link from 'next/link'
+import {useRouter} from 'next/router'
 import {cidURL} from './ipfs'
 import {trpc} from './trpc'
 
 export function AccountAvatarLink({account}: {account?: string}) {
+  const router = useRouter()
   const acct = trpc.account.get.useQuery({
     accountId: account,
   })
@@ -23,7 +25,18 @@ export function AccountAvatarLink({account}: {account?: string}) {
       label={profile?.alias || label}
     />
   )
-  return <Link href={`/a/${account}`}>{content}</Link>
+  return (
+    <div
+      onClick={(e) => {
+        // workaround because there is an error if <a> appears inside another <a>
+        e.stopPropagation()
+        e.preventDefault()
+        router.push(`/a/${account}`)
+      }}
+    >
+      {content}
+    </div>
+  )
 }
 
 export function AccountRow({

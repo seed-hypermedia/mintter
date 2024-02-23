@@ -82,8 +82,13 @@ function AccountPublications({
 }) {
   return (
     <ListviewWrapper>
-      {publications?.map((publication) => {
-        return <AccountPublicationItem publication={publication} />
+      {publications?.map((publication, index) => {
+        return (
+          <AccountPublicationItem
+            key={publication?.document?.id || index}
+            publication={publication}
+          />
+        )
       })}
     </ListviewWrapper>
   )
