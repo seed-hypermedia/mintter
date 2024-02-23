@@ -342,7 +342,15 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 		if v, ok := v.Patch["avatar"].(cid.Cid); ok {
 			sb.AddBlobLink("account/avatar", v)
 		}
+		alias, ok := v.Patch["alias"].(string)
+		if ok {
+			sb.Meta = alias
+		}
 	case v.Entity.HasPrefix("hm://d/"):
+		title, ok := v.Patch["title"].(string)
+		if ok {
+			sb.Meta = title
+		}
 		blocks, ok := v.Patch["blocks"].(map[string]any)
 		if ok {
 			for id, blk := range blocks {
@@ -377,7 +385,10 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 
 	case v.Entity.HasPrefix("hm://g/"):
 		authorEntity := IRI("hm://a/" + author.String())
-
+		title, ok := v.Patch["title"].(string)
+		if ok {
+			sb.Meta = title
+		}
 		var currentRole groups.Role
 		if v.Action == ActionCreate {
 			currentRole = groups.Role_OWNER

@@ -34,6 +34,7 @@ type structuralBlob struct {
 	}
 	BlobLinks     []blobLink
 	ResourceLinks []resourceLink
+	Meta          string
 }
 
 func newStructuralBlob(id cid.Cid, blobType string, author core.Principal, ts time.Time, resource IRI, resourceOwner core.Principal, resourceTimestamp time.Time) structuralBlob {
@@ -119,6 +120,22 @@ func (idx *indexingCtx) SaveBlob(id int64, b structuralBlob) error {
 		if err := idx.ensureResourceMetadata(b.Resource.ID, b.Resource.Owner, b.Resource.CreateTime); err != nil {
 			return err
 		}
+	}
+
+	if b.Resource.ID != "" {
+		rid, err := idx.ensureResource(b.Resource.ID)
+		if err != nil {
+			return err
+		}
+		blobResource = maybe.New(rid)
+
+		if err := idx.ensureResourceMetadata(b.Resource.ID, b.Resource.Owner, b.Resource.CreateTime); err != nil {
+			return err
+		}
+	}
+
+	if b.Meta != "" {
+		title = maybe.New(b.Meta)
 	}
 
 	if !b.Time.IsZero() {
