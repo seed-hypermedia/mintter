@@ -18,6 +18,7 @@ import {
   GRPCClient,
   GroupVariant,
   HMBlock,
+  HMBlockNode,
   HMPublication,
   ListPublicationsResponse,
   Publication,
@@ -344,11 +345,10 @@ export function usePublishDraft(
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_PUBLICATION_LIST])
-      invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-      invalidate([queryKeys.PUBLICATION_CITATIONS])
+      invalidate([queryKeys.ENTITY_CITATIONS])
       if (groupVariant) {
         invalidate([queryKeys.GET_GROUP, groupVariant.groupId])
         invalidate([queryKeys.GET_GROUP_CONTENT, groupVariant.groupId])
@@ -815,10 +815,10 @@ function generateBlockId(length: number = 8): string {
   return result
 }
 
-export function useDocTextContent(pub?: Publication) {
+export function useDocTextContent(pub?: HMPublication) {
   return useMemo(() => {
     let res = ''
-    function extractContent(blocks: Array<BlockNode>) {
+    function extractContent(blocks: Array<HMBlockNode>) {
       blocks.forEach((bn) => {
         if (res.length < 300) {
           res += extractBlockText(bn)
@@ -828,7 +828,7 @@ export function useDocTextContent(pub?: Publication) {
       return res
     }
 
-    function extractBlockText({block, children}: BlockNode) {
+    function extractBlockText({block, children}: HMBlockNode) {
       let content = ''
       if (!block) return content
       if (block.text) content += block.text

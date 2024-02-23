@@ -1,8 +1,7 @@
 import {AppErrorPage} from '@mintter/app/components/app-error'
-import {CitationsAccessory} from '@mintter/app/components/citations'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
-import {useDocCitations} from '@mintter/app/models/content-graph'
+import {useEntityCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
@@ -27,12 +26,13 @@ import {
   YStack,
 } from '@mintter/ui'
 import {History, MessageSquare} from '@tamagui/lucide-icons'
-import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useCallback, useEffect} from 'react'
+import {ReactNode, useCallback, useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {AccessoryLayout} from '../components/accessory-sidebar'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
+import {EntityCitationsAccessory} from '../components/citations'
 import {EntityCommentsAccessory} from '../components/comments'
 import {PushToGatewayDialog} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
@@ -190,7 +190,7 @@ export default function PublicationPage() {
     variants: route.variants,
   })
 
-  const {data: citations} = useDocCitations(
+  const {data: citations} = useEntityCitations(
     publication.status == 'success' ? docId : undefined,
   )
 
@@ -229,6 +229,30 @@ export default function PublicationPage() {
   }, [docId, gwHost, route.immediatelyPromptPush])
 
   if (publication.data) {
+    let accessory: ReactNode | null = null
+
+    if (accessoryKey == 'versions') {
+      accessory = (
+        <EntityVersionsAccessory
+          id={unpackDocId(docId)}
+          variantVersion={publication.data?.variantVersion}
+          activeVersion={publication.data?.publication?.version}
+        />
+      )
+    } else if (accessoryKey == 'citations') {
+      accessory = <EntityCitationsAccessory entityId={docId} />
+    } else if (
+      accessoryKey == 'comments' &&
+      id &&
+      publication.data?.publication?.version
+    ) {
+      accessory = (
+        <EntityCommentsAccessory
+          id={id}
+          activeVersion={publication.data?.publication?.version}
+        />
+      )
+    }
     return (
       <ErrorBoundary
         FallbackComponent={AppErrorPage}
@@ -243,98 +267,70 @@ export default function PublicationPage() {
             replace({...route, accessory: {key: 'citations'}})
           }}
         >
-          <Allotment
-            key={`${accessory}`}
-            defaultSizes={accessory ? [65, 35] : [100]}
-          >
-            <Allotment.Pane>
-              <YStack height="100%">
-                <MainWrapper>
-                  <YStack
-                    paddingBottom={'$7'}
-                    width="100%"
-                    maxWidth="90ch"
-                    // paddingHorizontal="10vw"
-                    alignSelf="center"
-                  >
-                    <AppPublicationContentProvider
-                      citations={citations?.links}
-                      onCitationClick={() => {
-                        if (route.accessory?.key === 'citations')
-                          return replace({...route, accessory: null})
-                        replace({...route, accessory: {key: 'citations'}})
-                      }}
-                      onBlockComment={(blockId) => {
-                        replace({...route, accessory: {key: 'comments'}})
-                        const version = publication.data?.publication?.version
-                        if (!id) throw new Error('invalid doc id')
-                        if (!version)
-                          throw new Error(
-                            'no publication version for commenting',
-                          )
-                        createComment(
-                          id.eid,
-                          version,
-                          undefined,
-                          createHmId('d', id.eid, {
-                            version,
-                            blockRef: blockId,
-                          }),
-                        )
-                      }}
-                    >
-                      <PublicationHeading
-                        right={
-                          <XStack
-                            gap="$2"
-                            // opacity={0}
-                            // $group-header-hover={{opacity: 1}}
-                          >
-                            <PinDocumentButton route={route} />
-                            <CopyReferenceButton />
-                          </XStack>
-                        }
+          <AccessoryLayout accessory={accessory} key={accessoryKey}>
+            <MainWrapper>
+              <YStack
+                paddingBottom={'$7'}
+                width="100%"
+                maxWidth="90ch"
+                // paddingHorizontal="10vw"
+                alignSelf="center"
+              >
+                <AppPublicationContentProvider
+                  citations={citations?.links}
+                  onCitationClick={() => {
+                    if (route.accessory?.key === 'citations')
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'citations'}})
+                  }}
+                  onBlockComment={(blockId) => {
+                    replace({...route, accessory: {key: 'comments'}})
+                    const version = publication.data?.publication?.version
+                    if (!id) throw new Error('invalid doc id')
+                    if (!version)
+                      throw new Error('no publication version for commenting')
+                    createComment(
+                      id.eid,
+                      version,
+                      undefined,
+                      createHmId('d', id.eid, {
+                        version,
+                        blockRef: blockId,
+                      }),
+                    )
+                  }}
+                >
+                  <PublicationHeading
+                    right={
+                      <XStack
+                        gap="$2"
+                        // opacity={0}
+                        // $group-header-hover={{opacity: 1}}
                       >
-                        {publication.data?.publication?.document?.title}
-                      </PublicationHeading>
-                      {publication.data?.publication ? (
-                        <>
-                          <PublicationPageMeta
-                            publication={publication.data?.publication}
-                          />
-                          <PublicationContent
-                            publication={publication.data?.publication}
-                          />
-                        </>
-                      ) : null}
-                    </AppPublicationContentProvider>
-                  </YStack>
-                  {/* {route.versionId && (
+                        <PinDocumentButton route={route} />
+                        <CopyReferenceButton />
+                      </XStack>
+                    }
+                  >
+                    {publication.data?.publication?.document?.title}
+                  </PublicationHeading>
+                  {publication.data?.publication ? (
+                    <>
+                      <PublicationPageMeta
+                        publication={publication.data?.publication}
+                      />
+                      <PublicationContent
+                        publication={publication.data?.publication}
+                      />
+                    </>
+                  ) : null}
+                </AppPublicationContentProvider>
+              </YStack>
+              {/* {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />
                   )} */}
-                </MainWrapper>
-              </YStack>
-            </Allotment.Pane>
-
-            {accessoryKey == 'versions' ? (
-              <EntityVersionsAccessory
-                id={unpackDocId(docId)}
-                variantVersion={publication.data?.variantVersion}
-                activeVersion={publication.data?.publication?.version}
-              />
-            ) : null}
-            {accessoryKey == 'citations' ? (
-              <CitationsAccessory docId={docId} />
-            ) : null}
-            {accessoryKey == 'comments' &&
-            id &&
-            publication.data?.publication?.version ? (
-              <EntityCommentsAccessory
-                id={id}
-                activeVersion={publication.data?.publication?.version}
-              />
-            ) : null}
-          </Allotment>
+            </MainWrapper>
+          </AccessoryLayout>
           <Footer>
             {publication.data?.variantVersion && (
               <PublicationVersionsFooterButton

@@ -1,4 +1,7 @@
-import {CitationLink, useDocCitations} from '@mintter/app/models/content-graph'
+import {
+  CitationLink,
+  useEntityCitations,
+} from '@mintter/app/models/content-graph'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {formattedDateMedium, pluralS} from '@mintter/shared'
 import {PanelCard} from '@mintter/ui'
@@ -51,8 +54,8 @@ function CitationItem({link}: {link: CitationLink}) {
   )
 }
 
-export function CitationsAccessory({docId}: {docId?: string}) {
-  const {data: citations} = useDocCitations(docId)
+export function DocCitationsAccessory({docId}: {docId?: string}) {
+  const {data: citations} = useEntityCitations(docId)
   if (!docId) return null
   const count = citations?.links?.length || 0
 
@@ -79,6 +82,32 @@ export function CitationsAccessory({docId}: {docId?: string}) {
 
   //   return null;
   // }).filter(item => item !== null);
+
+  return (
+    <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
+      {distinctCitations?.map((link, index) => (
+        <CitationItem
+          key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
+          link={link}
+        />
+      ))}
+    </AccessoryContainer>
+  )
+}
+
+export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
+  const {data: citations} = useEntityCitations(entityId)
+  if (!entityId) return null
+  const count = citations?.links?.length || 0
+
+  const citationSet = new Set()
+  const distinctCitations = citations?.links.filter((item) => {
+    if (!citationSet.has(item?.source?.documentId)) {
+      citationSet.add(item?.source?.documentId)
+      return true
+    }
+    return false
+  })
 
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>

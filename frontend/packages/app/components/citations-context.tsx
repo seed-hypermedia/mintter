@@ -1,9 +1,9 @@
-import {useDocCitations} from '@mintter/app/models/content-graph'
+import {useEntityCitations} from '@mintter/app/models/content-graph'
 import {MttLink as Link} from '@mintter/shared'
 import {createContext, ReactNode, useContext, useMemo, useState} from 'react'
 
 export type CitationsContext = {
-  citations: ReturnType<typeof useDocCitations>
+  citations: ReturnType<typeof useEntityCitations>
   onCitationsOpen: (citations: Array<Link>) => void
   highlights: Array<Link>
   onHighlightCitations: (citations: Array<Link>) => void
@@ -26,7 +26,7 @@ export function CitationsProvider({
   documentId: string
   onCitationsOpen: (citations: Array<Link>) => void
 }) {
-  let queryResult = useDocCitations(documentId)
+  let queryResult = useEntityCitations(documentId)
 
   let [highlights, setHighlights] = useState<Array<Link>>([])
 

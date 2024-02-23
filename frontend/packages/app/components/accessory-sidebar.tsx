@@ -33,3 +33,20 @@ export function AccessoryContainer({
     </Allotment.Pane>
   )
 }
+
+export function AccessoryLayout({
+  children,
+  accessory,
+}: {
+  children: React.ReactNode
+  accessory: React.ReactNode | null
+}) {
+  return (
+    <Allotment defaultSizes={accessory ? [65, 35] : [100]}>
+      <Allotment.Pane>
+        <YStack height="100%">{children}</YStack>
+      </Allotment.Pane>
+      {accessory}
+    </Allotment>
+  )
+}

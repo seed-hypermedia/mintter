@@ -47,7 +47,7 @@ export const queryKeys = {
   PUBLICATION_COMMENTS: 'PUBLICATION_COMMENTS', //, docEid: string
 
   // content-graph
-  PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS', //, docId: string
+  ENTITY_CITATIONS: 'ENTITY_CITATIONS', //, entityId: string
 
   // web-links
   GET_URL: 'GET_URL',
@@ -128,8 +128,8 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'Publication Comments'
 
     // content-graph
-    case queryKeys.PUBLICATION_CITATIONS:
-      return `Citations of Doc ${abbreviateCid(arg1)}`
+    case queryKeys.ENTITY_CITATIONS:
+      return `Citations of ${abbreviateCid(arg1)}`
 
     // web-links
     case queryKeys.GET_URL:

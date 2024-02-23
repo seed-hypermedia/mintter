@@ -5,9 +5,16 @@ import {PublicationListItem} from '@mintter/app/components/publication-list-item
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {Profile, abbreviateCid, pluralizer} from '@mintter/shared'
+import {
+  Profile,
+  abbreviateCid,
+  createHmId,
+  pluralS,
+  pluralizer,
+} from '@mintter/shared'
 import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
+  BlockQuote,
   Button,
   ChevronDown,
   List,
@@ -23,14 +30,18 @@ import {
 import {PageContainer} from '@mintter/ui/src/container'
 import {Pencil} from '@tamagui/lucide-icons'
 import {ReactNode, useMemo} from 'react'
+import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
+import {EntityCitationsAccessory} from '../components/citations'
 import {MenuItem} from '../components/dropdown'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import {FooterButton} from '../components/footer'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
+import {useEntityCitations} from '../models/content-graph'
 import {useAccountPublications} from '../models/documents'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {getAvatarUrl} from '../utils/account-url'
@@ -81,7 +92,11 @@ export default function AccountPage() {
   const route = useNavRoute()
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
+  const accessoryKey = route.accessory?.key
+  const replace = useNavigate('replace')
   const list = useAccountPublications(accountId)
+  const accountEntityId = createHmId('a', accountId)
+  const {data: citations} = useEntityCitations(accountEntityId)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
     function lookupAccount(accountId: string | undefined) {
@@ -107,49 +122,71 @@ export default function AccountPage() {
       })
   }, [list.data, accounts.data])
   const gwUrl = useGatewayUrl()
+  let accessory: ReactNode = null
+  if (accessoryKey === 'citations') {
+    accessory = <EntityCitationsAccessory entityId={accountEntityId} />
+  }
   return (
     <>
-      <MainWrapperNoScroll>
-        <List
-          header={<AccountPageHeader />}
-          items={data || []}
-          renderItem={({item}) => {
-            const {publication, author, editors} = item
-            const docId = publication.document?.id
-            if (!docId) return null
-            return (
-              <PublicationListItem
-                key={docId}
-                publication={publication}
-                hasDraft={undefined}
-                author={author}
-                editors={editors}
-                menuItems={() => [
-                  copyLinkMenuItem(
-                    idToUrl(docId, gwUrl.data, {
-                      version: publication.version,
-                      variants: [{key: 'author', author: accountId}],
-                    }),
-                    'Publication',
-                  ),
-                ]}
-                openRoute={{
-                  key: 'publication',
-                  documentId: docId,
-                  versionId: publication.version,
-                  variants: [
-                    {
-                      key: 'author',
-                      author: accountId,
-                    },
-                  ],
-                }}
-              />
-            )
-          }}
-        />
-      </MainWrapperNoScroll>
-      <Footer />
+      <AccessoryLayout accessory={accessory}>
+        <MainWrapperNoScroll>
+          <List
+            header={<AccountPageHeader />}
+            items={data || []}
+            renderItem={({item}) => {
+              const {publication, author, editors} = item
+              const docId = publication.document?.id
+              if (!docId) return null
+              return (
+                <PublicationListItem
+                  key={docId}
+                  publication={publication}
+                  hasDraft={undefined}
+                  author={author}
+                  editors={editors}
+                  menuItems={() => [
+                    copyLinkMenuItem(
+                      idToUrl(docId, gwUrl.data, {
+                        version: publication.version,
+                        variants: [{key: 'author', author: accountId}],
+                      }),
+                      'Publication',
+                    ),
+                  ]}
+                  openRoute={{
+                    key: 'publication',
+                    documentId: docId,
+                    versionId: publication.version,
+                    variants: [
+                      {
+                        key: 'author',
+                        author: accountId,
+                      },
+                    ],
+                  }}
+                />
+              )
+            }}
+          />
+        </MainWrapperNoScroll>
+      </AccessoryLayout>
+      <Footer>
+        {citations?.links?.length ? (
+          <FooterButton
+            active={accessoryKey === 'citations'}
+            label={`${citations?.links?.length} ${pluralS(
+              citations?.links?.length,
+              'Citation',
+            )}`}
+            icon={BlockQuote}
+            onPress={() => {
+              if (route.accessory?.key === 'citations')
+                return replace({...route, accessory: null})
+              replace({...route, accessory: {key: 'citations'}})
+            }}
+          />
+        ) : null}
+      </Footer>
     </>
   )
 }

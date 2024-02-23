@@ -18,12 +18,6 @@ export type DocumentsRoute = z.infer<typeof documentsRouteSchema>
 export const contactsRouteSchema = z.object({key: z.literal('contacts')})
 export type ContactsRoute = z.infer<typeof contactsRouteSchema>
 
-export const accountRouteSchema = z.object({
-  key: z.literal('account'),
-  accountId: z.string(),
-})
-export type AccountRoute = z.infer<typeof accountRouteSchema>
-
 export const entityVersionsAccessorySchema = z.object({
   key: z.literal('versions'),
 })
@@ -31,12 +25,22 @@ export type EntityVersionsAccessory = z.infer<
   typeof entityVersionsAccessorySchema
 >
 
-export const publicationCitationsAccessorySchema = z.object({
+export const entityCitationsAccessorySchema = z.object({
   key: z.literal('citations'),
 })
 export type PublicationCitationsAccessory = z.infer<
-  typeof publicationCitationsAccessorySchema
+  typeof entityCitationsAccessorySchema
 >
+
+export const accountRouteSchema = z.object({
+  key: z.literal('account'),
+  accountId: z.string(),
+  accessory: z
+    .discriminatedUnion('key', [entityCitationsAccessorySchema])
+    .nullable()
+    .optional(),
+})
+export type AccountRoute = z.infer<typeof accountRouteSchema>
 
 export const publicationCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
@@ -68,7 +72,7 @@ export const publicationRouteSchema = z.object({
   accessory: z
     .discriminatedUnion('key', [
       entityVersionsAccessorySchema,
-      publicationCitationsAccessorySchema,
+      entityCitationsAccessorySchema,
       publicationCommentsAccessorySchema,
     ])
     .nullable()
