@@ -363,6 +363,7 @@ func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEnti
 func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntitiesRequest) (*entities.SearchEntitiesResponse, error) {
 	var titles []string
 	var iris []string
+	const limit = 30
 	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		err := sqlitex.Exec(conn, qGetEntityTitles(), func(stmt *sqlite.Stmt) error {
 			titles = append(titles, stmt.ColumnText(0))
@@ -381,7 +382,10 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 		return ranks[i].Distance < ranks[j].Distance
 	})
 	matchingEntities := []*entities.Entity{}
-	for _, rank := range ranks {
+	for i, rank := range ranks {
+		if i >= limit {
+			break
+		}
 		matchingEntities = append(matchingEntities, &entities.Entity{
 			Id:    iris[rank.OriginalIndex],
 			Title: rank.Target})
