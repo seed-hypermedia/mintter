@@ -42,7 +42,7 @@ export function getGroupInfoFromPos(
     group,
     container,
     depth,
-    level: (maxDepth - 1) / 2,
+    level: Math.ceil((maxDepth - 1) / 2),
     $pos,
   }
 }

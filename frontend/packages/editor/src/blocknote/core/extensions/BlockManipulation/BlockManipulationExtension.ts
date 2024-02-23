@@ -68,6 +68,7 @@ export const BlockManipulationExtension = Extension.create({
               const selection = NodeSelection.create(view.state.doc, nodePos)
               tr = tr.setSelection(selection)
               view.dispatch(tr)
+              view.focus()
               return true
             }
             return false

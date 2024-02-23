@@ -702,16 +702,13 @@ export const BlockContainer = Node.create<{
                 const posAddition =
                   container.type.name === 'blockContainer' ? -1 : 0
 
-                if (newLevel !== child.attrs.listLevel)
-                  state.tr.setNodeMarkup(
+                if (newLevel !== child.attrs.listLevel) {
+                  state.tr.setNodeAttribute(
                     groupPos.start() + pos + posAddition,
-                    null,
-                    {
-                      ...child.attrs,
-                      listType: listType,
-                      listLevel: newLevel,
-                    },
+                    'listLevel',
+                    newLevel,
                   )
+                }
               }
             })
             return true
@@ -1328,6 +1325,8 @@ export const BlockContainer = Node.create<{
               state.selection.from,
               state,
             )
+
+            if (group.attrs.listType === 'div') return false
 
             if (container) {
               setTimeout(() => {
