@@ -286,7 +286,7 @@ export default function CommitDraftButton() {
                   )
                 })}
               </YStack>
-              {publishableGroups?.length ? (
+              {authorGroups.data?.items.length ? (
                 <YStack padding="$2" alignSelf="stretch">
                   <Button
                     onPress={() => {
