@@ -12,8 +12,11 @@ import (
 	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
+	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/lithammer/fuzzysearch/fuzzy"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -358,57 +361,41 @@ func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEnti
 
 // SearchEntities implements the Fuzzy search of entities.
 func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntitiesRequest) (*entities.SearchEntitiesResponse, error) {
-	/*
-		var events []*entities.Entity
-		if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-
-			err := sqlitex.Exec(conn, qGetEntityTitles, func(stmt *sqlite.Stmt) error {
-				lastBlobID = stmt.ColumnInt64(0)
-				eventType := stmt.ColumnText(1)
-				author := stmt.ColumnBytes(2)
-				resource := stmt.ColumnText(3)
-				eventTime := stmt.ColumnInt64(4) * 1000 //Its in microseconds and we need nanos
-				observeTime := stmt.ColumnInt64(5)
-				mhash := stmt.ColumnBytes(6)
-				codec := stmt.ColumnInt64(7)
-				accountID := core.Principal(author).String()
-				id := cid.NewCidV1(uint64(codec), mhash)
-				if eventType == "Comment" {
-					resource = "hm://c/" + id.String()
-				}
-				event := activity.Event{
-					Data: &activity.Event_NewBlob{NewBlob: &activity.NewBlobEvent{
-						Cid:      id.String(),
-						BlobType: eventType,
-						Author:   accountID,
-						Resource: resource,
-					}},
-					Account:     accountID,
-					EventTime:   &timestamppb.Timestamp{Seconds: eventTime / 1000000000, Nanos: int32(eventTime % 1000000000)},
-					ObserveTime: &timestamppb.Timestamp{Seconds: observeTime},
-				}
-				events = append(events, &event)
-				return nil
-			}, cursorBlobID, req.PageSize)
-			if err != nil {
-				return err
-			}
+	var titles []string
+	var iris []string
+	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		err := sqlitex.Exec(conn, qGetEntityTitles(), func(stmt *sqlite.Stmt) error {
+			titles = append(titles, stmt.ColumnText(0))
+			iris = append(iris, stmt.ColumnText(1))
 			return nil
-		}); err != nil {
-			return nil, err
+		})
+		if err != nil {
+			return err
 		}
-	*/
-	return nil, status.Error(codes.FailedPrecondition, "Hold on Eric, method not ready Yet.")
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	ranks := fuzzy.RankFind(in.Query, titles)
+	sort.Slice(ranks, func(i, j int) bool {
+		return ranks[i].Distance < ranks[j].Distance
+	})
+	matchingEntities := []*entities.Entity{}
+	for _, rank := range ranks {
+		matchingEntities = append(matchingEntities, &entities.Entity{
+			Id:    iris[rank.OriginalIndex],
+			Title: rank.Target})
+	}
+	return &entities.SearchEntitiesResponse{Entities: matchingEntities}, nil
 }
 
-/*
 var qGetEntityTitles = dqb.Str(`
-	SELECT sb.meta
+	SELECT sb.meta, resources.iri
 	FROM structural_blobs sb
-	INNER JOIN (
+	JOIN resources ON resources.id = sb.resource
+	JOIN (
 		SELECT resource, MAX(ts) AS max_ts
 		FROM structural_blobs
 		GROUP BY resource
 	) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts;
 `)
-*/

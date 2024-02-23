@@ -157,6 +157,7 @@ require (
 	github.com/lightningnetwork/lnd/ticker v1.1.0 // indirect
 	github.com/lightningnetwork/lnd/tlv v1.0.3 // indirect
 	github.com/lightningnetwork/lnd/tor v1.1.0 // indirect
+	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
