@@ -380,7 +380,7 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 	}); err != nil {
 		return nil, err
 	}
-	ranks := fuzzy.RankFindFold(in.Query, titles)
+	ranks := fuzzy.RankFindNormalizedFold(in.Query, titles)
 	sort.Slice(ranks, func(i, j int) bool {
 		return ranks[i].Distance < ranks[j].Distance
 	})
