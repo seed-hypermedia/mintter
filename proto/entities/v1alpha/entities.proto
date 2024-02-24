@@ -124,6 +124,9 @@ message Entity {
   // Title in the case of groups and documents 
   // Empty in the case of comments.
   string title = 2;
+
+  // The owner of the entity
+  string owner = 3;
 }
 
 // Request to 
