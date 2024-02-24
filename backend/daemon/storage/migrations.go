@@ -344,7 +344,20 @@ var migrations = []migration{
 	}},
 	{Version: "2024-02-23.01", Run: func(_ *Dir, conn *sqlite.Conn) error {
 		return sqlitex.ExecScript(conn, sqlfmt(`
-			ALTER TABLE structural_blobs ADD COLUMN meta TEXT;
+			DROP TABLE IF EXISTS structural_blobs;
+			DROP INDEX IF EXISTS structural_blobs_by_author;
+			DROP INDEX IF EXISTS structural_blobs_by_resource;
+			DROP INDEX IF EXISTS structural_blobs_by_ts;
+			CREATE TABLE structural_blobs (
+				id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+				type TEXT NOT NULL,
+				ts INTEGER,
+				author INTEGER REFERENCES public_keys (id),
+				resource INTEGER REFERENCES resources (id),
+				meta TEXT
+			) WITHOUT ROWID;
+			CREATE INDEX structural_blobs_by_author ON structural_blobs (author, resource) WHERE author IS NOT NULL;
+			CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource, author) WHERE resource IS NOT NULL;
 			CREATE INDEX structural_blobs_by_ts ON structural_blobs(ts, resource) WHERE ts IS NOT NULL;
 			DELETE FROM kv WHERE key = 'last_reindex_time';
 		`))
