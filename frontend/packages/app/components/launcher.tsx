@@ -1,15 +1,11 @@
 import {useAppContext} from '@mintter/app/app-context'
-import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
-  Account,
-  Document,
   GRPCClient,
-  Group,
+  HYPERMEDIA_ENTITY_TYPES,
   HYPERMEDIA_SCHEME,
-  Publication,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -27,10 +23,10 @@ import {
 import {useEffect, useState} from 'react'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
-import {useConnectPeer, useContactsList} from '../models/contacts'
+import {useConnectPeer} from '../models/contacts'
 import {useGatewayHost} from '../models/gateway-settings'
-import {useGroups} from '../models/groups'
 import {useRecents} from '../models/recents'
+import {useSearch} from '../models/search'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
 import {
@@ -118,18 +114,7 @@ type SwitcherItem = {
   subtitle?: string
   onSelect: () => void
 }
-function LauncherContent({
-  input,
-  onClose,
-}: {
-  input: {
-    groups: Group[]
-    accounts: Account[]
-    publications: Publication[]
-    drafts: Document[]
-  }
-  onClose: () => void
-}) {
+function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const grpcClient = useGRPCClient()
@@ -138,7 +123,7 @@ function LauncherContent({
   const gwHost = useGatewayHost()
   const handleUrl = useURLHandler()
   const recents = useRecents()
-  // const searchResults = useSearch(search, {})
+  const searchResults = useSearch(search, {})
   let queryItem: null | SwitcherItem = null
   if (
     isHypermediaScheme(search) ||
@@ -182,81 +167,29 @@ function LauncherContent({
       },
     }
   }
-  const allItems: SwitcherItem[] = [
-    ...input.groups.map((group) => {
-      return {
-        key: group.id,
-        title: group.title,
-        subtitle: 'Group',
-        onSelect: () => {
-          onClose()
-          navigate({
-            key: 'group',
-            groupId: group.id,
-          })
-        },
-      }
-    }),
-    ...input.accounts.map((account) => {
-      return {
-        key: account.id,
-        title: account.profile?.alias || account.id,
-        subtitle: 'Account',
-        onSelect: () => {
-          onClose()
-          navigate({
-            key: 'account',
-            accountId: account.id,
-          })
-        },
-      }
-    }),
-    ...input.publications
-      .map((publication) => {
-        const docId = publication.document?.id
-        const ownerId = publication.document?.author
-        const title = publication.document?.title || 'Untitled Publication'
 
-        if (!docId || !title || !ownerId) return null
-
+  const searchItems: SwitcherItem[] =
+    searchResults.data
+      ?.map((item) => {
+        const id = unpackHmId(item.id)
+        if (!id) return null
         return {
-          key: docId,
-          title,
-          subtitle: 'Publication',
+          title: item.title || item.id,
           onSelect: () => {
-            onClose()
-            navigate({
-              key: 'publication',
-              documentId: docId,
-              variants: [{key: 'author', author: ownerId}],
-              // versionId not included here, we will navigate to the latest version in the global context
-            })
+            const appRoute = appRouteOfId(id)
+            if (!appRoute) {
+              toast.error('Failed to open recent: ' + item.id)
+              return
+            }
+            navigate(appRoute)
+            item.id
           },
+          subtitle: HYPERMEDIA_ENTITY_TYPES[id.type],
         }
       })
-      .filter((item) => item !== null),
-    ...input.drafts.map((draft) => {
-      return {
-        key: `draft-${draft.id}`,
-        title: draft.title || 'Untitled Document',
-        subtitle: 'Draft',
-        onSelect: () => {
-          onClose()
-          navigate({
-            key: 'draft',
-            draftId: draft.id,
-            variant: null,
-          })
-        },
-      }
-    }),
-  ]
-  const filterItems = allItems.filter((item) => {
-    return item.title.match(search.toLowerCase())
-  })
-
-  const recentItems = recents.data?.map(
-    ({url, title, subtitle, type, variants}) => {
+      .filter(Boolean) || []
+  const recentItems =
+    recents.data?.map(({url, title, subtitle, type, variants}) => {
       return {
         key: url,
         title,
@@ -276,10 +209,9 @@ function LauncherContent({
           navigate(appRoute)
         },
       }
-    },
-  )
+    }) || []
   const isDisplayingRecents = !search.length
-  const activeItems = isDisplayingRecents ? recentItems : filterItems
+  const activeItems = isDisplayingRecents ? recentItems : searchItems
   const [focusedIndex, setFocusedIndex] = useState(0)
   useEffect(() => {
     const keyPressHandler = (e: KeyboardEvent) => {
@@ -361,7 +293,7 @@ function LauncherContent({
                 }}
               >
                 <XStack f={1} justifyContent="space-between">
-                  <SizableText>{item.title}</SizableText>
+                  <SizableText numberOfLines={1}>{item.title}</SizableText>
 
                   <SizableText color="$color10">{item.subtitle}</SizableText>
                 </XStack>
@@ -376,24 +308,8 @@ function LauncherContent({
 
 export function Launcher() {
   const launcher = useAppDialog(LauncherContent)
-  const {data: drafts} = useDraftList()
-  const {data: publications} = usePublicationList({
-    enabled: true,
-    trustedOnly: false,
-  })
-  const {data: groups} = useGroups({
-    enabled: true,
-  })
-  const {data: contacts} = useContactsList()
-  const allData = {
-    contacts: contacts?.accounts || [],
-    groups: groups?.groups || [],
-    publications: publications?.publications || [],
-    drafts: drafts?.documents || [],
-    accounts: contacts?.accounts || [],
-  }
   useListenAppEvent('openLauncher', () => {
-    launcher.open(allData)
+    launcher.open({})
   })
   return launcher.content
 }
