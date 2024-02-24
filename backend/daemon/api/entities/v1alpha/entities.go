@@ -363,11 +363,14 @@ func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEnti
 func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntitiesRequest) (*entities.SearchEntitiesResponse, error) {
 	var titles []string
 	var iris []string
+	var owners []string
 	const limit = 30
 	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		err := sqlitex.Exec(conn, qGetEntityTitles(), func(stmt *sqlite.Stmt) error {
 			titles = append(titles, stmt.ColumnText(0))
 			iris = append(iris, stmt.ColumnText(1))
+			ownerID := core.Principal(stmt.ColumnBytes(2)).String()
+			owners = append(owners, ownerID)
 			return nil
 		})
 		if err != nil {
@@ -377,7 +380,7 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 	}); err != nil {
 		return nil, err
 	}
-	ranks := fuzzy.RankFind(in.Query, titles)
+	ranks := fuzzy.RankFindFold(in.Query, titles)
 	sort.Slice(ranks, func(i, j int) bool {
 		return ranks[i].Distance < ranks[j].Distance
 	})
@@ -388,18 +391,21 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 		}
 		matchingEntities = append(matchingEntities, &entities.Entity{
 			Id:    iris[rank.OriginalIndex],
-			Title: rank.Target})
+			Title: rank.Target,
+			Owner: owners[rank.OriginalIndex]})
 	}
 	return &entities.SearchEntitiesResponse{Entities: matchingEntities}, nil
 }
 
 var qGetEntityTitles = dqb.Str(`
-	SELECT sb.meta, resources.iri
+	SELECT sb.meta, resources.iri, public_keys.principal
 	FROM structural_blobs sb
+	JOIN public_keys ON public_keys.id = sb.author
 	JOIN resources ON resources.id = sb.resource
 	JOIN (
 		SELECT resource, MAX(ts) AS max_ts
 		FROM structural_blobs
+		WHERE type='Change'
 		GROUP BY resource
 	) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts;
 `)
