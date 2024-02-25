@@ -22,6 +22,8 @@ type processCollector struct {
 	vsize, maxVsize *prometheus.Desc
 	rss             *prometheus.Desc
 	startTime       *prometheus.Desc
+	diskReads       *prometheus.Desc
+	diskWrites      *prometheus.Desc
 	proc            *process.Process
 }
 
@@ -60,6 +62,7 @@ func NewCollector(opts Opts) prometheus.Collector {
 
 	c := &processCollector{
 		reportErrors: opts.ReportErrors,
+		// Metrics from the Prometheus' built-in process collector (which doesn't support macOS).
 		cpuTotal: prometheus.NewDesc(
 			ns+"process_cpu_seconds_total",
 			"Total user and system CPU time spent in seconds.",
@@ -93,6 +96,18 @@ func NewCollector(opts Opts) prometheus.Collector {
 		startTime: prometheus.NewDesc(
 			ns+"process_start_time_seconds",
 			"Start time of the process since unix epoch in seconds.",
+			nil, nil,
+		),
+
+		// Custom disk i/o metrics.
+		diskReads: prometheus.NewDesc(
+			ns+"process_disk_read_bytes_total",
+			"Total number of bytes read from disk by the process.",
+			nil, nil,
+		),
+		diskWrites: prometheus.NewDesc(
+			ns+"process_disk_written_bytes_total",
+			"Total number of bytes written to disk by the process.",
 			nil, nil,
 		),
 	}
@@ -139,6 +154,8 @@ func (c *processCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.maxVsize
 	ch <- c.rss
 	ch <- c.startTime
+	ch <- c.diskReads
+	ch <- c.diskWrites
 }
 
 // Collect returns the current state of all metrics of the collector.
@@ -195,4 +212,6 @@ func (c *processCollector) processCollect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.rss, prometheus.GaugeValue, float64(mem.RSS))
 		ch <- prometheus.MustNewConstMetric(c.vsize, prometheus.GaugeValue, float64(mem.VMS))
 	}
+
+	c.collectDiskIO(ch)
 }
