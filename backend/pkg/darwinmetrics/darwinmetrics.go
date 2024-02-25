@@ -1,3 +1,6 @@
+//go:build darwin
+// +build darwin
+
 // Package darwinmetrics provides a Prometheus collector for Darwin-specific metrics,
 // because the built-in Prometheus process collector only supports Linux and Windows.
 package darwinmetrics
