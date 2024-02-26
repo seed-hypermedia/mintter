@@ -39,6 +39,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import {Extension, findParentNode} from '@tiptap/core'
+import {NodeSelection} from '@tiptap/pm/state'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {useEffect, useMemo, useRef} from 'react'
@@ -667,6 +668,28 @@ export function useDraftEditor({
       )
       send({type: 'CHANGE'})
     },
+    onTextCursorPositionChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
+      const {view} = editor._tiptapEditor
+      const {selection} = view.state
+      if (
+        selection.from !== selection.to &&
+        !(selection instanceof NodeSelection)
+      )
+        return
+      const domAtPos = view.domAtPos(selection.from)
+      try {
+        // @ts-expect-error
+        const rect: DOMRect = domAtPos.node.getBoundingClientRect()
+        // Check if the cursor is off screen
+        if ((rect && rect.top < 0) || rect.bottom > window.innerHeight) {
+          // Scroll the cursor into view
+          // @ts-expect-error
+          domAtPos.node.scrollIntoView({block: 'center'})
+        }
+      } catch {}
+      return
+    },
+
     linkExtensionOptions: {
       openOnClick: false,
       queryClient,
