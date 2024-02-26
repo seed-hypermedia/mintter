@@ -38,18 +38,18 @@ export function LinkMenuItem(props: LinkMenuItemProps) {
     // Updates whether the item is selected with the keyboard (triggered on selectedIndex prop change).
     updateSelection()
 
-    if (
-      isSelected() &&
-      itemRef.current &&
-      itemRef.current.getBoundingClientRect().left > MIN_LEFT_MARGIN //TODO: Kinda hacky, fix
-      // This check is needed because initially the menu is initialized somewhere above outside the screen (with left = 1)
-      // scrollIntoView() is called before the menu is set in the right place, and without the check would scroll to the top of the page every time
-    ) {
-      itemRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      })
-    }
+    // if (
+    //   isSelected() &&
+    //   itemRef.current &&
+    //   itemRef.current.getBoundingClientRect().left > MIN_LEFT_MARGIN //TODO: Kinda hacky, fix
+    //   // This check is needed because initially the menu is initialized somewhere above outside the screen (with left = 1)
+    //   // scrollIntoView() is called before the menu is set in the right place, and without the check would scroll to the top of the page every time
+    // ) {
+    //   itemRef.current.scrollIntoView({
+    //     behavior: 'smooth',
+    //     block: 'nearest',
+    //   })
+    // }
   })
 
   return (
