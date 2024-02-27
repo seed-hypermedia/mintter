@@ -2,7 +2,6 @@ import {BlockNoteEditor, BlockSchema} from '@/blocknote/core'
 import {useCallback, useState} from 'react'
 import {RiLink} from 'react-icons/ri'
 import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
-import {formatKeyboardShortcut} from '../../../utils'
 import LinkToolbarButton from '../LinkToolbarButton'
 
 export const CreateLinkButton = <BSchema extends BlockSchema>(props: {
@@ -14,6 +13,7 @@ export const CreateLinkButton = <BSchema extends BlockSchema>(props: {
   const [text, setText] = useState<string>(props.editor.getSelectedText() || '')
 
   useEditorSelectionChange(props.editor, () => {
+    console.log('== selection changed!')
     setText(props.editor.getSelectedText() || '')
     setUrl(props.editor.getSelectedLinkUrl() || '')
   })

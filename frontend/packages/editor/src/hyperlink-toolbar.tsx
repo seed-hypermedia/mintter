@@ -1,5 +1,4 @@
-import {createStyles} from '@mantine/core'
-import {createHmDocLink} from '@mintter/shared'
+import {createHmDocLink, unpackHmId} from '@mintter/shared'
 import {
   Button,
   Check,
@@ -9,35 +8,22 @@ import {
   Label,
   LinkIcon,
   Separator,
+  SizeTokens,
   TextCursorInput,
   Tooltip,
   Unlink,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {HTMLAttributes, forwardRef, useState} from 'react'
+import {HyperlinkToolbarProps} from './blocknote'
 
-export type EditHyperlinkMenuProps = {
-  url: string
-  text: string
-  update: (url: string, text: string, latest: boolean) => void
-  openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
-}
-
-/**
- * Menu which opens when editing an existing hyperlink or creating a new one.
- * Provides input fields for setting the hyperlink URL and title.
- */
-export const EditHyperlinkMenu = forwardRef<
-  HTMLDivElement,
-  EditHyperlinkMenuProps & HTMLAttributes<HTMLDivElement>
->(({url, text, update, className, ...props}, ref) => {
-  const {classes} = createStyles({root: {}})(undefined, {
-    name: 'EditHyperlinkMenu',
-  })
-
-  const [currentUrl, setCurrentUrl] = useState(url)
-  const [currentText, setCurrentText] = useState(text)
+export function HypermediaLinkToolbar(
+  props: HyperlinkToolbarProps & {
+    openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
+  },
+) {
+  const unpackedRef = unpackHmId(props.url)
+  const formSize: SizeTokens = '$2'
 
   return (
     <YStack
@@ -50,6 +36,8 @@ export const EditHyperlinkMenu = forwardRef<
       zIndex="$zIndex.5"
       bottom="0"
       position="absolute"
+      onMouseEnter={props.stopHideTimer}
+      onMouseLeave={props.startHideTimer}
     >
       <XStack ai="center" gap="$2" p="$1">
         <TextCursorInput size={12} />
@@ -87,7 +75,7 @@ export const EditHyperlinkMenu = forwardRef<
 
                   console.log('== NEW URL', newValue)
 
-                  props.editHyperlink(newUrl, props.text, true)
+                  props.editHyperlink(newUrl, props.text)
                 }}
               >
                 <Checkbox.Indicator>
@@ -119,4 +107,4 @@ export const EditHyperlinkMenu = forwardRef<
       </YStack>
     </YStack>
   )
-})
+}

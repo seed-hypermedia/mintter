@@ -34,6 +34,9 @@ export const HyperlinkToolbarPositioner = <
     return props.editor.hyperlinkToolbar.on(
       'update',
       (hyperlinkToolbarState) => {
+        console.log('=== URL', hyperlinkToolbarState.url)
+        // TODO: here is where I can prevent the popover to close!!
+
         setShow(hyperlinkToolbarState.show)
         setUrl(hyperlinkToolbarState.url)
         setText(hyperlinkToolbarState.text)
