@@ -61,7 +61,7 @@
                 "overrides": []
             },
             "gridPos": {
-                "h": 5,
+                "h": 4,
                 "w": 24,
                 "x": 0,
                 "y": 1
@@ -99,7 +99,7 @@
                     "hide": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{instance}} - {{job}}",
+                    "legendFormat": "{{instance}} – {{job}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -165,7 +165,7 @@
                             }
                         ]
                     },
-                    "unit": "none",
+                    "unit": "cores/s",
                     "unitScale": true
                 },
                 "overrides": []
@@ -174,7 +174,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 6
+                "y": 5
             },
             "id": 1,
             "options": {
@@ -208,7 +208,7 @@
                     "fullMetaSearch": false,
                     "includeNullMetadata": false,
                     "instant": false,
-                    "legendFormat": "{{instance}} - CPU Cores Busy",
+                    "legendFormat": "{{instance}} – {{job}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -283,7 +283,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 6
+                "y": 5
             },
             "id": 3,
             "options": {
@@ -317,7 +317,7 @@
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{instance}} - Resident Memory",
+                    "legendFormat": "{{instance}} – {{job}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -379,7 +379,7 @@
                             }
                         ]
                     },
-                    "unit": "bytes",
+                    "unit": "binBps",
                     "unitScale": true
                 },
                 "overrides": []
@@ -388,7 +388,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 16,
-                "y": 6
+                "y": 5
             },
             "id": 8,
             "options": {
@@ -419,7 +419,7 @@
                     "editorMode": "code",
                     "expr": "rate(process_disk_read_bytes_total{job=\"mintterd\", instance=~\"$instance\"}[$__rate_interval])",
                     "instant": false,
-                    "legendFormat": "{{instance}} - Reads",
+                    "legendFormat": "{{instance}} – Reads",
                     "range": true,
                     "refId": "A"
                 },
@@ -432,12 +432,12 @@
                     "expr": "rate(process_disk_written_bytes_total{job=\"mintterd\", instance=~\"$instance\"}[$__rate_interval])",
                     "hide": false,
                     "instant": false,
-                    "legendFormat": "{{instance}} - Writes",
+                    "legendFormat": "{{instance}} – Writes",
                     "range": true,
                     "refId": "B"
                 }
             ],
-            "title": "Disk I/O Rate",
+            "title": "Disk I/O",
             "type": "timeseries"
         },
         {
@@ -446,11 +446,11 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 14
+                "y": 13
             },
             "id": 7,
             "panels": [],
-            "title": "IPFS / Libp2p",
+            "title": "Networking",
             "type": "row"
         },
         {
@@ -517,7 +517,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 15
+                "y": 14
             },
             "id": 2,
             "options": {
@@ -550,7 +550,7 @@
                     "expr": "libp2p_open_connections{job=\"mintterd\", instance=~\"$instance\"}",
                     "format": "time_series",
                     "instant": false,
-                    "legendFormat": "{{instance}} - Open Connections",
+                    "legendFormat": "{{instance}} – Open Connections",
                     "range": true,
                     "refId": "A"
                 }
@@ -611,7 +611,7 @@
                             }
                         ]
                     },
-                    "unit": "none",
+                    "unit": "reqps",
                     "unitScale": true
                 },
                 "overrides": []
@@ -620,7 +620,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 15
+                "y": 14
             },
             "id": 5,
             "options": {
@@ -655,7 +655,7 @@
                     "fullMetaSearch": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{instance}} - {{method}}",
+                    "legendFormat": "{{instance}} – {{method}}",
                     "range": true,
                     "refId": "A",
                     "useBackend": false
@@ -663,6 +663,159 @@
             ],
             "title": "IPFS Blockstore Calls",
             "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "reqpm",
+                    "unitScale": true
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "instance"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 201
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "method"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 103
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 121
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "handler"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 462
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 13,
+                "x": 0,
+                "y": 22
+            },
+            "id": 10,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                    {
+                        "desc": true,
+                        "displayName": "Value"
+                    }
+                ]
+            },
+            "pluginVersion": "10.4.0-158935",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "topk(10, rate(mintter_http_request_duration_seconds_count{job=\"mintterd\", instance=~\"$instance\"}[5m])*60)",
+                    "format": "table",
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "A"
+                }
+            ],
+            "title": "Top 10 HTTP Requests (Over 5m)",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "job": true
+                        },
+                        "includeByName": {},
+                        "indexByName": {
+                            "Time": 0,
+                            "Value": 5,
+                            "handler": 2,
+                            "instance": 1,
+                            "job": 3,
+                            "method": 4
+                        },
+                        "renameByName": {
+                            "handler": ""
+                        }
+                    }
+                }
+            ],
+            "type": "table"
         }
     ],
     "refresh": "10s",
@@ -691,7 +844,7 @@
             },
             {
                 "current": {
-                    "selected": true,
+                    "selected": false,
                     "text": [
                         "All"
                     ],
@@ -730,6 +883,6 @@
     "timezone": "browser",
     "title": "Mintter Desktop Overview",
     "uid": "dddh3zotqe22od",
-    "version": 7,
+    "version": 11,
     "weekStart": ""
 }
