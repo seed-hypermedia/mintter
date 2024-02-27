@@ -693,6 +693,10 @@ func (srv *Server) ListContent(ctx context.Context, in *groups.ListContentReques
 		e = v
 	}
 
+	if e == nil {
+		return nil, status.Errorf(codes.NotFound, "group '%s' with version '%s' is not found", in.Id, in.Version)
+	}
+
 	paths := e.State().Keys("content")
 
 	out := &groups.ListContentResponse{
