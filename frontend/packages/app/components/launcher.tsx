@@ -133,7 +133,7 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
   ) {
     queryItem = {
       key: 'mtt-link',
-      title: search,
+      title: `Query ${search}`,
       onSelect: async () => {
         const searched = await resolveHmIdToAppRoute(search, grpcClient)
         if (
@@ -211,7 +211,9 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
       }
     }) || []
   const isDisplayingRecents = !search.length
-  const activeItems = isDisplayingRecents ? recentItems : searchItems
+  const activeItems = isDisplayingRecents
+    ? recentItems
+    : [...(queryItem ? [queryItem] : []), ...searchItems]
   const [focusedIndex, setFocusedIndex] = useState(0)
   useEffect(() => {
     const keyPressHandler = (e: KeyboardEvent) => {
