@@ -16,6 +16,7 @@ import {
   Input,
   ScrollView,
   SizableText,
+  Spinner,
   XStack,
   YStack,
   toast,
@@ -240,6 +241,52 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
       window.removeEventListener('keydown', keyPressHandler)
     }
   }, [])
+  let content = (
+    <ScrollView maxHeight={600}>
+      <YStack gap="$2" marginVertical="$2">
+        {isDisplayingRecents ? (
+          <SizableText marginTop="$2" marginHorizontal="$4" color="$color10">
+            Recent Resources
+          </SizableText>
+        ) : null}
+        {activeItems?.map((item, itemIndex) => {
+          return (
+            <Button
+              key={item.key}
+              onPress={item.onSelect}
+              backgroundColor={
+                focusedIndex === itemIndex ? '$blue4' : undefined
+              }
+              hoverStyle={{
+                backgroundColor:
+                  focusedIndex === itemIndex ? '$blue4' : undefined,
+              }}
+              onFocus={() => {
+                setFocusedIndex(itemIndex)
+              }}
+              onMouseEnter={() => {
+                setFocusedIndex(itemIndex)
+              }}
+            >
+              <XStack f={1} justifyContent="space-between">
+                <SizableText numberOfLines={1}>{item.title}</SizableText>
+
+                <SizableText color="$color10">{item.subtitle}</SizableText>
+              </XStack>
+            </Button>
+          )
+        })}
+      </YStack>
+    </ScrollView>
+  )
+
+  if (actionPromise) {
+    content = (
+      <YStack marginVertical="$4">
+        <Spinner />
+      </YStack>
+    )
+  }
   return (
     <YStack>
       <Input
@@ -268,42 +315,7 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
           }
         }}
       />
-      <ScrollView maxHeight={600}>
-        <YStack gap="$2" marginVertical="$2">
-          {isDisplayingRecents ? (
-            <SizableText marginTop="$2" marginHorizontal="$4" color="$color10">
-              Recent Resources
-            </SizableText>
-          ) : null}
-          {activeItems?.map((item, itemIndex) => {
-            return (
-              <Button
-                key={item.key}
-                onPress={item.onSelect}
-                backgroundColor={
-                  focusedIndex === itemIndex ? '$blue4' : undefined
-                }
-                hoverStyle={{
-                  backgroundColor:
-                    focusedIndex === itemIndex ? '$blue4' : undefined,
-                }}
-                onFocus={() => {
-                  setFocusedIndex(itemIndex)
-                }}
-                onMouseEnter={() => {
-                  setFocusedIndex(itemIndex)
-                }}
-              >
-                <XStack f={1} justifyContent="space-between">
-                  <SizableText numberOfLines={1}>{item.title}</SizableText>
-
-                  <SizableText color="$color10">{item.subtitle}</SizableText>
-                </XStack>
-              </Button>
-            )
-          })}
-        </YStack>
-      </ScrollView>
+      {content}
     </YStack>
   )
 }
