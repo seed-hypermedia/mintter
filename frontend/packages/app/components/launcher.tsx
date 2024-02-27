@@ -93,12 +93,14 @@ function useURLHandler() {
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
+      console.log('web result', result)
       const blockRef = extractBlockRefOfUrl(httpSearch)
       const fullHmId = hmIdWithVersion(
-        result?.hmUrl || result?.hmId,
+        result?.hmId,
         result?.hmVersion,
         blockRef,
       )
+      console.log('fullHmId', fullHmId)
       if (!fullHmId) throw new Error('Failed to fetch web link')
       const queried = await resolveHmUrl(fullHmId)
       if (queried?.navRoute) {
@@ -216,6 +218,9 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
     ? recentItems
     : [...(queryItem ? [queryItem] : []), ...searchItems]
   const [focusedIndex, setFocusedIndex] = useState(0)
+  useEffect(() => {
+    if (focusedIndex >= activeItems.length) setFocusedIndex(0)
+  }, [focusedIndex, activeItems])
   useEffect(() => {
     const keyPressHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
