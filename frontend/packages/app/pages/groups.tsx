@@ -1,5 +1,5 @@
 import Footer from '@mintter/app/components/footer'
-import {Group, Role, idToUrl} from '@mintter/shared'
+import {Group, Role, unpackHmId} from '@mintter/shared'
 import {
   ButtonText,
   Container,
@@ -13,6 +13,7 @@ import {
 import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {
   ListItem,
   TimeAccessory,
@@ -118,7 +119,7 @@ function SiteUrlButton({group}: {group: Group}) {
   )
 }
 
-function GroupListItem({group}: {group: Group}) {
+function GroupListItem({group, onCopy}: {group: Group; onCopy: () => void}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)
@@ -152,7 +153,7 @@ function GroupListItem({group}: {group: Group}) {
       }
       onPress={goToItem}
       menuItems={[
-        copyLinkMenuItem(idToUrl(group.id, gwUrl.data), 'Group'),
+        copyLinkMenuItem(onCopy, 'Group'),
         {
           label: 'Open in new Window',
           key: 'spawn',
@@ -175,6 +176,7 @@ function GroupListItem({group}: {group: Group}) {
 export default function GroupsPage() {
   const groupQuery = useGroups()
   const groups = groupQuery.data?.groups || []
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   let content = groupQuery.isLoading ? (
     <Container>
       <Spinner />
@@ -182,7 +184,16 @@ export default function GroupsPage() {
   ) : groups.length > 0 ? (
     <List
       items={groups}
-      renderItem={({item}) => <GroupListItem group={item} />}
+      renderItem={({item}) => (
+        <GroupListItem
+          group={item}
+          onCopy={() => {
+            const groupId = unpackHmId(item.id)
+            if (!groupId) return
+            onCopyId(groupId)
+          }}
+        />
+      )}
     />
   ) : (
     <Container>
@@ -196,6 +207,7 @@ export default function GroupsPage() {
   return (
     <>
       <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
+      {copyDialogContent}
       <Footer />
     </>
   )

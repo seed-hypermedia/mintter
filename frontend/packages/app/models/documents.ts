@@ -1222,7 +1222,13 @@ export function useAccountPublications(accountId: string) {
       const result = await grpcClient.publications.listAccountPublications({
         accountId,
       })
-      return result
+      // @ts-expect-error
+      const publications: HMPublication[] = result.publications
+        .map((pub) => hmPublication(pub))
+        .filter(Boolean)
+      return {
+        publications,
+      }
     },
   })
 }

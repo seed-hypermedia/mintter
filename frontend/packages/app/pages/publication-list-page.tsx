@@ -18,7 +18,6 @@ import {
   Document,
   PublicationVariant,
   createPublicWebHmUrl,
-  idToUrl,
   unpackHmId,
 } from '@mintter/shared'
 import {toast} from '@mintter/ui'
@@ -31,6 +30,7 @@ import {
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {memo} from 'react'
 import {useAppContext} from '../app-context'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
 import {useAppDialog} from '../components/dialog'
@@ -159,7 +159,7 @@ function PublicationsList({}: {}) {
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
 
   const items = publications.data
-  const gwUrl = useGatewayUrl()
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   if (!items) return <Spinner />
   return (
     <>
@@ -171,6 +171,8 @@ function PublicationsList({}: {}) {
           const {publication, author, editors} = item
           if (!publication.document) return null
           const docId = publication.document.id
+          const id = unpackHmId(docId)
+          if (!id) return null
           const variants: PublicationVariant[] = [
             {
               key: 'author',
@@ -203,10 +205,13 @@ function PublicationsList({}: {}) {
               author={author}
               editors={editors}
               menuItems={() => [
-                copyLinkMenuItem(
-                  idToUrl(docId, gwUrl.data, {version: publication.version}),
-                  'Publication',
-                ),
+                copyLinkMenuItem(() => {
+                  onCopyId({
+                    ...id,
+                    variants,
+                    version: publication.version,
+                  })
+                }, 'Publication'),
                 {
                   key: 'delete',
                   label: 'Delete Publication',
@@ -220,6 +225,7 @@ function PublicationsList({}: {}) {
           )
         }}
       />
+      {copyDialogContent}
       {deleteDialog.content}
     </>
   )

@@ -385,12 +385,7 @@ export function useFullGroupContent(
   const contentQueries = useQueries({
     queries: contentEntries.map(([contentKey, contentId]) => {
       const docId = createHmId('d', contentId.eid)
-      return queryPublication(
-        grpcClient,
-        docId,
-        contentId.version || undefined,
-        false,
-      )
+      return queryPublication(grpcClient, docId, contentId.version || undefined)
     }),
   })
   const accounts = useAllAccounts()
@@ -421,9 +416,14 @@ export function useFullGroupContent(
           }
         })
         .sort((a, b) => {
-          const timeA = a.pub?.document?.updateTime?.seconds || 0n
-          const timeB = b.pub?.document?.updateTime?.seconds || 0n
-          return Number(timeB - timeA)
+          const aTime = a.pub?.document?.publishTime
+            ? new Date(a.pub?.document?.publishTime).getTime()
+            : undefined
+          const bTime = b?.pub?.document?.publishTime
+            ? new Date(b?.pub?.document?.publishTime).getTime()
+            : undefined
+          if (!aTime || !bTime) return 0
+          return bTime - aTime
         }),
       content: groupContent.data?.content,
     },

@@ -4,7 +4,7 @@ import {
   useAllAccounts,
 } from '@mintter/app/models/accounts'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Account} from '@mintter/shared'
+import {Account, hmId} from '@mintter/shared'
 import {
   ArrowUpRight,
   Container,
@@ -18,6 +18,7 @@ import {
 } from '@mintter/ui'
 import {AccountTrustButton} from '../components/account-trust'
 import {Avatar} from '../components/avatar'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {OnlineIndicator} from '../components/indicator'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
@@ -41,7 +42,13 @@ function PageHeading(props: HeadingProps) {
   )
 }
 
-function ContactItem({account}: {account: Account; isTrusted: boolean}) {
+function ContactItem({
+  account,
+  onCopy,
+}: {
+  account: Account
+  onCopy: () => void
+}) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const isConnected = useAccountIsConnected(account)
@@ -89,8 +96,7 @@ function ContactItem({account}: {account: Account; isTrusted: boolean}) {
           },
         },
         copyLinkMenuItem(
-          // TODO: use the function to create links on the codebase
-          `${gwUrl.data}/a/${account.id}`,
+          onCopy,
           account.profile?.alias
             ? `${account.profile.alias}'s Profile`
             : `Profile`,
@@ -121,6 +127,7 @@ export default function ContactsPage() {
     (account) => account.isTrusted && account.id !== myAccount.data?.id,
   )
   const untrustedAccounts = allAccounts.filter((account) => !account.isTrusted)
+  const [copyDialogContent, onCopy] = useCopyGatewayReference()
   if (contacts.isLoading) {
     return (
       <MainWrapper>
@@ -159,12 +166,15 @@ export default function ContactsPage() {
               <ContactItem
                 key={item.id}
                 account={item}
-                isTrusted={item.isTrusted}
+                onCopy={() => {
+                  onCopy(hmId('a', item.id))
+                }}
               />
             )
           }}
         />
       </MainWrapperNoScroll>
+      {copyDialogContent}
       <Footer />
     </>
   )

@@ -7,7 +7,6 @@ import {
   Link,
   Tooltip,
   XStack,
-  copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
 import {ComponentProps, ReactElement, useState} from 'react'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
@@ -82,12 +81,11 @@ export function ListItem({
 }
 
 export function copyLinkMenuItem(
-  url: string | undefined | null,
+  onPress: () => void,
   label: string,
 ): MenuItemType | null {
-  if (!url) return null
   return {
-    onPress: () => url && copyUrlToClipboardWithFeedback(url, label),
+    onPress,
     key: 'copy-link',
     label: `Copy Link to ${label}`,
     icon: Link,

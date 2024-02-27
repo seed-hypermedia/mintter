@@ -11,7 +11,6 @@ import {
   PublicationContent,
   Role,
   formattedDate,
-  idToUrl,
   pluralS,
   unpackDocId,
   unpackHmId,
@@ -60,6 +59,7 @@ import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
 import {Avatar} from '../components/avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
 import {EditDocButton} from '../components/edit-doc-button'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
@@ -168,6 +168,7 @@ export default function GroupPage() {
   ].filter(Boolean)
   const openUrl = useOpenUrl()
   const entityId = unpackHmId(groupId)
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   return (
     <>
       <YStack flex={1} justifyContent="space-between" maxHeight={'100%'}>
@@ -434,6 +435,16 @@ export default function GroupPage() {
                           hasDraft={drafts.data?.documents.find(
                             (d) => d.id == id.qid,
                           )}
+                          onCopyUrl={() => {
+                            onCopyId({
+                              ...id,
+                              version: version || null,
+                              variants: [
+                                {key: 'group', groupId, pathName: key},
+                              ],
+                              hostname: group.data?.siteInfo?.baseUrl || null,
+                            })
+                          }}
                           pub={pub}
                           userRole={myMemberRole}
                           editors={editors}
@@ -460,6 +471,7 @@ export default function GroupPage() {
         </Footer>
         {inviteMember.content}
         {editGroupInfo.content}
+        {copyDialogContent}
       </YStack>
     </>
   )
@@ -476,6 +488,7 @@ function GroupContentItem({
   pub,
   editors,
   author,
+  onCopyUrl,
 }: {
   docId: string
   version?: string
@@ -487,6 +500,7 @@ function GroupContentItem({
   pub: Publication | undefined
   editors: Array<Account | string | undefined>
   author: Account | string | undefined
+  onCopyUrl: () => void
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const renameDialog = useAppDialog(RenamePubDialog)
@@ -537,13 +551,7 @@ function GroupContentItem({
         }
         variants={[{key: 'group', groupId, pathName}]}
         menuItems={() => [
-          copyLinkMenuItem(
-            idToUrl(docId, gwUrl.data, {
-              version,
-              variants: [{key: 'group', groupId, pathName}],
-            }),
-            'Group Publication',
-          ),
+          copyLinkMenuItem(onCopyUrl, 'Group Publication'),
           ...(userRole != Role.ROLE_UNSPECIFIED ? memberMenuItems : []),
         ]}
         openRoute={{

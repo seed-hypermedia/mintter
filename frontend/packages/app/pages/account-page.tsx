@@ -11,8 +11,8 @@ import {
   createHmId,
   pluralS,
   pluralizer,
+  unpackDocId,
 } from '@mintter/shared'
-import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
   BlockQuote,
   Button,
@@ -33,6 +33,7 @@ import {ReactNode, useMemo} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
 import {EntityCitationsAccessory} from '../components/citations'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {MenuItem} from '../components/dropdown'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {FooterButton} from '../components/footer'
@@ -43,7 +44,6 @@ import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityCitations} from '../models/content-graph'
 import {useAccountPublications} from '../models/documents'
-import {useGatewayUrl} from '../models/gateway-settings'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -108,10 +108,14 @@ export default function AccountPage() {
     }
     return list.data?.publications
       .sort((a, b) => {
-        return (
-          Number(b?.document?.updateTime?.seconds) -
-          Number(a?.document?.updateTime?.seconds)
-        )
+        const aTime = a?.document?.publishTime
+          ? new Date(a?.document?.publishTime).getTime()
+          : undefined
+        const bTime = b?.document?.publishTime
+          ? new Date(b?.document?.publishTime).getTime()
+          : undefined
+        if (!aTime || !bTime) return 0
+        return bTime - aTime
       })
       .map((pub) => {
         return {
@@ -121,7 +125,7 @@ export default function AccountPage() {
         }
       })
   }, [list.data, accounts.data])
-  const gwUrl = useGatewayUrl()
+  const [copyDialogContent, onCopy] = useCopyGatewayReference()
   let accessory: ReactNode = null
   if (accessoryKey === 'citations') {
     accessory = <EntityCitationsAccessory entityId={accountEntityId} />
@@ -145,13 +149,15 @@ export default function AccountPage() {
                   author={author}
                   editors={editors}
                   menuItems={() => [
-                    copyLinkMenuItem(
-                      idToUrl(docId, gwUrl.data, {
-                        version: publication.version,
+                    copyLinkMenuItem(() => {
+                      const id = unpackDocId(docId)
+                      if (!id) return
+                      onCopy({
+                        ...id,
+                        version: publication.version || null,
                         variants: [{key: 'author', author: accountId}],
-                      }),
-                      'Publication',
-                    ),
+                      })
+                    }, 'Publication'),
                   ]}
                   openRoute={{
                     key: 'publication',
@@ -170,6 +176,7 @@ export default function AccountPage() {
           />
         </MainWrapperNoScroll>
       </AccessoryLayout>
+      {copyDialogContent}
       <Footer>
         {citations?.links?.length ? (
           <FooterButton
