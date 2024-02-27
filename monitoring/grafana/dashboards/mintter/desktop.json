@@ -172,7 +172,7 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 8,
+                "w": 12,
                 "x": 0,
                 "y": 5
             },
@@ -281,8 +281,8 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 8,
-                "x": 8,
+                "w": 12,
+                "x": 12,
                 "y": 5
             },
             "id": 3,
@@ -386,9 +386,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 8,
-                "x": 16,
-                "y": 5
+                "w": 12,
+                "x": 0,
+                "y": 13
             },
             "id": 8,
             "options": {
@@ -446,7 +446,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 13
+                "y": 21
             },
             "id": 7,
             "panels": [],
@@ -515,9 +515,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 8,
+                "w": 12,
                 "x": 0,
-                "y": 14
+                "y": 22
             },
             "id": 2,
             "options": {
@@ -618,9 +618,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 8,
-                "x": 8,
-                "y": 14
+                "w": 12,
+                "x": 12,
+                "y": 22
             },
             "id": 5,
             "options": {
@@ -707,7 +707,7 @@
                         "properties": [
                             {
                                 "id": "custom.width",
-                                "value": 201
+                                "value": 223
                             }
                         ]
                     },
@@ -743,17 +743,17 @@
                         "properties": [
                             {
                                 "id": "custom.width",
-                                "value": 462
+                                "value": null
                             }
                         ]
                     }
                 ]
             },
             "gridPos": {
-                "h": 9,
-                "w": 13,
+                "h": 8,
+                "w": 12,
                 "x": 0,
-                "y": 22
+                "y": 30
             },
             "id": 10,
             "options": {
@@ -844,7 +844,7 @@
             },
             {
                 "current": {
-                    "selected": false,
+                    "selected": true,
                     "text": [
                         "All"
                     ],
@@ -883,6 +883,6 @@
     "timezone": "browser",
     "title": "Mintter Desktop Overview",
     "uid": "dddh3zotqe22od",
-    "version": 11,
+    "version": 13,
     "weekStart": ""
 }
