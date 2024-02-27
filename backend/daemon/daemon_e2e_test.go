@@ -138,17 +138,41 @@ func TestDaemonPushPublication(t *testing.T) {
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
-	// Carol will be the DHT server
-	dhtProvider := makeTestApp(t, "carol", makeTestConfig(t), true)
+	// Carol is the DHT node.
+	carol := makeTestApp(t, "carol", makeTestConfig(t), true)
 
-	requester, publishedDocument, _ := makeRemotePublication(t, ctx, dhtProvider)
+	var alice *App
+	{
+		cfg := makeTestConfig(t)
+		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		alice = makeTestApp(t, "alice", cfg, true)
+	}
 
-	remotePublication, err := requester.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
+	var bob *App
+	{
+		cfg := makeTestConfig(t)
+		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		bob = makeTestApp(t, "bob", cfg, true)
+	}
+
+	// Make sure bob and alice don't know each other.
+	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(alice.Storage.Device().ID()))
+	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(alice.Storage.Device().ID())
+	require.NoError(t, alice.Net.MustGet().Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
+	alice.Net.MustGet().Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
+
+	pub := publishDocument(t, ctx, alice)
+
+	time.Sleep(time.Second)
+
+	remotePub, err := bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: pub.Document.Id})
 	require.NoError(t, err)
 
-	testutil.ProtoEqual(t, publishedDocument, remotePublication, "remote publication doesn't match")
+	testutil.ProtoEqual(t, pub, remotePub, "remote publication doesn't match")
 }
 
 func TestBug_SyncHangs(t *testing.T) {
@@ -362,32 +386,6 @@ func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
-func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) (*App, *documents.Publication, *App) {
-	var publisher *App
-	{
-		cfg := makeTestConfig(t)
-		cfg.P2P.BootstrapPeers = dhtProvider.Net.MustGet().Libp2p().AddrsFull()
-		publisher = makeTestApp(t, "alice", cfg, true)
-	}
-
-	var bob *App
-	{
-		cfg := makeTestConfig(t)
-		cfg.P2P.BootstrapPeers = dhtProvider.Net.MustGet().Libp2p().AddrsFull()
-		bob = makeTestApp(t, "bob", cfg, true)
-	}
-
-	// Make sure bob does't know anything about publisher.
-	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Storage.Device().ID()))
-	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Storage.Device().ID())
-
-	publishedDocument := publishDocument(t, ctx, publisher)
-
-	// Sleeping just in case to make sure alices publication propagates.
-	time.Sleep(time.Second)
-	return bob, publishedDocument, publisher
-}
-
 func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documents.Publication {
 	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -402,25 +400,6 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documen
 				Type: "statement",
 				Text: "Hello world!",
 			}}},
-		},
-	})
-	require.NoError(t, err)
-	require.NotNil(t, updated)
-	published, err := publisher.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	return published
-}
-
-func updateDocumenTitle(t *testing.T, ctx context.Context, publisher *App, docID, newTitle string) *documents.Publication {
-	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{
-		ExistingDocumentId: docID,
-	})
-	require.NoError(t, err)
-
-	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-		DocumentId: draft.Id,
-		Changes: []*documents.DocumentChange{
-			{Op: &documents.DocumentChange_SetTitle{SetTitle: newTitle}},
 		},
 	})
 	require.NoError(t, err)
