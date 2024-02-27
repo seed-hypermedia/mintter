@@ -82,7 +82,7 @@ func TestCoverage(t *testing.T) {
 		want := time.Now()
 		ts := FromTime(want)
 		got := ts.Time()
-		require.True(t, want.Equal(got), "timestamp must be convertible to time want=%d got=%d", want.UnixMicro(), got.UnixMicro())
+		require.Equal(t, want.UnixMicro(), got.UnixMicro(), "timestamp must be convertible to time")
 	}
 
 	{
