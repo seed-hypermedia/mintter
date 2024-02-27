@@ -85,7 +85,7 @@ func getChange(conn *sqlite.Conn, c cid.Cid, id int64) (*entities.Change, error)
 	out = &entities.Change{
 		Id:         c.String(),
 		Author:     core.Principal(info.PublicKeysPrincipal).String(),
-		CreateTime: timestamppb.New(hlc.Unpack(info.StructuralBlobsTs).Time()),
+		CreateTime: timestamppb.New(hlc.Timestamp(info.StructuralBlobsTs).Time()),
 		IsTrusted:  info.IsTrusted > 0,
 	}
 
@@ -178,7 +178,7 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 			change := &entities.Change{
 				Id:         idLong,
 				Author:     author,
-				CreateTime: timestamppb.New(hlc.Unpack(ts).Time()),
+				CreateTime: timestamppb.New(hlc.Timestamp(ts).Time()),
 				IsTrusted:  isTrusted > 0,
 			}
 

@@ -33,7 +33,7 @@ type Document struct {
 	oldDraft   cid.Cid
 	oldChange  hyper.Change
 	done       bool
-	nextHLC    hlc.Time
+	nextHLC    hlc.Timestamp
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
 	// Index for blocks that we've created in this change.
 	createdBlocks map[string]struct{}
@@ -44,7 +44,7 @@ type Document struct {
 // Create a new document.
 func Create(owner core.Identity, delegation cid.Cid) (*Document, error) {
 	clock := hlc.NewClock()
-	ts := clock.Now()
+	ts := clock.MustNow()
 	now := ts.Time().Unix()
 
 	docid, nonce := hyper.NewUnforgeableID("hm://d/", owner.Account().Principal(), nil, now)
@@ -122,7 +122,7 @@ func (dm *Document) RestoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	moves := dm.patch["moves"]
 	delete(dm.patch, "moves")
 
-	dm.e.State().ApplyPatch(dm.nextHLC.Pack(), "", dm.patch)
+	dm.e.State().ApplyPatch(int64(dm.nextHLC), "", dm.patch)
 
 	if moves != nil {
 		ops := moves.(map[string]any)["#list"].(map[string]any)["#ins"].([]any)
@@ -287,7 +287,7 @@ func (dm *Document) Change() (hb hyper.Blob, err error) {
 		return hb, fmt.Errorf("using already committed mutation")
 	}
 
-	if dm.nextHLC.IsZero() {
+	if dm.nextHLC == 0 {
 		panic("BUG: next HLC time is zero")
 	}
 

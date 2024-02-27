@@ -85,7 +85,7 @@ type Entity struct {
 	state        *crdt2.Map
 	maxClock     *hlc.Clock
 	actorsIntern map[string]string
-	vectorClock  map[string]hlc.Time
+	vectorClock  map[string]hlc.Timestamp
 }
 
 // NewEntity creates a new entity with a given ID.
@@ -97,7 +97,7 @@ func NewEntity(id EntityID) *Entity {
 		state:        crdt2.NewMap(),
 		maxClock:     hlc.NewClock(),
 		actorsIntern: make(map[string]string),
-		vectorClock:  make(map[string]hlc.Time),
+		vectorClock:  make(map[string]hlc.Timestamp),
 	}
 }
 
@@ -117,7 +117,7 @@ func (e *Entity) Get(path ...string) (value any, ok bool) {
 }
 
 // LastChangeTime is max time tracked in the HLC.
-func (e *Entity) LastChangeTime() hlc.Time {
+func (e *Entity) LastChangeTime() hlc.Timestamp {
 	return e.maxClock.Max()
 }
 
@@ -203,13 +203,13 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 		actor = a
 	}
 
-	if ch.HLCTime.Before(e.vectorClock[actor]) {
+	if ch.HLCTime < e.vectorClock[actor] {
 		return fmt.Errorf("applying change '%s' violates causal order", c)
 	}
 
 	e.vectorClock[actor] = ch.HLCTime
 
-	if ch.HLCTime.Before(e.maxClock.Max()) {
+	if ch.HLCTime < e.maxClock.Max() {
 		return fmt.Errorf("applying change %s out of causal order", c)
 	}
 
@@ -220,8 +220,10 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 		delete(e.heads, dep)
 	}
 
-	e.state.ApplyPatch(ch.HLCTime.Pack(), OriginFromCID(c), ch.Patch)
-	e.maxClock.Track(ch.HLCTime)
+	e.state.ApplyPatch(int64(ch.HLCTime), OriginFromCID(c), ch.Patch)
+	if err := e.maxClock.Track(ch.HLCTime); err != nil {
+		return err
+	}
 	e.changes = append(e.changes, ParsedBlob[Change]{c, ch})
 	e.applied[c] = len(e.changes) - 1
 	e.heads[c] = struct{}{}
@@ -244,8 +246,8 @@ func OriginFromCID(c cid.Cid) string {
 }
 
 // NextTimestamp returns the next timestamp from the HLC.
-func (e *Entity) NextTimestamp() hlc.Time {
-	return e.maxClock.Now()
+func (e *Entity) NextTimestamp() hlc.Timestamp {
+	return e.maxClock.MustNow()
 }
 
 // ChangeOption is a functional option for creating Changes.
@@ -266,7 +268,7 @@ func WithMessage(msg string) ChangeOption {
 }
 
 // CreateChange entity creating a change blob, and applying it to the internal state.
-func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
+func (e *Entity) CreateChange(ts hlc.Timestamp, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
 	hb, err = NewChange(e.id, maps.Keys(e.heads), ts, signer, delegation, patch, opts...)
 	if err != nil {
 		return hb, err
@@ -280,7 +282,7 @@ func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.C
 }
 
 // ReplaceChange creates a new change instead of an existing one. The change to replace must be the current head.
-func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
+func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Timestamp, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
 	if len(e.heads) != 1 {
 		return hb, fmt.Errorf("must only have one head change to replace")
 	}
@@ -298,7 +300,7 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 		prev = e.changes[idx].Data
 	}
 
-	e.state.ForgetState(prev.HLCTime.Pack(), OriginFromCID(old))
+	e.state.ForgetState(int64(prev.HLCTime), OriginFromCID(old))
 	delete(e.applied, old)
 	delete(e.heads, old)
 
@@ -626,7 +628,9 @@ func (bs *Storage) LoadDraft(ctx context.Context, eid EntityID) (*Draft, error) 
 		return nil, nil
 	}
 
-	entity.maxClock.Track(ch.HLCTime)
+	if err := entity.maxClock.Track(ch.HLCTime); err != nil {
+		return nil, err
+	}
 
 	return &Draft{
 		Entity: entity,

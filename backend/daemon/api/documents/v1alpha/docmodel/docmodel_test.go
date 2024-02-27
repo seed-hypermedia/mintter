@@ -440,7 +440,7 @@ func TestBug_UndeletableBlock(t *testing.T) {
 
 func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.KeyPair) *Document {
 	clock := hlc.NewClock()
-	ts := clock.Now()
+	ts := clock.MustNow()
 	now := ts.Time().Unix()
 
 	id, nonce := hyper.NewUnforgeableID("", account.Principal(), nil, now)

@@ -85,10 +85,12 @@ func (srv *Server) CreateComment(ctx context.Context, in *documents.CreateCommen
 			threadRoot = repliedCID
 		}
 		repliedComment = repliedCID
-		clock.Track(repliedCmt.HLCTime)
+		if err := clock.Track(repliedCmt.HLCTime); err != nil {
+			return nil, err
+		}
 	}
 
-	hb, err := hyper.NewComment(in.Target, threadRoot, repliedComment, clock.Now(), me.DeviceKey(), del, commentContentFromProto(in.Content))
+	hb, err := hyper.NewComment(in.Target, threadRoot, repliedComment, clock.MustNow(), me.DeviceKey(), del, commentContentFromProto(in.Content))
 	if err != nil {
 		return nil, err
 	}

@@ -7,86 +7,88 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMocked(t *testing.T) {
-	clock := NewClockWithWall(func() time.Time { return time.Time{} })
-
-	tt := clock.Now()
-	require.Equal(t, tt.wall, int64(0))
-	require.Equal(t, tt.counter, uint16(1))
-
-	tt = clock.Now()
-	require.Equal(t, tt.wall, int64(0))
-	require.Equal(t, tt.counter, uint16(2))
-}
-
-func TestTrack(t *testing.T) {
+func TestPrecision(t *testing.T) {
 	c1 := NewClock()
 	c2 := NewClock()
 
-	t1 := c1.Now()
+	t1 := c1.MustNow()
+	time.Sleep(time.Microsecond)
+	t2 := c2.MustNow()
 
-	c2.Track(t1)
-	require.Equal(t, t1, c2.maxTime)
-
-	t2 := c2.Now()
-
-	require.True(t, t1.Before(t2), "t2 must be greater than t1")
-}
-
-func TestCompactTimestamp(t *testing.T) {
-	in := newTime(time.Now().UnixMicro(), 356)
-	out := Unpack(in.Pack())
-
-	require.Equal(t, in, out)
+	require.Greater(t, t2, t1, "second timestamp must be greater than the first one even in unrelated clocks")
 }
 
 func TestClockCausality(t *testing.T) {
-	now := time.Now()
-
-	in := []time.Time{
-		now,
-		now.Add(time.Hour * -1),
-		now.Add(time.Hour),
-		now.Add(time.Hour).Add(30 * time.Minute * -1),
-	}
-	clock := NewClock()
-
-	var old Time
-	for _, tt := range in {
-		now := clock.Time(tt)
-		require.True(t, old.Before(now), "new timestamp must be after any previous one even if physical clock goes back")
-		require.True(t, old.Time().Before(now.Time()), "unix timestamp representation must respect happens-before property")
-
-		old = now
-	}
-}
-
-func TestClockCausality_Continuous(t *testing.T) {
 	clock := NewClock()
 
 	// Number of iterations is arbitrary.
-	var last int64
+	var last Timestamp
 	for i := 0; i < 50000; i++ {
-		tt := clock.Now().Pack()
+		tt := clock.MustNow()
 		if tt <= last {
-			t.Fatalf("incorrect causality: prev=%d, current=%d", last, tt)
+			t.Fatalf("incorrect causality: prev=%d, current=%d %d", last, tt, i)
 		}
+
 		last = tt
 	}
 }
 
-func TestWallClockAlwaysRounded(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		tt := NewClock().Now()
-		require.Equal(t, uint16(0), tt.counter, "counter must be 0 at clock start")
-		require.Equal(t, uint16(0), uint16(tt.wall), "wall clock must be rounded to 48 bits, i.e. lower 16 bits are 0")
-		require.Equal(t, tt.wall, tt.Time().UnixMicro(), "unix micro representation doesn't match wall clock part")
+func TestSkew(t *testing.T) {
+	clock := NewClock()
+
+	t1 := clock.MustNow()
+
+	clock.nowFunc = func() time.Time { return time.Now().Add(50 * time.Second * -1) }
+
+	t2 := clock.MustNow()
+	require.Greater(t, t2, t1, "second timestamp must be greater than the first one even if physical clock goes back")
+
+	clock.nowFunc = func() time.Time { return time.Now().Add(time.Hour * -1) }
+
+	_, err := clock.Now()
+	require.Error(t, err, "now must fail if local clock is way behind the tracked time")
+}
+
+func TestTrack(t *testing.T) {
+	clock := NewClock()
+
+	t1 := clock.MustNow()
+	t2 := t1 + (2 * Timestamp(time.Minute.Microseconds()))
+
+	require.Error(t, clock.Track(t2), "tracking a timestamp from the future must fail if exceeds the tolerance threshold")
+
+	t3 := t1 + 3
+	require.NoError(t, clock.Track(t3))
+
+	require.Equal(t, t3, clock.maxTime)
+}
+
+func TestCoverage(t *testing.T) {
+	// This stupid test is here to achieve 100% test coverage.
+	c := NewClock()
+	c.MustNow()
+
+	c.nowFunc = func() time.Time { return time.Now().Add(50 * time.Second * -1) }
+	c.MustNow()
+
+	c.nowFunc = func() time.Time { return time.Now().Add(time.Hour * -1) }
+	require.Panics(t, func() { c.MustNow() })
+
+	require.Equal(t, c.maxTime, c.Max())
+
+	c.nowFunc = time.Now
+
+	{
+		now := time.Now()
+		ts := FromTime(now)
+		require.True(t, now.Equal(ts.Time()), "timestamp must be convertible to time")
+	}
+
+	{
+		ts := c.MustNow()
+		tss := ts.String()
+		tt, err := time.Parse(stringLayout, tss)
+		require.NoError(t, err)
+		require.Equal(t, ts, FromTime(tt))
 	}
 }
-
-func TestZero(t *testing.T) {
-	require.True(t, Unpack(0).IsZero())
-	require.Equal(t, int64(0), Unpack(0).Pack())
-}
-
-// TODO(burdiyan): check for clock drift, add relevant tests.

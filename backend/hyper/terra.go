@@ -20,18 +20,8 @@ var timeAtlas = atlas.BuildEntry(time.Time{}).Transform().
 	})).
 	Complete()
 
-var hlcAtlas = atlas.BuildEntry(hlc.Time{}).Transform().
-	TransformMarshal(atlas.MakeMarshalTransformFunc(func(t hlc.Time) (int64, error) {
-		return t.Pack(), nil
-	})).
-	TransformUnmarshal(atlas.MakeUnmarshalTransformFunc(func(in int64) (hlc.Time, error) {
-		return hlc.Unpack(in), nil
-	})).
-	Complete()
-
 func init() {
 	cbornode.RegisterCborType(timeAtlas)
-	cbornode.RegisterCborType(hlcAtlas)
 	cbornode.RegisterCborType(KeyDelegation{})
 	cbornode.RegisterCborType(Change{})
 	cbornode.RegisterCborType(Comment{})
@@ -153,7 +143,7 @@ type Change struct {
 	// HLCTime is the Hybrid-Logical timestamp.
 	// Must be greater than the one of any of the deps.
 	// Can be used as a Unix timestamp in *microseconds*.
-	HLCTime hlc.Time `refmt:"hlcTime"`
+	HLCTime hlc.Timestamp `refmt:"hlcTime"`
 
 	// Entity is an arbitrary string describing the entity to mutate.
 	// Meant to be globally unique, and should include the type of the entity if relevant.
@@ -174,7 +164,7 @@ type Change struct {
 }
 
 // NewChange creates a new Change blob.
-func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
+func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Timestamp, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
 	// Make sure deps field is not present in the patch if there're no deps.
 	if len(deps) == 0 {
 		deps = nil
@@ -241,14 +231,14 @@ type Comment struct {
 	Target         string         `refmt:"target,omitempty"`
 	ThreadRoot     cid.Cid        `refmt:"threadRoot,omitempty"`
 	RepliedComment cid.Cid        `refmt:"repliedComment,omitempty"`
-	HLCTime        hlc.Time       `refmt:"hlcTime"`
+	HLCTime        hlc.Timestamp  `refmt:"hlcTime"`
 	Body           []CommentBlock `refmt:"body"`
 	Signer         core.Principal `refmt:"signer,omitempty"`
 	Sig            core.Signature `refmt:"sig,omitempty"`
 }
 
 // NewComment creates a new Comment blob.
-func NewComment(target string, threadRoot, repliedComment cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, body []CommentBlock) (hb Blob, err error) {
+func NewComment(target string, threadRoot, repliedComment cid.Cid, ts hlc.Timestamp, signer core.KeyPair, delegation cid.Cid, body []CommentBlock) (hb Blob, err error) {
 	c := Comment{
 		Type:           TypeComment,
 		Delegation:     delegation,

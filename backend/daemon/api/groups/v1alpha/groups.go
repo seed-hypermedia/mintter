@@ -400,7 +400,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	}
 
 	clock := hlc.NewClock()
-	ts := clock.Now()
+	ts := clock.MustNow()
 	createTime := ts.Time().Unix()
 
 	id, nonce := hyper.NewUnforgeableID("hm://g/", me.Account().Principal(), nil, createTime)

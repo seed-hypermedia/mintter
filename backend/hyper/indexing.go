@@ -441,7 +441,7 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 				return fmt.Errorf("site URL must have only scheme and host, got %s", siteURL)
 			}
 
-			if err := hypersql.SitesInsertOrIgnore(idx.conn, v.Entity.String(), siteURL, v.HLCTime.Pack(), OriginFromCID(c)); err != nil {
+			if err := hypersql.SitesInsertOrIgnore(idx.conn, v.Entity.String(), siteURL, int64(v.HLCTime), OriginFromCID(c)); err != nil {
 				return err
 			}
 		}
@@ -524,7 +524,7 @@ func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment
 			return fmt.Errorf("replied comment is not a comment, got %T", replied.Decoded)
 		}
 
-		if v.HLCTime.Before(rc.HLCTime) {
+		if v.HLCTime < rc.HLCTime {
 			return fmt.Errorf("reply must have a higher timestamp than the replied comment: failed to assert %s > %s", v.HLCTime, rc.HLCTime)
 		}
 
