@@ -2,7 +2,7 @@ package storage
 
 import (
 	"context"
-	"mintter/backend/daemon/storage/litext"
+	"mintter/backend/daemon/storage/dbext"
 	"mintter/backend/testutil"
 	"path/filepath"
 	"testing"
@@ -31,7 +31,7 @@ func OpenSQLite(uri string, flags sqlite.OpenFlags, poolSize int) (*sqlitex.Pool
 }
 
 func openSQLite(uri string, flags sqlite.OpenFlags, poolSize int, prelude ...string) (*sqlitex.Pool, error) {
-	if err := litext.LoadExtensions(); err != nil {
+	if err := dbext.LoadExtensions(); err != nil {
 		return nil, err
 	}
 

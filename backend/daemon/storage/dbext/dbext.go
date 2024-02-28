@@ -1,9 +1,9 @@
-// Package litext provides our custom extensions for SQLite.
-package litext
+// Package dbext provides our custom extensions for SQLite.
+package dbext
 
 // #cgo CFLAGS: -I ../../../../third_party/sqlite
 // #cgo CFLAGS: -DSQLITE_CORE
-// #include "./litext.h"
+// #include "./dbext.h"
 import "C"
 
 // LoadExtensions loads our custom extensions into SQLite

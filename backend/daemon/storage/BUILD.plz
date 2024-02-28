@@ -28,7 +28,7 @@ filegroup(
     name = "go_library",
     srcs = glob([
         "*.go",
-        "litext/*",
+        "dbext/*",
     ]) + ["schema.sql"],
     visibility = ["//backend/..."],
 )
