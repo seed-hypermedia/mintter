@@ -30,7 +30,10 @@ export function UnpinButton({
         icon={hover ? PinOff : Pin}
         size="$2"
         theme={hover ? 'red' : undefined}
-        onPress={onPress}
+        onPress={(e) => {
+          e.stopPropagation()
+          onPress?.(e)
+        }}
         chromeless
         bg={chromeless ? '$colorTransparent' : '$color4'}
         {...hoverProps}
@@ -64,7 +67,16 @@ export function PinGroupButton({groupId}: {groupId: string}) {
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }
-  return <Button icon={Pin} size="$2" onPress={togglePin} />
+  return (
+    <Button
+      icon={Pin}
+      size="$2"
+      onPress={(e) => {
+        e.stopPropagation()
+        togglePin()
+      }}
+    />
+  )
 }
 
 export function PinDocumentButton({route}: {route: PublicationRoute}) {

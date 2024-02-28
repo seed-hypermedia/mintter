@@ -43,10 +43,10 @@ import {
   Trash,
   X,
 } from '@tamagui/lucide-icons'
-import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'
 import {
+  ReactNode,
   forwardRef,
   useDeferredValue,
   useEffect,
@@ -55,6 +55,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
 import {Avatar} from '../components/avatar'
@@ -75,6 +76,7 @@ import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
+import {useExperiments} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
   useAddGroupMember,
@@ -94,25 +96,97 @@ import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
+  const experiments = useExperiments()
+  const experimentalGroupOrganization = experiments.data?.groupOrganization
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : undefined
   if (!groupRoute) throw new Error('Group page needs group route')
-  const accessory = groupRoute?.accessory
-  if (route.key !== 'group') throw new Error('Group page needs group route')
-  const {groupId, version} = route
-  const group = useGroup(groupId, version, {
-    // refetchInterval: 5_000,
-  })
-  const latestGroup = useGroup(groupId, undefined, {})
-  const groupContent = useFullGroupContent(groupId, version)
-  const latestGroupContent = useGroupContent(groupId)
-  // const groupMembers = useGroupMembers(groupId, version)
-  const groupMembers = useGroupMembers(groupId)
-  const drafts = useDraftList()
+  const latestGroup = useGroup(groupRoute.groupId, undefined, {})
+  const groupMembers = useGroupMembers(groupRoute.groupId)
   const myAccount = useMyAccount()
+  const group = useGroup(groupRoute.groupId, groupRoute.version, {})
   const myMemberRole =
     groupMembers.data?.members[myAccount.data?.id || ''] ||
     Role.ROLE_UNSPECIFIED
+
+  let content: ReactNode = null
+  if (experimentalGroupOrganization) {
+    if (groupRoute.listCategory === '_all') {
+      content = (
+        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      )
+    } else if (groupRoute.listCategory) {
+    } else {
+      content = (
+        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      )
+    }
+  } else {
+    content = (
+      <>
+        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
+        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      </>
+    )
+  }
+  return (
+    <GroupPageFooterAccessory
+      variantVersion={latestGroup.data?.version}
+      route={groupRoute}
+      groupVersion={group.data?.version}
+    >
+      <MainWrapper maxHeight={'100%'}>{content}</MainWrapper>
+    </GroupPageFooterAccessory>
+  )
+}
+
+function GroupPageFooterAccessory({
+  children,
+  route,
+  groupVersion,
+  variantVersion,
+}: {
+  children: React.ReactNode
+  route: GroupRoute
+  groupVersion?: string | null
+  variantVersion: string | undefined
+}) {
+  let accessory: ReactNode | null = null
+  const entityId = unpackHmId(route.groupId)
+  if (entityId && groupVersion && route.accessory?.key === 'versions') {
+    accessory = (
+      <EntityVersionsAccessory
+        id={entityId}
+        activeVersion={groupVersion}
+        variantVersion={variantVersion}
+      />
+    )
+  }
+  return (
+    <>
+      <AccessoryLayout accessory={accessory}>{children}</AccessoryLayout>
+      <Footer>
+        <ChangesFooterItem route={route} />
+      </Footer>
+    </>
+  )
+}
+
+function GroupHome({
+  groupRoute,
+  myMemberRole,
+}: {
+  groupRoute: GroupRoute
+  myMemberRole: Role
+}) {
+  const accessory = groupRoute?.accessory
+  const {groupId, version} = groupRoute
+  const group = useGroup(groupId, version, {
+    // refetchInterval: 5_000,
+  })
+  const groupContent = useFullGroupContent(groupId, version)
+  // const groupMembers = useGroupMembers(groupId, version)
+  const groupMembers = useGroupMembers(groupId)
   const isMember = myMemberRole !== Role.ROLE_UNSPECIFIED
   // const isOwner = myAccount.data?.id === group.data?.ownerAccountId
   // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
@@ -167,312 +241,296 @@ export default function GroupPage() {
       : null,
   ].filter(Boolean)
   const openUrl = useOpenUrl()
-  const entityId = unpackHmId(groupId)
-  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   return (
     <>
-      <YStack flex={1} justifyContent="space-between" maxHeight={'100%'}>
-        <Allotment
-          key={`${accessory}`}
-          defaultSizes={accessory ? [65, 35] : [100]}
-        >
-          <Allotment.Pane>
-            <MainWrapper maxHeight={'100%'}>
-              <Container>
-                <YStack group="header">
-                  <XStack gap="$2" padding="$4" paddingHorizontal={0}>
-                    <YStack gap="$3" flex={1}>
-                      <YStack gap="$3">
-                        <H1 fontWeight="bold">{group.data?.title}</H1>
-                        {siteBaseUrl && (
-                          <XStack alignItems="center" gap="$2">
-                            <Tooltip
-                              content={
-                                group.data
-                                  ? `Open group in the web (${syncStatus?.message(
-                                      group.data,
-                                    )})`
-                                  : ''
-                              }
-                            >
-                              <Button
-                                size="$2"
-                                fontFamily={'$mono'}
-                                fontSize="$4"
-                                // hoverStyle={{textDecorationLine: 'underline'}}
-                                onPress={() => {
-                                  openUrl(siteBaseUrl)
-                                }}
-                                color="$blue10"
-                                icon={
-                                  syncStatus &&
-                                  group.data && (
-                                    <View
-                                      style={{
-                                        borderRadius: 5,
-                                        width: 10,
-                                        height: 10,
-                                        backgroundColor: syncStatus.color,
-                                      }}
-                                    />
-                                  )
-                                }
-                              >
-                                {hostnameStripProtocol(siteBaseUrl)}
-                              </Button>
-                            </Tooltip>
-                          </XStack>
-                        )}
-                        <XStack>
-                          <SizableText size="$5">
-                            {group.data?.description}
-                          </SizableText>
-                        </XStack>
-                      </YStack>
-                    </YStack>
-                    <YStack paddingTop="$4">
-                      <XStack gap="$3" alignItems="center">
-                        {!frontDocumentUrl && isMember && (
-                          <Tooltip content={'Create Front Document'}>
-                            <Button
-                              icon={Store}
-                              size="$2"
-                              onPress={() => {
-                                openDraft(
-                                  {groupId, pathName: '/', key: 'group'},
-                                  {
-                                    pathName: '/',
-                                    initialTitle: group?.data?.title,
-                                  },
-                                )
-                              }}
-                            >
-                              Add a Frontpage
-                            </Button>
-                          </Tooltip>
-                        )}
-
-                        <XStack
-                          gap="$2"
-                          // opacity={0}
-                          // $group-header-hover={{
-                          //   opacity: 1,
-                          // }}
-                        >
-                          <CopyReferenceButton />
-                          <PinGroupButton groupId={groupId} />
-                          {isMember && (
-                            <Tooltip content="Edit Group info">
-                              <Button
-                                icon={Pencil}
-                                size="$2"
-                                onPress={() => {
-                                  editGroupInfo.open(groupId)
-                                }}
-                              />
-                            </Tooltip>
-                          )}
-                        </XStack>
-                      </XStack>
-                    </YStack>
-                  </XStack>
-                </YStack>
-                <YStack>
-                  <XStack paddingVertical="$4" alignItems="center" gap="$3">
-                    <XStack gap="$3" flex={1} alignItems="flex-end">
-                      {ownerAccountId ? (
-                        <YStack
-                          gap="$1"
-                          padding="$2"
-                          bg="$blue4"
-                          borderRadius="$3"
-                          alignItems="flex-start"
-                        >
-                          <SizableText size="$1">Owner:</SizableText>
-                          <XStack gap="$2">
-                            <AccountLinkAvatar
-                              size={24}
-                              accountId={ownerAccountId}
-                            />
-                            <AppLinkText
-                              toRoute={{
-                                key: 'account',
-                                accountId: ownerAccountId,
-                              }}
-                            >
-                              {ownerAccount.data?.profile?.alias}
-                            </AppLinkText>
-                          </XStack>
-                        </YStack>
-                      ) : null}
-                      <XStack paddingVertical="$2">
-                        {Object.entries(groupMembers.data?.members || {}).map(
-                          ([memberId, role], idx) => {
-                            if (role === Role.OWNER) return null
-                            return (
-                              <XStack
-                                zIndex={idx + 1}
-                                key={memberId}
-                                borderColor="$background"
-                                backgroundColor="$background"
-                                borderWidth={2}
-                                borderRadius={100}
-                                marginLeft={-8}
-                                animation="fast"
-                              >
-                                <AccountLinkAvatar
-                                  size={24}
-                                  accountId={memberId}
-                                />
-                              </XStack>
-                            )
-                          },
-                        )}
-                      </XStack>
-                    </XStack>
-                    {memberCount > 1 || myMemberRole === Role.OWNER ? (
-                      <XStack>
-                        {myMemberRole === Role.OWNER ? (
-                          <InviteMemberButton
-                            onPress={() => {
-                              inviteMember.open({groupId})
-                            }}
-                          />
-                        ) : (
-                          <View />
-                        )}
-                      </XStack>
-                    ) : null}
-                  </XStack>
-                </YStack>
-                <Separator />
-                {frontPageId && frontDocumentUrl && (
-                  <XStack
-                    gap="$2"
-                    borderBottomWidth={1}
-                    borderColor="$gray6"
-                    paddingVertical="$4"
-                    paddingHorizontal={0}
-                    minHeight="$6"
-                    group="item"
-                  >
-                    <FrontPublicationDisplay
-                      urlWithVersion={frontDocumentUrl}
-                      groupTitle={group.data?.title || ''}
-                    />
-
-                    <XStack
-                      gap="$2"
-                      position="absolute"
-                      right={0}
-                      top="$4"
-                      alignItems="center"
+      <Container>
+        <YStack group="header">
+          <XStack gap="$2" padding="$4" paddingHorizontal={0}>
+            <YStack gap="$3" flex={1}>
+              <YStack gap="$3">
+                <H1 fontWeight="bold">{group.data?.title}</H1>
+                {siteBaseUrl && (
+                  <XStack alignItems="center" gap="$2">
+                    <Tooltip
+                      content={
+                        group.data
+                          ? `Open group in the web (${syncStatus?.message(
+                              group.data,
+                            )})`
+                          : ''
+                      }
                     >
-                      {frontDocMenuItems.length ? (
-                        <OptionsDropdown
-                          hiddenUntilItemHover
-                          menuItems={frontDocMenuItems}
-                        />
-                      ) : null}
-                      <XGroup>
-                        {isMember && (
-                          <EditDocButton
-                            contextRoute={route}
-                            variants={[
-                              {
-                                key: 'group',
-                                groupId,
-                                pathName: '/',
-                              },
-                            ]}
-                            docId={frontPageId?.docId}
-                            baseVersion={frontPageId?.version || undefined}
-                            navMode="push"
-                          />
-                        )}
-                      </XGroup>
-                      <Tooltip content="Open in New Window">
-                        <Button
-                          icon={ArrowUpRight}
-                          size="$2"
-                          onPress={() => {
-                            spawn({
-                              key: 'publication',
-                              documentId: frontPageId?.docId,
-                              variants: [
-                                {
-                                  key: 'group',
-                                  groupId,
-                                  pathName: '/',
-                                },
-                              ],
-                            })
-                          }}
-                        />
-                      </Tooltip>
-                    </XStack>
+                      <Button
+                        size="$2"
+                        fontFamily={'$mono'}
+                        fontSize="$4"
+                        // hoverStyle={{textDecorationLine: 'underline'}}
+                        onPress={() => {
+                          openUrl(siteBaseUrl)
+                        }}
+                        color="$blue10"
+                        icon={
+                          syncStatus &&
+                          group.data && (
+                            <View
+                              style={{
+                                borderRadius: 5,
+                                width: 10,
+                                height: 10,
+                                backgroundColor: syncStatus.color,
+                              }}
+                            />
+                          )
+                        }
+                      >
+                        {hostnameStripProtocol(siteBaseUrl)}
+                      </Button>
+                    </Tooltip>
                   </XStack>
                 )}
-                <YStack paddingVertical="$4">
-                  {//Object.entries(groupContent.data?.content || {})
-                  groupContent.data?.items.map(
-                    ({key, pub, author, editors, id}) => {
-                      if (key === '/') return null
+                <XStack>
+                  <SizableText size="$5">{group.data?.description}</SizableText>
+                </XStack>
+              </YStack>
+            </YStack>
+            <YStack paddingTop="$4">
+              <XStack gap="$3" alignItems="center">
+                {!frontDocumentUrl && isMember && (
+                  <Tooltip content={'Create Front Document'}>
+                    <Button
+                      icon={Store}
+                      size="$2"
+                      onPress={() => {
+                        openDraft(
+                          {groupId, pathName: '/', key: 'group'},
+                          {
+                            pathName: '/',
+                            initialTitle: group?.data?.title,
+                          },
+                        )
+                      }}
+                    >
+                      Add a Frontpage
+                    </Button>
+                  </Tooltip>
+                )}
 
-                      const latestEntry =
-                        latestGroupContent.data?.content?.[key]
-                      const latestDocId = latestEntry
-                        ? unpackDocId(latestEntry)
-                        : null
-
-                      return (
-                        <GroupContentItem
-                          key={key}
-                          docId={id.qid}
-                          groupId={groupId}
-                          version={id?.version || undefined}
-                          latestVersion={latestDocId?.version || undefined}
-                          hasDraft={drafts.data?.documents.find(
-                            (d) => d.id == id.qid,
-                          )}
-                          onCopyUrl={() => {
-                            onCopyId({
-                              ...id,
-                              version: version || null,
-                              variants: [
-                                {key: 'group', groupId, pathName: key},
-                              ],
-                              hostname: group.data?.siteInfo?.baseUrl || null,
-                            })
-                          }}
-                          pub={pub}
-                          userRole={myMemberRole}
-                          editors={editors}
-                          author={author}
-                          pathName={key}
-                        />
-                      )
-                    },
+                <XStack
+                  gap="$2"
+                  // opacity={0}
+                  // $group-header-hover={{
+                  //   opacity: 1,
+                  // }}
+                >
+                  <CopyReferenceButton />
+                  <PinGroupButton groupId={groupId} />
+                  {isMember && (
+                    <Tooltip content="Edit Group info">
+                      <Button
+                        icon={Pencil}
+                        size="$2"
+                        onPress={() => {
+                          editGroupInfo.open(groupId)
+                        }}
+                      />
+                    </Tooltip>
                   )}
+                </XStack>
+              </XStack>
+            </YStack>
+          </XStack>
+        </YStack>
+        <YStack>
+          <XStack paddingVertical="$4" alignItems="center" gap="$3">
+            <XStack gap="$3" flex={1} alignItems="flex-end">
+              {ownerAccountId ? (
+                <YStack
+                  gap="$1"
+                  padding="$2"
+                  bg="$blue4"
+                  borderRadius="$3"
+                  alignItems="flex-start"
+                >
+                  <SizableText size="$1">Owner:</SizableText>
+                  <XStack gap="$2">
+                    <AccountLinkAvatar size={24} accountId={ownerAccountId} />
+                    <AppLinkText
+                      toRoute={{
+                        key: 'account',
+                        accountId: ownerAccountId,
+                      }}
+                    >
+                      {ownerAccount.data?.profile?.alias}
+                    </AppLinkText>
+                  </XStack>
                 </YStack>
-              </Container>
-            </MainWrapper>
-          </Allotment.Pane>
-          {group.data?.version && route.accessory?.key === 'versions' ? (
-            <EntityVersionsAccessory
-              id={entityId}
-              activeVersion={group.data?.version}
-              variantVersion={latestGroup.data?.version}
+              ) : null}
+              <XStack paddingVertical="$2">
+                {Object.entries(groupMembers.data?.members || {}).map(
+                  ([memberId, role], idx) => {
+                    if (role === Role.OWNER) return null
+                    return (
+                      <XStack
+                        zIndex={idx + 1}
+                        key={memberId}
+                        borderColor="$background"
+                        backgroundColor="$background"
+                        borderWidth={2}
+                        borderRadius={100}
+                        marginLeft={-8}
+                        animation="fast"
+                      >
+                        <AccountLinkAvatar size={24} accountId={memberId} />
+                      </XStack>
+                    )
+                  },
+                )}
+              </XStack>
+            </XStack>
+            {memberCount > 1 || myMemberRole === Role.OWNER ? (
+              <XStack>
+                {myMemberRole === Role.OWNER ? (
+                  <InviteMemberButton
+                    onPress={() => {
+                      inviteMember.open({groupId})
+                    }}
+                  />
+                ) : (
+                  <View />
+                )}
+              </XStack>
+            ) : null}
+          </XStack>
+        </YStack>
+        <Separator />
+        {frontPageId && frontDocumentUrl && (
+          <XStack
+            gap="$2"
+            borderBottomWidth={1}
+            borderColor="$gray6"
+            paddingVertical="$4"
+            paddingHorizontal={0}
+            minHeight="$6"
+            group="item"
+          >
+            <FrontPublicationDisplay
+              urlWithVersion={frontDocumentUrl}
+              groupTitle={group.data?.title || ''}
             />
-          ) : null}
-        </Allotment>
-        <Footer>
-          <ChangesFooterItem route={route} />
-        </Footer>
-        {inviteMember.content}
-        {editGroupInfo.content}
-        {copyDialogContent}
-      </YStack>
+
+            <XStack
+              gap="$2"
+              position="absolute"
+              right={0}
+              top="$4"
+              alignItems="center"
+            >
+              {frontDocMenuItems.length ? (
+                <OptionsDropdown
+                  hiddenUntilItemHover
+                  menuItems={frontDocMenuItems}
+                />
+              ) : null}
+              <XGroup>
+                {isMember && (
+                  <EditDocButton
+                    contextRoute={groupRoute}
+                    variants={[
+                      {
+                        key: 'group',
+                        groupId,
+                        pathName: '/',
+                      },
+                    ]}
+                    docId={frontPageId?.docId}
+                    baseVersion={frontPageId?.version || undefined}
+                    navMode="push"
+                  />
+                )}
+              </XGroup>
+              <Tooltip content="Open in New Window">
+                <Button
+                  icon={ArrowUpRight}
+                  size="$2"
+                  onPress={() => {
+                    spawn({
+                      key: 'publication',
+                      documentId: frontPageId?.docId,
+                      variants: [
+                        {
+                          key: 'group',
+                          groupId,
+                          pathName: '/',
+                        },
+                      ],
+                    })
+                  }}
+                />
+              </Tooltip>
+            </XStack>
+          </XStack>
+        )}
+      </Container>
+
+      {inviteMember.content}
+      {editGroupInfo.content}
+    </>
+  )
+}
+
+export function GroupAllContent({
+  groupRoute,
+  myMemberRole,
+}: {
+  groupRoute: GroupRoute
+  myMemberRole: Role
+}) {
+  const {groupId, version} = groupRoute
+  const latestGroupContent = useGroupContent(groupId)
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  const groupContent = useFullGroupContent(groupId, version)
+  const drafts = useDraftList()
+  const group = useGroup(groupId, version, {
+    // refetchInterval: 5_000,
+  })
+  return (
+    <>
+      <Container>
+        <YStack paddingVertical="$4">
+          {//Object.entries(groupContent.data?.content || {})
+          groupContent.data?.items.map(({key, pub, author, editors, id}) => {
+            if (key === '/') return null
+
+            const latestEntry = latestGroupContent.data?.content?.[key]
+            const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
+
+            return (
+              <GroupContentItem
+                key={key}
+                docId={id.qid}
+                groupId={groupId}
+                version={id?.version || undefined}
+                latestVersion={latestDocId?.version || undefined}
+                hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
+                onCopyUrl={() => {
+                  onCopyId({
+                    ...id,
+                    version: version || null,
+                    variants: [{key: 'group', groupId, pathName: key}],
+                    hostname: group.data?.siteInfo?.baseUrl || null,
+                  })
+                }}
+                pub={pub}
+                userRole={myMemberRole}
+                editors={editors}
+                author={author}
+                pathName={key}
+              />
+            )
+          })}
+        </YStack>
+      </Container>
+      {copyDialogContent}
     </>
   )
 }

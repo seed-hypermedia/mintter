@@ -176,7 +176,7 @@ export function usePublication(
   const grpcClient = useGRPCClient()
   return useQuery({
     ...queryPublication(grpcClient, id, version),
-    ...options,
+    ...(options || {}),
   })
 }
 

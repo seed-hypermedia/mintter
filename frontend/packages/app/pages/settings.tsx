@@ -421,6 +421,12 @@ type ExperimentType = {
 }
 const EXPERIMENTS: ExperimentType[] = [
   {
+    key: 'groupOrganization',
+    label: 'Group Organization',
+    emoji: '🏰',
+    description: 'Organize your groups with sidebar navigation.',
+  },
+  {
     key: 'webImporting',
     label: 'Web Importing',
     emoji: '🛰️',

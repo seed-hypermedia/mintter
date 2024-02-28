@@ -448,7 +448,7 @@ export function VersionContext({route}: {route: NavRoute}) {
     enabled: !!groupRoute?.groupId,
   })
   if (route.key === 'group') {
-    const {groupId, accessory, version} = route
+    const {groupId, accessory, version, listCategory} = route
     unpackedId = unpackHmId(groupId)
     exactVersion = version || null
     if (version && group.data?.version && group.data.version !== version) {
@@ -456,6 +456,7 @@ export function VersionContext({route}: {route: NavRoute}) {
         key: 'group',
         groupId,
         accessory,
+        listCategory,
         version: undefined,
       }
     }

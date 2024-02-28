@@ -96,6 +96,7 @@ export const groupRouteSchema = z.object({
   key: z.literal('group'),
   groupId: z.string(),
   version: z.string().optional(),
+  listCategory: z.string().optional(),
   accessory: z
     .discriminatedUnion('key', [entityVersionsAccessorySchema])
     .nullable()

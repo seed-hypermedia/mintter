@@ -1,6 +1,7 @@
 import {
   GRPCClient,
   Group,
+  HMBlock,
   ListDocumentGroupsResponse,
   ListGroupsResponse,
   Role,
@@ -23,6 +24,7 @@ import appError from '../errors'
 import {useAllAccounts, useMyAccount} from './accounts'
 import {queryPublication, sortDocuments} from './documents'
 
+import {hmIdWithVersion} from '@mintter/shared'
 import {queryKeys} from './query-keys'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
@@ -607,6 +609,83 @@ export function useRemoveGroupMember(
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_GROUP_MEMBERS, input.groupId])
+    },
+  })
+}
+
+async function getGroupNavigationDocument(
+  grpcClient: GRPCClient,
+  groupId: string,
+) {
+  const groupContent = await grpcClient.groups.listContent({id: groupId})
+  const navEntry = groupContent.content['_navigation']
+  if (navEntry) return navEntry
+  return null
+  // return group.navigationDocumentId
+}
+
+function createBlockID(): string {
+  return String(Math.round(Math.random() * 100_000))
+}
+
+export function useCreateGroupCategory() {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async (input: {groupId: string; title: string}) => {
+      const navEntry = await getGroupNavigationDocument(
+        grpcClient,
+        input.groupId,
+      )
+      const navDocId = navEntry == null ? navEntry : unpackHmId(navEntry)
+      const draft = await grpcClient.drafts.createDraft({
+        existingDocumentId: navDocId?.qid,
+      })
+      const newCategoryBlock: HMBlock = {
+        id: createBlockID(),
+        type: 'heading',
+        text: input.title,
+        attributes: {},
+        annotations: [],
+      }
+      const lastTopLevelBlockId = draft.children.at(-1)?.block?.id
+      await grpcClient.drafts.updateDraft({
+        documentId: draft.id,
+        changes: [
+          {
+            op: {case: 'setTitle', value: '(HIDDEN) Group Navigation'},
+          },
+          {
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: newCategoryBlock.id,
+                leftSibling: lastTopLevelBlockId,
+              },
+            },
+          },
+          {op: {case: 'replaceBlock', value: newCategoryBlock}},
+        ],
+      })
+      const published = await grpcClient.drafts.publishDraft({
+        documentId: draft.id,
+      })
+      if (!published.document)
+        throw new Error('No document returned from publish')
+      const newNavDoc = hmIdWithVersion(
+        published.document.id,
+        published.version,
+      )
+      if (!newNavDoc) throw new Error('Could not determine new nav doc id')
+      await grpcClient.groups.updateGroup({
+        id: input.groupId,
+        updatedContent: {
+          _navigation: newNavDoc,
+        },
+      })
+    },
+    onSuccess: (result, input, context) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
     },
   })
 }

@@ -5,6 +5,7 @@ import {t} from './app-trpc'
 const EXPERIMENTS_STORAGE_KEY = 'Experiments-v001'
 
 const experimentsZ = z.object({
+  groupOrganization: z.boolean().optional(),
   webImporting: z.boolean().optional(),
   nostr: z.boolean().optional(),
   developerTools: z.boolean().optional(),
