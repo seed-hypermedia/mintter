@@ -70,9 +70,19 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 )
+
+var prepareCount uint64
+
+// PrepareCount returns the total number of prepare calls made to the SQLite library.
+// This counter is global for the entire process, and is quite a bit less than ideal,
+// but no time to implement it more nicely.
+func PrepareCount() uint64 {
+	return atomic.LoadUint64(&prepareCount)
+}
 
 // Conn is an open connection to an SQLite3 database.
 //
@@ -379,6 +389,8 @@ func (conn *Conn) Prep(query string) *Stmt {
 //
 // https://www.sqlite.org/c3ref/prepare.html
 func (conn *Conn) Prepare(query string) (*Stmt, error) {
+	atomic.AddUint64(&prepareCount, 1)
+
 	if stmt := conn.stmts[query]; stmt != nil {
 		if err := stmt.Reset(); err != nil {
 			return nil, err
@@ -419,6 +431,8 @@ func (conn *Conn) Prepare(query string) (*Stmt, error) {
 //
 // https://www.sqlite.org/c3ref/prepare.html
 func (conn *Conn) PrepareTransient(query string) (stmt *Stmt, trailingBytes int, err error) {
+	atomic.AddUint64(&prepareCount, 1)
+
 	stmt, trailingBytes, err = conn.prepare(query, 0)
 	if stmt != nil {
 		runtime.SetFinalizer(stmt, func(stmt *Stmt) {

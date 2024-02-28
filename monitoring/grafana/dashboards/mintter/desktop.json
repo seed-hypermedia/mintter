@@ -450,7 +450,7 @@
             },
             "id": 7,
             "panels": [],
-            "title": "Networking",
+            "title": "mintterd",
             "type": "row"
         },
         {
@@ -742,8 +742,7 @@
                         },
                         "properties": [
                             {
-                                "id": "custom.width",
-                                "value": null
+                                "id": "custom.width"
                             }
                         ]
                     }
@@ -816,6 +815,106 @@
                 }
             ],
             "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "qps",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 30
+            },
+            "id": 11,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "mean",
+                        "last",
+                        "min",
+                        "max"
+                    ],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "sortBy": "Mean",
+                    "sortDesc": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "rate(mintter_sqlite_queries_total{job=\"mintterd\", instance=~\"$instance\"}[$__rate_interval])",
+                    "instant": false,
+                    "legendFormat": "{{instance}} – Queries",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "SQLite Queries Rate",
+            "type": "timeseries"
         }
     ],
     "refresh": "10s",
@@ -883,6 +982,6 @@
     "timezone": "browser",
     "title": "Mintter Desktop Overview",
     "uid": "dddh3zotqe22od",
-    "version": 13,
+    "version": 14,
     "weekStart": ""
 }
