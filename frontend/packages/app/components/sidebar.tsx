@@ -564,7 +564,7 @@ function PinnedAccount({accountId}: {accountId: string}) {
             key="pin"
             onPress={(e) => {
               e.stopPropagation()
-              togglePin()
+              togglePin(e)
             }}
           />,
         ]}
