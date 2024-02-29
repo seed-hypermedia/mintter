@@ -634,6 +634,12 @@ function AppSettings() {
   const appInfo = trpc.getAppInfo.useQuery().data
   const daemonInfo = trpc.getDaemonInfo.useQuery().data
   const openUrl = useOpenUrl()
+  let goBuildInfo = ''
+  if (daemonInfo?.errors.length) {
+    goBuildInfo = daemonInfo.errors.join('\n')
+  } else if (daemonInfo?.daemonVersion) {
+    goBuildInfo = daemonInfo.daemonVersion
+  }
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
@@ -687,8 +693,8 @@ App Version: ${VERSION}
 Electron Version: ${versions.electron}
 Chrome Version: ${versions.chrome}
 Node Version: ${versions.node}
-Go Build Info:
-  ${daemonInfo?.replace(/\n/g, '\n    ')}`)
+${goBuildInfo}
+`)
                 }}
               >
                 Copy Debug Info
@@ -704,7 +710,7 @@ Go Build Info:
         <Separator />
         <InfoListItem label="Node Version" value={versions.node} />
         <Separator />
-        <InfoListItem label="Go Build Info" value={daemonInfo?.split('\n')} />
+        <InfoListItem label="Go Build Info" value={goBuildInfo?.split('\n')} />
       </TableList>
     </YStack>
   )
