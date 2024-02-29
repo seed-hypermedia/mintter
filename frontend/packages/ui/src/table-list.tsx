@@ -114,8 +114,8 @@ export function InfoListItem({
 }: {
   label: string
   value?: string | string[]
-  onCopy: ButtonProps['onPress'] | undefined
-  onOpen: ButtonProps['onPress'] | undefined
+  onCopy?: ButtonProps['onPress'] | undefined
+  onOpen?: ButtonProps['onPress'] | undefined
 }) {
   const values = Array.isArray(value) ? value : [value]
   const {hover, ...hoverProps} = useHover()
