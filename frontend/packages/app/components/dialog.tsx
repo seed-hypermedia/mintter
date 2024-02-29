@@ -6,6 +6,7 @@ import {
   XStack,
   YStack,
   YStackProps,
+  styled,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
 import {FC, useMemo, useState} from 'react'
@@ -24,28 +25,24 @@ export function DialogOverlay(props) {
   )
 }
 
-export function DialogContent(props: YStackProps) {
-  return (
-    <YStack
-      backgroundColor={'$base-background-normal'}
-      borderRadius={6}
-      boxShadow={
-        'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px'
-      }
-      // @ts-expect-error
-      position={'fixed'}
-      width={'90vw'}
-      maxWidth={'500px'}
-      maxHeight={'85vh'}
-      padding={'$4'}
-      display={'flex'}
-      gap={'$4'}
-      borderWidth={0}
-      zIndex="$zIndex.2"
-      {...props}
-    />
-  )
-}
+export const dialogBoxShadow =
+  'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px'
+
+export const DialogContent = styled(YStack, {
+  backgroundColor: '$base-background-normal',
+  borderRadius: 6,
+  boxShadow: dialogBoxShadow,
+  // @ts-expect-error
+  position: 'fixed',
+  width: '90vw',
+  maxWidth: '500px',
+  maxHeight: '85vh',
+  padding: '$4',
+  display: 'flex',
+  gap: '$4',
+  borderWidth: 0,
+  zIndex: '$zIndex.2',
+})
 
 export function AlertDialogContent(props) {
   return <AlertDialog.Content borderWidth={0} {...props} />
@@ -166,7 +163,11 @@ export function useAppDialog<DialogInput>(
     input: DialogInput
     onOpenState: {onOpenChange: (isOpen: boolean) => void}
   }>,
-  options?: {isAlert?: boolean; onClose?: () => void},
+  options?: {
+    isAlert?: boolean
+    onClose?: () => void
+    contentProps?: YStackProps
+  },
 ) {
   const [openState, setOpenState] = useState<null | DialogInput>(null)
   const nav = useNavigation()
@@ -218,6 +219,7 @@ export function useAppDialog<DialogInput>(
                 ]}
                 enterStyle={{y: -10, opacity: 0}}
                 exitStyle={{y: -10, opacity: 0}}
+                {...options?.contentProps}
               >
                 {openState && (
                   <DialogContentComponent

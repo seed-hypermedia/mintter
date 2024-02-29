@@ -38,7 +38,7 @@ import {
 } from '../utils/navigation'
 import {NavRoute} from '../utils/routes'
 import {useListenAppEvent} from '../utils/window-events'
-import {useAppDialog} from './dialog'
+import {dialogBoxShadow, useAppDialog} from './dialog'
 
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
@@ -247,10 +247,19 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
     }
   }, [])
   let content = (
-    <ScrollView maxHeight={600}>
-      <YStack gap="$2" marginVertical="$2">
+    <ScrollView>
+      <YStack
+        gap="$2"
+        paddingVertical="$3"
+        paddingHorizontal="$3"
+        backgroundColor={'$background'}
+        borderTopStartRadius={0}
+        borderTopEndRadius={0}
+        borderBottomLeftRadius={6}
+        borderBottomRightRadius={6}
+      >
         {isDisplayingRecents ? (
-          <SizableText marginTop="$2" marginHorizontal="$4" color="$color10">
+          <SizableText color="$color10" marginHorizontal="$4">
             Recent Resources
           </SizableText>
         ) : null}
@@ -293,40 +302,64 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
     )
   }
   return (
-    <YStack>
-      <Input
-        autoFocus
-        value={search}
-        onChangeText={setSearch}
-        placeholder="Query URL, Search Documents, Groups, Accounts..."
-        disabled={!!actionPromise}
-        onKeyPress={(e) => {
-          if (e.nativeEvent.key === 'Escape') {
-            onClose()
-          }
-          if (e.nativeEvent.key === 'Enter') {
-            const item = activeItems[focusedIndex]
-            if (item) {
-              item.onSelect()
+    <YStack height="80%">
+      <YStack
+        backgroundColor="$background"
+        borderBottomEndRadius={0}
+        borderBottomStartRadius={0}
+        borderTopRightRadius={6}
+        borderTopLeftRadius={6}
+        // @ts-expect-error tamagui confused about boxShadow I guess
+        boxShadow={dialogBoxShadow}
+        padding="$3"
+        paddingBottom={0}
+      >
+        <Input
+          autoFocus
+          minHeight={42}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Query URL, Search Documents, Groups, Accounts..."
+          disabled={!!actionPromise}
+          onKeyPress={(e) => {
+            if (e.nativeEvent.key === 'Escape') {
+              onClose()
             }
-          }
-          if (e.nativeEvent.key === 'ArrowDown') {
-            setFocusedIndex((prev) => (prev + 1) % activeItems.length)
-          }
-          if (e.nativeEvent.key === 'ArrowUp') {
-            setFocusedIndex(
-              (prev) => (prev - 1 + activeItems.length) % activeItems.length,
-            )
-          }
-        }}
-      />
+            if (e.nativeEvent.key === 'Enter') {
+              const item = activeItems[focusedIndex]
+              if (item) {
+                item.onSelect()
+              }
+            }
+            if (e.nativeEvent.key === 'ArrowDown') {
+              e.preventDefault()
+              setFocusedIndex((prev) => (prev + 1) % activeItems.length)
+            }
+            if (e.nativeEvent.key === 'ArrowUp') {
+              e.preventDefault()
+              setFocusedIndex(
+                (prev) => (prev - 1 + activeItems.length) % activeItems.length,
+              )
+            }
+          }}
+        />
+      </YStack>
+
       {content}
     </YStack>
   )
 }
 
 export function Launcher() {
-  const launcher = useAppDialog(LauncherContent)
+  const launcher = useAppDialog(LauncherContent, {
+    contentProps: {
+      backgroundColor: '$colorTransparent',
+      padding: 0,
+      // @ts-expect-error tamagui confused about boxShadow I guess
+      boxShadow: 'none',
+      height: '75%',
+    },
+  })
   useListenAppEvent('openLauncher', () => {
     launcher.open({})
   })
