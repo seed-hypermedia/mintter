@@ -13,6 +13,7 @@ RUN apk add build-base
 RUN go install -ldflags="-X 'mintter/backend/daemon.commit=$COMMIT_HASH' -X 'mintter/backend/daemon.branch=$BRANCH' -X 'mintter/backend/daemon.date=$DATE'" ./backend/cmd/mintter-site/
 
 FROM alpine:latest
+RUN apk add rsync
 COPY --from=builder /go/bin/mintter-site /usr/local/bin/mintter-site
 COPY --from=builder /code/monitoring/grafana /grafana
 EXPOSE 55000 55001 55002
