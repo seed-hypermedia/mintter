@@ -46,4 +46,6 @@ export const LIGHTNING_API_URL = IS_PROD_DESKTOP
   ? 'https://ln.mintter.com'
   : 'https://ln.testnet.mintter.com'
 
-export const VITE_DESKTOP_SENTRY_DSN = import.meta.env.VITE_DESKTOP_SENTRY_DSN
+export const VITE_DESKTOP_SENTRY_DSN =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_SENTRY_DSN) ||
+  process.env.VITE_DESKTOP_SENTRY_DSN
