@@ -196,7 +196,10 @@ type BlobsListKnownResult struct {
 func BlobsListKnown(conn *sqlite.Conn) ([]BlobsListKnownResult, error) {
 	const query = `SELECT blobs.id, blobs.multihash, blobs.codec
 FROM blobs
-WHERE blobs.size >= 0`
+LEFT JOIN drafts ON drafts.blob = blobs.id
+WHERE blobs.size >= 0
+AND drafts.blob IS NULL
+ORDER BY blobs.id`
 
 	var out []BlobsListKnownResult
 

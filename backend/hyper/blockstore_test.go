@@ -16,6 +16,7 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
 
 func TestGet(t *testing.T) {
@@ -154,12 +155,12 @@ func TestAllKeysRespectsContext(t *testing.T) {
 
 	// consume 2, then cancel context.
 	v, ok := <-ch
-	require.Equal(t, keys[0], v)
 	require.True(t, ok)
+	require.True(t, slices.Contains(keys, v))
 
 	v, ok = <-ch
-	require.Equal(t, keys[1], v)
 	require.True(t, ok)
+	require.True(t, slices.Contains(keys, v))
 
 	cancel()
 
