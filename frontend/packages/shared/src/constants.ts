@@ -6,17 +6,36 @@
 export const IS_PROD_DESKTOP = !!import.meta.env?.PROD
 export const IS_DEV_DESKTOP = !!import.meta.env?.DEV
 
-export const P2P_PORT = import.meta.env.VITE_DESKTOP_P2P_PORT || 55000
-export const HTTP_PORT = import.meta.env.VITE_DESKTOP_HTTP_PORT || 55001
-export const GRPC_PORT = import.meta.env.VITE_DESKTOP_GRPC_PORT || 55002
+export const P2P_PORT =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_P2P_PORT) ||
+  process.env.VITE_DESKTOP_P2P_PORT ||
+  55000
+export const HTTP_PORT =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_HTTP_PORT) ||
+  process.env.VITE_DESKTOP_HTTP_PORT ||
+  55001
+export const GRPC_PORT =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_GRPC_PORT) ||
+  process.env.VITE_DESKTOP_GRPC_PORT ||
+  55002
 
 export const ELECTRON_HTTP_PORT =
-  import.meta.env.VITE_ELECTRON_HTTP_PORT || 55003
+  (import.meta.env && import.meta.env.VITE_ELECTRON_HTTP_PORT) ||
+  process.env.VITE_ELECTRON_HTTP_PORT ||
+  55003
 
-export const HOSTNAME = import.meta.env.VITE_DESKTOP_HOSTNAME
-export const DESKTOP_APPDATA = import.meta.env.VITE_DESKTOP_APPDATA || 'Mintter'
+export const HOSTNAME =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_HOSTNAME) ||
+  process.env.VITE_DESKTOP_HOSTNAME
+export const DESKTOP_APPDATA =
+  (import.meta.env && import.meta.env.VITE_DESKTOP_APPDATA) ||
+  process.env.VITE_DESKTOP_APPDATA ||
+  'Mintter'
 
-export const VERSION = import.meta.env.VITE_VERSION || '0.0.0'
+export const VERSION =
+  (import.meta.env && import.meta.env.VITE_VERSION) ||
+  process.env.VITE_VERSION ||
+  '0.0.0'
 
 export const API_HTTP_URL = `${HOSTNAME}:${HTTP_PORT}`
 export const API_FILE_UPLOAD_URL = `${HOSTNAME}:${HTTP_PORT}/ipfs/file-upload`
