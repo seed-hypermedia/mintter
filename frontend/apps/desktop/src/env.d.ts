@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __SENTRY_DSN__: string
+
 interface ImportMetaEnv {
   readonly VITE_DESKTOP_HTTP_PORT: string
   readonly VITE_DESKTOP_P2P_PORT: string

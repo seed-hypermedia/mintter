@@ -1,3 +1,4 @@
+import '@sentry/electron/preload'
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
 // import directly from this deep path for shared/utils/stream! Bad things happen if you try to directly import from @mintter/shared
