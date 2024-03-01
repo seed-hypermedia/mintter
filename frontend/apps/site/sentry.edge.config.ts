@@ -7,7 +7,7 @@ import * as Sentry from '@sentry/nextjs'
 
 if (process.env.NODE_ENV == 'production') {
   Sentry.init({
-    dsn: process.env.HM_SENTRY_SITE_DSN,
+    dsn: process.env.SITE_SENTRY_DSN,
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1,

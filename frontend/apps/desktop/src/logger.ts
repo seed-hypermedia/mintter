@@ -1,9 +1,10 @@
+import {IS_PROD_DESKTOP} from '@mintter/shared'
 import * as legacyLogger from 'electron-log'
 import {existsSync, rmSync} from 'fs'
 import {join} from 'path'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
-import {IS_PROD, userDataPath} from './app-paths'
+import {userDataPath} from './app-paths'
 
 export const legacyLogsFilePath = legacyLogger.transports.file.getFile().path
 
@@ -40,7 +41,7 @@ const winstonLogger = winston.createLogger({
   ],
 })
 
-if (!IS_PROD) {
+if (!IS_PROD_DESKTOP) {
   winstonLogger.add(
     new winston.transports.Console({
       format: winston.format.simple(),

@@ -49,7 +49,9 @@ if (IS_PROD_DESKTOP) {
 
   Sentry.init({
     debug: false,
-    dsn: process.env.HM_SENTRY_DESKTOP_DSN,
+    release: import.meta.env.VITE_VERSION,
+    environment: import.meta.env.MODE,
+    dsn: import.meta.env.VITE_DESKTOP_SENTRY_DSN,
     transportOptions: {
       // The maximum number of days to keep an event in the queue.
       maxQueueAgeDays: 30,

@@ -110,7 +110,7 @@ def main():
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
         run("plz build //backend:mintterd //:yarn")
-        run("yarn desktop:make")
+        run("VITE_DESKTOP_APPDATA=Mintter.local yarn desktop:make")
 
     @cmd(cmds, "test-desktop", "Run frontend desktop tests.")
     def test_desktop(args):

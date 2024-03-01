@@ -27,16 +27,33 @@
  */
 import {IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/renderer'
+
 import './root.tsx'
 
 if (IS_PROD_DESKTOP) {
   Sentry.init({
-    dsn: process.env.HM_SENTRY_DESKTOP_DSN,
+    dsn: import.meta.env.VITE_DESKTOP_SENTRY_DSN,
+    release: import.meta.env.VITE_VERSION,
+    environment: import.meta.env.MODE,
     debug: false,
-    integrations: [new Sentry.Replay()],
+    integrations: [new Sentry.Replay(), new Sentry.BrowserTracing()],
+    tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.25,
+    tracePropagationTargets: ['localhost', /^https:\/\/hyper\.media\//],
     // Session Replay
     replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
     replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+    // The maximum number of days to keep an event in the queue.
+    maxQueueAgeDays: 30,
+    // The maximum number of events to keep in the queue.
+    maxQueueCount: 30,
+    // Called every time the number of requests in the queue changes.
+    // queuedLengthChanged: (length) => {},
+    // Called before attempting to send an event to Sentry. Used to override queuing behavior.
+    //
+    // Return 'send' to attempt to send the event.
+    // Return 'queue' to queue and persist the event for sending later.
+    // Return 'drop' to drop the event.
+    // beforeSend: (request) => (isOnline() ? 'send' : 'queue'),
   })
 }
 // setTimeout(() => {

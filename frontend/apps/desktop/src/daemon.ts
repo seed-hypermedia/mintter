@@ -1,15 +1,23 @@
-import {GRPC_PORT, HTTP_PORT, P2P_PORT, VERSION} from '@mintter/shared'
+import {
+  GRPC_PORT,
+  HTTP_PORT,
+  IS_PROD_DESKTOP,
+  P2P_PORT,
+  VERSION,
+} from '@mintter/shared'
 import {spawn} from 'child_process'
 import {app} from 'electron'
 import path from 'path'
-import {IS_PROD, userDataPath} from './app-paths'
+import {userDataPath} from './app-paths'
 import {getDaemonBinaryPath} from './daemon-path'
 import {childLogger, info} from './logger'
 const logger = childLogger('Go Daemon')
 
 let goDaemonExecutablePath = getDaemonBinaryPath()
 
-let lndhubFlags = IS_PROD ? '-lndhub.mainnet=true' : '-lndhub.mainnet=false'
+let lndhubFlags = IS_PROD_DESKTOP
+  ? '-lndhub.mainnet=true'
+  : '-lndhub.mainnet=false'
 
 const daemonArguments = [
   '-http.port',
@@ -25,12 +33,8 @@ const daemonArguments = [
   `${userDataPath}/daemon`,
 
   lndhubFlags,
-  'SENTRY_DSN=https://8d3089ffb71045dc911bc66efbd3463a@o4504088793841664.ingest.sentry.io/4505527460429824',
+  `SENTRY_DSN=${__SENTRY_DSN__}`,
 ]
-
-if (process.env.SENTRY_AUTH_TOKEN) {
-  daemonArguments.push(`SENTRY_AUTH_TOKEN=${process.env.SENTRY_AUTH_TOKEN}`)
-}
 
 console.log(`== ~ daemonArguments:`, daemonArguments)
 
