@@ -53,17 +53,10 @@ services:
       - internal_network
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mtt-site:rw
-    command:
-      - "mintter-site"
-      - "-data-dir=/.mtt-site"
-      - "-lndhub.mainnet"
-      - "-p2p.port=56000"
-      - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
-      - "-syncing.allow-push=${MTT_SITE_ALLOW_PUSH:-false}"
-      - "-grpc.port=56002"
-      - "-syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true}"
-      - "-syncing.no-pull=${MTT_SITE_NO_PULL:-true}"
-      - "${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/dashboards:rw
+    command: >
+      sh -c "rsync -a grafana/dashboards/ /dashboards &&
+             mintter-site -data-dir=/.mtt-site -lndhub.mainnet -p2p.port=56000 --http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001} -syncing.allow-push=${MTT_SITE_ALLOW_PUSH:-false} -grpc.port=56002 -syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true} -syncing.no-pull=${MTT_SITE_NO_PULL:-true} ${MTT_SITE_HOSTNAME:-http://nextjs}"
 
   prometheus:
     image: prom/prometheus:latest
@@ -71,6 +64,8 @@ services:
     container_name: prometheus
     profiles:
       - metrics
+    depends_on:
+      - minttersite
     networks:
       - internal_network
     extra_hosts:
@@ -96,13 +91,15 @@ services:
     image: grafana/grafana:main
     restart: unless-stopped
     container_name: grafana
+    depends_on:
+      - prometheus
     profiles:
       - metrics
     networks:
       - internal_network
     volumes:
       - grafana-data:/var/lib/grafana
-      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/etc/grafana/dashboards
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/etc/grafana/dashboards:ro
       - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/provisioning:/etc/grafana/provisioning
     environment:
       GF_LOG_MODE: console
