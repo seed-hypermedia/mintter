@@ -15,6 +15,7 @@ RUN go install -ldflags="-X 'mintter/backend/daemon.commit=$COMMIT_HASH' -X 'min
 FROM alpine:latest
 RUN apk add rsync
 COPY --from=builder /go/bin/mintter-site /usr/local/bin/mintter-site
-COPY --from=builder /code/monitoring/grafana /grafana
+COPY --from=builder /code/monitoring/grafana /monitoring/grafana
+COPY --from=builder /code/monitoring/prometheus /monitoring/prometheus
 EXPOSE 55000 55001 55002
 CMD ["/usr/local/bin/mintter-site"]
