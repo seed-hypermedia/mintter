@@ -67,7 +67,10 @@ func generateQueries() error {
 				s.BlobsCodec,
 			), '\n',
 			"FROM", s.Blobs, '\n',
-			"WHERE", s.BlobsSize, ">=", "0",
+			"LEFT JOIN", s.Drafts, "ON", s.DraftsBlob, "=", s.BlobsID, '\n',
+			"WHERE", s.BlobsSize, ">=", "0", '\n',
+			"AND", s.DraftsBlob, "IS NULL", '\n',
+			"ORDER BY", s.BlobsID,
 		),
 
 		qb.MakeQuery(s.Schema, "BlobLinksInsertOrIgnore", sgen.QueryKindExec,

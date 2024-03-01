@@ -35,6 +35,12 @@ CREATE TABLE blobs (
     insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 );
 
+-- Index for better data locality when we need to iterate over blobs without their data.
+-- Without the index loading the entire list of blobs into memory takes forever,
+-- because SQLite has to read way too many pages skipping the actual blob data.
+CREATE INDEX blobs_metadata ON blobs (id, multihash, codec, size, insert_time);
+CREATE INDEX blobs_metadata_by_hash ON blobs (multihash, codec, size, insert_time);
+
 -- Stores some relevant attributes for structural blobs,
 -- which are those blobs that we can understand more deeply than just an opaque blob.
 CREATE TABLE structural_blobs (

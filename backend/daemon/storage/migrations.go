@@ -362,6 +362,12 @@ var migrations = []migration{
 			DELETE FROM kv WHERE key = 'last_reindex_time';
 		`))
 	}},
+	{Version: "2024-03-01.03", Run: func(_ *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE INDEX blobs_metadata ON blobs (id, multihash, codec, size, insert_time);
+			CREATE INDEX blobs_metadata_by_hash ON blobs (multihash, codec, size, insert_time);
+		`))
+	}},
 }
 
 const (
