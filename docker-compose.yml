@@ -53,9 +53,11 @@ services:
       - internal_network
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mtt-site:rw
-      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/dashboards:rw
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana:/exported_grafana:rw
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/prometheus:/exported_prometheus:rw
     command: >
-      sh -c "rsync -a grafana/dashboards/ /dashboards &&
+      sh -c "rsync -a /monitoring/prometheus/ /exported_prometheus &&
+             rsync -a /monitoring/grafana/ /exported_grafana && 
              mintter-site -data-dir=/.mtt-site -lndhub.mainnet -p2p.port=56000 --http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001} -syncing.allow-push=${MTT_SITE_ALLOW_PUSH:-false} -grpc.port=56002 -syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true} -syncing.no-pull=${MTT_SITE_NO_PULL:-true} ${MTT_SITE_HOSTNAME:-http://nextjs}"
 
   prometheus:
@@ -72,7 +74,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - prometheus-data:/prometheus
-      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -100,7 +102,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/dashboards:/etc/grafana/dashboards:ro
-      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/provisioning:/etc/grafana/provisioning
+      - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
       GF_LOG_MODE: console
       GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"

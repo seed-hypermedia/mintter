@@ -71,12 +71,6 @@ if [ -n "$profile" ]; then
 	mkdir -p ${workspace}/monitoring/grafana/provisioning/dashboards
 	mkdir -p ${workspace}/monitoring/grafana/provisioning/datasources
 	mkdir -p ${workspace}/monitoring/prometheus
-	curl -s -o ${workspace}/monitoring/grafana/provisioning/datasources/main.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/datasources/main.yaml
-	curl -s -o ${workspace}/monitoring/grafana/provisioning/dashboards/main.yml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/provisioning/dashboards/main.yml
-	curl -s -o ${workspace}/monitoring/grafana/dashboards/libp2p/resource-manager.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/libp2p/resource-manager.json
-	curl -s -o ${workspace}/monitoring/grafana/dashboards/mintter/p2p.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/mintter/p2p.json
-	curl -s -o ${workspace}/monitoring/grafana/dashboards/system/full-host.json https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/grafana/dashboards/system/full-host.json
-	curl -s -o ${workspace}/monitoring/prometheus/prometheus.yaml https://raw.githubusercontent.com/MintterHypermedia/mintter/main/monitoring/prometheus/prometheus.yaml
 fi
 docker stop nextjs minttersite proxy grafana prometheus 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 docker rm nextjs minttersite proxy grafana prometheus 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
