@@ -176,7 +176,7 @@ export function createReactBlockSpec<
   })
 
   return {
-    node: node,
+    node,
     propSchema: blockConfig.propSchema,
   }
 }

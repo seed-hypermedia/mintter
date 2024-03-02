@@ -145,6 +145,8 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
   public readonly schema: BSchema
   public ready = false
 
+  public inlineEmbedOptions = []
+
   public readonly sideMenu: SideMenuProsemirrorPlugin<BSchema>
   public readonly formattingToolbar: FormattingToolbarProsemirrorPlugin<BSchema>
   public readonly slashMenu: SlashMenuProsemirrorPlugin<BSchema, any>
@@ -160,6 +162,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
       blockSchema: BSchema
       // TODO: add proper types to this
       linkExtensionOptions?: any
+      inlineEmbedOptions?: any
     } = {
       defaultStyles: true,
       // TODO: There's a lot of annoying typing stuff to deal with here. If
@@ -181,6 +184,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
     )
     this.hyperlinkToolbar = new HyperlinkToolbarProsemirrorPlugin(this)
     this.linkMenu = new LinkMenuProsemirrorPlugin(this)
+    this.inlineEmbedOptions = newOptions.inlineEmbedOptions
 
     const extensions = getBlockNoteExtensions<BSchema>({
       editor: this,
@@ -189,6 +193,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
       collaboration: newOptions.collaboration,
       editable: newOptions.editable,
       linkExtensionOptions: newOptions.linkExtensionOptions,
+      inlineEmbedOptions: newOptions.inlineEmbedOptions,
     })
 
     const blockNoteUIExtension = Extension.create({
@@ -206,7 +211,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
     })
     extensions.push(blockNoteUIExtension)
 
-    this.schema = newOptions.blockSchema
+    this.schema = {
+      ...newOptions.blockSchema,
+    }
 
     const initialContent =
       newOptions.initialContent ||
@@ -234,6 +241,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
         // we have to set the initial content here, because now we can use the editor schema
         // which has been created at this point
         const schema = editor.editor.schema
+
         const ic = initialContent.map((block) => blockToNode(block, schema))
 
         const root = schema.node(
@@ -284,7 +292,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
       tiptapOptions.element = newOptions.parentElement
     }
 
-    this._tiptapEditor = new Editor(tiptapOptions) as Editor & {
+    this._tiptapEditor = new Editor({
+      ...tiptapOptions,
+    }) as Editor & {
       contentComponent: any
     }
   }
@@ -303,6 +313,14 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
 
   public focus() {
     this._tiptapEditor.view.focus()
+  }
+
+  public setInlineEmbedOptions(newOpts: any) {
+    this.inlineEmbedOptions = newOpts
+  }
+
+  public get mentionOptions() {
+    return this.inlineEmbedOptions
   }
 
   /**

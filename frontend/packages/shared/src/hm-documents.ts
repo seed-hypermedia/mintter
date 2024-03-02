@@ -31,13 +31,15 @@ export type HMInlineContentLink = {
   type: 'link'
   href: string
   content: Array<HMInlineContentText>
+  attributes: {
+    [key: string]: any
+  }
 }
 
-export type HMInlineContentMention = {
-  type: 'mention'
+export type HMInlineContentEmbed = {
+  type: 'inline-embed'
   ref: string
   text: string
-  styles?: HMStyles
 }
 
 export type PartialLink = Omit<HMInlineContentLink, 'content'> & {
@@ -47,7 +49,7 @@ export type PartialLink = Omit<HMInlineContentLink, 'content'> & {
 export type HMInlineContent =
   | HMInlineContentText
   | HMInlineContentLink
-  | HMInlineContentMention
+  | HMInlineContentEmbed
 export type PartialInlineContent = HMInlineContentText | PartialLink
 export type HMBlockProps<T = unknown> = {
   childrenType?: HMBlockChildrenType
@@ -184,10 +186,8 @@ export type HMComment = {
   createTime?: HMTimestamp
 }
 
-export type InlineEmbedAnnotation = {
-  type: 'embed'
-  starts: number[]
-  ends: number[]
+export type InlineEmbedAnnotation = BaseAnnotation & {
+  type: 'inline-embed'
   ref: string // 'hm://... with #BlockRef
   attributes: {}
 }

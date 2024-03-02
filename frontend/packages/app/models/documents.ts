@@ -47,7 +47,7 @@ import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
-import {NavRoute} from '../utils/routes'
+import {DraftRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
@@ -469,7 +469,15 @@ export function useDraftEditor({
   const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
+  const accounts = useAllAccounts(true)
+  const gotEdited = useRef(false)
   const deleteDraft = useDeleteDraft({})
+
+  useEffect(() => {
+    if (accounts.data?.accounts.length) {
+      editor?.setInlineEmbedOptions(accounts.data.accounts)
+    }
+  }, [accounts.data])
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
@@ -622,6 +630,8 @@ export function useDraftEditor({
                     value: JSON.stringify(res),
                   })
 
+                  invalidate([queryKeys.GET_DRAFT_LIST])
+
                   return res
                 })
             }
@@ -641,6 +651,8 @@ export function useDraftEditor({
               existingDocumentId: documentId,
             })
 
+            invalidate([queryKeys.GET_DRAFT_LIST])
+
             return newDraft
           } catch (error) {
             throw new Error(`Error resetting: ${JSON.stringify(error)}`)
@@ -656,9 +668,22 @@ export function useDraftEditor({
 
   const gwUrl = useGatewayUrlStream()
 
+  useEffect(() => {
+    return () => {
+      if (!gotEdited.current && backendDraft.data?.children.length == 0) {
+        // this means the draft was not edited
+        deleteDraft.mutate((route as DraftRoute).draftId!)
+      }
+    }
+  }, [backendDraft.data])
+
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
+      if (!gotEdited.current) {
+        gotEdited.current = true
+      }
+
       writeEditorStream(editor.topLevelBlocks)
       observeBlocks(
         editor,
@@ -678,12 +703,10 @@ export function useDraftEditor({
         return
       const domAtPos = view.domAtPos(selection.from)
       try {
-        // @ts-expect-error
         const rect: DOMRect = domAtPos.node.getBoundingClientRect()
         // Check if the cursor is off screen
         if ((rect && rect.top < 0) || rect.bottom > window.innerHeight) {
           // Scroll the cursor into view
-          // @ts-expect-error
           domAtPos.node.scrollIntoView({block: 'center'})
         }
       } catch {}
@@ -1222,7 +1245,6 @@ export function useAccountPublications(accountId: string) {
       const result = await grpcClient.publications.listAccountPublications({
         accountId,
       })
-      // @ts-expect-error
       const publications: HMPublication[] = result.publications
         .map((pub) => hmPublication(pub))
         .filter(Boolean)
