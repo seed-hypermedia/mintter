@@ -120,6 +120,14 @@ export function inlineContentToNodes(
       nodes.push(...linkToNodes(content, schema))
     } else if (content.type === 'text') {
       nodes.push(...styledTextArrayToNodes([content], schema))
+    } else if (content.type == 'inline-embed') {
+      console.log('== INLINE EMBED', content)
+      console.log(`== ~ schema:`, schema)
+      nodes.push(
+        schema.nodes['inline-embed'].create({
+          ref: content.ref,
+        }),
+      )
     } else {
       throw new UnreachableCaseError(content)
     }
@@ -217,6 +225,19 @@ function contentNodeToInlineContent(contentNode: Node) {
       }
 
       return
+    }
+
+    if (node.type.name == 'inline-embed') {
+      if (currentContent) {
+        content.push(currentContent)
+      }
+
+      content.push({
+        type: node.type.name,
+        ref: node.attrs.ref,
+      })
+
+      currentContent = undefined
     }
 
     const styles: Styles = {}

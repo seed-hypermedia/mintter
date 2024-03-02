@@ -4,6 +4,7 @@ import {Extensions, extensions} from '@tiptap/core'
 import {BlockNoteEditor} from './BlockNoteEditor'
 
 import {LocalMediaPastePlugin} from '@/handle-local-media-paste-plugin'
+import {createInlineEmbedNode} from '@/mentions-plugin'
 import Link from '@/tiptap-extension-link'
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
@@ -43,6 +44,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   blockSchema: BSchema
   // TODO: properly type this.
   linkExtensionOptions: any
+  inlineEmbedOptions: any
   collaboration?: {
     fragment: Y.XmlFragment
     user: {
@@ -54,6 +56,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   }
 }) => {
   const ret: Extensions = [
+    createInlineEmbedNode(opts.editor),
     extensions.ClipboardTextSerializer,
     extensions.Commands,
     extensions.Editable,
@@ -100,12 +103,12 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     BlockGroup.configure({
       domAttributes: opts.domAttributes,
     }),
-    ...Object.values(opts.blockSchema).map((blockSpec) =>
-      blockSpec.node.configure({
+    ...Object.values(opts.blockSchema).map((blockSpec) => {
+      return blockSpec.node.configure({
         editor: opts.editor,
         domAttributes: opts.domAttributes,
-      }),
-    ),
+      })
+    }),
     CustomBlockSerializerExtension,
 
     Dropcursor.configure({width: 5, color: '#ddeeff'}),

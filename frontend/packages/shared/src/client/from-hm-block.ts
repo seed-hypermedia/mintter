@@ -47,54 +47,54 @@ export function extractContent(content: Array<HMInlineContent>): {
       })
       charIndex += linkLength
     } else {
-      // if (inline.type == 'embed') {
-      //   const inlineLength = 1
-      //   annotations.push({
-      //     type: 'embed',
-      //     ref: inline.ref,
-      //     starts: [charIndex],
-      //     ends: [charIndex + inlineLength],
-      //     attributes: {},
-      //   })
+      if (inline.type == 'inline-embed') {
+        const inlineLength = 1
+        annotations.push({
+          type: 'inline-embed',
+          ref: inline.ref,
+          starts: [charIndex],
+          ends: [charIndex + inlineLength],
+          attributes: {},
+        })
 
-      //   text += ' '
-      //   charIndex++
-      // } else {
-      const inlineLength = inline.text.length
+        text += ' '
+        charIndex++
+      } else {
+        const inlineLength = inline.text.length
 
-      // Check for style starts
-      if ('styles' in inline) {
-        const {styles} = inline
-        for (const style in styles) {
-          if (
-            styles[style as keyof Styles] &&
-            styleStarts[style] === undefined
-          ) {
-            styleStarts[style] = charIndex
+        // Check for style starts
+        if ('styles' in inline) {
+          const {styles} = inline
+          for (const style in styles) {
+            if (
+              styles[style as keyof Styles] &&
+              styleStarts[style] === undefined
+            ) {
+              styleStarts[style] = charIndex
+            }
+          }
+
+          // Check for style ends
+          for (const style in styleStarts) {
+            if (
+              styles &&
+              !styles[style as keyof Styles] &&
+              styleStarts[style] !== undefined
+            ) {
+              // @ts-expect-error
+              annotations.push({
+                type: styleMarkToAnnotationType(style as keyof Styles),
+                starts: [styleStarts[style]],
+                ends: [charIndex],
+              })
+              delete styleStarts[style]
+            }
           }
         }
 
-        // Check for style ends
-        for (const style in styleStarts) {
-          if (
-            styles &&
-            !styles[style as keyof Styles] &&
-            styleStarts[style] !== undefined
-          ) {
-            // @ts-expect-error
-            annotations.push({
-              type: styleMarkToAnnotationType(style as keyof Styles),
-              starts: [styleStarts[style]],
-              ends: [charIndex],
-            })
-            delete styleStarts[style]
-          }
-        }
+        text += inline.text
+        charIndex += inlineLength
       }
-
-      text += inline.text
-      charIndex += inlineLength
-      // }
     }
   })
 

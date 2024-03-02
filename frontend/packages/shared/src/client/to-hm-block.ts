@@ -9,6 +9,8 @@ import {
   HMBlockParagraph,
   HMBlockVideo,
   HMInlineContent,
+  HMInlineContentEmbed,
+  HMInlineContentLink,
   HMStyles,
 } from '../hm-documents'
 import {getCIDFromIPFSUrl} from '../utils'
@@ -64,12 +66,17 @@ function annotationStyle(a: Annotation): HMStyles {
 }
 
 export function toHMInlineContent(block: Block): Array<HMInlineContent> {
-  const linkAnnotations = block.annotations?.filter((a) => a.type === 'link')
-  if (!linkAnnotations?.length) {
+  const linkAndEmbedAnnotations = block.annotations?.filter(
+    (a) => a.type == 'link' || a.type == 'inline-embed',
+  )
+
+  if (!linkAndEmbedAnnotations?.length) {
     return partialBlockToStyledText(block)
   }
+
+  // link annotations
   if (
-    linkAnnotations.find((a) => {
+    linkAndEmbedAnnotations.find((a) => {
       if (a.starts.length !== 1) return true
       if (a.ends.length !== 1) return true
     })
@@ -78,7 +85,7 @@ export function toHMInlineContent(block: Block): Array<HMInlineContent> {
       'Invalid link annotations in this block. only one range per annotation',
     )
   }
-  const sortedLinkAnnotations = linkAnnotations.sort(
+  const sortedLinkAndEmbedAnnotations = linkAndEmbedAnnotations.sort(
     (a, b) => a.starts[0] - b.starts[0],
   )
 
@@ -95,27 +102,34 @@ export function toHMInlineContent(block: Block): Array<HMInlineContent> {
     })
   }
 
-  let linkStart = sortedLinkAnnotations[0].starts[0]
+  let linkStart = sortedLinkAndEmbedAnnotations[0].starts[0]
   const inlines: Array<HMInlineContent> = []
   inlines.push(...getSlicedContent(0, linkStart))
 
-  sortedLinkAnnotations.forEach((a, aIndex) => {
+  sortedLinkAndEmbedAnnotations.forEach((a, aIndex) => {
     const length = a.ends[0] - a.starts[0]
     const linkEnd = linkStart + length
 
-    inlines.push({
-      type: 'link',
-      href: a.ref,
-      content: getSlicedContent(linkStart, linkEnd),
-    })
+    if (a.type == 'link') {
+      inlines.push({
+        type: a.type,
+        href: a.ref,
+        content: getSlicedContent(linkStart, linkEnd),
+      } as HMInlineContentLink)
+    } else {
+      inlines.push({
+        type: a.type,
+        ref: a.ref,
+      } as HMInlineContentEmbed)
+    }
 
     const nonLinkContentEnd =
-      sortedLinkAnnotations[aIndex + 1]?.starts[0] || block.text.length
+      sortedLinkAndEmbedAnnotations[aIndex + 1]?.starts[0] || block.text.length
     inlines.push(...getSlicedContent(linkEnd, nonLinkContentEnd))
 
     linkStart = nonLinkContentEnd
   })
-
+  console.log(`== ~ toHMInlineContent ~ inlines:`, inlines)
   return inlines
 }
 
@@ -205,7 +219,7 @@ export function toHMBlockParagraph(
   // if (opts?.paragraphType === 'code') type = 'code'
   // if (opts?.paragraphType === 'blockquote') type = 'blockquote'
   let childrenType = extractChildrenType(block.attributes.childrenType)
-  return {
+  let result = {
     id: block.id,
     type: 'paragraph',
     content: toHMInlineContent(block),
@@ -217,6 +231,9 @@ export function toHMBlockParagraph(
       childrenType,
     },
   }
+
+  console.log(`== ~ result:`, result)
+  return result
 }
 
 export function toHMBlockHeading(
@@ -275,7 +292,6 @@ export function toHMBlock(
     }
 
     if (serverBlock.block?.type === 'file') {
-      console.log(serverBlock.block)
       if (serverBlock.block.attributes.subType?.startsWith('nostr:')) {
         res = {
           type: 'nostr',

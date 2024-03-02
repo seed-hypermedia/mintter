@@ -7,24 +7,6 @@ import {NavMode, useNavRoute} from './navigation'
 import {DraftRoute} from './routes'
 import {useNavigate} from './useNavigate'
 
-async function createDraft(
-  grpcClient: GRPCClient,
-  initialTitle?: string,
-): Promise<string> {
-  const doc = await grpcClient.drafts.createDraft({})
-  if (initialTitle) {
-    await grpcClient.drafts.updateDraft({
-      documentId: doc.id,
-      changes: [
-        new DocumentChange({
-          op: {case: 'setTitle', value: initialTitle},
-        }),
-      ],
-    })
-  }
-  return doc.id
-}
-
 export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   const navigate = useNavigate(navigateMode)
   const route = useNavRoute()
@@ -50,4 +32,22 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
       })
   }
   return openNewDraft
+}
+
+async function createDraft(
+  grpcClient: GRPCClient,
+  initialTitle?: string,
+): Promise<string> {
+  const doc = await grpcClient.drafts.createDraft({})
+  if (initialTitle) {
+    await grpcClient.drafts.updateDraft({
+      documentId: doc.id,
+      changes: [
+        new DocumentChange({
+          op: {case: 'setTitle', value: initialTitle},
+        }),
+      ],
+    })
+  }
+  return doc.id
 }

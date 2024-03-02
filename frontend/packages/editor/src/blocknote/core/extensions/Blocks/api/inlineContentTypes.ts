@@ -28,9 +28,14 @@ export type Link = {
   content: StyledText[]
 }
 
+export type InlineEmbed = {
+  type: 'inline-embed'
+  ref: string
+}
+
 export type PartialLink = Omit<Link, 'content'> & {
   content: string | Link['content']
 }
 
-export type InlineContent = StyledText | Link
+export type InlineContent = StyledText | Link | InlineEmbed
 export type PartialInlineContent = StyledText | PartialLink

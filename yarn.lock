@@ -3963,14 +3963,14 @@ __metadata:
   linkType: hard
 
 "@graphql-tools/merge@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "@graphql-tools/merge@npm:9.0.1"
+  version: 9.0.2
+  resolution: "@graphql-tools/merge@npm:9.0.2"
   dependencies:
     "@graphql-tools/utils": ^10.0.10
     tslib: ^2.4.0
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: f078628838f57dcd2988b46ec27ce4786daef6e7fdd07c012acec2fe52139f4a905a101883eb0fa7094d1ace6d1b10e6a8d40c03778496b50e85093b36316e4e
+  checksum: fe852c38ad9ebb44410096d30f371c70c0deeb52fe6a70d2225c3e1db5f1502eb4c9198fb264a63fa60abc49887602bb776ff32d94713a1f0cdf9d4cce2f1a81
   languageName: node
   linkType: hard
 

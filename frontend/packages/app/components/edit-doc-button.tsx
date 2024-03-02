@@ -6,7 +6,9 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {GroupVariant, PublicationVariant} from '@mintter/shared'
 import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
+import {useQueryInvalidator} from '../app-context'
 import appError from '../errors'
+import {queryKeys} from '../models/query-keys'
 import {DocumentsRoute, GroupRoute, PublicationRoute} from '../utils/routes'
 
 export function useEditDraft(
@@ -25,6 +27,7 @@ export function useEditDraft(
 ) {
   const draftList = useDraftList()
   const navigate = useNavigate(navMode)
+  const invalidate = useQueryInvalidator()
 
   const hasExistingDraft = draftList.data?.documents.some(
     (draft) => draft.id == docId,
@@ -54,12 +57,14 @@ export function useEditDraft(
         existingDocumentId: docId,
         version,
       })
+
       navigate({
         key: 'draft',
         draftId: draft.id,
         contextRoute,
         variant: singleGroupVariant,
       })
+      invalidate([queryKeys.GET_DRAFT_LIST])
     } catch (error: any) {
       if (
         error?.message.match('[failed_precondition]') &&
