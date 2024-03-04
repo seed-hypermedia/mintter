@@ -108,7 +108,11 @@ export function PublicationListItem({
                   : undefined
               }
             >
-              {pathName}
+              {pathName.length > 40
+                ? `${pathName.slice(0, 15)}.....${pathName.slice(
+                    pathName.length - 15,
+                  )}`
+                : pathName}
             </ButtonText>
           )}
           <XStack>
