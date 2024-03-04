@@ -163,14 +163,16 @@ export function useDeletePublication(
   })
 }
 
-export function usePublication({
-  id,
-  version,
-  ...options
-}: UseQueryOptions<HMPublication> & {
-  id?: string
-  version?: string
-}) {
+export function usePublication(
+  {
+    id,
+    version,
+  }: {
+    id?: string
+    version?: string
+  },
+  options: UseQueryOptions<HMPublication>,
+) {
   const grpcClient = useGRPCClient()
   return useQuery({
     ...queryPublication(grpcClient, id, version),
