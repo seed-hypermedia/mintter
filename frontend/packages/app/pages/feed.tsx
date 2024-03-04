@@ -90,7 +90,7 @@ function FeedItemContainer({
   footer,
   header,
 }: {
-  children: ReactNode
+  children?: ReactNode
   linkId?: UnpackedHypermediaId
   maxContentHeight?: number
   footer?: ReactNode
@@ -316,12 +316,13 @@ function GroupContentChangeFeedItem({
         variants: [{key: 'group', groupId: group.id, pathName} as const],
       }
     : undefined
-  if (!docId)
+  if (!docId) {
     return (
       <ErrorFeedItem
-        message={`Unhandled Group Content Change: unrecognized content URL: ${contentUrl}`}
+        message={`Unhandled Group Content Change: unrecognized content URL for ${pathName}: ${contentUrl}`}
       />
     )
+  }
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -375,8 +376,30 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
   const contentPatch = patchEntries.find(([key]) => key === 'content')
   const contentUpdate = contentPatch?.[1]
   const contentEntries = Object.entries(contentUpdate || {})
+  const linkId = hmId('g', id.eid, {version: cid})
   if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
     const [pathName, contentUrl] = contentEntries[0]
+    if (contentUrl === '') {
+      return (
+        <FeedItemContainer
+          linkId={linkId}
+          header={
+            <FeedItemHeader
+              author={author}
+              eventTime={eventTime}
+              message={
+                <>
+                  removed {pathName} from{' '}
+                  <EntityLink id={linkId}>
+                    {group.data?.title || 'Untitled Group'}
+                  </EntityLink>
+                </>
+              }
+            />
+          }
+        />
+      )
+    }
     return (
       <GroupContentChangeFeedItem
         {...props}
@@ -390,7 +413,6 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
   const updates = getPatchedGroupEntries(groupChange.data?.patch || {}, id.qid)
   if (groupChange.data && updates.length === 0)
     console.warn('No updates found for group change', groupChange.data?.patch)
-  const linkId = hmId('g', id.eid, {version: cid})
   return (
     <FeedItemContainer
       linkId={linkId}
