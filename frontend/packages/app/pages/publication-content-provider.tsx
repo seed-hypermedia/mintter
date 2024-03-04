@@ -9,6 +9,7 @@ import {
 import 'allotment/dist/style.css'
 import {useAppContext} from '../app-context'
 import {
+  AppInlineEmbed,
   EmbedAccount,
   EmbedComment,
   EmbedGroup,
@@ -41,6 +42,7 @@ export function AppPublicationContentProvider({
           PublicationCard: EmbedPublicationCard,
           PublicationContent: EmbedPublicationContent,
           CommentCard: EmbedComment,
+          InlineEmbed: AppInlineEmbed,
         }}
         onLinkClick={(href, e) => {
           e.preventDefault()

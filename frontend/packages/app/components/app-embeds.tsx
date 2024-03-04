@@ -7,6 +7,7 @@ import {
   EmbedContentAccount,
   EmbedContentGroup,
   EntityComponentProps,
+  InlineEmbedComponentProps,
   PublicationCardView,
   blockStyles,
   createHmId,
@@ -236,7 +237,20 @@ export function EmbedAccount(props: EntityComponentProps) {
 
   return accountQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
-      <EmbedContentAccount account={accountQuery.data} />
+      <EmbedContentAccount account={accountQuery.data!} />
     </EmbedWrapper>
   ) : null
+}
+
+export function AppInlineEmbed(props: InlineEmbedComponentProps) {
+  const accountId = props?.type == 'a' ? props.eid : undefined
+  const accountQuery = useAccount(accountId)
+  return (
+    <SizableText color="$blue9" fontWeight="600">
+      {(accountId &&
+        accountQuery.status == 'success' &&
+        `@${accountQuery.data?.profile?.alias}`) ||
+        `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+    </SizableText>
+  )
 }

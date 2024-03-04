@@ -7,6 +7,7 @@ import {
   EmbedContentGroup,
   EntityComponentProps,
   ErrorBlock,
+  InlineEmbedComponentProps,
   PublicationCardView,
   PublicationContentProvider,
   UnpackedHypermediaId,
@@ -55,6 +56,7 @@ export function SitePublicationContentProvider({
         PublicationContent: EmbedPublicationContent,
         PublicationCard: EmbedPublicationCard,
         CommentCard: EmbedComment,
+        InlineEmbed: SiteInlineEmbed,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -308,4 +310,18 @@ export function EmbedAccount(props: EntityComponentProps) {
 
 function stripHMLinkPrefix(link: string) {
   return link.replace(/^hm:\//, '')
+}
+
+export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
+  const accountId = props?.type == 'a' ? props.eid : undefined
+  const accountQuery = trpc.account.get.useQuery({accountId})
+  const account = accountQuery.data?.account
+  return (
+    <SizableText color="$blue9" fontWeight="600">
+      {(accountId &&
+        accountQuery.status == 'success' &&
+        `@${account?.profile?.alias}`) ||
+        `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+    </SizableText>
+  )
 }
