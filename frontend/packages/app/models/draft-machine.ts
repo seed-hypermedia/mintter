@@ -14,6 +14,7 @@ export const draftMachine = createMachine(
       title: '',
       errorMessage: '',
       restoreTries: 0,
+      changed: false,
     },
     id: 'Draft',
     initial: 'fetching',
@@ -116,6 +117,9 @@ export const draftMachine = createMachine(
             entry: [
               {
                 type: 'indicatorChange',
+              },
+              {
+                type: 'setchanged',
               },
             ],
             after: {
@@ -273,6 +277,7 @@ export const draftMachine = createMachine(
         title: string
         errorMessage: string
         restoreTries: number
+        changed: boolean
       },
     },
   },
@@ -283,6 +288,13 @@ export const draftMachine = createMachine(
       }),
       resetChangeWhileSaving: assign({
         hasChangedWhileSaving: false,
+      }),
+      setchanged: assign({
+        changed: ({context}) => {
+          if (!context.changed) {
+            return true
+          }
+        },
       }),
       setCurrentBlocksmap: assign({
         // @ts-expect-error

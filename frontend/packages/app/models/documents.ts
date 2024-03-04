@@ -47,7 +47,7 @@ import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
-import {DraftRoute, NavRoute} from '../utils/routes'
+import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
@@ -668,15 +668,6 @@ export function useDraftEditor({
 
   const gwUrl = useGatewayUrlStream()
 
-  useEffect(() => {
-    return () => {
-      if (!gotEdited.current && backendDraft.data?.children.length == 0) {
-        // this means the draft was not edited
-        deleteDraft.mutate((route as DraftRoute).draftId!)
-      }
-    }
-  }, [backendDraft.data])
-
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
@@ -850,16 +841,6 @@ export type HyperDocsEditor = Exclude<
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
-
-function generateBlockId(length: number = 8): string {
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length))
-  }
-  return result
-}
 
 export function useDocTextContent(pub?: HMPublication) {
   return useMemo(() => {
