@@ -1,4 +1,11 @@
 .node-inline-embed,
 .inline-embed-token {
   display: inline;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  border-color: transparent;
+}
+
+.inline-embed-token.selected {
+  border-color: var(--blue10);
 }
