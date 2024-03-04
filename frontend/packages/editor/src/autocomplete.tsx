@@ -4,7 +4,13 @@ import {NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'
 import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
-import React, {useEffect, useMemo, useRef, useState} from 'react'
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {keyboardStack, useKeyboard} from './keyboard-helpers'
 
 export function createAutoCompletePlugin<N extends string, T>(args: {
@@ -191,7 +197,10 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
 
           renderPopup(state, {onCreate, onClose})
         },
-        destroy() {},
+        destroy() {
+          console.log('======= DESTROY ME!!')
+          renderPopup({active: false}, {onCreate: () => {}, onClose: () => {}})
+        },
       }
     },
   })
@@ -368,11 +377,11 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
 }) {
   const elm = useRef<HTMLButtonElement | null>(null)
 
-  // useLayoutEffect(() => {
-  //   if (props.selected) {
-  //     elm.current?.scrollIntoView()
-  //   }
-  // }, [props.selected])
+  useLayoutEffect(() => {
+    if (props.selected) {
+      elm.current?.scrollIntoView()
+    }
+  }, [props.selected])
 
   if (!props.embedRef && !props.name) {
     return null
