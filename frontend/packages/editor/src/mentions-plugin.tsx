@@ -73,7 +73,7 @@ export function createInlineEmbedNode(bnEditor: any) {
 function InlineEmbedNodeComponent(props: any) {
   return (
     <NodeViewWrapper
-      className="inline-embed-token"
+      className={`inline-embed-token${props.selected ? ' selected' : ''}`}
       data-inline-embed-ref={props.node.attrs.ref}
     >
       <MentionToken embedRef={props.node.attrs.ref} selected={props.selected} />
@@ -88,12 +88,11 @@ export function MentionToken(props: {embedRef: string; selected?: boolean}) {
   return (
     <SizableText
       fontSize="0.9em"
-      borderColor={props.selected ? '$blue10' : 'transparent'}
-      borderWidth={1}
-      display="inline-block"
       paddingHorizontal={2}
-      borderRadius="$1"
-      fontFamily="$editorBody"
+      style={{
+        display: 'inline-block',
+        fontFamily: 'inherit !important',
+      }}
       fontWeight="600"
       color="$blue10"
     >
