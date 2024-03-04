@@ -15,6 +15,8 @@ import {
 import {createAppMenu} from './app-menu'
 import {startMetricsServer} from './app-metrics'
 import {initPaths} from './app-paths'
+import {APP_AUTO_UPDATE_PREFERENCE} from './app-settings'
+import {appStore} from './app-store'
 import autoUpdate from './auto-update'
 import {startMainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
@@ -74,8 +76,15 @@ if (IS_PROD_DESKTOP) {
 startMainDaemon()
 
 Menu.setApplicationMenu(createAppMenu())
+let shouldAutoUpdate = appStore.get(APP_AUTO_UPDATE_PREFERENCE) || 'true'
 
-autoUpdate()
+if (shouldAutoUpdate == 'true') {
+  autoUpdate()
+} else {
+  console.log(
+    '================================ SHOULD NOT AUTO UPDATE!! =========================================',
+  )
+}
 
 //Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
 log.initialize({

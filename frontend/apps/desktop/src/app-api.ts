@@ -22,6 +22,7 @@ import {invalidateQueries, queryInvalidation} from './app-invalidation'
 import {userDataPath} from './app-paths'
 import {pinsApi} from './app-pins'
 import {recentsApi} from './app-recents'
+import {appSettingsApi} from './app-settings'
 import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
 import {welcomingApi} from './app-welcoming'
@@ -124,6 +125,7 @@ export const router = t.router({
   comments: commentsApi,
   gatewaySettings: gatewaySettingsApi,
   recents: recentsApi,
+  appSettings: appSettingsApi,
   closeAppWindow: t.procedure.input(z.string()).mutation(async ({input}) => {
     closeAppWindow(input)
     return null
