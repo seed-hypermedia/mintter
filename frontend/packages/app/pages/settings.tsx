@@ -649,7 +649,7 @@ function AppSettings() {
         <InfoListHeader title="Settings" />
         <TableList.Item ai="center">
           <SizableText size="$1" flex={0} minWidth={140} width={140}>
-            Auto update
+            Check for updates?
           </SizableText>
           <XStack f={1}>
             <XStack f={1}>
@@ -724,12 +724,13 @@ function AppSettings() {
                 icon={Copy}
                 onPress={() => {
                   copyTextToClipboard(`
-App Version: ${VERSION}
-Electron Version: ${versions.electron}
-Chrome Version: ${versions.chrome}
-Node Version: ${versions.node}
-${goBuildInfo}
-`)
+                    App Version: ${VERSION}
+                    Electron Version: ${versions.electron}
+                    Chrome Version: ${versions.chrome}
+                    Node Version: ${versions.node}
+                    ${goBuildInfo}
+                    `)
+                  toast.success('Copied Build Info successfully')
                 }}
               >
                 Copy Debug Info

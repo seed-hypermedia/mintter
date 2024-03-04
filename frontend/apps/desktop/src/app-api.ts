@@ -1,6 +1,7 @@
 import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
 import {NavRoute, defaultRoute, navRouteSchema} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
+import {API_GRPC_URL, API_HTTP_URL} from '@mintter/shared'
 import {
   BrowserWindow,
   NativeImage,
@@ -225,7 +226,7 @@ export const router = t.router({
   queryInvalidation,
 
   getDaemonInfo: t.procedure.query(async () => {
-    const buildInfoUrl = `${process.env.VITE_DESKTOP_HOSTNAME}:${process.env.VITE_DESKTOP_HTTP_PORT}/debug/buildinfo`
+    const buildInfoUrl = `${API_HTTP_URL}/debug/buildinfo`
     let daemonVersion = null
     const errors = []
     try {
@@ -240,7 +241,7 @@ export const router = t.router({
   }),
 
   getAppInfo: t.procedure.query(() => {
-    return {dataDir: userDataPath, loggingDir, grpcHost: process.env.GRPC_HOST}
+    return {dataDir: userDataPath, loggingDir, grpcHost: API_GRPC_URL}
   }),
 })
 
