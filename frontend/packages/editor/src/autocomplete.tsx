@@ -298,37 +298,57 @@ function AutocompletePopupInner(
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
         position: 'fixed',
         top: rect.bottom + 4,
         left: rect.left,
-        width: '20em',
-        height: '10em',
-        background: 'white',
-        borderRadius: 4,
-        overflow: 'scroll',
-        backgroundColor: 'transparent',
+        zIndex: 999999,
       }}
     >
-      {/* <div>Query: "{text}"</div> */}
-      {suggestions.length === 0 && <div>No Results</div>}
-      {suggestions.map((suggestion, i) => {
-        return (
-          <SuggestionItem
-            selected={i === index}
-            name={suggestion.profile.alias}
-            key={suggestion.id}
-            onMouseEnter={() => {
-              // setIndex(i)
-            }}
-            onPress={() => {
-              onCreate(suggestion, range)
-              onClose()
-            }}
-          />
-        )
-      })}
+      <div
+        style={{
+          position: 'fixed',
+          width: '100vw',
+          height: '100vh',
+          top: 0,
+          left: 0,
+        }}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onClose()
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '20em',
+          height: '10em',
+          borderRadius: 4,
+          overflow: 'scroll',
+          backgroundColor: 'transparent',
+        }}
+      >
+        {/* <div>Query: "{text}"</div> */}
+        {suggestions.length === 0 && <div>No Results</div>}
+        {suggestions.map((suggestion, i) => {
+          return (
+            <SuggestionItem
+              selected={i === index}
+              name={suggestion.profile.alias}
+              key={suggestion.id}
+              onMouseEnter={() => {
+                // setIndex(i)
+              }}
+              onPress={() => {
+                onCreate(suggestion, range)
+                onClose()
+              }}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
