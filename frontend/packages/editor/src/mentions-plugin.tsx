@@ -20,7 +20,6 @@ document.body.append(inlineEmbedPopupElement)
 var popupRoot = ReactDOM.createRoot(inlineEmbedPopupElement)
 
 export function createInlineEmbedNode(bnEditor: any) {
-  console.log(`== ~ createInlineEmbedNode ~ bnEditor:`, bnEditor)
   let {nodes, plugins} = createAutoCompletePlugin({
     nodeName: 'inline-embed',
     triggerCharacter: '@',
@@ -102,3 +101,4 @@ export function MentionToken(props: {embedRef: string; selected?: boolean}) {
     </SizableText>
   )
 }
+1
