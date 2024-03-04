@@ -74,6 +74,7 @@ export type EntityComponentsRecord = {
   PublicationCard: React.FC<EntityComponentProps>
   PublicationContent: React.FC<EntityComponentProps>
   CommentCard: React.FC<EntityComponentProps>
+  InlineEmbed: React.FC<InlineEmbedComponentProps>
 }
 
 export type PublicationContentContextValue = {
@@ -99,6 +100,8 @@ export const publicationContentContext =
 
 export type EntityComponentProps = BlockContentProps &
   ReturnType<typeof unpackHmId>
+
+export type InlineEmbedComponentProps = ReturnType<typeof unpackHmId>
 
 export function PublicationContentProvider({
   children,
@@ -870,7 +873,10 @@ function InlineContentView({
   linkType?: LinkType
   fontSize?: number
 }) {
-  const {onLinkClick, textUnit} = usePublicationContentContext()
+  const {onLinkClick, textUnit, entityComponents} =
+    usePublicationContentContext()
+
+  const InlineEmbed = entityComponents.InlineEmbed
 
   const fSize = fontSize || textUnit
   return (
@@ -976,7 +982,7 @@ function InlineContentView({
 
           return (
             <Text
-              key={index}
+              key={`${content.type}-${index}`}
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
               style={{textDecorationLine}}
@@ -1009,6 +1015,11 @@ function InlineContentView({
               />
             </a>
           )
+        }
+
+        if (content.type == 'inline-embed') {
+          const unpackedRef = unpackHmId(content.ref)
+          return <InlineEmbed key={content.ref} {...unpackedRef} />
         }
         return null
       })}
