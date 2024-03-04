@@ -11,12 +11,14 @@ import {
   Card,
   CardProps,
   Check,
+  Checkbox,
   ChevronDown,
   ChevronUp,
   Copy,
   ExternalLink,
   H3,
   Heading,
+  Info,
   InfoListHeader,
   InfoListItem,
   Input,
@@ -46,6 +48,7 @@ import {useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import appError from '../errors'
+import {useAutoUpdatePreference} from '../models/app-settings'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {
   useGatewayUrl,
@@ -57,7 +60,6 @@ import {
 } from '../models/gateway-settings'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
-import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 
 export default function Settings() {
@@ -632,8 +634,8 @@ function AppSettings() {
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
   const appInfo = trpc.getAppInfo.useQuery().data
+  const {value: autoUpdate, setAutoUpdate} = useAutoUpdatePreference()
   const daemonInfo = trpc.getDaemonInfo.useQuery().data
-  const openUrl = useOpenUrl()
   let goBuildInfo = ''
   if (daemonInfo?.errors.length) {
     goBuildInfo = daemonInfo.errors.join('\n')
@@ -643,6 +645,39 @@ function AppSettings() {
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
+      <TableList>
+        <InfoListHeader title="Settings" />
+        <TableList.Item ai="center">
+          <SizableText size="$1" flex={0} minWidth={140} width={140}>
+            Auto update
+          </SizableText>
+          <XStack f={1}>
+            <XStack f={1}>
+              <Checkbox
+                id="auto-update"
+                checked={autoUpdate.data == 'true'}
+                onCheckedChange={(newVal) => {
+                  let val = newVal ? 'true' : 'false'
+                  // TODO: use the actual type for autoUpdate
+                  setAutoUpdate(val as 'true' | 'false')
+                }}
+              >
+                <Checkbox.Indicator>
+                  <Check />
+                </Checkbox.Indicator>
+              </Checkbox>
+            </XStack>
+            <Tooltip content="Check for app updates automatically on Launch">
+              <Button
+                size="$1"
+                chromeless
+                bg="$backgroundTransparent"
+                icon={Info}
+              />
+            </Tooltip>
+          </XStack>
+        </TableList.Item>
+      </TableList>
       <TableList>
         <InfoListHeader title="User Data" />
         <InfoListItem

@@ -129,7 +129,6 @@ export function toHMInlineContent(block: Block): Array<HMInlineContent> {
 
     linkStart = nonLinkContentEnd
   })
-  console.log(`== ~ toHMInlineContent ~ inlines:`, inlines)
   return inlines
 }
 
