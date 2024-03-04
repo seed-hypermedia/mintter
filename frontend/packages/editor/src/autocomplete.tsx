@@ -308,6 +308,7 @@ function AutocompletePopupInner(
         background: 'white',
         borderRadius: 4,
         overflow: 'scroll',
+        backgroundColor: 'transparent',
       }}
     >
       {/* <div>Query: "{text}"</div> */}
@@ -319,7 +320,7 @@ function AutocompletePopupInner(
             name={suggestion.profile.alias}
             key={suggestion.id}
             onMouseEnter={() => {
-              setIndex(i)
+              // setIndex(i)
             }}
             onPress={() => {
               onCreate(suggestion, range)
@@ -394,7 +395,8 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
       fontWeight="600"
       size="$2"
       jc="flex-start"
-      bg={props.selected ? '$blue10' : 'transparent'}
+      borderRadius={0}
+      bg={props.selected ? '$blue10' : '$backgroundFocus'}
       color={props.selected ? 'white' : '$color'}
       hoverStyle={{
         bg: '$blue10',
