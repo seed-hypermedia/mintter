@@ -255,6 +255,7 @@ export function PublicationPage({
                       : createHmDocLink({
                           documentId,
                           version: pub?.version,
+                          variants,
                         })
                   }
                 />

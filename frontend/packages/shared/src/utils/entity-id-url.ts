@@ -226,7 +226,7 @@ export function parseVariantsQuery(
   const variants: PublicationVariant[] = []
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
-    const [key, ...rest] = singleVariantString.split('/')
+    const [key, ...rest] = singleVariantString.split(/:|\//)
     if (key === 'g') {
       const [groupEid, pathName] = rest
       variants.push({

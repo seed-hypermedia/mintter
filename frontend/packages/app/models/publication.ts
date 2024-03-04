@@ -89,12 +89,15 @@ export function usePublicationVariant({
   }
 
   const queryVersionId = versionId ? versionId : queryVariantVersion
-  const pubQuery = usePublication({
-    ...options,
-    id: queryDocumentId,
-    version: queryVersionId,
-    enabled: options.enabled !== false && !!queryDocumentId,
-  })
+  const pubQuery = usePublication(
+    {
+      id: queryDocumentId,
+      version: queryVersionId,
+    },
+    {
+      enabled: options.enabled !== false && !!queryDocumentId,
+    },
+  )
   let defaultVariantVersion: undefined | string = undefined
   if (!variants) {
     const authorVersion = timelineQuery.data?.authorVersions.find(

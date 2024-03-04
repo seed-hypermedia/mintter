@@ -40,7 +40,7 @@ export async function getPublicationVariant(
   latest: boolean = false,
 ) {
   let variantVersion = null
-  const exactVersion = latest ? undefined : versionId
+  const requestedVersion = latest ? undefined : versionId
   const groupVariants = variants?.filter((v) => v.key === 'group') as
     | GroupVariant[]
     | undefined
@@ -74,12 +74,13 @@ export async function getPublicationVariant(
       typeof docGroupEntry?.rawUrl === 'string'
         ? unpackHmId(docGroupEntry?.rawUrl)
         : null
-    if (groupEntryId?.version) {
+    if (groupEntryId?.qid === documentId && !!groupEntryId?.version) {
       variantVersion = groupEntryId?.version
     } else {
-      throw new Error(
-        `Could not find version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
-      )
+      // the user has requested a group variant but we dont have that group or the path name is no longer here
+      // throw new Error(
+      //   `Could not find version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
+      // )
     }
   } else if (authorVariants?.length) {
     const timeline = await grpcClient.entities.getEntityTimeline({
@@ -111,10 +112,10 @@ export async function getPublicationVariant(
   const resolvedPub = await grpcClient.publications
     .getPublication({
       documentId,
-      version: exactVersion || variantVersion || '',
+      version: requestedVersion || variantVersion || '',
       localOnly: true, // avoid DHT fetching
     })
     .catch((e) => undefined)
 
-  return {publication: resolvedPub, variantVersion}
+  return {publication: resolvedPub, variantVersion, variants, requestedVersion}
 }

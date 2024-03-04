@@ -4,6 +4,7 @@ export const middleware = async (req: NextRequest) => {
   const url = req.nextUrl.clone()
   const search = new URLSearchParams(url.search)
   const versionParam = search.get('v')
+  const variantsParam = search.get('b')
 
   // possible paths with version
   // /
@@ -16,7 +17,7 @@ export const middleware = async (req: NextRequest) => {
   const pathTerms = originalPathName.split('/')
   const [_zeroTerm, term1, term2, term3] = pathTerms
 
-  console.log('originalPathName', originalPathName)
+  // console.log('originalPathName', originalPathName)
   if (originalPathName === '/.well-known/hypermedia-site') {
     url.pathname = '/api/well-known-hypermedia-site'
     return NextResponse.rewrite(url)
@@ -38,7 +39,12 @@ export const middleware = async (req: NextRequest) => {
       url.pathname = `/${term1}`
     }
   } else if (pathTerms.length === 3 && term1 === 'd') {
-    if (versionParam) {
+    if (versionParam && variantsParam) {
+      url.pathname = `/d/${term2}/${versionParam}/${variantsParam.replaceAll(
+        '/',
+        ':',
+      )}`
+    } else if (versionParam) {
       url.pathname = `/d/${term2}/${versionParam}`
     } else {
       url.pathname = `/d/${term2}`
