@@ -21,11 +21,12 @@ import {
 import {toast} from '@mintter/ui'
 import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {Extension} from '@tiptap/core'
-import {useMemo, useRef} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import {useAllAccounts} from './accounts'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrlStream} from './gateway-settings'
 import {queryKeys} from './query-keys'
@@ -216,15 +217,24 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
   })
   const grpcClient = useGRPCClient()
   const replace = useNavigate('replace')
+  const accounts = useAllAccounts(true)
   function initDraft() {
     const draft = initCommentDraft.current
     if (!readyEditor.current || !draft) return
     const editor = readyEditor.current
+
     const editorBlocks = toHMBlock(draft.blocks)
     editor.removeBlocks(editor.topLevelBlocks)
     editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
     setGroupTypes(editor._tiptapEditor, editorBlocks)
   }
+
+  useEffect(() => {
+    if (accounts.data?.accounts.length) {
+      editor?.setInlineEmbedOptions(accounts.data.accounts)
+    }
+  }, [accounts.data])
+
   const gwUrl = useGatewayUrlStream()
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {

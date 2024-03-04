@@ -471,7 +471,6 @@ export function useDraftEditor({
   const diagnosis = useDraftDiagnosis()
   const accounts = useAllAccounts(true)
   const gotEdited = useRef(false)
-  const deleteDraft = useDeleteDraft({})
 
   useEffect(() => {
     if (accounts.data?.accounts.length) {

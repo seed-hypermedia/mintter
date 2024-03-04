@@ -4,13 +4,7 @@ import {NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'
 import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, {useEffect, useMemo, useRef, useState} from 'react'
 import {keyboardStack, useKeyboard} from './keyboard-helpers'
 
 export function createAutoCompletePlugin<N extends string, T>(args: {
@@ -150,6 +144,13 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
         }
 
         return false
+      },
+      handleClick(view) {
+        const state = pluginKey.getState(view.state)
+
+        if (state.active) {
+          view.dispatch(view.state.tr.setMeta(pluginKey, {type: 'close'}))
+        }
       },
       decorations(editorState) {
         const state: AutocompleteTokenPluginState<T> =
@@ -297,7 +298,6 @@ function AutocompletePopupInner(
         height: '10em',
         background: 'white',
         borderRadius: 4,
-        border: '1px solid black',
         overflow: 'scroll',
       }}
     >
@@ -309,6 +309,9 @@ function AutocompletePopupInner(
             selected={i === index}
             name={suggestion.profile.alias}
             key={suggestion.id}
+            onMouseEnter={() => {
+              setIndex(i)
+            }}
             onPress={() => {
               onCreate(suggestion, range)
               onClose()
@@ -361,14 +364,15 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
   name?: string
   selected: boolean
   onPress: ButtonProps['onPress']
+  onMouseEnter: ButtonProps['onMouseEnter']
 }) {
   const elm = useRef<HTMLButtonElement | null>(null)
 
-  useLayoutEffect(() => {
-    if (props.selected) {
-      elm.current?.scrollIntoView()
-    }
-  }, [props.selected])
+  // useLayoutEffect(() => {
+  //   if (props.selected) {
+  //     elm.current?.scrollIntoView()
+  //   }
+  // }, [props.selected])
 
   if (!props.embedRef && !props.name) {
     return null
@@ -383,6 +387,12 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
       jc="flex-start"
       bg={props.selected ? '$blue10' : 'transparent'}
       color={props.selected ? 'white' : '$color'}
+      hoverStyle={{
+        bg: '$blue10',
+        borderColor: '$colorTransparent',
+        color: 'white',
+      }}
+      onMouseEnter={props.onMouseEnter}
       // icon={<Avatar size={18} url={props.embedRef?.profile?.avatar} />} avatars make everything slooow
     >
       {props.name}
