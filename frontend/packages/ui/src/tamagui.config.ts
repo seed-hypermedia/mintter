@@ -2,13 +2,7 @@ import {shorthands} from '@tamagui/shorthands'
 import {createTokens} from '@tamagui/web'
 import {createTamagui} from 'tamagui'
 import {animations} from './config/animations'
-import {
-  bodyFont,
-  captionFont,
-  editorBody,
-  headingFont,
-  monoFont,
-} from './config/fonts'
+import {bodyFont, editorBody, headingFont, monoFont} from './config/fonts'
 import {media, mediaQueryDefaultActive} from './config/media'
 import {radius} from './themes/token-radius'
 import {size} from './themes/token-size'
@@ -20,7 +14,7 @@ import {color} from './themes/token-colors'
 
 const conf = {
   themes,
-  defaultFont: 'ui',
+  defaultFont: 'body',
   animations,
   shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: true,
@@ -30,7 +24,6 @@ const conf = {
     body: bodyFont,
     mono: monoFont,
     editorBody: editorBody,
-    ui: captionFont,
   },
   tokens: createTokens({
     color,
