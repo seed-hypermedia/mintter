@@ -1,16 +1,5 @@
 import {forwardRef} from 'react'
-import {ScrollView, YStack, YStackProps, styled} from 'tamagui'
-
-export const AppMain = styled(YStack, {
-  flexDirection: 'column',
-  fullscreen: true,
-  backgroundColor: '$blue10',
-})
-
-export const MainStyled = styled(YStack, {
-  flex: 1,
-  overflow: 'hidden',
-})
+import {ScrollView, YStack, YStackProps} from 'tamagui'
 
 export const MainWrapper = forwardRef(function MainWrapper(
   {
@@ -34,6 +23,3 @@ export const MainWrapper = forwardRef(function MainWrapper(
     </YStack>
   )
 })
-
-export const YDebug = (props) => <YStack {...props} />
-YDebug.displayName = 'YMintterDebug'

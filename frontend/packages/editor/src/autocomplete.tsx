@@ -400,7 +400,7 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
 
   useLayoutEffect(() => {
     if (props.selected) {
-      elm.current?.scrollIntoView()
+      elm.current?.scrollIntoView({block: 'nearest'})
     }
   }, [props.selected])
 
