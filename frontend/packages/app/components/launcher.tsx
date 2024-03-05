@@ -21,7 +21,7 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {useEffect, useState} from 'react'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {useConnectPeer} from '../models/contacts'
@@ -217,10 +217,13 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
   const activeItems = isDisplayingRecents
     ? recentItems
     : [...(queryItem ? [queryItem] : []), ...searchItems]
+
   const [focusedIndex, setFocusedIndex] = useState(0)
+
   useEffect(() => {
     if (focusedIndex >= activeItems.length) setFocusedIndex(0)
   }, [focusedIndex, activeItems])
+
   useEffect(() => {
     const keyPressHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -265,29 +268,17 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
         ) : null}
         {activeItems?.map((item, itemIndex) => {
           return (
-            <Button
+            <LauncherItem
+              item={item}
               key={item.key}
-              onPress={item.onSelect}
-              backgroundColor={
-                focusedIndex === itemIndex ? '$blue4' : undefined
-              }
-              hoverStyle={{
-                backgroundColor:
-                  focusedIndex === itemIndex ? '$blue4' : undefined,
-              }}
+              selected={focusedIndex === itemIndex}
               onFocus={() => {
                 setFocusedIndex(itemIndex)
               }}
               onMouseEnter={() => {
                 setFocusedIndex(itemIndex)
               }}
-            >
-              <XStack f={1} justifyContent="space-between">
-                <SizableText numberOfLines={1}>{item.title}</SizableText>
-
-                <SizableText color="$color10">{item.subtitle}</SizableText>
-              </XStack>
-            </Button>
+            />
           )
         })}
       </YStack>
@@ -347,6 +338,36 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
 
       {content}
     </YStack>
+  )
+}
+
+export function LauncherItem({item, selected = false, onFocus, onMouseEnter}) {
+  const elm = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (selected) {
+      elm.current?.scrollIntoView({block: 'nearest'})
+    }
+  }, [selected])
+
+  return (
+    <Button
+      ref={elm}
+      key={item.key}
+      onPress={item.onSelect}
+      backgroundColor={selected ? '$blue4' : undefined}
+      hoverStyle={{
+        backgroundColor: selected ? '$blue4' : undefined,
+      }}
+      onFocus={onFocus}
+      onMouseEnter={onMouseEnter}
+    >
+      <XStack f={1} justifyContent="space-between">
+        <SizableText numberOfLines={1}>{item.title}</SizableText>
+
+        <SizableText color="$color10">{item.subtitle}</SizableText>
+      </XStack>
+    </Button>
   )
 }
 
