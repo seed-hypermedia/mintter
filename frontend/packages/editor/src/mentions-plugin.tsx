@@ -87,14 +87,14 @@ export function MentionToken(props: {embedRef: string; selected?: boolean}) {
 
   return (
     <SizableText
-      fontSize="0.9em"
+      fontSize="1em"
       paddingHorizontal={2}
       style={{
         display: 'inline-block',
         fontFamily: 'inherit !important',
       }}
-      fontWeight="600"
-      color="$blue10"
+      color="$mint11"
+      outlineColor="$mint11"
     >
       @{account.data?.profile?.alias || props.embedRef}
     </SizableText>

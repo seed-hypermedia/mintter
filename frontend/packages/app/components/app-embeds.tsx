@@ -244,13 +244,42 @@ export function EmbedAccount(props: EntityComponentProps) {
 
 export function AppInlineEmbed(props: InlineEmbedComponentProps) {
   const accountId = props?.type == 'a' ? props.eid : undefined
+  if (!accountId) throw new Error('Invalid props at AppInlineEmbed (accountId)')
   const accountQuery = useAccount(accountId)
+  const navigate = useNavigate()
   return (
-    <SizableText color="$blue9" fontWeight="600">
+    // pill style
+    // <Button
+    //   size="$2"
+    //   m={2}
+    //   p={2}
+    //   chromeless
+    //   theme="mint"
+    //   onPress={() => navigate({key: 'account', accountId})}
+    //   style={{display: 'inline-block', lineHeight: 1}}
+    // >
+    //   {(accountId &&
+    //     accountQuery.status == 'success' &&
+    //     `@${accountQuery.data?.profile?.alias}`) ||
+    //     `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+    // </Button>
+
+    <Button
+      m={0}
+      p={0}
+      chromeless
+      className="hm-link"
+      bg="$backgroundTransparent"
+      hoverStyle={{
+        bg: '$backgroundTransparent',
+      }}
+      onPress={() => navigate({key: 'account', accountId})}
+      style={{display: 'inline-block', lineHeight: 1, fontSize: '1em'}}
+    >
       {(accountId &&
         accountQuery.status == 'success' &&
         `@${accountQuery.data?.profile?.alias}`) ||
         `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
-    </SizableText>
+    </Button>
   )
 }
