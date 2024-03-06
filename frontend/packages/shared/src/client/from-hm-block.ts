@@ -5,7 +5,7 @@ import {
   HMInlineContent,
   InlineEmbedAnnotation,
   TextAnnotation,
-} from '../hm-documents'
+} from '../hm-types'
 
 function styleMarkToAnnotationType(
   style: keyof Styles,

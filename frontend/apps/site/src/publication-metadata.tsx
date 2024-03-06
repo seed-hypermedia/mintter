@@ -3,6 +3,8 @@ import {
   createPublicWebHmUrl,
   formattedDate,
   HMBlockNode,
+  HMChangeInfo,
+  HMLink,
   HMPublication,
   HMTimestamp,
   idToUrl,
@@ -11,7 +13,6 @@ import {
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
-import {HMChangeInfo, HMLink} from '@mintter/shared/src/json-hm'
 import {
   Button,
   SideSection,

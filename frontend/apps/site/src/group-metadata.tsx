@@ -1,5 +1,4 @@
-import {Role, createHmId, unpackHmId} from '@mintter/shared'
-import {HMGroup} from '@mintter/shared/src/json-hm'
+import {HMGroup, Role, createHmId, unpackHmId} from '@mintter/shared'
 import {SideSection, SideSectionTitle, SizableText, Tooltip} from '@mintter/ui'
 import {format} from 'date-fns'
 import {AccountRow} from './account-row'
