@@ -62,7 +62,7 @@ export function BaseAccountLinkAvatar({
       size={size}
       label={account.profile.alias}
       id={account.id}
-      url={getAvatarUrl(account.profile?.avatar)}
+      url={getAvatarUrl(account.profile.avatar)}
     />
   ) : (
     <>

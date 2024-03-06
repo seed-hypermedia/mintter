@@ -30,6 +30,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
+import Link from 'next/link'
 import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo, useState} from 'react'
 import {NextLink} from 'src/next-link'
@@ -317,11 +318,11 @@ export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
   const accountQuery = trpc.account.get.useQuery({accountId})
   const account = accountQuery.data?.account
   return (
-    <SizableText color="$blue9" fontWeight="600">
+    <Link href={`/a/${accountId}`} className="hm-link">
       {(accountId &&
         accountQuery.status == 'success' &&
         `@${account?.profile?.alias}`) ||
         `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
-    </SizableText>
+    </Link>
   )
 }
