@@ -22,9 +22,16 @@ import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {useAllAccounts, useMyAccount} from './accounts'
-import {queryPublication, sortDocuments} from './documents'
+import {queryPublication, sortDocuments, usePublication} from './documents'
 
-import {hmIdWithVersion} from '@mintter/shared'
+import {PartialMessage} from '@bufbuild/protobuf'
+import {
+  DocumentChange,
+  HMBlockNode,
+  HMDocument,
+  hmDocument,
+  hmIdWithVersion,
+} from '@mintter/shared'
 import {queryKeys} from './query-keys'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
@@ -628,30 +635,158 @@ function createBlockID(): string {
   return String(Math.round(Math.random() * 100_000))
 }
 
+export function useGroupNavigation(
+  groupId: string,
+  version: string | undefined,
+) {
+  const content = useGroupContent(groupId, version)
+  const navigationPubContentId = content.data?.content?._navigation
+  const navigationPubId =
+    navigationPubContentId == null ? null : unpackHmId(navigationPubContentId)
+  const navigationPub = usePublication({
+    id: navigationPubId?.qid,
+    version: navigationPubId?.version || undefined,
+  })
+  return navigationPub
+}
+
+async function mutateNavigationDoc(
+  grpcClient: GRPCClient,
+  groupId: string,
+  mutator: (doc: HMDocument) => PartialMessage<DocumentChange>[],
+) {
+  const navEntry = await getGroupNavigationDocument(grpcClient, groupId)
+  const navDocId = navEntry == null ? navEntry : unpackHmId(navEntry)
+  const draft = await grpcClient.drafts.createDraft({
+    existingDocumentId: navDocId?.qid,
+  })
+  const doc = hmDocument(draft)
+  if (!doc) throw new Error('Could not create document')
+  const changes = mutator(doc)
+
+  await grpcClient.drafts.updateDraft({
+    documentId: draft.id,
+    changes,
+  })
+  const published = await grpcClient.drafts.publishDraft({
+    documentId: draft.id,
+  })
+  if (!published.document) throw new Error('No document returned from publish')
+  const newNavDoc = hmIdWithVersion(published.document.id, published.version)
+  if (!newNavDoc) throw new Error('Could not determine new nav doc id')
+  await grpcClient.groups.updateGroup({
+    id: groupId,
+    updatedContent: {
+      _navigation: newNavDoc,
+    },
+  })
+}
+
 export function useCreateGroupCategory() {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
   return useMutation({
     mutationFn: async (input: {groupId: string; title: string}) => {
-      const navEntry = await getGroupNavigationDocument(
+      await mutateNavigationDoc(
         grpcClient,
         input.groupId,
+        (doc: HMDocument): PartialMessage<DocumentChange>[] => {
+          const newCategoryBlock: HMBlock = {
+            id: createBlockID(),
+            type: 'heading',
+            text: input.title,
+            attributes: {},
+            annotations: [],
+          }
+          const lastTopLevelBlockId = doc.children?.at(-1)?.block?.id
+          return [
+            {
+              op: {case: 'setTitle', value: '(HIDDEN) Group Navigation'},
+            },
+            {
+              op: {
+                case: 'moveBlock',
+                value: {
+                  blockId: newCategoryBlock.id,
+                  leftSibling: lastTopLevelBlockId,
+                },
+              },
+            },
+            {op: {case: 'replaceBlock', value: newCategoryBlock}},
+          ]
+        },
       )
-      const navDocId = navEntry == null ? navEntry : unpackHmId(navEntry)
-      const draft = await grpcClient.drafts.createDraft({
-        existingDocumentId: navDocId?.qid,
-      })
-      const newCategoryBlock: HMBlock = {
-        id: createBlockID(),
-        type: 'heading',
-        text: input.title,
-        attributes: {},
-        annotations: [],
-      }
-      const lastTopLevelBlockId = draft.children.at(-1)?.block?.id
-      await grpcClient.drafts.updateDraft({
-        documentId: draft.id,
-        changes: [
+    },
+    onSuccess: (result, input, context) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+    },
+  })
+}
+
+export function useGroupCategories(
+  groupId: string,
+  version: string | undefined,
+) {
+  const navPub = useGroupNavigation(groupId, version)
+  const categories = navPub.data?.document?.children
+    ?.filter((block) => {
+      return block.block.type === 'heading'
+    })
+    .map(({block}) => {
+      return {id: block.id, title: block.text}
+    })
+  return categories
+}
+
+export function getBlockNode(
+  blockNodes: HMBlockNode[] | undefined,
+  blockId: string,
+): HMBlockNode | null {
+  if (!blockNodes) return null
+  for (const node of blockNodes) {
+    if (node.block.id === blockId) return node
+    if (node.children) {
+      const found = getBlockNode(node.children, blockId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function useAddToCategoryMutation() {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      pathName,
+      docId,
+      categoryId,
+    }: {
+      groupId: string
+      pathName: string
+      docId: string
+      categoryId: string
+    }) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        const categoryBlockNode = getBlockNode(doc.children, categoryId)
+        if (!categoryBlockNode) throw new Error('Could not find category block')
+        const lastItemBlockId = categoryBlockNode.children?.at(-1)?.block?.id
+        const fullDocId = unpackHmId(docId)
+        if (!fullDocId) throw new Error('Could not unpack docId')
+        const refBlock = {
+          id: createBlockID(),
+          type: 'embed',
+          text: '',
+          ref: createHmId('d', fullDocId.eid, {
+            variants: [{key: 'group', groupId, pathName}],
+          }),
+          attributes: {
+            view: 'card',
+          },
+          annotations: [],
+        }
+        return [
           {
             op: {case: 'setTitle', value: '(HIDDEN) Group Navigation'},
           },
@@ -659,32 +794,19 @@ export function useCreateGroupCategory() {
             op: {
               case: 'moveBlock',
               value: {
-                blockId: newCategoryBlock.id,
-                leftSibling: lastTopLevelBlockId,
+                blockId: refBlock.id,
+                parent: categoryBlockNode.block.id,
+                leftSibling: lastItemBlockId,
               },
             },
           },
-          {op: {case: 'replaceBlock', value: newCategoryBlock}},
-        ],
+          {op: {case: 'replaceBlock', value: refBlock}},
+        ]
       })
-      const published = await grpcClient.drafts.publishDraft({
-        documentId: draft.id,
-      })
-      if (!published.document)
-        throw new Error('No document returned from publish')
-      const newNavDoc = hmIdWithVersion(
-        published.document.id,
-        published.version,
-      )
-      if (!newNavDoc) throw new Error('Could not determine new nav doc id')
-      await grpcClient.groups.updateGroup({
-        id: input.groupId,
-        updatedContent: {
-          _navigation: newNavDoc,
-        },
-      })
+
+      return {groupId}
     },
-    onSuccess: (result, input, context) => {
+    onSuccess: (result, input) => {
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
     },
   })

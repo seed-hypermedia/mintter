@@ -28,9 +28,13 @@ function FullAppSidebar() {
   }
   return (
     <MainAppSidebar
-      onSelectGroupId={(groupId: string) => {
-        setSidebarGroupId(groupId)
-      }}
+      onSelectGroupId={
+        experiments.data?.groupOrganization
+          ? (groupId: string) => {
+              setSidebarGroupId(groupId)
+            }
+          : null
+      }
     />
   )
 }

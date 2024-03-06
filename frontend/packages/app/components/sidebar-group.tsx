@@ -9,7 +9,7 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {Plus} from '@tamagui/lucide-icons'
+import {Plus, X} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
@@ -17,13 +17,14 @@ import {usePublication} from '../models/documents'
 import {
   useCreateGroupCategory,
   useGroup,
-  useGroupContent,
+  useGroupNavigation,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {AppDialog, DialogTitle} from './dialog'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
+import {OptionsDropdown} from './options-dropdown'
 import {GenericSidebarContainer, SidebarItem} from './sidebar-base'
 
 export function GroupSidebar({
@@ -45,16 +46,24 @@ export function GroupSidebar({
   const navigate = useNavigate()
   const groupRoute = route.key === 'group' ? route : null
   const group = useGroup(groupId, groupRoute?.version)
-  const content = useGroupContent(groupId, groupRoute?.version)
-  const navigationPubContentId = content.data?.content?._navigation
-  const navigationPubId =
-    navigationPubContentId == null ? null : unpackHmId(navigationPubContentId)
-  console.log({content, navigationPubContentId, navigationPubId})
-  const navigationPub = usePublication({
-    id: navigationPubId?.qid,
-    version: navigationPubId?.version || undefined,
+  const navigationPub = useGroupNavigation(groupId, groupRoute?.version)
+  const activeCategorization = {}
+  const activeDocId = route.key === 'publication' ? route.documentId : null
+  navigationPub.data?.document?.children?.forEach((blockNode) => {
+    const {block} = blockNode
+    const activeItem = blockNode.children?.find((item) => {
+      const ref = item.block?.ref
+      const id = ref ? unpackHmId(ref) : null
+      return id && id.qid === activeDocId
+    })
+    if (activeItem) {
+      activeCategorization[block.id] = activeItem.block.ref
+    }
   })
-  console.log(navigationPub)
+  let activeUncategorized: string | null = null
+  if (Object.entries(activeCategorization).length === 0) {
+    activeUncategorized = activeDocId
+  }
   return (
     <GenericSidebarContainer>
       <YStack>
@@ -98,10 +107,47 @@ export function GroupSidebar({
           active={isAllContentActive}
           title="All Content"
         />
+        {activeUncategorized ? (
+          <ActiveDocSidebarItem id={activeUncategorized} />
+        ) : null}
         {navigationPub.data?.document?.children?.map((blockNode) => {
           const {block} = blockNode
+          const activeItemRef = activeCategorization[block.id]
           if (block.type !== 'heading') return null
-          return <SidebarItem title={block.text} onPress={() => {}} />
+          return (
+            <>
+              <SidebarItem
+                title={block.text}
+                active={
+                  route.key === 'group' && route.listCategory === block.id
+                }
+                rightHover={[
+                  <OptionsDropdown
+                    menuItems={[
+                      {
+                        key: 'delete',
+                        icon: X,
+                        label: 'Delete Category',
+                        onPress: () => {},
+                      },
+                    ]}
+                  />,
+                ]}
+                onPress={() => {
+                  navigate({
+                    key: 'group',
+                    groupId,
+                    version: groupRoute?.version,
+                    accessory: groupRoute?.accessory,
+                    listCategory: block.id,
+                  })
+                }}
+              />
+              {activeItemRef ? (
+                <ActiveDocSidebarItem id={activeItemRef} />
+              ) : null}
+            </>
+          )
         })}
         <XStack padding="$4">
           <AppDialog
@@ -115,6 +161,23 @@ export function GroupSidebar({
     </GenericSidebarContainer>
   )
 }
+
+function ActiveDocSidebarItem({id}: {id: string | null}) {
+  const docId = id ? unpackHmId(id) : null
+  const pub = usePublication({
+    id: docId?.qid,
+    version: docId?.version || undefined,
+  })
+  return (
+    <SidebarItem
+      title={pub.data?.document?.title || ''}
+      active
+      indented
+      onPress={() => {}}
+    />
+  )
+}
+
 function NewCategoryButton({onPress}: {onPress?: () => void}) {
   return (
     <Button icon={Plus} size="$2" onPress={onPress}>

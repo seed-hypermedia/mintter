@@ -6,8 +6,8 @@ import {
   Account,
   Document,
   Group,
+  HMPublication,
   Profile,
-  Publication,
   PublicationContent,
   Role,
   formattedDate,
@@ -37,6 +37,7 @@ import {
 } from '@mintter/ui'
 import {
   ArrowUpRight,
+  PackageOpen,
   Pencil,
   PlusCircle,
   Store,
@@ -75,18 +76,25 @@ import {CopyReferenceButton} from '../components/titlebar-common'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
-import {useDraftList, usePublication} from '../models/documents'
+import {
+  useDraftList,
+  usePublication,
+  usePublications,
+} from '../models/documents'
 import {useExperiments} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
+  getBlockNode,
   useAddGroupMember,
   useFullGroupContent,
   useGroup,
   useGroupContent,
   useGroupMembers,
+  useGroupNavigation,
   useRemoveDocFromGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
+import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
@@ -116,6 +124,13 @@ export default function GroupPage() {
         <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
       )
     } else if (groupRoute.listCategory) {
+      content = (
+        <GroupCategoryContent
+          category={groupRoute.listCategory}
+          groupRoute={groupRoute}
+          myMemberRole={myMemberRole}
+        />
+      )
     } else {
       content = (
         <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
@@ -535,6 +550,100 @@ export function GroupAllContent({
   )
 }
 
+export function GroupCategoryContent({
+  groupRoute,
+  myMemberRole,
+  category,
+}: {
+  groupRoute: GroupRoute
+  myMemberRole: Role
+  category: string
+}) {
+  const {groupId, version} = groupRoute
+  const latestGroupContent = useGroupContent(groupId)
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  const navPub = useGroupNavigation(groupId, version)
+  const categoryContent = getBlockNode(
+    navPub.data?.document?.children,
+    category,
+  )
+  const groupContent = useFullGroupContent(groupId, version)
+  const drafts = useDraftList()
+  const group = useGroup(groupId, version, {
+    // refetchInterval: 5_000,
+  })
+  const contentItems =
+    categoryContent?.children
+      ?.map((node) => {
+        const {block} = node
+        const ref = block?.ref
+        const id = unpackHmId(ref)
+        if (!id) return null
+        return {ref: id, id: id.qid, version: id.version || undefined}
+      })
+      .filter(Boolean) || []
+  const publications = usePublications(contentItems)
+  return (
+    <>
+      <Container>
+        <YStack paddingVertical="$4">
+          {categoryContent && !categoryContent?.children?.length ? (
+            <SizableText>No content in this category</SizableText>
+          ) : null}
+          {categoryContent?.children?.map((node) => {
+            const {block} = node
+            const ref = block?.ref
+            const id = unpackHmId(ref)
+            if (!id) return null
+            const {variants} = id
+            const groupVariant = variants?.find((v) => v.key === 'group')
+            if (
+              !groupVariant ||
+              groupVariant.key !== 'group' ||
+              groupVariant.groupId !== groupId
+            )
+              return null
+            const {pathName} = groupVariant
+            if (!pathName) return null
+            const latestEntry = latestGroupContent.data?.content?.[pathName]
+            const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
+            const pub = publications.find((p) => {
+              return p.data?.document?.id === id.qid
+            })
+            const groupEntry = groupContent.data?.content?.[pathName]
+            const groupEntryId = groupEntry ? unpackDocId(groupEntry) : null
+            if (!groupEntryId) return null
+            return (
+              <GroupContentItem
+                key={block.id}
+                docId={id.qid}
+                groupId={groupId}
+                version={groupEntryId?.version || undefined}
+                latestVersion={latestDocId?.version || undefined}
+                hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
+                onCopyUrl={() => {
+                  onCopyId({
+                    ...id,
+                    version: version || null,
+                    variants: [{key: 'group', groupId, pathName}],
+                    hostname: group.data?.siteInfo?.baseUrl || null,
+                  })
+                }}
+                pub={pub?.data}
+                userRole={myMemberRole}
+                editors={pub?.data?.document?.editors || []}
+                author={pub?.data?.document?.author}
+                pathName={pathName}
+              />
+            )
+          })}
+        </YStack>
+      </Container>
+      {copyDialogContent}
+    </>
+  )
+}
+
 function GroupContentItem({
   docId,
   version,
@@ -555,13 +664,14 @@ function GroupContentItem({
   groupId: string
   pathName: string
   userRole: Role
-  pub: Publication | undefined
+  pub: HMPublication | undefined
   editors: Array<Account | string | undefined>
   author: Account | string | undefined
   onCopyUrl: () => void
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const renameDialog = useAppDialog(RenamePubDialog)
+  const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
   const gwUrl = useGatewayUrl()
   if (!pub) return null
   const memberMenuItems = [
@@ -584,6 +694,14 @@ function GroupContentItem({
         })
       },
       key: 'rename',
+    },
+    {
+      label: 'Add to Category',
+      icon: PackageOpen,
+      onPress: () => {
+        addToCategoryDialog.open({groupId, docId, pathName})
+      },
+      key: 'add-to-category',
     },
   ]
   const ownerId = pub.document?.author
@@ -624,6 +742,7 @@ function GroupContentItem({
         }}
       />
       {renameDialog.content}
+      {addToCategoryDialog.content}
     </>
   )
 }

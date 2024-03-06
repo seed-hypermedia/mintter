@@ -230,8 +230,6 @@ export function toHMBlockParagraph(
       childrenType,
     },
   }
-
-  console.log(`== ~ result:`, result)
   return result
 }
 

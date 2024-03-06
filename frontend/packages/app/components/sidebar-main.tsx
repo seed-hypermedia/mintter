@@ -32,7 +32,7 @@ import {
 export function MainAppSidebar({
   onSelectGroupId,
 }: {
-  onSelectGroupId: (groupId: string) => void
+  onSelectGroupId: null | ((groupId: string) => void)
 }) {
   const route = useNavRoute()
   const navigate = useNavigate()
@@ -168,7 +168,7 @@ export function MainAppSidebar({
             ]}
           />
         </YGroup.Item>
-        {unpinnedActiveGroupRouteId && (
+        {unpinnedActiveGroupRouteId && onSelectGroupId && (
           <SidebarGroup
             group={{groupId: unpinnedActiveGroupRouteId}}
             isPinned={false}
@@ -185,7 +185,7 @@ export function MainAppSidebar({
                 key={group.groupId}
                 isPinned={true}
                 onPress={() => {
-                  if (group.groupId === activeGroupRouteId) {
+                  if (group.groupId === activeGroupRouteId && onSelectGroupId) {
                     onSelectGroupId(group.groupId)
                   } else {
                     navigate({key: 'group', groupId: group.groupId})

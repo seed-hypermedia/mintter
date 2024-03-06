@@ -180,6 +180,22 @@ export function usePublication(
   })
 }
 
+export function usePublications(
+  pubs: {
+    id?: string
+    version?: string
+  }[],
+  options?: UseQueryOptions<HMPublication>,
+) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: pubs.map((pub) =>
+      queryPublication(grpcClient, pub.id, pub.version),
+    ),
+    ...(options || {}),
+  })
+}
+
 export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,

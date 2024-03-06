@@ -33,6 +33,7 @@ import {
   Copy,
   ExternalLink,
   Link,
+  PackageOpen,
   Pencil,
   Pin,
   PinOff,
@@ -52,6 +53,7 @@ import {
   useInvertedGroupContent,
 } from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
+import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
@@ -75,7 +77,14 @@ export function DocOptionsButton() {
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
     )
+  const docId = route.documentId
+  const groupVariants = route.variants?.filter((v) => v.key === 'group') as
+    | GroupVariant[]
+    | undefined
+  const groupVariant =
+    groupVariants?.length === 1 ? groupVariants[0] : undefined
   const gwHost = useGatewayHost()
+  const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
   const pin = usePinDocument(route)
   const push = usePushPublication()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
@@ -108,6 +117,19 @@ export function DocOptionsButton() {
         })
       },
     },
+    ...(groupVariant && groupVariant.pathName
+      ? [
+          {
+            key: 'add-to-category',
+            label: 'Add to Category',
+            icon: PackageOpen,
+            onPress: () => {
+              const {groupId, pathName} = groupVariant
+              addToCategoryDialog.open({groupId, docId, pathName})
+            },
+          },
+        ]
+      : []),
   ]
   if (pin.isPinned) {
     menuItems.push({
@@ -128,6 +150,7 @@ export function DocOptionsButton() {
   return (
     <>
       {copyContent}
+      {addToCategoryDialog.content}
       <OptionsDropdown menuItems={menuItems} />
     </>
   )

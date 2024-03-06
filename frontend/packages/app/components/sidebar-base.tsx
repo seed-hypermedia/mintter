@@ -51,6 +51,12 @@ export function getRouteGroupId(route: NavRoute): string | null {
         activeGroupRouteId = groupVariants[0]?.groupId || null
       }
     }
+  } else if (
+    route.key === 'draft' &&
+    route.variant?.key === 'group' &&
+    route.variant.groupId
+  ) {
+    return route.variant.groupId
   }
   return activeGroupRouteId
 }
@@ -371,7 +377,7 @@ export function SidebarGroup(props: {
           !props.isPinned || (route.key == 'group' && route.groupId == groupId)
         }
         icon={Book}
-        color={props.isPinned ? undefined : '$color10'}
+        color={props.isPinned ? undefined : '$color11'}
         title={group.data?.title}
         rightHover={[
           <PinGroupButton
