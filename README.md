@@ -106,4 +106,4 @@ Get the new secret link from the command line after starting the `minttersite` c
 Now in the Mintter App, the Owner of the site can go to the group he/she wants to (re)deploy 
 and click on the three dots, and publish group to site. Enter the new secret and the old content
 should be now available in the new site. If there is no new content (A completely new group), then 
-the site will be empty ready to accept documents
+the site will be empty ready to accept documents.
