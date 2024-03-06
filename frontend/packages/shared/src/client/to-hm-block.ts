@@ -12,7 +12,7 @@ import {
   HMInlineContentEmbed,
   HMInlineContentLink,
   HMStyles,
-} from '../hm-documents'
+} from '../hm-types'
 import {getCIDFromIPFSUrl} from '../utils'
 import {
   Annotation,

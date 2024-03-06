@@ -1,11 +1,11 @@
 import {
+  HMAccount,
   HMPublication,
   createHmId,
   createPublicWebHmUrl,
   getDocumentTitle,
   unpackHmId,
 } from '@mintter/shared'
-import {HMAccount} from '@mintter/shared/src/json-hm'
 import {Avatar, Card, H2, Paragraph, XStack, YStack} from '@mintter/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'

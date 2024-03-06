@@ -1,4 +1,70 @@
+import type {
+  Account,
+  ChangeInfo,
+  Device,
+  Group_SiteInfo,
+  MttLink,
+  Profile,
+  Publication,
+} from '@mintter/shared'
 import {HMTimestamp} from './utils'
+
+export type ServerChangeInfo = ChangeInfo
+export type HMChangeInfo = {
+  id?: string
+  author?: string
+  createTime?: HMTimestamp
+  version?: string
+  deps?: string[]
+}
+
+export type ServerPublication = Publication
+export type HMPublication = {
+  document?: HMDocument
+  version?: string
+}
+
+export type ServerGroupSiteInfo = Group_SiteInfo
+export type HMGroupSiteInfo = {
+  baseUrl?: string
+  lastSyncTime?: HMTimestamp
+  lastOkSyncTime?: HMTimestamp
+  version?: string
+}
+
+export type ServerDevice = Device
+export type HMDevice = {
+  deviceId?: string
+}
+
+export type ServerProfile = Profile
+export type HMProfile = {
+  alias?: string
+  bio?: string
+  avatar?: string
+}
+
+export type ServerAccount = Account
+export type HMAccount = {
+  id?: string
+  profile?: HMProfile
+  devices?: {[key: string]: HMDevice}
+}
+
+export type ServerLink = MttLink
+export type HMLink = {
+  target?: {
+    documentId?: string
+    version?: string
+    blockId?: string
+  }
+  source?: {
+    documentId?: string
+    version?: string
+    blockId?: string
+  }
+  isLatest?: boolean
+}
 
 export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'div'
 export type HMEmbedDisplay = 'content' | 'card'
@@ -82,9 +148,7 @@ export type HMBlockCode = HMBlockBase & {
 
 export type HMBlockHeading = HMBlockBase & {
   type: 'heading'
-  attributes: HMBlockBase['attributes'] & {
-    level: '1' | '2' | '3' | '4' | '5' | '6' | number
-  }
+  attributes: HMBlockBase['attributes'] & {}
 }
 
 export type HMBlockImage = HMBlockBase & {
@@ -169,11 +233,6 @@ export type HMGroup = {
   description?: string
   ownerAccountId?: string
   createTime?: HMTimestamp
-  version?: string
-}
-
-export type HMPublication = {
-  document?: HMDocument
   version?: string
 }
 

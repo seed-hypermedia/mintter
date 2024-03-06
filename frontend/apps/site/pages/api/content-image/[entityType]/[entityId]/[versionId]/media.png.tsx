@@ -20,7 +20,7 @@ import {serverHelpers} from 'server/ssr-helpers'
 import svg2img from 'svg2img'
 
 import {InlineContent} from '@mintter/editor'
-import {HMAccount} from '@mintter/shared/src/json-hm'
+import {HMAccount} from '@mintter/shared'
 import {ReactElement} from 'react'
 
 function loadFont(fileName: string) {

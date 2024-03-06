@@ -13,9 +13,9 @@ import {
   createHmId,
   formattedDateMedium,
   getBlockNodeById,
+  hmGroup,
   usePublicationContentContext,
 } from '@mintter/shared'
-import {hmGroup} from '@mintter/shared/src/to-json-hm'
 import {
   Button,
   SizableText,

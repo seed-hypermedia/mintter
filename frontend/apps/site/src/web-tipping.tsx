@@ -1,4 +1,4 @@
-import {HMAccount} from '@mintter/shared/src/json-hm'
+import {HMAccount} from '@mintter/shared'
 import {
   Button,
   Dialog,

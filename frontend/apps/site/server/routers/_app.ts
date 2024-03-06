@@ -1,19 +1,18 @@
 import {
+  HMAccount,
+  HMChangeInfo,
   HMComment,
   createHmId,
   getPublicationVariant,
-  publicationVariantSchema,
-  unpackDocId,
-  unpackHmId,
-} from '@mintter/shared'
-import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
-import {
   hmAccount,
   hmChangeInfo,
   hmGroup,
   hmLink,
   hmPublication,
-} from '@mintter/shared/src/to-json-hm'
+  publicationVariantSchema,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
 import {queryClient} from 'src/client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
