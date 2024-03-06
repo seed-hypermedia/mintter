@@ -5,6 +5,8 @@ permissions:
 
 on:
   push:
+    branches:
+      - "release/*"
     tags:
       - "*.*.*"
 
@@ -21,14 +23,35 @@ jobs:
     outputs:
       version: ${{ steps.vars.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Get Tag
+      - name: Get Latest Release
+        id: get_latest_release
+        uses: cardinalby/git-get-release-action@v1
+        with:
+          latest: true
+          prerelease: true
+          # excludes: rc, alpha, beta # Optional. Exclude keywords like rc, alpha, beta releases.
+
+      - name: Bump possible release candidate version
+        id: bump_version
+        uses: christian-draeger/increment-semantic-version@1.0.2
+        with:
+          current-version: ${{ steps.get_latest_release.outputs.name }}
+          version-fragment: "rc"
+      - name: Check out the branch or tag
         id: vars
         run: |
-          echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-          # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          # echo "version=0.0.100" >> "$GITHUB_OUTPUT"
+          # echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+          if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+            VERSION=${{ github.ref_name }}
+          elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+            VERSION=${{ steps.bump_version.outputs.next-version }}
+          else
+            VERSION=0.0.1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
@@ -110,6 +133,7 @@ jobs:
         run: |
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
+          NODE_OPTIONS: --max_old_space_size=4096
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -152,7 +176,7 @@ jobs:
     needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
