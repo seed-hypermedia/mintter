@@ -50,11 +50,6 @@ export const draftMachine = createMachine(
     states: {
       fetching: {},
       mountingEditor: {
-        on: {
-          'FINISH.MOUNT': {
-            target: 'ready',
-          },
-        },
         entry: [
           {
             type: 'populateEditor',
@@ -62,11 +57,10 @@ export const draftMachine = createMachine(
           {
             type: 'setCurrentBlocksmap',
           },
-          // raise({type: 'FINISH.MOUNT'}),
         ],
         after: {
           // we need this to avoid saving right after loading the editor. fucking annoying
-          1: {
+          10: {
             target: 'ready',
           },
         },
@@ -268,7 +262,6 @@ export const draftMachine = createMachine(
         | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
         | {type: 'GET.DRAFT.SUCCESS'; draft: Document}
-        | {type: 'FINISH.MOUNT'}
         | {type: 'SAVE.ON.EXIT'},
       context: {} as {
         blocksMap: BlocksMap
