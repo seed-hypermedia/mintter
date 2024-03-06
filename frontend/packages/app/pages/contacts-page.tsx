@@ -8,8 +8,6 @@ import {Account, hmId} from '@mintter/shared'
 import {
   ArrowUpRight,
   Container,
-  Heading,
-  HeadingProps,
   List,
   Spinner,
   Text,
@@ -28,19 +26,6 @@ import {useGatewayUrl} from '../models/gateway-settings'
 import {usePinAccount} from '../models/pins'
 import {getAvatarUrl} from '../utils/account-url'
 import {AccountRoute} from '../utils/routes'
-
-function PageHeading(props: HeadingProps) {
-  return (
-    <Heading
-      color="$gray10"
-      fontSize="$7"
-      fontWeight="normal"
-      marginTop="$6"
-      marginBottom="$4"
-      {...props}
-    />
-  )
-}
 
 function ContactItem({
   account,
