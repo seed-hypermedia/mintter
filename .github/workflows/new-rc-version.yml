@@ -1,0 +1,35 @@
+name: Create Release Candidate
+
+on:
+  push:
+    branches:
+      - "release/*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Latest Release
+        id: get_latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          # excludes: rc, alpha, beta # Optional. Exclude keywords like rc, alpha, beta releases.
+
+      - name: Bump release candidate version
+        id: bump_version
+        uses: christian-draeger/increment-semantic-version@1.0.2
+        with:
+          current-version: ${{ steps.get_latest_release.outputs.release }}
+          version-fragment: "rctest"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version.outputs.next-version }}
+          release_name: ${{ steps.bump_version.outputs.next-version }}
+          body: Automated release candidate
+          draft: false
+          prerelease: true
