@@ -23,13 +23,6 @@ jobs:
           current-version: ${{ steps.get_latest_release.outputs.release }}
           version-fragment: "rctest"
 
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.bump_version.outputs.next-version }}
-          release_name: ${{ steps.bump_version.outputs.next-version }}
-          body: Automated release candidate
-          draft: false
-          prerelease: true
+      - name: LOG Release Candidate
+        run: |
+          echo "RELEASE: ${{ steps.bump_version.outputs.next-version }}"
