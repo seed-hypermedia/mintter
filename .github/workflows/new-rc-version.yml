@@ -21,7 +21,7 @@ jobs:
         uses: christian-draeger/increment-semantic-version@1.0.2
         with:
           current-version: ${{ steps.get_latest_release.outputs.release }}
-          version-fragment: "rctest"
+          version-fragment: "rc"
 
       - name: LOG Release Candidate
         run: |
