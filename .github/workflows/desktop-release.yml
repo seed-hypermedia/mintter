@@ -5,6 +5,8 @@ permissions:
 
 on:
   push:
+    # branches:
+    #   - "release/*"
     tags:
       - "*.*.*"
 
@@ -27,8 +29,15 @@ jobs:
         id: vars
         run: |
           echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-          # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          # echo "version=0.0.100" >> "$GITHUB_OUTPUT"
+
+          # if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+          #   VERSION=${{ github.ref_name }}
+          # elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+          #   VERSION=${GITHUB_REF#refs/heads/release/}
+          # else
+          #   VERSION=0.0.1
+          # fi
+          # echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
