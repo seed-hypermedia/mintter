@@ -5,8 +5,8 @@ permissions:
 
 on:
   push:
-    # branches:
-    #   - "release/*"
+    branches:
+      - "release/*"
     tags:
       - "*.*.*"
 
@@ -23,21 +23,34 @@ jobs:
     outputs:
       version: ${{ steps.vars.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Get Tag
+      - name: Get Latest Release
+        id: get_latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          # excludes: rc, alpha, beta # Optional. Exclude keywords like rc, alpha, beta releases.
+
+      - name: Bump possible release candidate version
+        id: bump_version
+        uses: christian-draeger/increment-semantic-version@1.0.2
+        with:
+          current-version: ${{ steps.get_latest_release.outputs.release }}
+          version-fragment: "rc"
+      - name: Check out the branch or tag
         id: vars
         run: |
-          echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          # echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
 
-          # if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
-          #   VERSION=${{ github.ref_name }}
-          # elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
-          #   VERSION=${GITHUB_REF#refs/heads/release/}
-          # else
-          #   VERSION=0.0.1
-          # fi
-          # echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+            VERSION=${{ github.ref_name }}
+          elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+            VERSION=${{ steps.bump_version.outputs.next-version }}
+          else
+            VERSION=0.0.1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
@@ -162,7 +175,7 @@ jobs:
     needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
