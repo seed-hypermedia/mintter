@@ -657,6 +657,11 @@ async function mutateNavigationDoc(
 ) {
   const navEntry = await getGroupNavigationDocument(grpcClient, groupId)
   const navDocId = navEntry == null ? navEntry : unpackHmId(navEntry)
+  try {
+    await grpcClient.drafts.deleteDraft({
+      documentId: navDocId?.qid,
+    })
+  } catch (e) {}
   const draft = await grpcClient.drafts.createDraft({
     existingDocumentId: navDocId?.qid,
   })
@@ -719,6 +724,7 @@ export function useCreateGroupCategory() {
     },
     onSuccess: (result, input, context) => {
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
     },
   })
 }
@@ -753,7 +759,73 @@ export function getBlockNode(
   return null
 }
 
-export function useAddToCategoryMutation() {
+export function useMoveCategory(groupId: string) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      categoryId,
+      leftSibling,
+    }: {
+      categoryId: string
+      leftSibling: string | undefined
+    }) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        return [
+          {
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: categoryId,
+                parent: undefined,
+                leftSibling,
+              },
+            },
+          },
+        ]
+      })
+    },
+    onSuccess: (result, input) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+    },
+  })
+}
+
+export function useMoveCategoryItem(groupId: string, category: string) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      itemId,
+      leftSibling,
+    }: {
+      itemId: string
+      leftSibling: string | undefined
+    }) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        return [
+          {
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: itemId,
+                parent: category,
+                leftSibling,
+              },
+            },
+          },
+        ]
+      })
+    },
+    onSuccess: (result, input) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+    },
+  })
+}
+
+export function useAddToCategory() {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
   return useMutation({
@@ -808,6 +880,7 @@ export function useAddToCategoryMutation() {
     },
     onSuccess: (result, input) => {
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
     },
   })
 }

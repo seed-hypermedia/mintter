@@ -4,7 +4,7 @@ import {useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {DialogTitle} from '../components/dialog'
 import {SelectInput} from '../components/select-input'
-import {useAddToCategoryMutation, useGroupCategories} from '../models/groups'
+import {useAddToCategory, useGroupCategories} from '../models/groups'
 
 const addToCategoryFields = z.object({
   categoryId: z.string(),
@@ -20,7 +20,7 @@ export function AddToCategoryDialog({
   onClose: () => void
 }) {
   // const [renamed, setRenamed] = useState(pathName)
-  const addToCategory = useAddToCategoryMutation()
+  const addToCategory = useAddToCategory()
   const {
     control,
     handleSubmit,

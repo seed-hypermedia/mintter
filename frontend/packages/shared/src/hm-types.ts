@@ -128,6 +128,7 @@ export type HMBlockBase = {
   id: string
   revision?: string
   text: string
+  ref?: string
   annotations: Array<TextAnnotation>
   attributes?: {
     childrenType: HMBlockChildrenType

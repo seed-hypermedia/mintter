@@ -1,5 +1,21 @@
 import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {CSS} from '@dnd-kit/utilities'
 import Footer from '@mintter/app/components/footer'
 import {
   API_FILE_URL,
@@ -47,6 +63,7 @@ import {
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'
 import {
+  ComponentProps,
   ReactNode,
   forwardRef,
   useDeferredValue,
@@ -91,6 +108,7 @@ import {
   useGroupContent,
   useGroupMembers,
   useGroupNavigation,
+  useMoveCategoryItem,
   useRemoveDocFromGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
@@ -522,6 +540,7 @@ export function GroupAllContent({
             return (
               <GroupContentItem
                 key={key}
+                id={key}
                 docId={id.qid}
                 groupId={groupId}
                 version={id?.version || undefined}
@@ -577,75 +596,142 @@ export function GroupCategoryContent({
       ?.map((node) => {
         const {block} = node
         const ref = block?.ref
-        const id = unpackHmId(ref)
+        const id = ref ? unpackHmId(ref) : null
         if (!id) return null
         return {ref: id, id: id.qid, version: id.version || undefined}
       })
       .filter(Boolean) || []
   const publications = usePublications(contentItems)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
+  const items =
+    categoryContent?.children?.map((blockNode) => {
+      return {id: blockNode.block.id, ref: blockNode.block.ref}
+    }) || []
+  const moveItem = useMoveCategoryItem(groupId, category)
+  const [temporaryItems, setTemporaryItems] = useState<
+    null | {id: string; ref: string | undefined}[]
+  >(null)
+  function handleDragEnd({active, over}) {
+    const oldIndex = items.findIndex((item) => item.id === active.id)
+    const toIndex = items.findIndex((item) => item.id === over.id)
+    const referenceIndices = items.map((item) => item.id)
+    let leftSibling = referenceIndices[toIndex - 1]
+    if (leftSibling === active.id) leftSibling = referenceIndices[toIndex]
+    if (active.id === over.id) return
+    setTemporaryItems(arrayMove(items, oldIndex, toIndex))
+    setTimeout(() => {
+      setTemporaryItems(null)
+    }, 200)
+    moveItem.mutate({itemId: active.id, leftSibling})
+  }
+  const displayItems = temporaryItems || items
   return (
     <>
       <Container>
-        <YStack paddingVertical="$4">
-          {categoryContent && !categoryContent?.children?.length ? (
-            <SizableText>No content in this category</SizableText>
-          ) : null}
-          {categoryContent?.children?.map((node) => {
-            const {block} = node
-            const ref = block?.ref
-            const id = unpackHmId(ref)
-            if (!id) return null
-            const {variants} = id
-            const groupVariant = variants?.find((v) => v.key === 'group')
-            if (
-              !groupVariant ||
-              groupVariant.key !== 'group' ||
-              groupVariant.groupId !== groupId
-            )
-              return null
-            const {pathName} = groupVariant
-            if (!pathName) return null
-            const latestEntry = latestGroupContent.data?.content?.[pathName]
-            const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
-            const pub = publications.find((p) => {
-              return p.data?.document?.id === id.qid
-            })
-            const groupEntry = groupContent.data?.content?.[pathName]
-            const groupEntryId = groupEntry ? unpackDocId(groupEntry) : null
-            if (!groupEntryId) return null
-            return (
-              <GroupContentItem
-                key={block.id}
-                docId={id.qid}
-                groupId={groupId}
-                version={groupEntryId?.version || undefined}
-                latestVersion={latestDocId?.version || undefined}
-                hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
-                onCopyUrl={() => {
-                  onCopyId({
-                    ...id,
-                    version: version || null,
-                    variants: [{key: 'group', groupId, pathName}],
-                    hostname: group.data?.siteInfo?.baseUrl || null,
-                  })
-                }}
-                pub={pub?.data}
-                userRole={myMemberRole}
-                editors={pub?.data?.document?.editors || []}
-                author={pub?.data?.document?.author}
-                pathName={pathName}
-              />
-            )
-          })}
-        </YStack>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <YStack paddingVertical="$4">
+            <SortableContext
+              items={displayItems}
+              disabled={myMemberRole === Role.ROLE_UNSPECIFIED}
+              strategy={verticalListSortingStrategy}
+            >
+              {items.length === 0 ? (
+                <SizableText>No content in this category</SizableText>
+              ) : null}
+              {displayItems.map(({ref, id}) => {
+                const hmId = ref ? unpackHmId(ref) : null
+                if (!hmId) return null
+                const {variants} = hmId
+                const groupVariant = variants?.find((v) => v.key === 'group')
+                if (
+                  !groupVariant ||
+                  groupVariant.key !== 'group' ||
+                  groupVariant.groupId !== groupId
+                )
+                  return null
+                const {pathName} = groupVariant
+                if (!pathName) return null
+                const latestEntry = latestGroupContent.data?.content?.[pathName]
+                const latestDocId = latestEntry
+                  ? unpackDocId(latestEntry)
+                  : null
+                const pub = publications.find((p) => {
+                  return p.data?.document?.id === hmId.qid
+                })
+                const groupEntry = groupContent.data?.content?.[pathName]
+                const groupEntryId = groupEntry ? unpackDocId(groupEntry) : null
+                if (!groupEntryId) return null
+                return (
+                  <SortableGroupContentItem
+                    key={id}
+                    id={id}
+                    docId={hmId.qid}
+                    groupId={groupId}
+                    version={groupEntryId?.version || undefined}
+                    latestVersion={latestDocId?.version || undefined}
+                    hasDraft={drafts.data?.documents.find(
+                      (d) => d.id == hmId.qid,
+                    )}
+                    onCopyUrl={() => {
+                      onCopyId({
+                        ...hmId,
+                        version: version || null,
+                        variants: [{key: 'group', groupId, pathName}],
+                        hostname: group.data?.siteInfo?.baseUrl || null,
+                      })
+                    }}
+                    pub={pub?.data}
+                    userRole={myMemberRole}
+                    editors={pub?.data?.document?.editors || []}
+                    author={pub?.data?.document?.author}
+                    pathName={pathName}
+                  />
+                )
+              })}
+            </SortableContext>
+          </YStack>
+        </DndContext>
       </Container>
       {copyDialogContent}
     </>
   )
 }
 
+function SortableGroupContentItem({
+  id,
+  ...props
+}: ComponentProps<typeof GroupContentItem> & {id: string}) {
+  const {attributes, listeners, setNodeRef, transform, transition} =
+    useSortable({id})
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <GroupContentItem {...props} id={id} />
+    </div>
+  )
+}
+
 function GroupContentItem({
   docId,
+  id,
   version,
   latestVersion,
   hasDraft,
@@ -658,6 +744,7 @@ function GroupContentItem({
   onCopyUrl,
 }: {
   docId: string
+  id: string
   version?: string
   latestVersion?: string
   hasDraft: undefined | Document
@@ -709,6 +796,7 @@ function GroupContentItem({
   return (
     <>
       <PublicationListItem
+        debugId={id}
         publication={pub}
         editors={editors}
         author={author}

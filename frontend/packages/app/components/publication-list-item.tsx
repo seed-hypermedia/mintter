@@ -24,6 +24,7 @@ import {MenuItemType} from './options-dropdown'
 
 export const PublicationListItem = React.memo(function PublicationListItem({
   publication,
+  debugId,
   hasDraft,
   variants,
   menuItems = () => [],
@@ -35,6 +36,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   editors,
 }: {
   publication: HMPublication
+  debugId?: string
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   variants?: PublicationVariant[]
@@ -63,7 +65,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
       onPress={() => {
         navigate(openRoute, event)
       }}
-      title={title}
+      title={debugId ? `${title} - ${debugId}` : title}
       onPointerEnter={onPointerEnter}
       accessory={
         <XStack gap="$3" ai="center">
