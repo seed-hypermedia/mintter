@@ -138,14 +138,15 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
                   .match(/\s/),
             )
 
-            if ((isStart || emptyPrev) && (isEnd || emptyNext)) {
-              const pos = $position.pos
-              const rect = view.coordsAtPos(pos)
-              dispatch({type: 'open', pos, rect})
+            // TODO: testing if letting add mentions anywhere feels better
+            // if ((isStart || emptyPrev) && (isEnd || emptyNext)) {
+            const pos = $position.pos
+            const rect = view.coordsAtPos(pos)
+            dispatch({type: 'open', pos, rect})
 
-              // Don't override the actual input.
-              return false
-            }
+            // Don't override the actual input.
+            return false
+            // }
           }
         }
 
@@ -196,10 +197,6 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
           const onClose = () => dispatch({type: 'close'})
 
           renderPopup(state, {onCreate, onClose})
-        },
-        destroy() {
-          console.log('======= DESTROY ME!!')
-          renderPopup({active: false}, {onCreate: () => {}, onClose: () => {}})
         },
       }
     },
