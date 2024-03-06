@@ -51,7 +51,7 @@ jobs:
             arch: x64
             goarch: amd64
             daemon_name: x86_64-apple-darwin
-          - os: macos-latest
+          - os: macos-13-xlarge
             arch: arm64
             goarch: arm64
             daemon_name: aarch64-apple-darwin
