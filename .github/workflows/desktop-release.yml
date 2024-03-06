@@ -72,7 +72,7 @@ jobs:
             arch: x64
             goarch: amd64
             daemon_name: x86_64-unknown-linux-gnu
-          - os: windows-latest
+          - os: windows-latest-l
             arch: x64
             goarch: amd64
             daemon_name: x86_64-pc-windows-msvc
