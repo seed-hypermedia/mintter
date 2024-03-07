@@ -87,23 +87,6 @@ def main():
 
         return run("yarn desktop", args=args)
 
-    @cmd(
-        cmds,
-        "run-desktop-mainnet",
-        "Run frontend desktop app for development in Mainnet.",
-    )
-    def run_desktop_mainnet(args):
-        run("./scripts/cleanup-desktop.sh")
-        run("yarn install")
-        run("yarn workspace @mintter/ui generate")
-        run("plz build //backend:mintterd //:yarn")
-
-        testnet_var = "MINTTER_P2P_TESTNET_NAME"
-        if testnet_var not in os.environ:
-            os.environ[testnet_var] = "dev"
-
-        return run("MINTTER_P2P_TESTNET_NAME='' yarn desktop", args=args)
-
     @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):
         run("./scripts/cleanup-frontend.sh")

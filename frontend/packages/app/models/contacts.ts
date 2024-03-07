@@ -15,14 +15,14 @@ export function useContactsList() {
     queryFn: async () => {
       return await grpcClient.accounts.listAccounts({})
     },
-    refetchInterval: 10000,
+    refetchInterval: 20_000,
   })
   return contacts
 }
 
 export function useConnectionSummary() {
   const peerInfo = useConnectedPeers({
-    refetchInterval: 10000,
+    refetchInterval: 15_000,
   })
   const connectedPeers = peerInfo.data || []
   return {

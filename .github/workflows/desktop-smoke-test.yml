@@ -1,0 +1,116 @@
+name: Desktop app Smoke test
+
+permissions:
+  contents: write
+
+on:
+  #   schedule:
+  #     - cron: "0 8 * * *"
+  push:
+    branches:
+      - app-perf
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build-binaries:
+    timeout-minutes: 60
+    name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
+    runs-on: ${{ matrix.config.os }}
+    # if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        config:
+          - os: macos-latest
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-apple-darwin
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - uses: ./.github/actions/ci-setup
+        with:
+          matrix-os: ${{ matrix.config.os }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
+          # matrix-arch: ${{ matrix.config.arch }}
+
+      - name: Build Backend (Unix)
+        if: matrix.config.os != 'windows-latest-l'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
+        env:
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Build Backend (Windows)
+        if: matrix.config.os == 'windows-latest-l'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
+        env:
+          GOOS: "windows"
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Set temporal version in package.json
+        run: |
+          node scripts/set-desktop-version.mjs
+        env:
+          VITE_VERSION: "100.10.1"
+
+      - name: Build, package & make (Unix)
+        if: matrix.config.os != 'windows-latest-l'
+        run: |
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          NODE_ENV: test
+          NODE_OPTIONS: --max_old_space_size=4096
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          VITE_VERSION: "100.10.1"
+          # VITE_VERSION: "0.0.100"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          timeout-minutes: 10
+          SMOKE_TEST: "1"
+          VITE_DESKTOP_P2P_PORT: "58000"
+          VITE_DESKTOP_HTTP_PORT: "58001"
+          VITE_DESKTOP_GRPC_PORT: "58002"
+          VITE_DESKTOP_APPDATA: "Mintter"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+          VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
+
+      - name: Build, package and make (Win32)
+        if: matrix.config.os == 'windows-latest-l'
+        run: |
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          NODE_ENV: test
+          NODE_OPTIONS: --max_old_space_size=4096
+          DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
+          VITE_VERSION: "100.10.1"
+          SMOKE_TEST: "1"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "58000"
+          VITE_DESKTOP_HTTP_PORT: "58001"
+          VITE_DESKTOP_GRPC_PORT: "58002"
+          VITE_DESKTOP_APPDATA: "Mintter"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+          VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: yarn desktop:test:only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/apps/desktop/playwright-report/
+          retention-days: 30

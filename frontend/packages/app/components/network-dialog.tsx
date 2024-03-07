@@ -18,7 +18,7 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {ColorValue} from 'react-native'
 import {useAllAccounts} from '../models/accounts'
 import {
@@ -39,7 +39,7 @@ export function useNetworkDialog() {
 export function NetworkDialog() {
   const contacts = useAllAccounts()
   const peers = usePeers(false, {
-    refetchInterval: 2_000,
+    refetchInterval: 20_000,
   })
   const accounts = Object.fromEntries(
     contacts.data?.accounts.map((account) => [account.id, account]) || [],
@@ -133,7 +133,13 @@ export function NetworkDialog() {
   )
 }
 
-function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
+const PeerRow = React.memo(function PeerRow({
+  peer,
+  account,
+}: {
+  peer: PeerInfo
+  account?: Account
+}) {
   const {id, addrs, connectionStatus} = peer
   const isSite =
     account?.profile?.bio === 'Hypermedia Site. Powered by Mintter.'
@@ -230,7 +236,7 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
       </XStack>
     </XStack>
   )
-}
+})
 
 function IndicationStatus({color}: {color: ColorValue}) {
   return (

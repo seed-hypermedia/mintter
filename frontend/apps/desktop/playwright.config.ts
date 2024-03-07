@@ -3,7 +3,6 @@ import type {PlaywrightTestConfig} from '@playwright/test'
 
 const config: PlaywrightTestConfig = {
   testDir: 'tests',
-  outputDir: 'test-results',
   // Fail the build on CI if you accidentally left test.only in the source code.
   forbidOnly: !!process.env.CI,
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',

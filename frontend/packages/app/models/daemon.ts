@@ -26,7 +26,7 @@ function queryDaemonInfo(
       }
       return null
     },
-    refetchInterval: 1500,
+    refetchInterval: 10_000,
     useErrorBoundary: false,
   }
 }

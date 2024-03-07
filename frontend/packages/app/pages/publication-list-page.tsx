@@ -28,7 +28,7 @@ import {
   BadgeCheck as Verified,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {memo} from 'react'
+import React, {memo} from 'react'
 import {useAppContext} from '../app-context'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
@@ -266,7 +266,11 @@ function DraftsList() {
   )
 }
 
-function DraftListItem({draft}: {draft: Document}) {
+const DraftListItem = React.memo(function DraftListItem({
+  draft,
+}: {
+  draft: Document
+}) {
   let title = draft.title || 'Untitled Document'
   const deleteDialog = useDeleteDraftDialog()
   const navigate = useClickNavigate()
@@ -300,4 +304,4 @@ function DraftListItem({draft}: {draft: Document}) {
       {deleteDialog.content}
     </>
   )
-}
+})

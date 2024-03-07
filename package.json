@@ -16,6 +16,7 @@
     "desktop:test:package": "yarn build && yarn workspace @mintter/desktop package:test",
     "desktop:publish": "yarn build && yarn workspace @mintter/desktop publish",
     "desktop:test": "yarn workspace @mintter/desktop test",
+    "desktop:test:only": "yarn workspace @mintter/desktop test:only",
     "desktop:devtools": "yarn workspace @mintter/desktop devtools",
     "watch": "yarn workspaces foreach -pi run watch",
     "fix": "manypkg fix",
@@ -59,7 +60,6 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@playwright/test": "1.40.1",
     "@storybook/nextjs": "7.0.26",
     "babel-plugin-react-native-web": "0.19.9",
     "concurrently": "8.2.1",
