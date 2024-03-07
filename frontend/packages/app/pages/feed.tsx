@@ -29,7 +29,6 @@ import {
   UIAvatar,
   XStack,
   YStack,
-  styled,
   toast,
 } from '@mintter/ui'
 import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
@@ -64,24 +63,34 @@ export default function FeedPage() {
   )
 }
 
-const FeedItemInnerContainer = styled(YStack, {
-  gap: '$2',
-  backgroundColor: '$color1',
-  paddingTop: '$3',
-  borderRadius: '$2',
-  overflow: 'hidden',
-  f: 1,
-  justifyContent: 'flex-start',
-})
+function FeedItemInnerContainer(props) {
+  return (
+    <YStack
+      bg="$color1"
+      borderRadius="$2"
+      f={1}
+      jc="flex-start"
+      // group="item"
+      {...props}
+    />
+  )
+}
 
-const FeedItemFooter = styled(XStack, {
-  gap: '$2',
-  jc: 'center',
-  backgroundColor: '$color1',
-  borderTopWidth: 1,
-  borderColor: '$borderColor',
-  padding: '$2',
-})
+function FeedItemFooter(props) {
+  return (
+    <YStack borderTopColor="$borderColor" borderTopWidth={1} {...props}>
+      <XStack
+        p="$2"
+        jc="center"
+        gap="$2"
+        // opacity={0}
+        // $group-item-hover={{opacity: 1}}
+      >
+        {props.children}
+      </XStack>
+    </YStack>
+  )
+}
 
 function FeedItemContainer({
   children,
@@ -98,7 +107,7 @@ function FeedItemContainer({
 }) {
   const navigate = useNavigate('push')
   return (
-    <PageContainer f={1} marginVertical="$2" overflow="hidden">
+    <PageContainer f={1} marginBottom="$4">
       <FeedItemInnerContainer
         cursor={linkId ? 'pointer' : 'default'}
         onPress={
@@ -118,9 +127,9 @@ function FeedItemContainer({
         <YStack
           maxHeight={maxContentHeight}
           f={1}
-          paddingHorizontal="$3"
-          paddingBottom="$3"
+          p="$4"
           alignSelf="stretch"
+          overflow="hidden"
         >
           {children}
         </YStack>
@@ -184,7 +193,14 @@ function FeedItemHeader({
   const navigate = useNavigate('push')
   const account = useAccount(author)
   return (
-    <XStack gap="$3" ai="center" f={1} paddingHorizontal="$3">
+    <XStack
+      gap="$3"
+      ai="center"
+      f={1}
+      padding="$3"
+      borderBottomWidth={1}
+      borderBottomColor="$borderColor"
+    >
       <UIAvatar
         id={account.data?.id || ''}
         size={30}
@@ -222,6 +238,7 @@ function FeedItemPublicationContent({
   return (
     <AppPublicationContentProvider renderOnly>
       <PublicationContent
+        marginVertical={0}
         publication={publication}
         maxBlockCount={FEED_MAX_BLOCK_COUNT}
       />
@@ -232,9 +249,15 @@ function FeedItemPublicationContent({
 function FeedItemCommentContent({comment}: {comment: HMComment}) {
   return (
     <AppPublicationContentProvider renderOnly>
-      <BlocksContent
-        blocks={clipContentBlocks(comment.content, FEED_MAX_BLOCK_COUNT)}
-      />
+      <YStack
+        paddingHorizontal={12}
+        $gtMd={{paddingHorizontal: 24}}
+        marginVertical={0}
+      >
+        <BlocksContent
+          blocks={clipContentBlocks(comment.content, FEED_MAX_BLOCK_COUNT)}
+        />
+      </YStack>
     </AppPublicationContentProvider>
   )
 }

@@ -261,6 +261,7 @@ export function EmbedComment(props: EntityComponentProps) {
         <BlockNodeList childrenType="group">
           {embedBlocks.map((bn, idx) => (
             <BlockNodeContent
+              isFirstChild={idx === 0}
               key={bn.block?.id}
               depth={1}
               blockNode={bn}

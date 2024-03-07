@@ -171,7 +171,7 @@ export function usePublication(
     id?: string
     version?: string
   },
-  options: UseQueryOptions<HMPublication>,
+  options?: UseQueryOptions<HMPublication>,
 ) {
   const grpcClient = useGRPCClient()
   return useQuery({

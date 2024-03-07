@@ -221,10 +221,12 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
 export function PublicationContent({
   publication,
   maxBlockCount,
+  marginVertical = '$5',
   ...props
 }: XStackProps & {
   maxBlockCount?: number
   publication: HMPublication
+  marginVertical?: any
 }) {
   const {layoutUnit} = usePublicationContentContext()
   const allBlocks = publication.document?.children || []
@@ -242,6 +244,7 @@ export function PublicationContent({
     <YStack
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
+      marginVertical={marginVertical}
       {...props}
     >
       <BlocksContent blocks={displayBlocks} />
@@ -256,6 +259,7 @@ export function BlocksContent({blocks}: {blocks?: HMBlockNode[] | null}) {
       {blocks?.length &&
         blocks?.map((bn, idx) => (
           <BlockNodeContent
+            isFirstChild={idx == 0}
             key={bn.block?.id}
             blockNode={bn}
             depth={1}
@@ -340,8 +344,10 @@ export function BlockNodeContent({
   blockNode,
   depth = 1,
   childrenType = 'group',
+  isFirstChild = false,
   ...props
 }: {
+  isFirstChild: boolean
   blockNode: BlockNode | HMBlockNode
   index: number
   depth?: number
@@ -350,7 +356,11 @@ export function BlockNodeContent({
   embedDepth?: number
 }) {
   const {layoutUnit, renderOnly} = usePublicationContentContext()
-  const headingMarginStyles = useHeadingMarginStyles(depth, layoutUnit)
+  const headingMarginStyles = useHeadingMarginStyles(
+    depth,
+    layoutUnit,
+    isFirstChild,
+  )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
   const {onCitationClick, onBlockComment, onCopyBlock, onReplyBlock, debug} =
@@ -361,6 +371,7 @@ export function BlockNodeContent({
         <BlockNodeContent
           key={bn.block!.id}
           depth={depth + 1}
+          isFirstChild={index == 0}
           blockNode={bn}
           childrenType={blockNode.block!.attributes?.childrenType}
           start={blockNode.block?.attributes?.start}
@@ -735,7 +746,11 @@ export function useHeadingTextStyles(depth: number, unit: number) {
   }, [depth, unit])
 }
 
-export function useHeadingMarginStyles(depth: number, unit: number) {
+export function useHeadingMarginStyles(
+  depth: number,
+  unit: number,
+  isFirst?: boolean,
+) {
   function headingFontValues(value: number) {
     return {
       marginTop: value,
@@ -743,35 +758,41 @@ export function useHeadingMarginStyles(depth: number, unit: number) {
   }
 
   return useMemo(() => {
-    if (depth == 1) {
+    if (isFirst) {
       return {
-        ...headingFontValues(unit * 1.3),
-        $gtMd: headingFontValues(unit * 1.4),
-        $gtLg: headingFontValues(unit * 1.5),
+        marginTop: 0,
+      } satisfies TextProps
+    } else {
+      if (depth == 1) {
+        return {
+          ...headingFontValues(unit * 1.3),
+          $gtMd: headingFontValues(unit * 1.4),
+          $gtLg: headingFontValues(unit * 1.5),
+        } satisfies TextProps
+      }
+
+      if (depth == 2) {
+        return {
+          ...headingFontValues(unit * 1.2),
+          $gtMd: headingFontValues(unit * 1.25),
+          $gtLg: headingFontValues(unit * 1.3),
+        } satisfies TextProps
+      }
+
+      if (depth == 3) {
+        return {
+          ...headingFontValues(unit * 1),
+          $gtMd: headingFontValues(unit * 1.15),
+          $gtLg: headingFontValues(unit * 1.2),
+        } satisfies TextProps
+      }
+
+      return {
+        ...headingFontValues(unit),
+        $gtMd: headingFontValues(unit),
+        $gtLg: headingFontValues(unit),
       } satisfies TextProps
     }
-
-    if (depth == 2) {
-      return {
-        ...headingFontValues(unit * 1.2),
-        $gtMd: headingFontValues(unit * 1.25),
-        $gtLg: headingFontValues(unit * 1.3),
-      } satisfies TextProps
-    }
-
-    if (depth == 3) {
-      return {
-        ...headingFontValues(unit * 1),
-        $gtMd: headingFontValues(unit * 1.15),
-        $gtLg: headingFontValues(unit * 1.2),
-      } satisfies TextProps
-    }
-
-    return {
-      ...headingFontValues(unit),
-      $gtMd: headingFontValues(unit),
-      $gtLg: headingFontValues(unit),
-    } satisfies TextProps
   }, [depth, unit])
 }
 
@@ -1197,6 +1218,7 @@ export function ContentEmbed({
           {embedData.data.embedBlocks.map((bn, idx) => (
             <BlockNodeContent
               key={bn.block?.id}
+              isFirstChild={idx == 0}
               depth={1}
               blockNode={bn}
               childrenType="group"

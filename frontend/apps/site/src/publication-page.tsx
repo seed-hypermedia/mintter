@@ -238,7 +238,7 @@ export function PublicationPage({
         }
         rightSide={
           <>
-            <YStack>
+            <YStack marginVertical="$5">
               <PublicationMetadata publication={pub} pathName={pathName} />
               <WebTipping
                 docId={documentId}
@@ -271,6 +271,7 @@ export function PublicationPage({
                 <PublicationHeading>{pub.document.title}</PublicationHeading>
               ) : null}
               <PublicationContent
+                marginVertical={0}
                 // paddingHorizontal={0}
                 // $gtMd={{paddingHorizontal: '$3'}}
                 // $gtLg={{paddingHorizontal: '$3'}}
@@ -377,7 +378,7 @@ function GroupSidebarContent({
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   return (
-    <SideSection>
+    <SideSection marginVertical="$5">
       {groupId?.eid ? <SideSectionTitle>Site Content:</SideSectionTitle> : null}
       {content?.map((item) => {
         if (!item || !groupId?.eid) return null

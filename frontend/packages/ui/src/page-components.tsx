@@ -1,4 +1,5 @@
 // @ts-nocheck
+import {PropsWithChildren} from 'react'
 import {
   Main,
   SizableText,
@@ -9,7 +10,6 @@ import {
   styled,
 } from 'tamagui'
 import {Container} from './container'
-import {PropsWithChildren} from 'react'
 
 export function MainContainer({
   children,

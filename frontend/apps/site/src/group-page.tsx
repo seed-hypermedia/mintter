@@ -175,10 +175,7 @@ function FrontDoc({
   const frontPageTitle = item.publication?.document?.title
   const hasFrontDocTitle = !!frontPageTitle && frontPageTitle !== groupTitle
   return (
-    <YStack
-      paddingTop="$5"
-      $gtMd={{paddingTop: hasFrontDocTitle ? '$5' : '$11'}}
-    >
+    <YStack $gtMd={{paddingTop: hasFrontDocTitle ? '$5' : '$11'}}>
       {hasFrontDocTitle ? (
         <Heading
           size="$1"
