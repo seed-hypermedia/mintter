@@ -1,8 +1,8 @@
 # Developer Setup
 
-## Building On Unix-Like Systems
-
 > Checkout the [Build System Document](./build-system.md)
+
+## Building on Unix-Like Systems
 
 The setup is simplified by using the [Nix Package Manager](https://nixos.org/nix), and [Direnv](https://direnv.net). You should use this setup on Unix-like systems, instead of trying to manually install the required tools.
 
@@ -67,10 +67,9 @@ So to compile on Linux you must have the following libraries installed:
 
 Eventually we might be able to setup all of this be configured with Nix.
 
-## Building On Windows
+## Building on Windows
 
 Internally, none of us uses Windows for development, but we _do_ build _for_ Windows _on_ Windows machines in CI. You can inspect the corresponding GitHub Actions workflow definitions to find out what needs to be installed to compile the project.
-
 
 ## Running App
 
