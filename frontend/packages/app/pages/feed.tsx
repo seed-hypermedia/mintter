@@ -289,7 +289,10 @@ function HMLinkButton({
 
 function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
   const pub = usePublication({id: id.qid, version: cid})
-  const linkId = hmId('d', id.eid, {version: cid})
+  const linkId = hmId('d', id.eid, {
+    version: cid,
+    variants: [{key: 'author', author}],
+  })
   return (
     <FeedItemContainer
       linkId={linkId}
