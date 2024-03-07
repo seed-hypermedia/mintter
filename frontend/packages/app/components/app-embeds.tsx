@@ -14,6 +14,7 @@ import {
   formattedDateMedium,
   getBlockNodeById,
   hmGroup,
+  unpackHmId,
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
@@ -33,6 +34,7 @@ import {useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
+import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 
@@ -41,15 +43,44 @@ function EmbedWrapper({
   children,
   ...props
 }: PropsWithChildren<{hmRef: string} & ComponentProps<typeof YStack>>) {
-  const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
+  const {
+    disableEmbedClick = false,
+    layoutUnit,
+    comment,
+    routeParams,
+  } = usePublicationContentContext()
+  const route = useNavRoute()
   const open = useOpenUrl()
+  const navigate = useNavigate('replace')
+  const unpackRef = unpackHmId(hmRef)
+
+  const isHighlight = useMemo(() => {
+    return (
+      routeParams?.documentId == unpackRef?.qid &&
+      routeParams?.version == unpackRef?.version &&
+      comment
+    )
+  }, [
+    routeParams?.documentId,
+    routeParams?.version,
+    comment,
+    unpackRef?.qid,
+    unpackRef?.version,
+  ])
+
   return (
     <YStack
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
       className="block-embed"
-      backgroundColor="$color4"
+      backgroundColor={
+        isHighlight
+          ? routeParams?.blockRef == unpackRef?.blockRef
+            ? '$yellow3'
+            : '$backgroundTransparent'
+          : '$color4'
+      }
       hoverStyle={{
         cursor: 'pointer',
         backgroundColor: '$color5',
@@ -58,11 +89,28 @@ function EmbedWrapper({
       marginHorizontal={(-1 * layoutUnit) / 2}
       padding={layoutUnit / 2}
       overflow="hidden"
-      borderRadius={layoutUnit / 4}
+      borderRadius={isHighlight ? 0 : layoutUnit / 4}
+      borderLeftWidth={5}
+      borderLeftColor={isHighlight ? '$yellow6' : '$colorTransparent'}
       onPress={
         !disableEmbedClick
           ? () => {
-              open(hmRef, true)
+              // if (comment && route.key == 'publication' && route.documentId == )
+              // open(hmRef, true)
+              if (comment) {
+                if (
+                  route.key == 'publication' &&
+                  unpackRef?.qid == route.documentId
+                ) {
+                  navigate({
+                    ...route,
+                    blockId: unpackRef?.blockRef,
+                    versionId: unpackRef?.version,
+                  })
+                } else if (route.key == 'comment') {
+                  open(hmRef, true)
+                }
+              }
             }
           : undefined
       }

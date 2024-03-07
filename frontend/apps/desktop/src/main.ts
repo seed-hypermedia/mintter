@@ -81,9 +81,7 @@ let shouldAutoUpdate = appStore.get(APP_AUTO_UPDATE_PREFERENCE) || 'true'
 if (shouldAutoUpdate == 'true') {
   autoUpdate()
 } else {
-  console.log(
-    '================================ SHOULD NOT AUTO UPDATE!! =========================================',
-  )
+  console.log('Auto-Update is set to OFF')
 }
 
 //Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.

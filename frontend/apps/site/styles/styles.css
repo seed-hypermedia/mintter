@@ -83,4 +83,7 @@ body {
   text-decoration-thickness: 3px;
 }
 
-
+.blocknode-content:target {
+  background-color: var(--yellow3) !important;
+  border-color: var(--yellow6) !important;
+}

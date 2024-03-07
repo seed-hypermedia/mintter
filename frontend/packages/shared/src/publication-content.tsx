@@ -57,7 +57,9 @@ import {
   createContext,
   createElement,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
@@ -94,6 +96,11 @@ export type PublicationContentContextValue = {
   ffSerif?: boolean
   comment?: boolean
   renderOnly?: boolean
+  routeParams?: {
+    documentId?: string
+    version?: string
+    blockRef?: string
+  }
 }
 
 export const publicationContentContext =
@@ -110,6 +117,7 @@ export function PublicationContentProvider({
   showDevMenu = false,
   comment = false,
   renderOnly = false,
+  routeParams = {},
   ...PubContentContext
 }: PropsWithChildren<
   PublicationContentContextValue & {
@@ -132,6 +140,7 @@ export function PublicationContentProvider({
         ffSerif,
         comment,
         renderOnly,
+        routeParams,
       }}
     >
       {showDevMenu ? (
@@ -355,7 +364,17 @@ export function BlockNodeContent({
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
 }) {
-  const {layoutUnit, renderOnly} = usePublicationContentContext()
+  const {
+    layoutUnit,
+    renderOnly,
+    routeParams,
+    onCitationClick,
+    onBlockComment,
+    onCopyBlock,
+    onReplyBlock,
+    debug,
+    comment,
+  } = usePublicationContentContext()
   const headingMarginStyles = useHeadingMarginStyles(
     depth,
     layoutUnit,
@@ -363,9 +382,7 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
-  const {onCitationClick, onBlockComment, onCopyBlock, onReplyBlock, debug} =
-    usePublicationContentContext()
-
+  const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
         <BlockNodeContent
@@ -395,11 +412,26 @@ export function BlockNodeContent({
 
   const interactiveProps = !renderOnly ? hoverProps : {}
 
+  const isHighlight = useMemo(() => {
+    return routeParams?.blockRef == blockNode.block?.id && !comment
+  }, [routeParams?.blockRef, comment, blockNode.block])
+
+  useEffect(() => {
+    if (elm.current && isHighlight) {
+      elm.current.scrollIntoView({behavior: 'smooth', block: 'start'})
+    }
+  }, [isHighlight])
+
   return (
     <YStack
+      ref={elm}
       className="blocknode-content"
       id={blockNode.block?.id}
+      borderColor={isHighlight ? '$yellow5' : '$colorTransparent'}
+      borderWidth={1}
       borderRadius={layoutUnit / 4}
+      bg={isHighlight ? '$yellow3' : '$backgroundTransparent'}
+
       // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
       // onHoverOut={() =>
       //   props.embedDepth ? undefined : hoverProps.onHoverOut()
@@ -426,7 +458,7 @@ export function BlockNodeContent({
           <XStack
             position="absolute"
             top={layoutUnit / 4}
-            right={0}
+            right={layoutUnit / 4}
             backgroundColor={hover ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
@@ -616,7 +648,7 @@ function BlockContentParagraph({block, ...props}: BlockContentProps) {
       {...blockStyles}
       {...props}
       {...debugStyles(debug, 'blue')}
-      className="block-static block-paragraph"
+      className="block-content block-paragraph"
     >
       <Text
         className={`content-inline${comment ? 'is-comment' : ''}`}
@@ -806,7 +838,7 @@ function BlockContentImage({block, ...props}: BlockContentProps) {
     <YStack
       {...blockStyles}
       {...props}
-      className="block-static block-image"
+      className="block-content block-image"
       paddingVertical="$3"
       gap="$2"
     >
@@ -829,7 +861,7 @@ function BlockContentVideo({block, ...props}: BlockContentProps) {
     <YStack
       {...blockStyles}
       {...props}
-      className="block-static block-video"
+      className="block-content block-video"
       paddingVertical="$3"
       gap="$2"
       paddingBottom="56.25%"
@@ -1141,7 +1173,7 @@ export function ErrorBlock({
     <Tooltip
       content={debugData ? (open ? 'Hide debug Data' : 'Show debug data') : ''}
     >
-      <YStack f={1}>
+      <YStack f={1} className="block-content block-unknown">
         <ButtonFrame theme="red" gap="$2" onPress={() => toggleOpen((v) => !v)}>
           <SizableText flex={1} color="$red10">
             {message ? message : 'Error'}
@@ -1340,6 +1372,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       padding={layoutUnit / 2}
       overflow="hidden"
       width="100%"
+      className="block-content block-file"
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
@@ -1432,6 +1465,7 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
       padding={layoutUnit / 2}
       overflow="hidden"
       width="100%"
+      className="block-content block-nostr"
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}

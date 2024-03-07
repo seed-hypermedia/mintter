@@ -21,6 +21,87 @@ import {useComment, usePublicationCommentGroups} from '../models/comments'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
+export default function CommentPage() {
+  const route = useNavRoute()
+  const replace = useNavigate('replace')
+  if (route.key !== 'comment') throw new Error('Invalid route for CommentPage')
+  const commentId = route.commentId
+  if (!commentId) throw new Error('Invalid route commentId')
+  const comment = useComment(route.commentId)
+  const createComment = trpc.comments.createCommentDraft.useMutation()
+  function handleReplyBlock(replyBlockCommentId: string, blockId: string) {
+    const commentId = unpackHmId(replyBlockCommentId)
+    if (!commentId) throw new Error('Invalid commentId')
+    const targetDocId = comment.data?.target
+      ? unpackHmId(comment.data?.target)
+      : null
+    if (!targetDocId) throw new Error('Invalid comment.target')
+    createComment
+      .mutateAsync({
+        targetDocEid: targetDocId.eid,
+        targetDocVersion: targetDocId.version,
+        targetCommentId: replyBlockCommentId,
+        blocks: [
+          {
+            block: {
+              type: 'embed',
+              attributes: {},
+              ref: createHmId('c', commentId.eid, {
+                blockRef: blockId,
+              }),
+            },
+            children: [],
+          },
+        ],
+      })
+      .then((commentId) => {
+        replace({
+          key: 'comment-draft',
+          commentId,
+        })
+      })
+  }
+  const targetDocId = comment.data?.target
+    ? unpackHmId(comment.data?.target)
+    : null
+  return (
+    <>
+      <CommentPageTitlebarWithDocId targetDocId={targetDocId?.qid} />
+      <MainWrapperStandalone>
+        {comment.isLoading ? <Spinner /> : null}
+        {route.showThread && targetDocId && comment.data?.repliedComment ? (
+          <CommentThread
+            targetCommentId={comment.data?.repliedComment}
+            targetDocEid={targetDocId.eid}
+            onReplyBlock={handleReplyBlock}
+          />
+        ) : comment.data?.repliedComment ? (
+          <XStack jc="center" marginHorizontal="$2">
+            <Button
+              onPress={() => {
+                replace({...route, showThread: true})
+              }}
+              icon={ChevronUp}
+              chromeless
+              size="$1"
+            >
+              Show Thread
+            </Button>
+          </XStack>
+        ) : null}
+        {comment.data ? (
+          <MainComment
+            comment={comment.data}
+            onReplyBlock={(blockId) => {
+              handleReplyBlock(commentId, blockId)
+            }}
+          />
+        ) : null}
+      </MainWrapperStandalone>
+    </>
+  )
+}
+
 function MainComment({
   comment,
   onReplyBlock,
@@ -113,87 +194,6 @@ function MainComment({
           </XStack>
         )}
       </YStack>
-    </>
-  )
-}
-
-export default function CommentPage() {
-  const route = useNavRoute()
-  const replace = useNavigate('replace')
-  if (route.key !== 'comment') throw new Error('Invalid route for CommentPage')
-  const commentId = route.commentId
-  if (!commentId) throw new Error('Invalid route commentId')
-  const comment = useComment(route.commentId)
-  const createComment = trpc.comments.createCommentDraft.useMutation()
-  function handleReplyBlock(replyBlockCommentId: string, blockId: string) {
-    const commentId = unpackHmId(replyBlockCommentId)
-    if (!commentId) throw new Error('Invalid commentId')
-    const targetDocId = comment.data?.target
-      ? unpackHmId(comment.data?.target)
-      : null
-    if (!targetDocId) throw new Error('Invalid comment.target')
-    createComment
-      .mutateAsync({
-        targetDocEid: targetDocId.eid,
-        targetDocVersion: targetDocId.version,
-        targetCommentId: replyBlockCommentId,
-        blocks: [
-          {
-            block: {
-              type: 'embed',
-              attributes: {},
-              ref: createHmId('c', commentId.eid, {
-                blockRef: blockId,
-              }),
-            },
-            children: [],
-          },
-        ],
-      })
-      .then((commentId) => {
-        replace({
-          key: 'comment-draft',
-          commentId,
-        })
-      })
-  }
-  const targetDocId = comment.data?.target
-    ? unpackHmId(comment.data?.target)
-    : null
-  return (
-    <>
-      <CommentPageTitlebarWithDocId targetDocId={targetDocId?.qid} />
-      <MainWrapperStandalone>
-        {comment.isLoading ? <Spinner /> : null}
-        {route.showThread && targetDocId && comment.data?.repliedComment ? (
-          <CommentThread
-            targetCommentId={comment.data?.repliedComment}
-            targetDocEid={targetDocId.eid}
-            onReplyBlock={handleReplyBlock}
-          />
-        ) : comment.data?.repliedComment ? (
-          <XStack jc="center" marginHorizontal="$2">
-            <Button
-              onPress={() => {
-                replace({...route, showThread: true})
-              }}
-              icon={ChevronUp}
-              chromeless
-              size="$1"
-            >
-              Show Thread
-            </Button>
-          </XStack>
-        ) : null}
-        {comment.data ? (
-          <MainComment
-            comment={comment.data}
-            onReplyBlock={(blockId) => {
-              handleReplyBlock(commentId, blockId)
-            }}
-          />
-        ) : null}
-      </MainWrapperStandalone>
     </>
   )
 }

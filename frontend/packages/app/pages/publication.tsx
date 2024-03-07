@@ -43,7 +43,6 @@ import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useAllPublicationComments, useCreateComment} from '../models/comments'
-import {useExperiments} from '../models/experiments'
 import {useGatewayHost} from '../models/gateway-settings'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
@@ -173,6 +172,8 @@ function PublicationGroup({groupId}: {groupId: string}) {
 
 export default function PublicationPage() {
   const route = useNavRoute()
+
+  console.log(`== ~ PublicationPage ~ route:`, route)
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 
@@ -209,7 +210,7 @@ export default function PublicationPage() {
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
   const id = unpackDocId(docId)
-  const experiments = useExperiments()
+
   const createComment = useCreateComment()
   const pushToGatewayDialog = useAppDialog(PushToGatewayDialog, {
     onClose: () => {
