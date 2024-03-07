@@ -16,6 +16,7 @@
     "desktop:test:package": "yarn build && yarn workspace @mintter/desktop package:test",
     "desktop:publish": "yarn build && yarn workspace @mintter/desktop publish",
     "desktop:test": "yarn workspace @mintter/desktop test",
+    "desktop:test:only": "yarn workspace @mintter/desktop test:only",
     "desktop:devtools": "yarn workspace @mintter/desktop devtools",
     "watch": "yarn workspaces foreach -pi run watch",
     "fix": "manypkg fix",
