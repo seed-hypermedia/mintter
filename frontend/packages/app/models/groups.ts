@@ -818,9 +818,70 @@ export function useMoveCategoryItem(groupId: string, category: string) {
         ]
       })
     },
-    onSuccess: (result, input) => {
+    onSuccess: (result, input, context) => {
       invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
       invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+    },
+  })
+}
+type DeleteCategoryInput = {
+  categoryId: string
+}
+export function useDeleteCategory(
+  groupId: string,
+  opts: UseMutationOptions<void, unknown, DeleteCategoryInput> = {},
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({categoryId}: DeleteCategoryInput) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        return [
+          {
+            op: {
+              case: 'deleteBlock',
+              value: categoryId,
+            },
+          },
+        ]
+      })
+    },
+    ...opts,
+    onSuccess: (result, input, context) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+      opts.onSuccess?.(result, input, context)
+    },
+  })
+}
+
+type DeleteCategoryItemInput = {
+  itemId: string
+}
+export function useDeleteCategoryItem(
+  groupId: string,
+  opts: UseMutationOptions<void, unknown, DeleteCategoryItemInput> = {},
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({itemId}: DeleteCategoryItemInput) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        return [
+          {
+            op: {
+              case: 'deleteBlock',
+              value: itemId,
+            },
+          },
+        ]
+      })
+    },
+    ...opts,
+    onSuccess: (result, input, context) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+      opts.onSuccess?.(result, input, context)
     },
   })
 }

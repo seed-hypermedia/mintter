@@ -34,6 +34,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {PinGroupButton, UnpinButton} from './pin-entity'
 
 const HoverRegionWidth = 30
@@ -207,12 +208,14 @@ export function SidebarItem({
   color,
   paddingVertical,
   minHeight,
+  menuItems,
   ...props
 }: ListItemProps & {
   indented?: boolean
   bold?: boolean
   selected?: boolean
   rightHover?: ReactNode[]
+  menuItems?: MenuItemType[]
 }) {
   return (
     <View group="item">
@@ -248,9 +251,14 @@ export function SidebarItem({
         }
         icon={icon}
         iconAfter={
-          <XStack opacity={0} $group-item-hover={{opacity: 1}}>
-            {rightHover}
-          </XStack>
+          <>
+            <XStack opacity={0} $group-item-hover={{opacity: 1}}>
+              {rightHover}
+            </XStack>
+            {menuItems ? (
+              <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
+            ) : null}
+          </>
         }
         {...props}
       >

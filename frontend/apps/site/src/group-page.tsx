@@ -69,6 +69,7 @@ export function GroupPage() {
       {groupContent.data
         ? groupContent.data.map((contentItem) => {
             if (contentItem?.pathName === '/') return null
+            if (contentItem?.pathName === '_navigation') return null
             return (
               contentItem && (
                 <GroupContentItem

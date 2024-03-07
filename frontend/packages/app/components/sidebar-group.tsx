@@ -17,15 +17,15 @@ import {CSS} from '@dnd-kit/utilities'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {HMGroup, Role, unpackHmId} from '@mintter/shared'
 import {
+  AlertDialog,
   Button,
   Form,
-  MoveLeft,
   Spinner,
   XStack,
   YStack,
   toast,
 } from '@mintter/ui'
-import {Plus, X} from '@tamagui/lucide-icons'
+import {Book, Folder, List, Plus, Undo2, X} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect, useState} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
@@ -33,6 +33,7 @@ import {useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {
   useCreateGroupCategory,
+  useDeleteCategory,
   useGroup,
   useGroupMembers,
   useGroupNavigation,
@@ -40,10 +41,9 @@ import {
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {AppDialog, DialogTitle} from './dialog'
+import {AppDialog, DialogTitle, useAppDialog} from './dialog'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
-import {OptionsDropdown} from './options-dropdown'
 import {GenericSidebarContainer, SidebarItem} from './sidebar-base'
 
 type CategoryItem = {
@@ -119,6 +119,9 @@ export function GroupSidebar({
     null,
   )
   const moveCategory = useMoveCategory(groupId)
+  const deleteCategoryDialog = useAppDialog(DeleteCategoryDialog, {
+    isAlert: true,
+  })
   function handleDragEnd({active, over}) {
     const oldIndex = items.findIndex((item) => item.id === active.id)
     const toIndex = items.findIndex((item) => item.id === over.id)
@@ -135,16 +138,16 @@ export function GroupSidebar({
   const displayItems = temporaryItems || items
   return (
     <GenericSidebarContainer>
-      <YStack>
+      <YStack paddingVertical="$2">
         <SidebarItem
           minHeight={30}
-          paddingVertical="$1"
+          paddingVertical="$2"
           color="$color10"
-          title="Back Home"
+          title="Home Navigation"
           onPress={() => {
             onBackToMain()
           }}
-          icon={MoveLeft}
+          icon={Undo2}
         />
 
         <SidebarItem
@@ -159,6 +162,9 @@ export function GroupSidebar({
               })
             }
           }}
+          bold
+          paddingVertical="$4"
+          icon={Book}
           title={group.data?.title}
         />
         <SidebarItem
@@ -173,6 +179,7 @@ export function GroupSidebar({
               })
             }
           }}
+          icon={List}
           active={isAllContentActive}
           title="All Content"
         />
@@ -198,19 +205,24 @@ export function GroupSidebar({
                     active={
                       route.key === 'group' && route.listCategory === item.id
                     }
-                    rightHover={[
-                      <OptionsDropdown
-                        key="options"
-                        menuItems={[
-                          {
-                            key: 'delete',
-                            icon: X,
-                            label: 'Delete Category',
-                            onPress: () => {},
-                          },
-                        ]}
-                      />,
-                    ]}
+                    menuItems={
+                      myMemberRole === Role.ROLE_UNSPECIFIED
+                        ? []
+                        : [
+                            {
+                              key: 'delete',
+                              icon: X,
+                              label: 'Delete Category',
+                              onPress: () => {
+                                deleteCategoryDialog.open({
+                                  groupId,
+                                  categoryId: item.id,
+                                })
+                              },
+                            },
+                          ]
+                    }
+                    icon={Folder}
                     onPress={() => {
                       navigate({
                         key: 'group',
@@ -232,15 +244,18 @@ export function GroupSidebar({
             })}
           </SortableContext>
         </DndContext>
-        <XStack padding="$4">
-          <AppDialog
-            ContentComponent={CreateGroupCategoryDialog}
-            TriggerComponent={NewCategoryButton}
-            triggerComponentProps={{}}
-            contentComponentProps={{input: groupId}}
-          />
-        </XStack>
+        {myMemberRole === Role.ROLE_UNSPECIFIED ? null : (
+          <XStack padding="$4">
+            <AppDialog
+              ContentComponent={CreateGroupCategoryDialog}
+              TriggerComponent={NewCategoryButton}
+              triggerComponentProps={{}}
+              contentComponentProps={{input: groupId}}
+            />
+          </XStack>
+        )}
       </YStack>
+      {deleteCategoryDialog.content}
     </GenericSidebarContainer>
   )
 }
@@ -258,6 +273,50 @@ function SortableItem({id, children}: PropsWithChildren<{id: string}>) {
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       {children}
     </div>
+  )
+}
+
+function DeleteCategoryDialog({
+  onClose,
+  input,
+}: {
+  onClose: () => void
+  input: {groupId: string; categoryId: string}
+}) {
+  const deleteCategory = useDeleteCategory(input.groupId, {
+    onSuccess: onClose,
+  })
+  return (
+    <YStack gap="$4" padding="$4" borderRadius="$3">
+      <AlertDialog.Title>Delete Category</AlertDialog.Title>
+      <AlertDialog.Description>
+        Delete this category from the group?
+      </AlertDialog.Description>
+
+      <XStack gap="$3" justifyContent="flex-end">
+        <AlertDialog.Cancel asChild>
+          <Button
+            onPress={() => {
+              onClose()
+            }}
+            chromeless
+          >
+            Cancel
+          </Button>
+        </AlertDialog.Cancel>
+        <AlertDialog.Action asChild>
+          <Button
+            theme="red"
+            onPress={() => {
+              deleteCategory.mutate(input)
+              onClose()
+            }}
+          >
+            Delete Category
+          </Button>
+        </AlertDialog.Action>
+      </XStack>
+    </YStack>
   )
 }
 

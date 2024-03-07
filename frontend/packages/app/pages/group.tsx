@@ -32,6 +32,7 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {
+  AlertDialog,
   Button,
   Container,
   DialogDescription,
@@ -103,6 +104,7 @@ import {useGatewayUrl} from '../models/gateway-settings'
 import {
   getBlockNode,
   useAddGroupMember,
+  useDeleteCategoryItem,
   useFullGroupContent,
   useGroup,
   useGroupContent,
@@ -139,7 +141,12 @@ export default function GroupPage() {
   if (experimentalGroupOrganization) {
     if (groupRoute.listCategory === '_all') {
       content = (
-        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+        <Container>
+          <GroupAllContent
+            groupRoute={groupRoute}
+            myMemberRole={myMemberRole}
+          />
+        </Container>
       )
     } else if (groupRoute.listCategory) {
       content = (
@@ -158,7 +165,13 @@ export default function GroupPage() {
     content = (
       <>
         <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
-        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+        <Container paddingVertical={0} marginBottom="$4">
+          <Separator marginBottom="$4" />
+          <GroupAllContent
+            groupRoute={groupRoute}
+            myMemberRole={myMemberRole}
+          />
+        </Container>
       </>
     )
   }
@@ -435,73 +448,73 @@ function GroupHome({
             ) : null}
           </XStack>
         </YStack>
-        <Separator />
         {frontPageId && frontDocumentUrl && (
-          <XStack
-            gap="$2"
-            borderBottomWidth={1}
-            borderColor="$gray6"
-            paddingVertical="$4"
-            paddingHorizontal={0}
-            minHeight="$6"
-            group="item"
-          >
-            <FrontPublicationDisplay
-              urlWithVersion={frontDocumentUrl}
-              groupTitle={group.data?.title || ''}
-            />
-
+          <>
+            <Separator />
             <XStack
               gap="$2"
-              position="absolute"
-              right={0}
-              top="$4"
-              alignItems="center"
+              paddingVertical="$4"
+              paddingHorizontal={0}
+              minHeight="$6"
+              group="item"
             >
-              {frontDocMenuItems.length ? (
-                <OptionsDropdown
-                  hiddenUntilItemHover
-                  menuItems={frontDocMenuItems}
-                />
-              ) : null}
-              <XGroup>
-                {isMember && (
-                  <EditDocButton
-                    contextRoute={groupRoute}
-                    variants={[
-                      {
-                        key: 'group',
-                        groupId,
-                        pathName: '/',
-                      },
-                    ]}
-                    docId={frontPageId?.docId}
-                    baseVersion={frontPageId?.version || undefined}
-                    navMode="push"
+              <FrontPublicationDisplay
+                urlWithVersion={frontDocumentUrl}
+                groupTitle={group.data?.title || ''}
+              />
+
+              <XStack
+                gap="$2"
+                position="absolute"
+                right={0}
+                top="$4"
+                alignItems="center"
+              >
+                {frontDocMenuItems.length ? (
+                  <OptionsDropdown
+                    hiddenUntilItemHover
+                    menuItems={frontDocMenuItems}
                   />
-                )}
-              </XGroup>
-              <Tooltip content="Open in New Window">
-                <Button
-                  icon={ArrowUpRight}
-                  size="$2"
-                  onPress={() => {
-                    spawn({
-                      key: 'publication',
-                      documentId: frontPageId?.docId,
-                      variants: [
+                ) : null}
+                <XGroup>
+                  {isMember && (
+                    <EditDocButton
+                      contextRoute={groupRoute}
+                      variants={[
                         {
                           key: 'group',
                           groupId,
                           pathName: '/',
                         },
-                      ],
-                    })
-                  }}
-                />
-              </Tooltip>
+                      ]}
+                      docId={frontPageId?.docId}
+                      baseVersion={frontPageId?.version || undefined}
+                      navMode="push"
+                    />
+                  )}
+                </XGroup>
+                <Tooltip content="Open in New Window">
+                  <Button
+                    icon={ArrowUpRight}
+                    size="$2"
+                    onPress={() => {
+                      spawn({
+                        key: 'publication',
+                        documentId: frontPageId?.docId,
+                        variants: [
+                          {
+                            key: 'group',
+                            groupId,
+                            pathName: '/',
+                          },
+                        ],
+                      })
+                    }}
+                  />
+                </Tooltip>
+              </XStack>
             </XStack>
-          </XStack>
+          </>
         )}
       </Container>
 
@@ -528,42 +541,41 @@ export function GroupAllContent({
   })
   return (
     <>
-      <Container>
-        <YStack paddingVertical="$4">
-          {//Object.entries(groupContent.data?.content || {})
-          groupContent.data?.items.map(({key, pub, author, editors, id}) => {
-            if (key === '/') return null
+      <YStack>
+        {//Object.entries(groupContent.data?.content || {})
+        groupContent.data?.items.map(({key, pub, author, editors, id}) => {
+          if (key === '/') return null
+          if (key === '_navigation') return null
 
-            const latestEntry = latestGroupContent.data?.content?.[key]
-            const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
+          const latestEntry = latestGroupContent.data?.content?.[key]
+          const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
 
-            return (
-              <GroupContentItem
-                key={key}
-                id={key}
-                docId={id.qid}
-                groupId={groupId}
-                version={id?.version || undefined}
-                latestVersion={latestDocId?.version || undefined}
-                hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
-                onCopyUrl={() => {
-                  onCopyId({
-                    ...id,
-                    version: version || null,
-                    variants: [{key: 'group', groupId, pathName: key}],
-                    hostname: group.data?.siteInfo?.baseUrl || null,
-                  })
-                }}
-                pub={pub}
-                userRole={myMemberRole}
-                editors={editors}
-                author={author}
-                pathName={key}
-              />
-            )
-          })}
-        </YStack>
-      </Container>
+          return (
+            <GroupContentItem
+              key={key}
+              id={key}
+              docId={id.qid}
+              groupId={groupId}
+              version={id?.version || undefined}
+              latestVersion={latestDocId?.version || undefined}
+              hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
+              onCopyUrl={() => {
+                onCopyId({
+                  ...id,
+                  version: version || null,
+                  variants: [{key: 'group', groupId, pathName: key}],
+                  hostname: group.data?.siteInfo?.baseUrl || null,
+                })
+              }}
+              pub={pub}
+              userRole={myMemberRole}
+              editors={editors}
+              author={author}
+              pathName={key}
+            />
+          )
+        })}
+      </YStack>
       {copyDialogContent}
     </>
   )
@@ -634,23 +646,28 @@ export function GroupCategoryContent({
     moveItem.mutate({itemId: active.id, leftSibling})
   }
   const displayItems = temporaryItems || items
+  const deleteItemDialog = useAppDialog(DeleteCategoryItemDialog, {
+    isAlert: true,
+  })
   return (
     <>
       <Container>
+        {items.length === 0 ? (
+          <SizableText fontSize="$4" color="$color10" margin="$4">
+            No documents in this category yet.
+          </SizableText>
+        ) : null}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <YStack paddingVertical="$4">
+          <YStack>
             <SortableContext
               items={displayItems}
               disabled={myMemberRole === Role.ROLE_UNSPECIFIED}
               strategy={verticalListSortingStrategy}
             >
-              {items.length === 0 ? (
-                <SizableText>No content in this category</SizableText>
-              ) : null}
               {displayItems.map(({ref, id}) => {
                 const hmId = ref ? unpackHmId(ref) : null
                 if (!hmId) return null
@@ -685,6 +702,17 @@ export function GroupCategoryContent({
                     hasDraft={drafts.data?.documents.find(
                       (d) => d.id == hmId.qid,
                     )}
+                    onRemoveFromCategory={
+                      myMemberRole === Role.ROLE_UNSPECIFIED
+                        ? undefined
+                        : () => {
+                            deleteItemDialog.open({
+                              groupId,
+                              itemId: id,
+                              categoryLabel: categoryContent?.block.text || '?',
+                            })
+                          }
+                    }
                     onCopyUrl={() => {
                       onCopyId({
                         ...hmId,
@@ -705,8 +733,53 @@ export function GroupCategoryContent({
           </YStack>
         </DndContext>
       </Container>
+      {deleteItemDialog.content}
       {copyDialogContent}
     </>
+  )
+}
+
+function DeleteCategoryItemDialog({
+  onClose,
+  input,
+}: {
+  onClose: () => void
+  input: {groupId: string; itemId: string; categoryLabel: string}
+}) {
+  const deleteItem = useDeleteCategoryItem(input.groupId, {
+    onSuccess: onClose,
+  })
+  return (
+    <YStack gap="$4" padding="$4" borderRadius="$3">
+      <AlertDialog.Title>Remove Item from Category</AlertDialog.Title>
+      <AlertDialog.Description>
+        Remove this item from the "{input.categoryLabel}" category?
+      </AlertDialog.Description>
+
+      <XStack gap="$3" justifyContent="flex-end">
+        <AlertDialog.Cancel asChild>
+          <Button
+            onPress={() => {
+              onClose()
+            }}
+            chromeless
+          >
+            Cancel
+          </Button>
+        </AlertDialog.Cancel>
+        <AlertDialog.Action asChild>
+          <Button
+            theme="red"
+            onPress={() => {
+              deleteItem.mutate(input)
+              onClose()
+            }}
+          >
+            Delete from Category
+          </Button>
+        </AlertDialog.Action>
+      </XStack>
+    </YStack>
   )
 }
 
@@ -742,6 +815,7 @@ function GroupContentItem({
   editors,
   author,
   onCopyUrl,
+  onRemoveFromCategory,
 }: {
   docId: string
   id: string
@@ -755,6 +829,7 @@ function GroupContentItem({
   editors: Array<Account | string | undefined>
   author: Account | string | undefined
   onCopyUrl: () => void
+  onRemoveFromCategory?: () => void
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const renameDialog = useAppDialog(RenamePubDialog)
@@ -782,6 +857,16 @@ function GroupContentItem({
       },
       key: 'rename',
     },
+    ...(onRemoveFromCategory
+      ? [
+          {
+            key: 'remove-from-category',
+            label: 'Remove from this Category',
+            icon: X,
+            onPress: onRemoveFromCategory,
+          },
+        ]
+      : []),
     {
       label: 'Add to Category',
       icon: PackageOpen,
@@ -796,7 +881,7 @@ function GroupContentItem({
   return (
     <>
       <PublicationListItem
-        debugId={id}
+        // debugId={id}
         publication={pub}
         editors={editors}
         author={author}
