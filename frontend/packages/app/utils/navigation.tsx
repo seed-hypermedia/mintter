@@ -15,6 +15,7 @@ global.Buffer = global.Buffer || Buffer
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
 export type BackplaceAction = {type: 'backplace'; route: NavRoute}
+export type CloseBackAction = {type: 'closeBack'}
 export type PopAction = {type: 'pop'}
 export type ForwardAction = {type: 'forward'}
 export type SetSidebarLockedAction = {type: 'sidebarLocked'; value: boolean}
@@ -22,6 +23,7 @@ export type NavAction =
   | PushAction
   | ReplaceAction
   | BackplaceAction
+  | CloseBackAction
   | PopAction
   | ForwardAction
   | SetSidebarLockedAction
@@ -82,6 +84,7 @@ export function navStateReducer(state: NavState, action: NavAction): NavState {
         lastAction: action.type,
       }
     }
+    case 'closeBack':
     case 'pop': {
       if (state.routeIndex === 0) return state
       return {

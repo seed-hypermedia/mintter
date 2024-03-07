@@ -89,7 +89,7 @@ export function useEditDraft(
 export function EditDocButton({
   docId,
   contextRoute,
-  navMode = 'replace',
+  navMode = 'push',
   variants,
   baseVersion,
 }: {

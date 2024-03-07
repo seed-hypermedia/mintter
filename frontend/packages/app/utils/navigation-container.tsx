@@ -1,3 +1,4 @@
+import {client} from '@mintter/desktop/src/trpc'
 import {writeableStateStream} from '@mintter/shared'
 import {ReactNode, useEffect, useMemo} from 'react'
 import {useIPC} from '../app-context'
@@ -28,7 +29,13 @@ export function NavigationContainer({
     const [updateNavState, navState] = writeableStateStream(initialNav)
     return {
       dispatch(action: NavAction) {
-        updateNavState(navStateReducer(navState.get(), action))
+        const prevState = navState.get()
+        const newState = navStateReducer(prevState, action)
+        if (prevState !== newState) {
+          updateNavState(newState)
+        } else if (action.type === 'closeBack') {
+          client.closeAppWindow.mutate(window.windowId)
+        }
       },
       state: navState,
     }

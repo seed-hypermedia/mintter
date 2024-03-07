@@ -1,6 +1,6 @@
 import appError from '@mintter/app/errors'
 import type {NavState} from '@mintter/app/utils/navigation'
-import {NavRoute} from '@mintter/app/utils/routes'
+import {NavRoute, defaultRoute} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
 import {BrowserWindow, app, nativeTheme} from 'electron'
@@ -31,6 +31,13 @@ export function closeAppWindow(windowId: string) {
   if (!window) return null
   window.close()
   allWindows.delete(windowId)
+  if (allWindows.size === 0) {
+    createAppWindow({
+      routes: [defaultRoute],
+      routeIndex: 0,
+      sidebarLocked: true,
+    })
+  }
 }
 
 function windowFocused(windowId: string) {
