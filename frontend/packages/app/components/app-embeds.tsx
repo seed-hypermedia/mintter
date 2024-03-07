@@ -18,6 +18,7 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  ButtonText,
   SizableText,
   Spinner,
   UIAvatar,
@@ -265,21 +266,29 @@ export function AppInlineEmbed(props: InlineEmbedComponentProps) {
     // </Button>
 
     <Button
-      m={0}
-      p={0}
-      chromeless
-      className="hm-link"
       bg="$backgroundTransparent"
       hoverStyle={{
         bg: '$backgroundTransparent',
       }}
+      unstyled
       onPress={() => navigate({key: 'account', accountId})}
-      style={{display: 'inline-block', lineHeight: 1, fontSize: '1em'}}
+      style={{
+        display: 'inline-block',
+        lineHeight: 1,
+        border: 'none',
+      }}
     >
-      {(accountId &&
-        accountQuery.status == 'success' &&
-        `@${accountQuery.data?.profile?.alias}`) ||
-        `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+      <ButtonText
+        textDecorationColor={'$mint11'}
+        color="$mint11"
+        className="hm-link"
+        fontSize="$5"
+      >
+        {(accountId &&
+          accountQuery.status == 'success' &&
+          `@${accountQuery.data?.profile?.alias}`) ||
+          `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+      </ButtonText>
     </Button>
   )
 }

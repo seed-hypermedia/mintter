@@ -318,11 +318,21 @@ export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
   const accountQuery = trpc.account.get.useQuery({accountId})
   const account = accountQuery.data?.account
   return (
-    <Link href={`/a/${accountId}`} className="hm-link">
-      {(accountId &&
-        accountQuery.status == 'success' &&
-        `@${account?.profile?.alias}`) ||
-        `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+    <Link href={`/a/${accountId}`} style={{all: 'unset'}}>
+      <SizableText
+        textDecorationColor={'$mint11'}
+        color="$mint11"
+        className="hm-link"
+        fontSize="$5"
+        hoverStyle={{
+          cursor: 'pointer',
+        }}
+      >
+        {(accountId &&
+          accountQuery.status == 'success' &&
+          `@${account?.profile?.alias}`) ||
+          `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+      </SizableText>
     </Link>
   )
 }
