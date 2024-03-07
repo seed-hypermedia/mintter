@@ -41,7 +41,6 @@ function ContactItem({
   const alias = account.profile?.alias
   const gwUrl = useGatewayUrl()
   const openRoute: AccountRoute = {key: 'account', accountId: account.id}
-  if (!alias) return null // hide contacts without an alias because this is confusing for users
   return (
     <ListItem
       icon={
@@ -109,9 +108,14 @@ export default function ContactsPage() {
   const myAccount = useMyAccount()
   const allAccounts = contacts.data?.accounts || []
   const trustedAccounts = allAccounts.filter(
-    (account) => account.isTrusted && account.id !== myAccount.data?.id,
+    (account) =>
+      account.isTrusted &&
+      account.id !== myAccount.data?.id &&
+      !!account.profile?.alias, // hide contacts without an alias because this is confusing for users
   )
-  const untrustedAccounts = allAccounts.filter((account) => !account.isTrusted)
+  const untrustedAccounts = allAccounts.filter(
+    (account) => !account.isTrusted && !!account.profile?.alias, // hide contacts without an alias because this is confusing for users
+  )
   const [copyDialogContent, onCopy] = useCopyGatewayReference()
   if (contacts.isLoading) {
     return (

@@ -28,7 +28,7 @@ export function List<Item>({
       }}
     >
       <Virtuoso
-        fixedItemHeight={42}
+        fixedItemHeight={52}
         ref={virtuoso}
         style={{
           height: containerHeight,
@@ -50,7 +50,7 @@ export function List<Item>({
           const item = items?.[index]
           if (!item) return null
           return (
-            <XStack jc="center" width={containerWidth}>
+            <XStack jc="center" width={containerWidth} height={52}>
               {renderItem({item, containerWidth})}
             </XStack>
           )
