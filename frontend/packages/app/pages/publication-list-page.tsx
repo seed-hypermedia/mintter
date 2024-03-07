@@ -260,7 +260,7 @@ function DraftsList() {
       header={<DocumentTabs />}
       items={drafts.data.documents}
       renderItem={({item}) => {
-        return <DraftListItem draft={item} />
+        return <DraftListItem key={item.id} draft={item} />
       }}
     />
   )
