@@ -166,6 +166,25 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
     }
   }
 
+  updateHyperlink(url: string, text: string) {
+    const newLength = this.hyperlinkMarkRange!.from + text.length
+    const tr = this.pmView.state.tr
+      .insertText(
+        text,
+        this.hyperlinkMarkRange!.from,
+        this.hyperlinkMarkRange!.to,
+      )
+      .addMark(
+        this.hyperlinkMarkRange!.from,
+        newLength,
+        this.pmView.state.schema.mark('link', {href: url}),
+      )
+
+    this.hyperlinkMarkRange!.to = newLength
+
+    this.pmView.dispatch(tr)
+  }
+
   deleteHyperlink() {
     this.pmView.dispatch(
       this.pmView.state.tr
@@ -302,6 +321,13 @@ export class HyperlinkToolbarProsemirrorPlugin<
    */
   public editHyperlink = (url: string, text: string) => {
     this.view!.editHyperlink(url, text)
+  }
+
+  /**
+   * Edit the currently hovered hyperlink.
+   */
+  public updateHyperlink = (url: string, text: string) => {
+    this.view!.updateHyperlink(url, text)
   }
 
   /**

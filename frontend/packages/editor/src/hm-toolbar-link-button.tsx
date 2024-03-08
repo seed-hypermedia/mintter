@@ -16,7 +16,6 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
   const {open, ...popoverProps} = usePopoverState()
 
   useEditorSelectionChange(props.editor, () => {
-    console.log('== selection changed!')
     setText(props.editor.getSelectedText() || '')
     setUrl(props.editor.getSelectedLinkUrl() || '')
   })
@@ -31,7 +30,7 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
 
   return (
     <XGroup.Item>
-      <Popover open={open} {...popoverProps}>
+      <Popover placement="top" open={open} {...popoverProps}>
         <Theme inverse={open}>
           <Popover.Trigger asChild>
             <Button
@@ -48,6 +47,7 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
             url={url}
             text={text}
             openUrl={() => {}}
+            editor={props.editor}
           />
         </Popover.Content>
       </Popover>

@@ -19,10 +19,12 @@ import {
   Strikethrough,
   Strong,
   Theme,
+  Tooltip,
   Type,
   Underline,
   UnorderedList,
   XGroup,
+  XStack,
 } from '@mintter/ui'
 import {useMemo, useState} from 'react'
 import {
@@ -39,29 +41,29 @@ const size: SizeTokens = '$3'
 
 const toggleStyles = [
   {
-    name: 'Strong',
+    name: 'Strong (Mod+B)',
     icon: Strong,
-    style: 'bold',
+    style: 'bold' as ToggledStyle,
   },
   {
-    name: 'Emphasis',
+    name: 'Emphasis (Mod+I)',
     icon: Emphasis,
-    style: 'italic',
+    style: 'italic' as ToggledStyle,
   },
   {
-    name: 'Underline',
+    name: 'Underline (Mod+U)',
     icon: Underline,
-    style: 'underline',
+    style: 'underline' as ToggledStyle,
   },
   {
-    name: 'Strikethrough',
+    name: 'Strikethrough (Mod+Shift+X)',
     icon: Strikethrough,
-    style: 'strike',
+    style: 'strike' as ToggledStyle,
   },
   {
-    name: 'Code',
+    name: 'Code (Mod+E)',
     icon: Code,
-    style: 'code',
+    style: 'code' as ToggledStyle,
   },
 ]
 
@@ -93,23 +95,32 @@ export function HMFormattingToolbar(
     blockTypeDropdownItems?: BlockTypeDropdownItem[]
   },
 ) {
+  // return <XStack bg="red" ref={currentRef} width={200} height={10} />
   return (
-    <XGroup elevation="$5">
-      <BlockTypeToolbarDropdown
-        editor={props.editor}
-        items={props.blockTypeDropdownItems}
-      />
-      {toggleStyles.map((item) => (
-        <ToggleStyleButton key={item.style} editor={props.editor} {...item} />
-      ))}
-      <HMLinkToolbarButton editor={props.editor} size={size} />
-    </XGroup>
+    <XStack>
+      <XGroup elevation="$5" bg="red" paddingHorizontal={0} x={-40}>
+        {/* <BlockTypeToolbarDropdown
+          editor={props.editor}
+          items={props.blockTypeDropdownItems}
+        /> */}
+        {toggleStyles.map((item) => (
+          <ToggleStyleButton
+            key={item.style}
+            editor={props.editor}
+            toggleStyle={item.style}
+            {...item}
+          />
+        ))}
+        <HMLinkToolbarButton editor={props.editor} size={size} />
+      </XGroup>
+    </XStack>
   )
 }
 
 function ToggleStyleButton({
   editor,
-  style,
+  toggleStyle,
+
   name,
   icon,
 }: {
@@ -117,14 +128,13 @@ function ToggleStyleButton({
   toggleStyle: ToggledStyle
   name: string
   icon: any
-  style: ToggledStyle
 }) {
   const [active, setActive] = useState<boolean>(
-    style in editor.getActiveStyles(),
+    toggleStyle in editor.getActiveStyles(),
   )
 
   function toggleCurrentStyle() {
-    setActive(style in editor.getActiveStyles())
+    setActive(toggleStyle in editor.getActiveStyles())
   }
 
   useEditorContentChange(editor, toggleCurrentStyle)
@@ -132,19 +142,22 @@ function ToggleStyleButton({
 
   function handlePress(style: ToggledStyle) {
     editor.focus()
-    editor.toggleStyles({[style]: true})
+    editor.toggleStyles({[toggleStyle]: true})
   }
 
   return (
     <Theme inverse={active}>
       <XGroup.Item>
-        <Button
-          bg={active ? '$background' : '$backgroundFocus'}
-          fontWeight={active ? 'bold' : '400'}
-          size={size}
-          icon={icon}
-          onPress={() => handlePress(style)}
-        />
+        <Tooltip content={name}>
+          <Button
+            bg={active ? '$background' : '$backgroundFocus'}
+            fontWeight={active ? 'bold' : '400'}
+            size={size}
+            borderRadius={0}
+            icon={icon}
+            onPress={() => handlePress(toggleStyle)}
+          />
+        </Tooltip>
       </XGroup.Item>
     </Theme>
   )

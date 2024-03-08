@@ -5,7 +5,6 @@ import {useEntityCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  MttLink,
   Publication,
   PublicationContent,
   PublicationHeading,
@@ -263,12 +262,12 @@ export default function PublicationPage() {
         {pushToGatewayDialog.content}
         <CitationsProvider
           documentId={docId}
-          onCitationsOpen={(citations: Array<MttLink>) => {
+          onCitationsOpen={() => {
             // todo, pass active citations into route
             replace({...route, accessory: {key: 'citations'}})
           }}
         >
-          <AccessoryLayout accessory={accessory} key={accessoryKey}>
+          <AccessoryLayout accessory={accessory}>
             <MainWrapper>
               <YStack
                 paddingBottom={'$7'}
