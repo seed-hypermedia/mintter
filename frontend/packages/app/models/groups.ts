@@ -759,6 +759,40 @@ export function getBlockNode(
   return null
 }
 
+export function useRenameGroupCateogry(groupId: string) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      categoryId,
+      title,
+    }: {
+      categoryId: string
+      title: string
+    }) => {
+      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+        const categoryBlockNode = getBlockNode(doc.children, categoryId)
+        if (!categoryBlockNode) throw new Error('Could not find category block')
+        return [
+          {
+            op: {
+              case: 'replaceBlock',
+              value: {
+                ...categoryBlockNode.block,
+                text: title,
+              },
+            },
+          },
+        ]
+      })
+    },
+    onSuccess: (result, input, context) => {
+      invalidate([queryKeys.GET_GROUP_CONTENT, groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, groupId])
+    },
+  })
+}
+
 export function useMoveCategory(groupId: string) {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()

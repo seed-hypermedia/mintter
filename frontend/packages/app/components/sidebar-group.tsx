@@ -25,7 +25,15 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {Book, Folder, List, Plus, Undo2, X} from '@tamagui/lucide-icons'
+import {
+  Book,
+  Folder,
+  FolderPen,
+  List,
+  Plus,
+  Undo2,
+  X,
+} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect, useState} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
@@ -38,6 +46,7 @@ import {
   useGroupMembers,
   useGroupNavigation,
   useMoveCategory,
+  useRenameGroupCateogry,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -122,6 +131,7 @@ export function GroupSidebar({
   const deleteCategoryDialog = useAppDialog(DeleteCategoryDialog, {
     isAlert: true,
   })
+  const renameCategoryDialog = useAppDialog(RenameCategoryDialog)
   function handleDragEnd({active, over}) {
     const oldIndex = items.findIndex((item) => item.id === active.id)
     const toIndex = items.findIndex((item) => item.id === over.id)
@@ -220,6 +230,18 @@ export function GroupSidebar({
                                 })
                               },
                             },
+                            {
+                              key: 'rename',
+                              icon: FolderPen,
+                              label: 'Rename Category',
+                              onPress: () => {
+                                renameCategoryDialog.open({
+                                  groupId,
+                                  categoryId: item.id,
+                                  title: item.label,
+                                })
+                              },
+                            },
                           ]
                     }
                     icon={Folder}
@@ -256,6 +278,7 @@ export function GroupSidebar({
         )}
       </YStack>
       {deleteCategoryDialog.content}
+      {renameCategoryDialog.content}
     </GenericSidebarContainer>
   )
 }
@@ -273,6 +296,61 @@ function SortableItem({id, children}: PropsWithChildren<{id: string}>) {
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       {children}
     </div>
+  )
+}
+
+const renameCategorySchema = z.object({
+  title: z.string(),
+})
+type RenameCategorySchema = z.infer<typeof renameCategorySchema>
+
+function RenameCategoryDialog({
+  onClose,
+  input,
+}: {
+  onClose: () => void
+  input: {groupId: string; categoryId: string; title: string}
+}) {
+  const {
+    control,
+    handleSubmit,
+    setFocus,
+    formState: {errors},
+  } = useForm<RenameCategorySchema>({
+    resolver: zodResolver(renameCategorySchema),
+    defaultValues: {
+      title: input.title,
+    },
+  })
+  useEffect(() => {
+    setTimeout(() => {
+      setFocus('title', {
+        shouldSelect: true,
+      })
+    }, 200) // the component gets blurred AFTER the focus, if this is timer is much lower! 😭 around 150ms it sometimes autofocuses correctly. this is so shameful. send help
+  }, [setFocus])
+  const renameCategory = useRenameGroupCateogry(input.groupId)
+  function onSubmit(fields: RenameCategorySchema) {
+    renameCategory.mutateAsync({
+      categoryId: input.categoryId,
+      title: fields.title,
+    })
+    onClose()
+  }
+  return (
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <DialogTitle>Rename Category</DialogTitle>
+      <FormField name="title" label="Title" errors={errors}>
+        <FormInput
+          control={control}
+          name="title"
+          placeholder="Category title..."
+        />
+      </FormField>
+      <Form.Trigger>
+        <Button>Save Category Title</Button>
+      </Form.Trigger>
+    </Form>
   )
 }
 
