@@ -424,11 +424,6 @@ export function BlockNodeContent({
 
   return (
     <YStack
-      width={
-        blockNode.block!.attributes?.width
-          ? `${blockNode.block!.attributes?.width}px`
-          : undefined
-      }
       ref={elm}
       className="blocknode-content"
       id={blockNode.block?.id}
@@ -846,8 +841,20 @@ function BlockContentImage({block, ...props}: BlockContentProps) {
       className="block-content block-image"
       paddingVertical="$3"
       gap="$2"
+      ai="center"
+      width="100%"
     >
-      <img alt={block.attributes.alt} src={`${ipfsBlobPrefix}${cid}`} />
+      <XStack
+        width={
+          block.attributes?.width ? `${block.attributes?.width}px` : undefined
+        }
+      >
+        <img
+          alt={block?.attributes?.alt}
+          src={`${ipfsBlobPrefix}${cid}`}
+          style={{width: '100%'}}
+        />
+      </XStack>
       {inline.length ? (
         <Text opacity={0.7} fontFamily="$body">
           <InlineContentView inline={inline} fontSize={textUnit * 0.85} />
