@@ -1,3 +1,4 @@
+import {API_FILE_URL} from '@mintter/shared'
 import {SizableText, XStack, useTheme} from '@mintter/ui'
 import {RiVideoAddLine} from 'react-icons/ri'
 import {
@@ -6,6 +7,7 @@ import {
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
+import {MediaContainer} from './media-container'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {HMBlockSchema} from './schema'
 import {youtubeParser} from './utils'
@@ -113,9 +115,29 @@ const Render = (
   )
 }
 
-const display = ({editor, block, url}: DisplayComponentProps) => {
+const display = ({
+  editor,
+  block,
+  selected,
+  setSelected,
+  assign,
+}: DisplayComponentProps) => {
+  const videoProps = {
+    paddingBottom: '56.25%',
+    position: 'relative',
+    height: 0,
+  }
+
   return (
-    <>
+    <MediaContainer
+      editor={editor}
+      block={block}
+      mediaType="video"
+      styleProps={videoProps}
+      selected={selected}
+      setSelected={setSelected}
+      assign={assign}
+    >
       {block.props.url.startsWith('ipfs://') ? (
         <XStack
           tag="video"
@@ -130,7 +152,10 @@ const display = ({editor, block, url}: DisplayComponentProps) => {
           width="100%"
           height="100%"
         >
-          <source src={url} type={getSourceType(block.props.name)} />
+          <source
+            src={`${API_FILE_URL}/${block.props.url.replace('ipfs://', '')}`}
+            type={getSourceType(block.props.name)}
+          />
           <SizableText>Something is wrong with the video file.</SizableText>
         </XStack>
       ) : (
@@ -149,6 +174,6 @@ const display = ({editor, block, url}: DisplayComponentProps) => {
           allowFullScreen
         />
       )}
-    </>
+    </MediaContainer>
   )
 }

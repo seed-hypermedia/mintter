@@ -29,6 +29,7 @@ import {useCallback, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Block, BlockNoteEditor, HMBlockSchema} from '.'
 import {createReactBlockSpec} from './blocknote/react'
+import {MediaContainer} from './media-container'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {usePopoverState} from './use-popover-state'
 
@@ -152,9 +153,22 @@ const Render = (
   )
 }
 
-const display = ({block, assign}: DisplayComponentProps) => {
+const display = ({
+  editor,
+  block,
+  assign,
+  selected,
+  setSelected,
+}: DisplayComponentProps) => {
   return (
-    <>
+    <MediaContainer
+      editor={editor}
+      block={block}
+      mediaType="embed"
+      selected={selected}
+      setSelected={setSelected}
+      assign={assign}
+    >
       <EmbedControl block={block} assign={assign} />
       {block.props.url && (
         <ErrorBoundary FallbackComponent={EmbedError}>
@@ -174,7 +188,7 @@ const display = ({block, assign}: DisplayComponentProps) => {
           />
         </ErrorBoundary>
       )}
-    </>
+    </MediaContainer>
   )
 }
 

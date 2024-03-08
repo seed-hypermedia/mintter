@@ -424,6 +424,11 @@ export function BlockNodeContent({
 
   return (
     <YStack
+      width={
+        blockNode.block!.attributes?.width
+          ? `${blockNode.block!.attributes?.width}px`
+          : undefined
+      }
       ref={elm}
       className="blocknode-content"
       id={blockNode.block?.id}

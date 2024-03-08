@@ -152,6 +152,7 @@ export function fromHMBlock(
       type: 'image',
       attributes: {
         name: editorBlock.props.name,
+        width: editorBlock.props.width,
       },
       ref: ref || '',
       ...extractContent(editorBlock.content),
