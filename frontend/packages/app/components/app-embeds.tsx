@@ -70,6 +70,7 @@ function EmbedWrapper({
 
   return (
     <YStack
+      // @ts-expect-error
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
@@ -83,7 +84,10 @@ function EmbedWrapper({
       }
       hoverStyle={{
         cursor: 'pointer',
-        backgroundColor: '$color5',
+        backgroundColor:
+          isHighlight && routeParams?.blockRef == unpackRef?.blockRef
+            ? '$yellow4'
+            : '$color5',
       }}
       margin={0}
       marginHorizontal={(-1 * layoutUnit) / 2}
@@ -104,12 +108,12 @@ function EmbedWrapper({
                 ) {
                   navigate({
                     ...route,
-                    blockId: unpackRef?.blockRef,
-                    versionId: unpackRef?.version,
+                    blockId: unpackRef?.blockRef!,
+                    versionId: unpackRef?.version!,
                   })
-                } else if (route.key == 'comment') {
-                  open(hmRef, true)
                 }
+              } else {
+                open(hmRef, true)
               }
             }
           : undefined
