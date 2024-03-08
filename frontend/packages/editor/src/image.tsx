@@ -1,6 +1,6 @@
 import {trpc} from '@mintter/desktop/src/trpc'
 import {getCIDFromIPFSUrl, usePublicationContentContext} from '@mintter/shared'
-import {XStack, useTheme} from '@mintter/ui'
+import {ResizeHandle, XStack, useTheme} from '@mintter/ui'
 import {useEffect, useState} from 'react'
 import {RiImage2Line} from 'react-icons/ri'
 import {
@@ -236,36 +236,6 @@ const display = ({
     }
     editor.setTextCursorPosition(block.id, 'start')
   }
-  const LeftResizeHandle = () => (
-    <div
-      style={{
-        left: '4px',
-        position: 'absolute',
-        width: '8px',
-        height: '30px',
-        background: 'black',
-        border: '2px solid white',
-        borderRadius: '5px',
-        cursor: 'ew-resize',
-      }}
-      onMouseDown={leftResizeHandleMouseDownHandler}
-    />
-  )
-  const RightResizeHandle = () => (
-    <div
-      style={{
-        right: '4px',
-        position: 'absolute',
-        width: '8px',
-        height: '30px',
-        background: 'black',
-        border: '2px solid white',
-        borderRadius: '5px',
-        cursor: 'ew-resize',
-      }}
-      onMouseDown={rightResizeHandleMouseDownHandler}
-    />
-  )
 
   return (
     <MediaContainer
@@ -286,8 +256,14 @@ const display = ({
       <XStack alignItems="center">
         {showHandle && (
           <>
-            <LeftResizeHandle />
-            <RightResizeHandle />
+            <ResizeHandle
+              left={4}
+              onMouseDown={leftResizeHandleMouseDownHandler}
+            />
+            <ResizeHandle
+              right={4}
+              onMouseDown={rightResizeHandleMouseDownHandler}
+            />
           </>
         )}
         {imageUrl && (

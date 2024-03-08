@@ -129,7 +129,7 @@ export const MediaContainer = ({
   }
 
   return (
-    <YStack gap="$2" group="item" width={width}>
+    <YStack gap="$2" group="item" width={width} alignSelf="center">
       {drag && mediaType !== 'embed' ? (
         <XStack
           position="absolute"
