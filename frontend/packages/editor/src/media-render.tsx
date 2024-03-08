@@ -1,11 +1,5 @@
-import {useAppContext} from '@mintter/app/app-context'
 import {client} from '@mintter/desktop/src/trpc'
-import {
-  API_FILE_UPLOAD_URL,
-  API_FILE_URL,
-  getCIDFromIPFSUrl,
-  usePublicationContentContext,
-} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -15,14 +9,11 @@ import {
   SizableText,
   Spinner,
   Tabs,
-  Text,
   XStack,
   YStack,
-  toast,
 } from '@mintter/ui'
 import {ChangeEvent, FunctionComponent, useEffect, useState} from 'react'
 import {Block, BlockNoteEditor, getBlockInfoFromPos} from './blocknote'
-import {InlineContent} from './blocknote/react'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
 import {HMBlockSchema} from './schema'
 
@@ -33,6 +24,7 @@ export type MediaType = {
     name: string
     size?: string
     display?: 'content' | 'card'
+    width?: string
   }
   children: []
   content: []
@@ -44,7 +36,8 @@ const boolRegex = new RegExp('true')
 export interface DisplayComponentProps {
   editor: BlockNoteEditor<HMBlockSchema>
   block: Block<HMBlockSchema>
-  url?: string
+  selected: boolean
+  setSelected: any
   assign?: any
 }
 
@@ -148,7 +141,6 @@ export const MediaRender: React.FC<RenderProps> = ({
           assign={assignMedia}
           selected={selected}
           setSelected={setSelection}
-          mediaType={mediaType}
           DisplayComponent={DisplayComponent}
         />
       ) : editor.isEditable ? (
@@ -174,7 +166,6 @@ function MediaComponent({
   assign,
   selected,
   setSelected,
-  mediaType,
   DisplayComponent,
 }: {
   block: Block<HMBlockSchema>
@@ -182,222 +173,16 @@ function MediaComponent({
   assign: any
   selected: boolean
   setSelected: any
-  mediaType: string
   DisplayComponent: React.ComponentType<DisplayComponentProps>
 }) {
-  const [replace, setReplace] = useState(false)
-  const [drag, setDrag] = useState(false)
-  const {saveCidAsFile} = useAppContext()
-
-  const saveMedia = async () => {
-    await saveCidAsFile(block.props.url, block.props.name)
-  }
-
-  const handleDragReplace = async (file: File) => {
-    if (file.size > MaxFileSizeB) {
-      toast.error(`The size of ${file.name} exceeds ${MaxFileSizeMB} MB.`)
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const response = await fetch(API_FILE_UPLOAD_URL, {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await response.text()
-
-      assign({
-        props: {
-          url: data ? `ipfs://${data}` : '',
-          name: file.name,
-          size: file.size.toString(),
-        },
-      } as MediaType)
-    } catch (error) {
-      console.error(
-        `Editor: ${mediaType} upload error (MediaComponent): ${mediaType}: ${file.name} error: ${error}`,
-      )
-    }
-  }
-
-  const {ipfsBlobPrefix} = usePublicationContentContext()
-  let mediaUrl =
-    mediaType === 'image'
-      ? `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
-      : `${API_FILE_URL}/${block.props.url.replace('ipfs://', '')}`
-
-  const videoProps =
-    mediaType === 'video'
-      ? {
-          paddingBottom: '56.25%',
-          position: 'relative',
-          height: 0,
-        }
-      : {}
-
-  const mediaProps = {
-    onHoverIn: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      setReplace(true)
-    },
-    onHoverOut: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      setReplace(false)
-    },
-    onDrop: (e: React.DragEvent<HTMLDivElement>) => {
-      if (e.dataTransfer.effectAllowed === 'move') return
-      e.preventDefault()
-      e.stopPropagation()
-      setDrag(false)
-      if (selected) setSelected(false)
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        const file = Array.from(e.dataTransfer.files)[0]
-        if (!file.type.includes(`${mediaType}/`) && mediaType !== 'file') {
-          toast.error(
-            `The dragged file is not ${
-              mediaType === 'image' ? 'an' : 'a'
-            } ${mediaType}.`,
-          )
-          return
-        }
-        handleDragReplace(file)
-        return
-      }
-    },
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDrag(true)
-    },
-    onDragEnter: (e: React.DragEvent<HTMLDivElement>) => {
-      const relatedTarget = e.relatedTarget as HTMLElement
-      e.preventDefault()
-      e.stopPropagation()
-      setDrag(true)
-      if (
-        (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-        e.dataTransfer.effectAllowed !== 'move'
-      ) {
-        setSelected(true)
-      }
-    },
-    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => {
-      const relatedTarget = e.relatedTarget as HTMLElement
-      e.preventDefault()
-      e.stopPropagation()
-      setDrag(false)
-      if (
-        (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-        e.dataTransfer.effectAllowed !== 'move'
-      ) {
-        setSelected(false)
-      }
-    },
-    outlineWidth: 0,
-  }
-
   return (
-    <YStack gap="$2" group="item">
-      {drag && mediaType !== 'embed' ? (
-        <XStack
-          position="absolute"
-          zIndex={100}
-          fullscreen
-          pointerEvents="none"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <XStack
-            paddingHorizontal="$4"
-            paddingVertical="$2"
-            backgroundColor="$backgroundColor"
-            borderWidth={2}
-            borderRadius="$2"
-            borderColor={'$color8'}
-          >
-            <Text fontFamily="$mono" fontSize="$3" zIndex={2}>
-              Drop to replace
-            </Text>
-          </XStack>
-          <XStack
-            opacity={0.75}
-            backgroundColor="$backgroundHover"
-            position="absolute"
-            fullscreen
-            zIndex={1}
-          />
-        </XStack>
-      ) : null}
-      <YStack
-        backgroundColor={selected ? '$color4' : '$color3'}
-        borderColor={selected ? '$color8' : 'transparent'}
-        borderWidth={2}
-        borderRadius="$2"
-        overflow="hidden"
-        hoverStyle={{
-          backgroundColor: '$color4',
-        }}
-        {...videoProps}
-        {...mediaProps}
-        // @ts-ignore
-        contentEditable={false}
-        className={block.type}
-        group="item"
-      >
-        {replace && mediaType !== 'embed' ? (
-          editor.isEditable ? (
-            <Button
-              position="absolute"
-              top="$1.5"
-              right="$1.5"
-              zIndex="$4"
-              size="$1"
-              width={60}
-              onPress={() =>
-                assign({
-                  props: {
-                    url: '',
-                    name: '',
-                    size: '0',
-                  },
-                  children: [],
-                  content: [],
-                  type: 'file',
-                } as MediaType)
-              }
-              hoverStyle={{
-                backgroundColor: '$backgroundTransparent',
-              }}
-            >
-              replace
-            </Button>
-          ) : (
-            <Button
-              position="absolute"
-              top="$1.5"
-              right="$2"
-              zIndex="$4"
-              size="$1"
-              width={50}
-              onPress={saveMedia}
-              hoverStyle={{
-                backgroundColor: '$backgroundTransparent',
-              }}
-            >
-              save
-            </Button>
-          )
-        ) : null}
-        <DisplayComponent
-          editor={editor}
-          block={block}
-          url={mediaUrl}
-          assign={assign}
-        />
-      </YStack>
-      {mediaType === 'image' && <InlineContent className="image-caption" />}
-    </YStack>
+    <DisplayComponent
+      editor={editor}
+      block={block}
+      selected={selected}
+      setSelected={setSelected}
+      assign={assign}
+    />
   )
 }
 

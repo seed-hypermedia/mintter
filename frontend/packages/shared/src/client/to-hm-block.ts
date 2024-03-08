@@ -280,6 +280,7 @@ export function toHMBlock(
         props: {
           url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
+          width: serverBlock.block.attributes.width,
           textAlignment: 'left',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,

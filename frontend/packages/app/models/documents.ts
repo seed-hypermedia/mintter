@@ -1173,7 +1173,8 @@ function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
     a1.view == a2.view &&
     a1.latest == a2.latest &&
     a1.sourceRef == a2.sourceRef &&
-    a1.sourceUrl == a2.sourceUrl
+    a1.sourceUrl == a2.sourceUrl &&
+    a1.width == a2.width
   )
 }
 
