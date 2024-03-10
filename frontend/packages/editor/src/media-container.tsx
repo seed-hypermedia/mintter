@@ -17,7 +17,7 @@ interface ContainerProps {
   children: any
   onHoverIn?: () => void
   onHoverOut?: (e: any) => void
-  width?: number
+  width?: number | string
 }
 
 export const MediaContainer = ({
@@ -31,7 +31,7 @@ export const MediaContainer = ({
   children,
   onHoverIn,
   onHoverOut,
-  width,
+  width = '100%',
 }: ContainerProps) => {
   const [replace, setReplace] = useState(false)
   const [drag, setDrag] = useState(false)
