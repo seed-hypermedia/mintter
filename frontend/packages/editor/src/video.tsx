@@ -1,5 +1,6 @@
 import {API_FILE_URL} from '@mintter/shared'
-import {SizableText, XStack, useTheme} from '@mintter/ui'
+import {ResizeHandle, SizableText, XStack, useTheme} from '@mintter/ui'
+import {useEffect, useState} from 'react'
 import {RiVideoAddLine} from 'react-icons/ri'
 import {
   Block,
@@ -30,6 +31,9 @@ export const VideoBlock = createReactBlockSpec({
       default: '',
     },
     name: {
+      default: '',
+    },
+    width: {
       default: '',
     },
     defaultOpen: {
@@ -122,6 +126,126 @@ const display = ({
   setSelected,
   assign,
 }: DisplayComponentProps) => {
+  // Min video width in px.
+  const minWidth = 256
+  let width: number =
+    parseFloat(block.props.width) ||
+    editor.domElement.firstElementChild!.clientWidth
+  const [currentWidth, setCurrentWidth] = useState(width)
+  const [showHandle, setShowHandle] = useState(false)
+  let resizeParams:
+    | {
+        handleUsed: 'left' | 'right'
+        initialWidth: number
+        initialClientX: number
+      }
+    | undefined
+
+  useEffect(() => {
+    if (block.props.width) {
+      width = parseFloat(block.props.width)
+      setCurrentWidth(parseFloat(block.props.width))
+    }
+  }, [block.props.width])
+
+  const windowMouseMoveHandler = (event: MouseEvent) => {
+    if (!resizeParams) {
+      return
+    }
+
+    let newWidth: number
+    if (resizeParams.handleUsed === 'left') {
+      newWidth =
+        resizeParams.initialWidth +
+        (resizeParams.initialClientX - event.clientX) * 2
+    } else {
+      newWidth =
+        resizeParams.initialWidth +
+        (event.clientX - resizeParams.initialClientX) * 2
+    }
+
+    // Ensures the video is not wider than the editor and not smaller than a
+    // predetermined minimum width.
+    if (newWidth < minWidth) {
+      width = minWidth
+      setCurrentWidth(minWidth)
+    } else if (newWidth > editor.domElement.firstElementChild!.clientWidth) {
+      width = editor.domElement.firstElementChild!.clientWidth
+      setCurrentWidth(editor.domElement.firstElementChild!.clientWidth)
+    } else {
+      width = newWidth
+      setCurrentWidth(newWidth)
+    }
+  }
+
+  // Stops mouse movements from resizing the video and updates the block's
+  // `width` prop to the new value.
+  const windowMouseUpHandler = (event: MouseEvent) => {
+    setShowHandle(false)
+
+    if (!resizeParams) {
+      return
+    }
+    resizeParams = undefined
+
+    assign({
+      props: {
+        width: width.toString(),
+      },
+    })
+
+    // @ts-expect-error
+    editor.updateBlock(block.id, {
+      ...block,
+      props: {
+        width: width.toString(),
+      },
+    })
+  }
+  window.addEventListener('mousemove', windowMouseMoveHandler)
+  window.addEventListener('mouseup', windowMouseUpHandler)
+
+  // Hides the resize handles when the cursor leaves the video
+  const videoMouseLeaveHandler = (event) => {
+    if (resizeParams) {
+      return
+    }
+
+    setShowHandle(false)
+  }
+
+  // Sets the resize params, allowing the user to begin resizing the video by
+  // moving the cursor left or right.
+  const leftResizeHandleMouseDownHandler = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault()
+
+    setShowHandle(true)
+
+    resizeParams = {
+      handleUsed: 'left',
+      initialWidth: width || parseFloat(block.props.width),
+      initialClientX: event.clientX,
+    }
+    editor.setTextCursorPosition(block.id, 'start')
+  }
+
+  const rightResizeHandleMouseDownHandler = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault()
+
+    setShowHandle(true)
+
+    resizeParams = {
+      handleUsed: 'right',
+      initialWidth: width || parseFloat(block.props.width),
+      initialClientX: event.clientX,
+    }
+    editor.setTextCursorPosition(block.id, 'start')
+  }
+
   const videoProps = {
     paddingBottom: '56.25%',
     position: 'relative',
@@ -137,7 +261,26 @@ const display = ({
       selected={selected}
       setSelected={setSelected}
       assign={assign}
+      onHoverIn={() => {
+        if (editor.isEditable) {
+          setShowHandle(true)
+        }
+      }}
+      onHoverOut={videoMouseLeaveHandler}
+      width={currentWidth}
     >
+      {showHandle && (
+        <>
+          <ResizeHandle
+            left={4}
+            onMouseDown={leftResizeHandleMouseDownHandler}
+          />
+          <ResizeHandle
+            right={4}
+            onMouseDown={rightResizeHandleMouseDownHandler}
+          />
+        </>
+      )}
       {block.props.url.startsWith('ipfs://') ? (
         <XStack
           tag="video"

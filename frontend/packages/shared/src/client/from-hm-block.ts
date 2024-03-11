@@ -220,6 +220,7 @@ export function fromHMBlock(
       type: 'video',
       attributes: {
         name: editorBlock.props.name,
+        width: editorBlock.props.width,
       },
       ref: ref || '',
     })

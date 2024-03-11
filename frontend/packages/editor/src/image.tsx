@@ -1,6 +1,6 @@
 import {trpc} from '@mintter/desktop/src/trpc'
 import {getCIDFromIPFSUrl, usePublicationContentContext} from '@mintter/shared'
-import {ResizeHandle, XStack, useTheme} from '@mintter/ui'
+import {ResizeHandle, useTheme} from '@mintter/ui'
 import {useEffect, useState} from 'react'
 import {RiImage2Line} from 'react-icons/ri'
 import {
@@ -135,8 +135,10 @@ const display = ({
     | undefined
 
   useEffect(() => {
-    width = parseFloat(block.props.width)
-    setCurrentWidth(parseFloat(block.props.width))
+    if (block.props.width) {
+      width = parseFloat(block.props.width)
+      setCurrentWidth(parseFloat(block.props.width))
+    }
   }, [block.props.width])
 
   const windowMouseMoveHandler = (event: MouseEvent) => {
@@ -253,28 +255,26 @@ const display = ({
       onHoverOut={imageMouseLeaveHandler}
       width={currentWidth}
     >
-      <XStack alignItems="center">
-        {showHandle && (
-          <>
-            <ResizeHandle
-              left={4}
-              onMouseDown={leftResizeHandleMouseDownHandler}
-            />
-            <ResizeHandle
-              right={4}
-              onMouseDown={rightResizeHandleMouseDownHandler}
-            />
-          </>
-        )}
-        {imageUrl && (
-          <img
-            style={{width: `100%`}}
-            src={imageUrl}
-            alt={block.props.name || 'image'}
-            contentEditable={false}
+      {showHandle && (
+        <>
+          <ResizeHandle
+            left={4}
+            onMouseDown={leftResizeHandleMouseDownHandler}
           />
-        )}
-      </XStack>
+          <ResizeHandle
+            right={4}
+            onMouseDown={rightResizeHandleMouseDownHandler}
+          />
+        </>
+      )}
+      {imageUrl && (
+        <img
+          style={{width: `100%`}}
+          src={imageUrl}
+          alt={block.props.name || 'image'}
+          contentEditable={false}
+        />
+      )}
     </MediaContainer>
   )
 }
