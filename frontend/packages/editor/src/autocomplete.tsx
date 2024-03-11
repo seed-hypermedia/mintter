@@ -1,6 +1,6 @@
 import {Account} from '@mintter/shared'
 import {Button, ButtonProps} from '@mintter/ui'
-import {NodeSpec} from '@tiptap/pm/model'
+import {Fragment, NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'
 import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
@@ -139,14 +139,14 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
             )
 
             // TODO: testing if letting add mentions anywhere feels better
-            // if ((isStart || emptyPrev) && (isEnd || emptyNext)) {
-            const pos = $position.pos
-            const rect = view.coordsAtPos(pos)
-            dispatch({type: 'open', pos, rect})
+            if ((isStart || emptyPrev) && (isEnd || emptyNext)) {
+              const pos = $position.pos
+              const rect = view.coordsAtPos(pos)
+              dispatch({type: 'open', pos, rect})
 
-            // Don't override the actual input.
-            return false
-            // }
+              // Don't override the actual input.
+              return false
+            }
           }
         }
 
@@ -188,7 +188,13 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
             const node = view.state.schema.nodes[nodeName].create({
               ref: `hm://a/${value.id}`,
             })
-            view.dispatch(view.state.tr.replaceWith(range.from, range.to, node))
+            view.dispatch(
+              view.state.tr.replaceWith(
+                range.from,
+                range.to,
+                Fragment.fromArray([node, view.state.schema.text(' ')]),
+              ),
+            )
           }
 
           const dispatch = (action: AutocompleteTokenPluginAction) => {
@@ -413,10 +419,10 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
       size="$2"
       jc="flex-start"
       borderRadius={0}
-      bg={props.selected ? '$blue10' : '$backgroundFocus'}
+      bg={props.selected ? '$mint11' : '$backgroundFocus'}
       color={props.selected ? 'white' : '$color'}
       hoverStyle={{
-        bg: '$blue10',
+        bg: '$mint11',
         borderColor: '$colorTransparent',
         color: 'white',
       }}

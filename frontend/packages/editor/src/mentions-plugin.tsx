@@ -88,7 +88,7 @@ export function MentionToken(props: {embedRef: string; selected?: boolean}) {
   return (
     <SizableText
       fontSize="1em"
-      paddingHorizontal={2}
+      paddingHorizontal={1}
       style={{
         display: 'inline-block',
         fontFamily: 'inherit !important',
