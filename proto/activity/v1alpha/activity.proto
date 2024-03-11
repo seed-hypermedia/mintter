@@ -24,6 +24,19 @@ message ListEventsRequest {
   // Optional. If we want events from trusted peers only. All peers by default.
   bool trusted_only = 3;
 
+  // Optional. If we want events only from specific user accounts. Multiple 
+  // accounts are filtered following OR logic.
+  repeated string filter_users = 4;
+
+  // Optional. If we want certain types of events.
+  // Some of the currently supported event types are:
+  //   - KeyDelegation
+  //   - Change
+  //   - Comment
+  //   - DagPB 
+  // Multiple types are filtered following OR logic.
+  repeated string filter_event_type = 5;
+
 }
 
 // The response with the list of events.

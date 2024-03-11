@@ -4,6 +4,7 @@ package activity
 import (
 	context "context"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"mintter/backend/core"
@@ -11,6 +12,7 @@ import (
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -74,29 +76,61 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 
 	var events []*activity.Event
 
-	var qGetEventsTrusted = dqb.Str(`
+	var getEventsTrustedStr = `
 		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
 		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
-		WHERE blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token;
-	`)
-	var qGetEventsAll = dqb.Str(`
+	`
+	var getEventsAllStr = `
 		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
 		FROM structural_blobs 
 		JOIN blobs ON blobs.id=structural_blobs.id 
 		JOIN public_keys ON structural_blobs.author=public_keys.id
 		LEFT JOIN resources ON structural_blobs.resource=resources.id
-		WHERE blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token;
-	`)
-	query := qGetEventsAll()
+	`
+	queryStr := getEventsAllStr
 	if req.TrustedOnly {
-		query = qGetEventsTrusted()
+		queryStr = getEventsTrustedStr
 	}
+	const pageTokenStr = "blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token"
+	var filtersStr string
+	if len(req.FilterUsers) > 0 {
+		filtersStr = "hex(public_keys.principal) in ("
+		for i, user := range req.FilterUsers {
+			if i > 0 {
+				filtersStr += ", "
+			}
+			principal, err := core.DecodePrincipal(user)
+			if err != nil {
+				return nil, fmt.Errorf("Invalid user filter [%s]: %w", user, err)
+			}
+			filtersStr += "'" + strings.ToUpper(hex.EncodeToString(principal)) + "'"
+		}
+		filtersStr += ") AND "
+	}
+
+	if len(req.FilterEventType) > 0 {
+		filtersStr += "lower(structural_blobs.type) in ("
+		for i, eventType := range req.FilterEventType {
+			// Hardcode this to prevent injection attacks
+			if strings.ToLower(eventType) != "keydelegation" && strings.ToLower(eventType) != "change" && strings.ToLower(eventType) != "Comment" && strings.ToLower(eventType) != "DagPB" {
+				return nil, fmt.Errorf("Invalid event type filter [%s]: Only KeyDelegation | Change | Comment | DagPB aresupported at the moment", eventType)
+			}
+			if i > 0 {
+				filtersStr += ", "
+			}
+			filtersStr += "'" + strings.ToLower(eventType) + "'"
+		}
+		filtersStr += ") AND "
+	}
+	queryStr += " WHERE " + filtersStr + pageTokenStr + ";"
+
+	query := dqb.Str(queryStr)
 	var lastBlobID int64
-	err = sqlitex.Exec(conn, query, func(stmt *sqlite.Stmt) error {
+	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
 		lastBlobID = stmt.ColumnInt64(0)
 		eventType := stmt.ColumnText(1)
 		author := stmt.ColumnBytes(2)
