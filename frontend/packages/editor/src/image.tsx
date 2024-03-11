@@ -148,11 +148,11 @@ const display = ({
     if (resizeParams.handleUsed === 'left') {
       newWidth =
         resizeParams.initialWidth +
-        (resizeParams.initialClientX - event.clientX)
+        (resizeParams.initialClientX - event.clientX) * 2
     } else {
       newWidth =
         resizeParams.initialWidth +
-        (event.clientX - resizeParams.initialClientX)
+        (event.clientX - resizeParams.initialClientX) * 2
     }
 
     // Ensures the image is not wider than the editor and not smaller than a

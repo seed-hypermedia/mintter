@@ -5,7 +5,7 @@ export const ResizeHandle = styled(XStack, {
   width: '8px',
   height: '32px',
   bg: '$color',
-  borderColor: 'white',
+  borderColor: '$background',
   borderWidth: 1,
   borderStyle: 'solid',
   borderRadius: '5px',
