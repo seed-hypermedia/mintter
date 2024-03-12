@@ -32,6 +32,8 @@ jobs:
           latest: true
           prerelease: true
           # excludes: rc, alpha, beta # Optional. Exclude keywords like rc, alpha, beta releases.
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Bump possible release candidate version
         id: bump_version
@@ -39,6 +41,8 @@ jobs:
         with:
           current-version: ${{ steps.get_latest_release.outputs.name }}
           version-fragment: "rc"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Check out the branch or tag
         id: vars
         run: |
