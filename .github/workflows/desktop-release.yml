@@ -21,37 +21,27 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.vars.outputs.version }}
+      version: ${{ steps.set_version.outputs.version }}
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Get Latest Release
-        id: get_latest_release
-        uses: cardinalby/git-get-release-action@v1
-        with:
-          latest: true
-          prerelease: true
-          # excludes: rc, alpha, beta # Optional. Exclude keywords like rc, alpha, beta releases.
-
-      - name: Bump possible release candidate version
-        id: bump_version
-        uses: christian-draeger/increment-semantic-version@1.0.2
-        with:
-          current-version: ${{ steps.get_latest_release.outputs.name }}
-          version-fragment: "rc"
-      - name: Check out the branch or tag
-        id: vars
-        run: |
-          # echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-
-          if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
-            VERSION=${{ github.ref_name }}
-          elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
-            VERSION=${{ steps.bump_version.outputs.next-version }}
-          else
-            VERSION=0.0.1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Set Version
+      id: set_version
+      run: |
+        if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+          VERSION=${{ github.ref_name }}
+        elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+          chmod +x ./scripts/generate-rc-version.sh
+          VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
+        else
+          VERSION=0.0.1
+        fi
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+    - name: Display Version
+      run: |
+        echo "App Version: ${{ steps.set_version.outputs.version }}"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
