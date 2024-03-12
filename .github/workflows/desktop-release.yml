@@ -39,6 +39,9 @@ jobs:
           VERSION=0.0.1
         fi
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+    - name: Display Version
+      run: |
+        echo "App Version: ${{ steps.set_version.outputs.version }}"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
