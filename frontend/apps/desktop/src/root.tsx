@@ -269,8 +269,9 @@ function useTrpcSubscribe() {
     const sub = client.queryInvalidation.subscribe(undefined, {
       onData: (value: unknown[]) => {
         if (!value) return
+        if (typeof value == 'undefined') return
         if (value[0] === 'trpc.experiments.get') {
-          utils.experiments.get.invalidate()
+          utils.experiments?.get?.invalidate?.()
         } else if (value[0] === 'trpc.pins.get') {
           utils.pins.get.invalidate()
         } else if (value[0] === 'trpc.comments.getCommentDrafts') {
