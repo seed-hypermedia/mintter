@@ -34,7 +34,7 @@ jobs:
           VERSION=${{ github.ref_name }}
         elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
           chmod +x ./scripts/generate-rc-version.sh
-          VERSION=$(echo ./scripts/generate-rc-version.sh ${{ github.ref }})
+          VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
         else
           VERSION=0.0.1
         fi
