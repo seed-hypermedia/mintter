@@ -5,8 +5,14 @@ BRANCH_NAME=$1
 # Extract version number from the branch name
 VERSION=$(echo $BRANCH_NAME | grep -oP 'release\/\K\d+\.\d+\.\d+')
 
-# Check if there are any releases matching the branch's version pattern
-RELEASES=$(git tag --list "$VERSION-rc*" | sort -V)
+# Fetch release information from GitHub API and base64 encode the response
+RELEASE_INFO=$(curl -s "https://api.github.com/repos/MintterHypermedia/mintter/releases" | base64)
+
+# Decode the base64 encoded response and filter out non-printable characters
+RELEASE_INFO=$(echo "$RELEASE_INFO" | base64 -d | tr -d '\000-\011\013-\037\177')
+
+# Extract release versions matching the branch's version pattern
+RELEASES=$(echo "$RELEASE_INFO" | jq -r --arg VERSION "$VERSION" '.[] | select(.tag_name | startswith($VERSION + "-rc")) | .tag_name' | sort -V)
 
 if [ -z "$RELEASES" ]; then
   # If no releases are found, set the version to <branch_version>-rc0
