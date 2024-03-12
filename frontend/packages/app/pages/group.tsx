@@ -539,6 +539,7 @@ export function GroupAllContent({
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,
   })
+
   return (
     <>
       <YStack>
@@ -546,7 +547,6 @@ export function GroupAllContent({
         groupContent.data?.items.map(({key, pub, author, editors, id}) => {
           if (key === '/') return null
           if (key === '_navigation') return null
-
           const latestEntry = latestGroupContent.data?.content?.[key]
           const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
 
@@ -598,6 +598,7 @@ export function GroupCategoryContent({
     navPub.data?.document?.children,
     category,
   )
+
   const groupContent = useFullGroupContent(groupId, version)
   const drafts = useDraftList()
   const group = useGroup(groupId, version, {
@@ -646,9 +647,11 @@ export function GroupCategoryContent({
     moveItem.mutate({itemId: active.id, leftSibling})
   }
   const displayItems = temporaryItems || items
+
   const deleteItemDialog = useAppDialog(DeleteCategoryItemDialog, {
     isAlert: true,
   })
+
   return (
     <>
       <Container>
@@ -685,9 +688,10 @@ export function GroupCategoryContent({
                 const latestDocId = latestEntry
                   ? unpackDocId(latestEntry)
                   : null
-                const pub = publications.find((p) => {
-                  return p.data?.document?.id === hmId.qid
+                const pub = groupContent.data.items.find((p) => {
+                  return p.id.qid === hmId.qid
                 })
+
                 const groupEntry = groupContent.data?.content?.[pathName]
                 const groupEntryId = groupEntry ? unpackDocId(groupEntry) : null
                 if (!groupEntryId) return null
@@ -721,10 +725,10 @@ export function GroupCategoryContent({
                         hostname: group.data?.siteInfo?.baseUrl || null,
                       })
                     }}
-                    pub={pub?.data}
+                    pub={pub?.pub}
                     userRole={myMemberRole}
-                    editors={pub?.data?.document?.editors || []}
-                    author={pub?.data?.document?.author}
+                    editors={pub?.editors || []}
+                    author={pub?.author}
                     pathName={pathName}
                   />
                 )

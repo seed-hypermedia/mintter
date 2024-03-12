@@ -124,8 +124,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
                   const editorId =
                     typeof editor === 'string' ? editor : editor?.id
                   if (!editorId) return null
-                  const account =
-                    typeof editor === 'string' ? undefined : editor
+                  const account = typeof editor == 'string' ? undefined : editor
                   return (
                     <XStack
                       zIndex={idx + 1}
