@@ -4,6 +4,7 @@ package documents
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api/documents/v1alpha/docmodel"
@@ -11,11 +12,13 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	groups_proto "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/mttnet"
+	"strings"
 
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/colx"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
 
 	"crawshaw.io/sqlite"
@@ -25,6 +28,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Discoverer is a subset of the syncing service that
@@ -528,42 +532,147 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 	return &emptypb.Empty{}, nil
 }
 
+var qListAllPublications = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner, -- Directly use the owner reference here
+	  sb.meta,
+	  HEX(pk.principal) AS author_hex,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  HEX(pk.principal),
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_hex AS (
+	SELECT
+	  id,
+	  HEX(principal) AS owner_hex
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT ra.author_hex) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	oh.owner_hex,
+	lb.multihash AS latest_multihash,
+	lb.codec AS latest_codec
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_hex oh ON ra.owner = oh.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta;
+  
+`)
+
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	var (
 		entities []hyper.EntityID
 		err      error
 	)
-	if in.TrustedOnly {
-		entities, err = api.blobs.ListTrustedEntities(ctx, "hm://d/*")
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		entities, err = api.blobs.ListEntities(ctx, "hm://d/*")
-		if err != nil {
-			return nil, err
-		}
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
 	}
-
+	defer cancel()
 	resp := &documents.ListPublicationsResponse{
 		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
-
-	// TODO(burdiyan): this is very inefficient. Index the attributes necessary for listing,
-	// and use the database without loading the changes from disk all the time one by one.
-	for _, e := range entities {
-		docid := string(e)
-		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: docid,
-			LocalOnly:  true,
-		})
+	pattern := "hm://d/*"
+	err = sqlitex.Exec(conn, qListAllPublications(), func(stmt *sqlite.Stmt) error {
+		var (
+			id          = stmt.ColumnText(0)
+			createTime  = stmt.ColumnInt64(1) * 1e9
+			editorsStr  = stmt.ColumnText(2)
+			title       = stmt.ColumnText(3)
+			updatedTime = stmt.ColumnInt64(4) * 1e3
+			ownerHex    = stmt.ColumnText(5)
+			mhash       = stmt.ColumnBytes(6)
+			codec       = stmt.ColumnInt64(7)
+		)
+		editors := []string{}
+		for _, editorHex := range strings.Split(editorsStr, ",") {
+			editorBin, err := hex.DecodeString(editorHex)
+			if err != nil {
+				return err
+			}
+			editors = append(editors, core.Principal(editorBin).String())
+		}
+		ownerBin, err := hex.DecodeString(ownerHex)
 		if err != nil {
-			continue
+			return err
+		}
+		version := cid.NewCidV1(uint64(codec), mhash)
+		pub := &documents.Publication{
+			Version: version.String(),
+			Document: &documents.Document{
+				Id:          id,
+				Title:       title,
+				Author:      core.Principal(ownerBin).String(),
+				Editors:     editors,
+				Children:    []*documents.BlockNode{},
+				CreateTime:  &timestamppb.Timestamp{Seconds: createTime / 1000000000, Nanos: int32(createTime % 1000000000)},
+				UpdateTime:  &timestamppb.Timestamp{Seconds: updatedTime / 1000, Nanos: int32(updatedTime % 1000)},
+				PublishTime: &timestamppb.Timestamp{Seconds: updatedTime / 1000, Nanos: int32(updatedTime % 1000)},
+			},
 		}
 		resp.Publications = append(resp.Publications, pub)
+		return nil
+	}, pattern)
+	if err != nil {
+		return nil, err
 	}
-
+	/*
+		if in.TrustedOnly {
+			entities, err = api.blobs.ListTrustedEntities(ctx, "hm://d/*")
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			entities, err = api.blobs.ListEntities(ctx, "hm://d/*")
+			if err != nil {
+				return nil, err
+			}
+		}
+	*/
 	return resp, nil
 }
 
