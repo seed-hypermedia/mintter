@@ -8,6 +8,7 @@ import {
   Popover,
   SizeTokens,
   Theme,
+  Unlink,
   XGroup,
 } from '@mintter/ui'
 import {useCallback, useState} from 'react'
@@ -53,31 +54,6 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
           </Popover.Trigger>
         </Theme>
         <Popover.Content p="$2">
-          {/* {url ? (
-            <HypermediaLinkToolbar
-              url={url}
-              text={text}
-              editHyperlink={props.editor.hyperlinkToolbar.editHyperlink}
-              updateHyperlink={props.editor.hyperlinkToolbar.updateHyperlink}
-              deleteHyperlink={props.editor.hyperlinkToolbar.deleteHyperlink}
-              startHideTimer={props.editor.hyperlinkToolbar.startHideTimer}
-              stopHideTimer={props.editor.hyperlinkToolbar.stopHideTimer}
-              onChangeLink={(key: 'url' | 'text', value: string) => {
-                if (key == 'text') {
-                  setText(value)
-                } else {
-                  setUrl(value)
-                }
-              }}
-              openUrl={() => {}}
-              editor={props.editor}
-            />
-          ) : (
-            <AddHyperlink
-              setLink={(url: string) => setLink(url, text)}
-              onCancel={() => popoverProps.onOpenChange(false)}
-            />
-          )} */}
           <AddHyperlink
             url={url}
             setLink={(url: string) => setLink(url, text)}
@@ -128,6 +104,9 @@ function AddHyperlink({
             setLink(url)
           }}
         />
+      </XGroup.Item>
+      <XGroup.Item>
+        <Button size="$2" icon={Unlink} chromeless onPress={() => {}} />
       </XGroup.Item>
       <XGroup.Item>
         <Button size="$2" icon={Close} chromeless onPress={onCancel} />

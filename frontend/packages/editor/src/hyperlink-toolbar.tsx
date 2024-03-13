@@ -15,7 +15,7 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useEffect, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {HyperlinkToolbarProps} from './blocknote'
 
 export function HypermediaLinkToolbar(
@@ -23,11 +23,12 @@ export function HypermediaLinkToolbar(
     openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
   },
 ) {
-  const unpackedRef = unpackHmId(props.url)
   const formSize: SizeTokens = '$2'
 
   const [_url, setUrl] = useState(props.url || '')
   const [_text, setText] = useState(props.text || '')
+  const unpackedRef = useMemo(() => unpackHmId(props.url), [props.url, _url])
+  const [_latest, setLatest] = useState(unpackedRef?.latest || false)
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' || event.key == 'Enter') {
@@ -43,6 +44,8 @@ export function HypermediaLinkToolbar(
       window.removeEventListener('keydown', handleKeydown)
     }
   }, [])
+
+  console.log('-= islatest', unpackedRef?.latest, _latest)
 
   return (
     <YStack
@@ -66,6 +69,7 @@ export function HypermediaLinkToolbar(
           placeholder="link text"
           id="link-text"
           key={props.text}
+          value={_text}
           defaultValue={props.text}
           onKeyPress={handleKeydown}
           onChangeText={(val) => {
@@ -80,6 +84,7 @@ export function HypermediaLinkToolbar(
           flex={1}
           size="$2"
           key={props.url}
+          value={_url}
           defaultValue={props.url}
           onKeyPress={handleKeydown}
           onChangeText={(val) => {
@@ -95,10 +100,11 @@ export function HypermediaLinkToolbar(
             <XStack ai="center" minWidth={200} gap="$2">
               <Checkbox
                 id="link-latest"
-                key={props.url}
                 size="$2"
+                value={_latest}
+                defaultValue={_latest}
                 onCheckedChange={(newValue) => {
-                  // setIsLatest(newValue)
+                  setLatest(newValue != 'indeterminate' ? newValue : false)
                   let newUrl = createHmDocLink({
                     documentId: unpackedRef?.qid,
                     version: unpackedRef?.version,
@@ -106,8 +112,10 @@ export function HypermediaLinkToolbar(
                     variants: unpackedRef?.variants,
                     latest: newValue != 'indeterminate' ? newValue : false,
                   })
-
-                  // props.editHyperlink(newUrl, props.text)
+                  console.log('== newUrl', newUrl)
+                  props.updateHyperlink(newUrl, props.text)
+                  setLatest(newValue != 'indeterminate' ? newValue : false)
+                  setUrl(newUrl)
                 }}
               >
                 <Checkbox.Indicator>
