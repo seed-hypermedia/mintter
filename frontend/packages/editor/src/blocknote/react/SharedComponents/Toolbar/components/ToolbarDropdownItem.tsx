@@ -5,6 +5,7 @@ import {TiTick} from 'react-icons/ti'
 
 export type ToolbarDropdownItemProps = {
   text: string
+  type?: string
   icon?: IconType
   onClick?: (e: MouseEvent) => void
   isSelected?: boolean

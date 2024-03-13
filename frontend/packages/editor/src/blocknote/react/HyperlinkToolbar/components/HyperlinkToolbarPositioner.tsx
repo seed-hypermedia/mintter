@@ -9,13 +9,21 @@ import {
 import Tippy from '@tippyjs/react'
 import {FC, useEffect, useMemo, useRef, useState} from 'react'
 
+import {HMBlockSchema} from '@/index'
 import {DefaultHyperlinkToolbar} from './DefaultHyperlinkToolbar'
 
 export type HyperlinkToolbarProps = Pick<
   HyperlinkToolbarProsemirrorPlugin<any>,
-  'editHyperlink' | 'deleteHyperlink' | 'startHideTimer' | 'stopHideTimer'
+  | 'editHyperlink'
+  | 'deleteHyperlink'
+  | 'startHideTimer'
+  | 'stopHideTimer'
+  | 'updateHyperlink'
 > &
-  Omit<HyperlinkToolbarState, keyof BaseUiElementState>
+  Omit<HyperlinkToolbarState, keyof BaseUiElementState> & {
+    editor: BlockNoteEditor<HMBlockSchema>
+    onChangeLink: any
+  }
 
 export const HyperlinkToolbarPositioner = <
   BSchema extends BlockSchema = DefaultBlockSchema,
@@ -66,10 +74,19 @@ export const HyperlinkToolbarPositioner = <
         url={url}
         text={text}
         editHyperlink={props.editor.hyperlinkToolbar.editHyperlink}
+        updateHyperlink={props.editor.hyperlinkToolbar.updateHyperlink}
         deleteHyperlink={props.editor.hyperlinkToolbar.deleteHyperlink}
         startHideTimer={props.editor.hyperlinkToolbar.startHideTimer}
         stopHideTimer={props.editor.hyperlinkToolbar.stopHideTimer}
+        onChangeLink={(key: 'url' | 'text', value: string) => {
+          if (key == 'text') {
+            setText(value)
+          } else {
+            setUrl(value)
+          }
+        }}
         openUrl={props.openUrl}
+        editor={props.editor}
       />
     )
   }, [props.hyperlinkToolbar, props.editor, text, url])

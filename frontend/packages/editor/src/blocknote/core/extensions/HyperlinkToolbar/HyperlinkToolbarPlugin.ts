@@ -2,7 +2,7 @@ import {getMarkRange, posToDOMRect, Range} from '@tiptap/core'
 import {EditorView} from '@tiptap/pm/view'
 import {Mark} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
+import type {BlockNoteEditor} from '../../BlockNoteEditor'
 import {BaseUiElementState} from '../../shared/BaseUiElementTypes'
 import {EventEmitter} from '../../shared/EventEmitter'
 import {BlockSchema} from '../Blocks/api/blockTypes'
@@ -18,7 +18,7 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
   private hyperlinkToolbarState?: HyperlinkToolbarState
   public updateHyperlinkToolbar: () => void
 
-  menuUpdateTimer: NodeJS.Timeout | undefined
+  menuUpdateTimer: ReturnType<typeof setTimeout> | undefined
   startMenuUpdateTimer: () => void
   stopMenuUpdateTimer: () => void
 
@@ -145,7 +145,7 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
   }
   // the latest param here is to change the latest HM param without closing the link modal.
   // it should be TRUE if you DON't want to close the modal when called.
-  editHyperlink(url: string, text: string, latest: boolean) {
+  editHyperlink(url: string, text: string) {
     const tr = this.pmView.state.tr.insertText(
       text,
       this.hyperlinkMarkRange!.from,
@@ -157,15 +157,35 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
       this.pmView.state.schema.mark('link', {href: url}),
     )
     this.pmView.dispatch(tr)
-    if (!latest) {
-      this.pmView.focus()
-    }
 
-    if (!latest && this.hyperlinkToolbarState?.show) {
+    this.pmView.focus()
+
+    if (this.hyperlinkToolbarState?.show) {
       this.hyperlinkToolbarState.show = false
       this.updateHyperlinkToolbar()
     }
   }
+
+  updateHyperlink(url: string, text: string) {
+    const newLength = this.hyperlinkMarkRange!.from + text.length
+    const tr = this.pmView.state.tr
+      .insertText(
+        text,
+        this.hyperlinkMarkRange!.from,
+        this.hyperlinkMarkRange!.to,
+      )
+      .addMark(
+        this.hyperlinkMarkRange!.from,
+        newLength,
+        this.pmView.state.schema.mark('link', {href: url}),
+      )
+
+    this.hyperlinkMarkRange!.to = newLength
+
+    this.pmView.dispatch(tr)
+  }
+
+  highlightHyperlink() {}
 
   deleteHyperlink() {
     this.pmView.dispatch(
@@ -203,24 +223,22 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
 
     // Finds link mark at the editor selection's position to update keyboardHoveredHyperlinkMark and
     // keyboardHoveredHyperlinkMarkRange.
-    if (this.pmView.state.selection.empty) {
-      const marksAtPos = this.pmView.state.selection.$from.marks()
+    // if (this.pmView.state.selection.empty) {
+    const marksAtPos = this.pmView.state.selection.$from.marks()
 
-      for (const mark of marksAtPos) {
-        if (
-          mark.type.name === this.pmView.state.schema.mark('link').type.name
-        ) {
-          this.keyboardHoveredHyperlinkMark = mark
-          this.keyboardHoveredHyperlinkMarkRange =
-            getMarkRange(
-              this.pmView.state.selection.$from,
-              mark.type,
-              mark.attrs,
-            ) || undefined
+    for (const mark of marksAtPos) {
+      if (mark.type.name === this.pmView.state.schema.mark('link').type.name) {
+        this.keyboardHoveredHyperlinkMark = mark
+        this.keyboardHoveredHyperlinkMarkRange =
+          getMarkRange(
+            this.pmView.state.selection.$from,
+            mark.type,
+            mark.attrs,
+          ) || undefined
 
-          break
-        }
+        break
       }
+      // }
     }
 
     if (this.mouseHoveredHyperlinkMark) {
@@ -236,7 +254,7 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
 
     if (this.hyperlinkMark && this.editor.isEditable) {
       this.hyperlinkToolbarState = {
-        show: true,
+        show: this.pmView.state.selection.empty,
         referencePos: posToDOMRect(
           this.pmView,
           this.hyperlinkMarkRange!.from,
@@ -301,8 +319,15 @@ export class HyperlinkToolbarProsemirrorPlugin<
   /**
    * Edit the currently hovered hyperlink.
    */
-  public editHyperlink = (url: string, text: string, latest: boolean) => {
-    this.view!.editHyperlink(url, text, latest)
+  public editHyperlink = (url: string, text: string) => {
+    this.view!.editHyperlink(url, text)
+  }
+
+  /**
+   * Edit the currently hovered hyperlink.
+   */
+  public updateHyperlink = (url: string, text: string) => {
+    this.view!.updateHyperlink(url, text)
   }
 
   /**
@@ -331,4 +356,6 @@ export class HyperlinkToolbarProsemirrorPlugin<
   public stopHideTimer = () => {
     this.view!.stopMenuUpdateTimer()
   }
+
+  public highlightHyperlink() {}
 }
