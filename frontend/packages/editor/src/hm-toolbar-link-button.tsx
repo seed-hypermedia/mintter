@@ -11,8 +11,8 @@ import {
   Unlink,
   XGroup,
 } from '@mintter/ui'
-import {useCallback, useState} from 'react'
-import {useEditorSelectionChange} from './blocknote'
+import {useCallback, useEffect, useState} from 'react'
+import {HyperlinkToolbarProps, useEditorSelectionChange} from './blocknote'
 import {usePopoverState} from './use-popover-state'
 
 export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
@@ -30,6 +30,13 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
     setText(props.editor.getSelectedText() || '')
     setUrl(props.editor.getSelectedLinkUrl() || '')
   })
+
+  useEffect(() => {
+    props.editor.hyperlinkToolbar.on('update', (state) => {
+      setText(state.text || '')
+      setUrl(state.url || '')
+    })
+  }, [props.editor])
 
   const setLink = useCallback(
     (url: string, text?: string) => {
@@ -56,8 +63,17 @@ export const HMLinkToolbarButton = <BSchema extends BlockSchema>(props: {
         <Popover.Content p="$2">
           <AddHyperlink
             url={url}
-            setLink={(url: string) => setLink(url, text)}
+            setLink={(_url: string) => {
+              popoverProps.onOpenChange(false)
+              props.editor.focus()
+              if (url) {
+                props.editor.hyperlinkToolbar.updateHyperlink(_url, text)
+              } else {
+                setLink(_url, text)
+              }
+            }}
             onCancel={() => popoverProps.onOpenChange(false)}
+            deleteHyperlink={props.editor.hyperlinkToolbar.deleteHyperlink}
           />
         </Popover.Content>
       </Popover>
@@ -69,11 +85,12 @@ function AddHyperlink({
   setLink,
   onCancel,
   url = '',
+  deleteHyperlink,
 }: {
   setLink: (url: string) => void
   onCancel: () => void
   url?: string
-}) {
+} & Partial<HyperlinkToolbarProps>) {
   const [_url, setUrl] = useState<string>(url)
 
   return (
@@ -106,7 +123,12 @@ function AddHyperlink({
         />
       </XGroup.Item>
       <XGroup.Item>
-        <Button size="$2" icon={Unlink} chromeless onPress={() => {}} />
+        <Button
+          size="$2"
+          icon={Unlink}
+          chromeless
+          onPress={() => deleteHyperlink()}
+        />
       </XGroup.Item>
       <XGroup.Item>
         <Button size="$2" icon={Close} chromeless onPress={onCancel} />

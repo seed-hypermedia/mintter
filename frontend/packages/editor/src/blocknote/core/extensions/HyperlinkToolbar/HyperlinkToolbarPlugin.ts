@@ -223,24 +223,22 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
 
     // Finds link mark at the editor selection's position to update keyboardHoveredHyperlinkMark and
     // keyboardHoveredHyperlinkMarkRange.
-    if (this.pmView.state.selection.empty) {
-      const marksAtPos = this.pmView.state.selection.$from.marks()
+    // if (this.pmView.state.selection.empty) {
+    const marksAtPos = this.pmView.state.selection.$from.marks()
 
-      for (const mark of marksAtPos) {
-        if (
-          mark.type.name === this.pmView.state.schema.mark('link').type.name
-        ) {
-          this.keyboardHoveredHyperlinkMark = mark
-          this.keyboardHoveredHyperlinkMarkRange =
-            getMarkRange(
-              this.pmView.state.selection.$from,
-              mark.type,
-              mark.attrs,
-            ) || undefined
+    for (const mark of marksAtPos) {
+      if (mark.type.name === this.pmView.state.schema.mark('link').type.name) {
+        this.keyboardHoveredHyperlinkMark = mark
+        this.keyboardHoveredHyperlinkMarkRange =
+          getMarkRange(
+            this.pmView.state.selection.$from,
+            mark.type,
+            mark.attrs,
+          ) || undefined
 
-          break
-        }
+        break
       }
+      // }
     }
 
     if (this.mouseHoveredHyperlinkMark) {
@@ -256,7 +254,7 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
 
     if (this.hyperlinkMark && this.editor.isEditable) {
       this.hyperlinkToolbarState = {
-        show: true,
+        show: this.pmView.state.selection.empty,
         referencePos: posToDOMRect(
           this.pmView,
           this.hyperlinkMarkRange!.from,

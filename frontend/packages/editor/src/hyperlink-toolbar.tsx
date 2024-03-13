@@ -27,8 +27,8 @@ export function HypermediaLinkToolbar(
 
   const [_url, setUrl] = useState(props.url || '')
   const [_text, setText] = useState(props.text || '')
-  const unpackedRef = useMemo(() => unpackHmId(props.url), [props.url, _url])
-  const [_latest, setLatest] = useState(unpackedRef?.latest || false)
+  const unpackedRef = useMemo(() => unpackHmId(_url), [_url])
+  const _latest = unpackedRef?.latest || false
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' || event.key == 'Enter') {
@@ -38,14 +38,19 @@ export function HypermediaLinkToolbar(
   }
 
   useEffect(() => {
+    props.editor.hyperlinkToolbar.on('update', (state) => {
+      setText(state.text || '')
+      setUrl(state.url || '')
+    })
+  }, [props.editor])
+
+  useEffect(() => {
     window.addEventListener('keydown', handleKeydown)
 
     return () => {
       window.removeEventListener('keydown', handleKeydown)
     }
   }, [])
-
-  console.log('-= islatest', unpackedRef?.latest, _latest)
 
   return (
     <YStack
@@ -70,7 +75,6 @@ export function HypermediaLinkToolbar(
           id="link-text"
           key={props.text}
           value={_text}
-          defaultValue={props.text}
           onKeyPress={handleKeydown}
           onChangeText={(val) => {
             setText(val)
@@ -85,7 +89,6 @@ export function HypermediaLinkToolbar(
           size="$2"
           key={props.url}
           value={_url}
-          defaultValue={props.url}
           onKeyPress={handleKeydown}
           onChangeText={(val) => {
             setUrl(val)
@@ -101,10 +104,9 @@ export function HypermediaLinkToolbar(
               <Checkbox
                 id="link-latest"
                 size="$2"
+                key={_latest}
                 value={_latest}
-                defaultValue={_latest}
                 onCheckedChange={(newValue) => {
-                  setLatest(newValue != 'indeterminate' ? newValue : false)
                   let newUrl = createHmDocLink({
                     documentId: unpackedRef?.qid,
                     version: unpackedRef?.version,
@@ -114,7 +116,6 @@ export function HypermediaLinkToolbar(
                   })
                   console.log('== newUrl', newUrl)
                   props.updateHyperlink(newUrl, props.text)
-                  setLatest(newValue != 'indeterminate' ? newValue : false)
                   setUrl(newUrl)
                 }}
               >
