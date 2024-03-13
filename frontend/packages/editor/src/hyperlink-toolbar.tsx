@@ -64,9 +64,6 @@ export function HypermediaLinkToolbar(
           flex={1}
           size={formSize}
           placeholder="link text"
-          onFocus={() => {
-            console.log('== FOCUSED!')
-          }}
           id="link-text"
           key={props.text}
           defaultValue={props.text}
@@ -85,9 +82,6 @@ export function HypermediaLinkToolbar(
           key={props.url}
           defaultValue={props.url}
           onKeyPress={handleKeydown}
-          onFocus={() => {
-            console.log('== FOCUSED!')
-          }}
           onChangeText={(val) => {
             setUrl(val)
             props.updateHyperlink(val, props.text)
