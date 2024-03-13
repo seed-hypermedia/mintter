@@ -185,6 +185,8 @@ class HyperlinkToolbarView<BSchema extends BlockSchema> {
     this.pmView.dispatch(tr)
   }
 
+  highlightHyperlink() {}
+
   deleteHyperlink() {
     this.pmView.dispatch(
       this.pmView.state.tr
@@ -356,4 +358,6 @@ export class HyperlinkToolbarProsemirrorPlugin<
   public stopHideTimer = () => {
     this.view!.stopMenuUpdateTimer()
   }
+
+  public highlightHyperlink() {}
 }

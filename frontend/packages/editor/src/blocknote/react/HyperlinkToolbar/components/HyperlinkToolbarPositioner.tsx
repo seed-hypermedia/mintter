@@ -14,7 +14,11 @@ import {DefaultHyperlinkToolbar} from './DefaultHyperlinkToolbar'
 
 export type HyperlinkToolbarProps = Pick<
   HyperlinkToolbarProsemirrorPlugin<any>,
-  'editHyperlink' | 'deleteHyperlink' | 'startHideTimer' | 'stopHideTimer'
+  | 'editHyperlink'
+  | 'deleteHyperlink'
+  | 'startHideTimer'
+  | 'stopHideTimer'
+  | 'updateHyperlink'
 > &
   Omit<HyperlinkToolbarState, keyof BaseUiElementState> & {
     editor: BlockNoteEditor<HMBlockSchema>
@@ -38,10 +42,6 @@ export const HyperlinkToolbarPositioner = <
     return props.editor.hyperlinkToolbar.on(
       'update',
       (hyperlinkToolbarState) => {
-        console.log(
-          `== ~ useEffect ~ hyperlinkToolbarState:`,
-          hyperlinkToolbarState,
-        )
         setShow(hyperlinkToolbarState.show)
         setUrl(hyperlinkToolbarState.url)
         setText(hyperlinkToolbarState.text)
