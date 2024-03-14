@@ -27,6 +27,7 @@ import {
   PublicationContent,
   Role,
   formattedDate,
+  getBlockNode,
   pluralS,
   unpackDocId,
   unpackHmId,
@@ -102,7 +103,6 @@ import {
 import {useExperiments} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
-  getBlockNode,
   useAddGroupMember,
   useDeleteCategoryItem,
   useFullGroupContent,

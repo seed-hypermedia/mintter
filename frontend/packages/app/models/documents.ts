@@ -72,10 +72,13 @@ export function usePublicationList(
       const result = await grpcClient.publications.listPublications({
         trustedOnly: trustedOnly,
       })
-      const publications =
+      let publications =
         result.publications.sort((a, b) =>
           sortDocuments(a.document?.updateTime, b.document?.updateTime),
         ) || []
+      publications = publications.filter((pub) => {
+        return pub.document?.title !== '(HIDDEN) Group Navigation'
+      })
       return {
         ...result,
         publications,

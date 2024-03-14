@@ -1,4 +1,4 @@
-import {PageSection, View, YStack} from '@mintter/ui'
+import {Heading, PageSection, YStack} from '@mintter/ui'
 import {ReactNode} from 'react'
 import Footer from './footer'
 
@@ -42,5 +42,21 @@ export function MainSiteLayout({
       </PageSection.Side>
       <Footer />
     </YStack>
+  )
+}
+
+export function PageHeading({children}: {children: ReactNode}) {
+  return (
+    <Heading
+      paddingHorizontal="$5"
+      $gtMd={{paddingHorizontal: '$6'}}
+      marginTop="$5"
+      marginBottom="$4"
+      // color="$color10"
+      fontWeight="bold"
+      fontSize="$9"
+    >
+      {children}
+    </Heading>
   )
 }

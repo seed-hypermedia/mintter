@@ -14,7 +14,10 @@ export function useSearch(query: string, opts: UseQueryOptions<Entity[]>) {
       const result = await grpcClient.entities.searchEntities({
         query,
       })
-      return result.entities
+      const entities = result.entities.filter((entity) => {
+        return entity.title !== '(HIDDEN) Group Navigation'
+      })
+      return entities
     },
   })
 }

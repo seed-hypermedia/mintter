@@ -7,6 +7,7 @@ import {
   Role,
   UnpackedHypermediaId,
   createHmId,
+  getBlockNode,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
@@ -27,7 +28,6 @@ import {queryPublication, sortDocuments, usePublication} from './documents'
 import {PartialMessage} from '@bufbuild/protobuf'
 import {
   DocumentChange,
-  HMBlockNode,
   HMDocument,
   hmDocument,
   hmIdWithVersion,
@@ -742,21 +742,6 @@ export function useGroupCategories(
       return {id: block.id, title: block.text}
     })
   return categories
-}
-
-export function getBlockNode(
-  blockNodes: HMBlockNode[] | undefined,
-  blockId: string,
-): HMBlockNode | null {
-  if (!blockNodes) return null
-  for (const node of blockNodes) {
-    if (node.block.id === blockId) return node
-    if (node.children) {
-      const found = getBlockNode(node.children, blockId)
-      if (found) return found
-    }
-  }
-  return null
 }
 
 export function useRenameGroupCateogry(groupId: string) {

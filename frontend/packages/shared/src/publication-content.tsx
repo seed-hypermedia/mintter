@@ -1696,6 +1696,21 @@ export function PublicationCardView({
   )
 }
 
+export function getBlockNode(
+  blockNodes: HMBlockNode[] | undefined,
+  blockId: string,
+): HMBlockNode | null {
+  if (!blockNodes) return null
+  for (const node of blockNodes) {
+    if (node.block.id === blockId) return node
+    if (node.children) {
+      const found = getBlockNode(node.children, blockId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
 function EditorsAvatars({
   editors,
   AvatarComponent,

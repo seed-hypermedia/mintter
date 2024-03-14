@@ -405,16 +405,14 @@ function EmbedMeta({publication}: {publication?: HMPublication | null}) {
   )
 }
 
-function CitationPreview({citationLink}: {citationLink: HMLink}) {
-  const {source} = citationLink
-  const sourcePub = trpc.publication.get.useQuery(
-    {
-      documentId: source?.documentId,
-      versionId: source?.version,
-    },
-    {enabled: !!source?.documentId},
-  )
-  if (!sourcePub.data) return null
+function CitationPreview({
+  link,
+  sourcePublication,
+}: {
+  link: HMLink
+  sourcePublication: HMPublication
+}) {
+  const {source} = link
   if (!source?.documentId) return null
   const destUrl = idToUrl(source?.documentId, null, {
     version: source?.version,
@@ -424,7 +422,7 @@ function CitationPreview({citationLink}: {citationLink: HMLink}) {
   return (
     <NextLink href={destUrl} style={{textDecoration: 'none'}}>
       <SizableText hoverStyle={{backgroundColor: '$backgroundColor'}}>
-        {sourcePub.data?.publication?.document?.title}
+        {sourcePublication?.document?.title}
       </SizableText>
     </NextLink>
   )
@@ -440,15 +438,16 @@ function CitationsMeta({
       enabled: !!publication?.document?.id,
     },
   )
-  if (!citations.data?.citationLinks?.length) return null
-  const content = citations.data?.citationLinks
-    ?.map((link) => {
-      if (!link) return false
+  if (!citations.data?.citations?.length) return null
+  const content = citations.data?.citations
+    ?.map(({link, sourcePublication}) => {
+      if (!link || !sourcePublication) return false
       const {source, target} = link
       return (
         <CitationPreview
           key={`${source?.documentId}-${source?.version}-${source?.blockId}-${target?.documentId}-${target?.version}-${target?.blockId}`}
-          citationLink={link}
+          link={link}
+          sourcePublication={sourcePublication}
         />
       )
     })
