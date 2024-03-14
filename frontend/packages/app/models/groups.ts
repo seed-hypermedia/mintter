@@ -28,6 +28,7 @@ import {queryPublication, sortDocuments, usePublication} from './documents'
 import {PartialMessage} from '@bufbuild/protobuf'
 import {
   DocumentChange,
+  HMBlockNode,
   HMDocument,
   hmDocument,
   hmIdWithVersion,
@@ -287,6 +288,16 @@ type RenameGroupDocMutationInput = {
   newPathName: string
 }
 
+function forEachBlockNode(
+  children: HMDocument['children'],
+  callback: (blockNode: HMBlockNode) => void,
+) {
+  children?.forEach((blockNode) => {
+    callback(blockNode)
+    forEachBlockNode(blockNode.children, callback)
+  })
+}
+
 export function useRenameGroupDoc(
   opts?: UseMutationOptions<string, unknown, RenameGroupDocMutationInput>,
 ) {
@@ -304,9 +315,50 @@ export function useRenameGroupDoc(
       const prevPathValue = listed.content[pathName]
       if (!prevPathValue)
         throw new Error('Could not find previous path at ' + pathName)
+      const newNavDoc = await mutateGroupNavigationDoc(
+        grpcClient,
+        groupId,
+        (doc: HMDocument) => {
+          const changes: PartialMessage<DocumentChange>[] = []
+          forEachBlockNode(doc.children, (blockNode) => {
+            if (blockNode.block.type === 'embed') {
+              const ref = blockNode.block.ref
+              const hmId = unpackHmId(ref)
+              if (!hmId) return
+              if (hmId.type !== 'd') return
+              if (hmId.variants?.length !== 1) return
+              const groupVariant = hmId.variants[0]
+              if (groupVariant.key !== 'group') return
+              if (groupVariant.groupId !== groupId) return
+              if (groupVariant.pathName !== pathName) return
+              changes.push({
+                op: {
+                  case: 'replaceBlock',
+                  value: {
+                    ...blockNode.block,
+                    ref: createHmId('d', hmId.eid, {
+                      variants: [
+                        {key: 'group', groupId, pathName: newPathName},
+                      ],
+                    }),
+                  },
+                },
+              })
+            }
+          })
+          return changes
+        },
+      )
+      const updatedContent: Record<string, string> = {
+        [pathName]: '',
+        [newPathName]: prevPathValue,
+      }
+      if (newNavDoc) {
+        updatedContent['_navigation'] = newNavDoc
+      }
       await grpcClient.groups.updateGroup({
         id: groupId,
-        updatedContent: {[pathName]: '', [newPathName]: prevPathValue},
+        updatedContent,
       })
       return prevPathValue
     },
@@ -315,6 +367,7 @@ export function useRenameGroupDoc(
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
       invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, docId?.docId])
     },
   })
@@ -650,7 +703,7 @@ export function useGroupNavigation(
   return navigationPub
 }
 
-async function mutateNavigationDoc(
+async function mutateGroupNavigationDoc(
   grpcClient: GRPCClient,
   groupId: string,
   mutator: (doc: HMDocument) => PartialMessage<DocumentChange>[],
@@ -668,7 +721,12 @@ async function mutateNavigationDoc(
   const doc = hmDocument(draft)
   if (!doc) throw new Error('Could not create document')
   const changes = mutator(doc)
-
+  if (!changes?.length) {
+    await grpcClient.drafts.deleteDraft({
+      documentId: draft.id,
+    })
+    return null
+  }
   await grpcClient.drafts.updateDraft({
     documentId: draft.id,
     changes,
@@ -679,6 +737,16 @@ async function mutateNavigationDoc(
   if (!published.document) throw new Error('No document returned from publish')
   const newNavDoc = hmIdWithVersion(published.document.id, published.version)
   if (!newNavDoc) throw new Error('Could not determine new nav doc id')
+  return newNavDoc
+}
+
+async function mutateGroupNavigation(
+  grpcClient: GRPCClient,
+  groupId: string,
+  mutator: (doc: HMDocument) => PartialMessage<DocumentChange>[],
+) {
+  const newNavDoc = await mutateGroupNavigationDoc(grpcClient, groupId, mutator)
+  if (!newNavDoc) return
   await grpcClient.groups.updateGroup({
     id: groupId,
     updatedContent: {
@@ -692,7 +760,7 @@ export function useCreateGroupCategory() {
   const invalidate = useQueryInvalidator()
   return useMutation({
     mutationFn: async (input: {groupId: string; title: string}) => {
-      await mutateNavigationDoc(
+      await mutateGroupNavigation(
         grpcClient,
         input.groupId,
         (doc: HMDocument): PartialMessage<DocumentChange>[] => {
@@ -731,7 +799,7 @@ export function useCreateGroupCategory() {
 
 export function useGroupCategories(
   groupId: string,
-  version: string | undefined,
+  version?: string | undefined,
 ) {
   const navPub = useGroupNavigation(groupId, version)
   const categories = navPub.data?.document?.children
@@ -755,7 +823,7 @@ export function useRenameGroupCateogry(groupId: string) {
       categoryId: string
       title: string
     }) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         const categoryBlockNode = getBlockNode(doc.children, categoryId)
         if (!categoryBlockNode) throw new Error('Could not find category block')
         return [
@@ -789,7 +857,7 @@ export function useMoveCategory(groupId: string) {
       categoryId: string
       leftSibling: string | undefined
     }) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         return [
           {
             op: {
@@ -822,7 +890,7 @@ export function useMoveCategoryItem(groupId: string, category: string) {
       itemId: string
       leftSibling: string | undefined
     }) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         return [
           {
             op: {
@@ -854,7 +922,7 @@ export function useDeleteCategory(
   const invalidate = useQueryInvalidator()
   return useMutation({
     mutationFn: async ({categoryId}: DeleteCategoryInput) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         return [
           {
             op: {
@@ -885,7 +953,7 @@ export function useDeleteCategoryItem(
   const invalidate = useQueryInvalidator()
   return useMutation({
     mutationFn: async ({itemId}: DeleteCategoryItemInput) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         return [
           {
             op: {
@@ -920,7 +988,7 @@ export function useAddToCategory() {
       docId: string
       categoryId: string
     }) => {
-      await mutateNavigationDoc(grpcClient, groupId, (doc: HMDocument) => {
+      await mutateGroupNavigation(grpcClient, groupId, (doc: HMDocument) => {
         const categoryBlockNode = getBlockNode(doc.children, categoryId)
         if (!categoryBlockNode) throw new Error('Could not find category block')
         const lastItemBlockId = categoryBlockNode.children?.at(-1)?.block?.id

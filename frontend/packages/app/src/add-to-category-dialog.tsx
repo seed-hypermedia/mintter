@@ -44,7 +44,9 @@ export function AddToCategoryDialog({
       })}
     >
       <DialogTitle>Add to Category</DialogTitle>
-      <DialogDescription>foo bar</DialogDescription>
+      <DialogDescription>
+        This document will be listed in this category
+      </DialogDescription>
       <SelectInput
         control={control}
         name="categoryId"
