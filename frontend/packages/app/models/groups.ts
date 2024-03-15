@@ -717,6 +717,7 @@ async function mutateGroupNavigationDoc(
   } catch (e) {}
   const draft = await grpcClient.drafts.createDraft({
     existingDocumentId: navDocId?.qid,
+    version: navDocId?.version || undefined,
   })
   const doc = hmDocument(draft)
   if (!doc) throw new Error('Could not create document')
