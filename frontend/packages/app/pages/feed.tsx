@@ -27,6 +27,7 @@ import {
   Spinner,
   Theme,
   UIAvatar,
+  View,
   XStack,
   YStack,
   toast,
@@ -61,6 +62,11 @@ export default function FeedPage() {
       <Footer />
     </>
   )
+}
+
+function HiddenFeedItem() {
+  // invisible feed item. height is non-zero because the Virtualized warning
+  return <View height={1} />
 }
 
 function FeedItemInnerContainer(props) {
@@ -293,6 +299,8 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
     version: cid,
     variants: [{key: 'author', author}],
   })
+  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
+    return <HiddenFeedItem />
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -349,6 +357,8 @@ function GroupContentChangeFeedItem({
       />
     )
   }
+  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
+    return <HiddenFeedItem />
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -401,7 +411,9 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
     )
   const contentPatch = patchEntries.find(([key]) => key === 'content')
   const contentUpdate = contentPatch?.[1]
-  const contentEntries = Object.entries(contentUpdate || {})
+  const contentEntries = Object.entries(contentUpdate || {}).filter(
+    ([key]) => key !== '_navigation',
+  )
   const linkId = hmId('g', id.eid, {version: cid})
   if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
     const [pathName, contentUrl] = contentEntries[0]
@@ -433,6 +445,47 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
         contentUrl={contentUrl}
         group={group.data}
       />
+    )
+  }
+  const removalContentEntry = contentEntries.find(
+    ([key, value]) => value === '',
+  )
+  const newContentEntry = contentEntries.find(([key, value]) => value !== '')
+  const newContentId = unpackHmId(newContentEntry?.[1])
+  // detecting if a simple path rename happened
+  if (
+    group.data &&
+    patchEntries.length === 1 &&
+    contentEntries.length === 2 &&
+    removalContentEntry &&
+    newContentEntry &&
+    newContentId
+  ) {
+    const docLinkId = hmId('d', newContentId.eid, {
+      version: newContentId.version,
+      variants: [
+        {key: 'group', groupId: linkId.qid, pathName: newContentEntry[0]},
+      ],
+    })
+    return (
+      <FeedItemContainer
+        linkId={linkId}
+        header={
+          <FeedItemHeader
+            author={author}
+            eventTime={eventTime}
+            message={
+              <>
+                renamed "{removalContentEntry[0]}" to{' '}
+                <EntityLink id={docLinkId}>{newContentEntry[0]}</EntityLink> in{' '}
+                <EntityLink id={linkId}>
+                  {group.data?.title || 'Untitled Group'}
+                </EntityLink>
+              </>
+            }
+          />
+        }
+      ></FeedItemContainer>
     )
   }
   // @ts-expect-error
@@ -578,20 +631,22 @@ function getPatchedGroupEntries(
     })
   }
   if (patch.content) {
-    Object.entries(patch.content).forEach(([pathName, contentUrl]) => {
-      const labelKey = pathName === '/' ? 'Front Page' : pathName
-      const docId = unpackHmId(contentUrl)
-      if (docId)
-        entries.push({
-          labelKey,
-          content: (
-            <PublicationLink
-              id={docId}
-              variants={[{key: 'group', groupId, pathName}]}
-            />
-          ),
-        })
-    })
+    Object.entries(patch.content)
+      .filter(([key]) => key !== '_navigation')
+      .forEach(([pathName, contentUrl]) => {
+        const labelKey = pathName === '/' ? 'Front Page' : pathName
+        const docId = unpackHmId(contentUrl)
+        if (docId)
+          entries.push({
+            labelKey,
+            content: (
+              <PublicationLink
+                id={docId}
+                variants={[{key: 'group', groupId, pathName}]}
+              />
+            ),
+          })
+      })
   }
   return entries
 }
