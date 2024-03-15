@@ -37,6 +37,10 @@ message ListEventsRequest {
   // Multiple types are filtered following OR logic.
   repeated string filter_event_type = 5;
 
+  // Optional. If we want events only from specific resource IDs
+  // 
+  repeated string filter_resource = 6;
+
 }
 
 // The response with the list of events.

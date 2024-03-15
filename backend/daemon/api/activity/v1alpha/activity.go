@@ -12,6 +12,7 @@ import (
 	activity "mintter/backend/genproto/activity/v1alpha"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +23,8 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var resourcePattern = regexp.MustCompile(`^hm://[acdg]/[a-zA-Z0-9]+$`)
 
 // Repo is a subset of the [ondisk.OnDisk] used by this server.
 type Repo interface {
@@ -108,6 +111,19 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 				filtersStr += ", "
 			}
 			filtersStr += "'" + strings.ToLower(eventType) + "'"
+		}
+		filtersStr += ") AND "
+	}
+	if len(req.FilterResource) > 0 {
+		filtersStr += storage.ResourcesIRI.String() + " in ("
+		for i, resource := range req.FilterResource {
+			if !resourcePattern.MatchString(resource) {
+				return nil, fmt.Errorf("Invalid resource format [%s]", resource)
+			}
+			if i > 0 {
+				filtersStr += ", "
+			}
+			filtersStr += "'" + resource + "'"
 		}
 		filtersStr += ") AND "
 	}

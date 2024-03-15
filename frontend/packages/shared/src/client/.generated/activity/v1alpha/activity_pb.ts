@@ -54,6 +54,14 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
    */
   filterEventType: string[] = [];
 
+  /**
+   * Optional. If we want events only from specific resource IDs
+   *
+   *
+   * @generated from field: repeated string filter_resource = 6;
+   */
+  filterResource: string[] = [];
+
   constructor(data?: PartialMessage<ListEventsRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -67,6 +75,7 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
     { no: 3, name: "trusted_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 4, name: "filter_users", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 5, name: "filter_event_type", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "filter_resource", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListEventsRequest {
