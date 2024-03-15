@@ -537,9 +537,9 @@ var qListAllPublications = dqb.Str(`
 	SELECT
 	  r.iri,
 	  r.create_time,
-	  r.owner, -- Directly use the owner reference here
+	  r.owner,
 	  sb.meta,
-	  HEX(pk.principal) AS author_hex,
+	  pk.principal AS author_raw,
 	  sb.ts,
 	  sb.id AS blob_id
 	FROM
@@ -555,7 +555,7 @@ var qListAllPublications = dqb.Str(`
 	  ra.create_time,
 	  ra.owner,
 	  sb.meta,
-	  HEX(pk.principal),
+	  pk.principal,
 	  sb.ts,
 	  sb.id
 	FROM
@@ -566,10 +566,10 @@ var qListAllPublications = dqb.Str(`
 	  sb.author IS NOT NULL
 	  AND ra.iri GLOB :pattern
   ),
-  owners_hex AS (
+  owners_raw AS (
 	SELECT
 	  id,
-	  HEX(principal) AS owner_hex
+	  principal AS owner_raw
 	FROM
 	  public_keys
   ),
@@ -587,19 +587,90 @@ var qListAllPublications = dqb.Str(`
   SELECT
 	ra.iri,
 	ra.create_time,
-	GROUP_CONCAT(DISTINCT ra.author_hex) AS authors_hex,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
 	ra.meta,
 	MAX(ra.ts) AS latest_ts,
-	oh.owner_hex,
+	HEX(oraw.owner_raw),
 	lb.multihash AS latest_multihash,
 	lb.codec AS latest_codec
   FROM
 	resource_authors ra
-	LEFT JOIN owners_hex oh ON ra.owner = oh.id
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
   GROUP BY
-	ra.iri, ra.create_time, ra.meta;
-  
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY ra.create_time asc;
+`)
+
+var qListTrustedPublications = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner,
+	  sb.meta,
+	  pk.principal AS author_raw,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN trusted_accounts ON trusted_accounts.id = r.owner
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  pk.principal,
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_raw AS (
+	SELECT
+	  id,
+	  principal AS owner_raw
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	HEX(oraw.owner_raw),
+	lb.multihash AS latest_multihash,
+	lb.codec AS latest_codec
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY ra.create_time asc;
 `)
 
 // ListPublications implements the corresponding gRPC method.
@@ -617,7 +688,11 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
 	pattern := "hm://d/*"
-	err = sqlitex.Exec(conn, qListAllPublications(), func(stmt *sqlite.Stmt) error {
+	query := qListAllPublications
+	if in.TrustedOnly {
+		query = qListTrustedPublications
+	}
+	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
 		var (
 			id          = stmt.ColumnText(0)
 			createTime  = stmt.ColumnInt64(1) * 1e9
@@ -660,19 +735,6 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	if err != nil {
 		return nil, err
 	}
-	/*
-		if in.TrustedOnly {
-			entities, err = api.blobs.ListTrustedEntities(ctx, "hm://d/*")
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			entities, err = api.blobs.ListEntities(ctx, "hm://d/*")
-			if err != nil {
-				return nil, err
-			}
-		}
-	*/
 	return resp, nil
 }
 
