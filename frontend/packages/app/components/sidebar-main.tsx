@@ -138,7 +138,7 @@ export function MainAppSidebar({
             docId={unpinnedActiveDocId}
             isPinned={false}
             onPress={() => {}}
-            variants={publicationRoute.variants || []}
+            pinVariants={publicationRoute.variants || []}
           />
         ) : null}
         {pins.data?.documents.map((pin) => {
@@ -163,7 +163,7 @@ export function MainAppSidebar({
                 stringArrayMatch(pin.authors, pubAuthorVariantAuthors) &&
                 groupsVariantsMatch(pin.groups, pubGroupVariants || [])
               }
-              variants={pin.authors.map((author) => ({
+              pinVariants={pin.authors.map((author) => ({
                 key: 'author',
                 author,
               }))}

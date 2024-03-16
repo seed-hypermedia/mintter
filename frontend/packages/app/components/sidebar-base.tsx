@@ -2,6 +2,7 @@ import {
   Account,
   API_FILE_URL,
   GroupVariant,
+  HMBlockNode,
   PublicationVariant,
 } from '@mintter/shared'
 import {
@@ -18,7 +19,7 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {Book, FileText, Plus} from '@tamagui/lucide-icons'
+import {Book, FileText, Hash, Plus} from '@tamagui/lucide-icons'
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
@@ -211,12 +212,13 @@ export function SidebarItem({
   menuItems,
   ...props
 }: ListItemProps & {
-  indented?: boolean
+  indented?: boolean | number
   bold?: boolean
   selected?: boolean
   rightHover?: ReactNode[]
   menuItems?: MenuItemType[]
 }) {
+  const indent = indented ? (typeof indented === 'number' ? indented : 1) : 0
   return (
     <View group="item">
       <ListItem
@@ -226,7 +228,7 @@ export function SidebarItem({
         minHeight={minHeight}
         paddingVertical={paddingVertical || '$2'}
         paddingHorizontal="$4"
-        paddingLeft={indented ? '$8' : '$4'}
+        paddingLeft={indent * 10 + 18}
         textAlign="left"
         outlineColor="transparent"
         // space="$2"
@@ -404,13 +406,63 @@ export function SidebarGroup(props: {
   )
 }
 
+type DocOutlineSection = {
+  title: string
+  id: string
+  children?: DocOutlineSection[]
+}
+type DocOutline = DocOutlineSection[]
+
+function getDocOutline(children: HMBlockNode[]): DocOutline {
+  const outline: DocOutline = []
+  children.forEach((child) => {
+    if (child.block.type === 'heading') {
+      outline.push({
+        title: child.block.text,
+        id: child.block.id,
+        children: child.children && getDocOutline(child.children),
+      })
+    } else if (child.children) {
+      outline.push(...getDocOutline(child.children))
+    }
+  })
+  return outline
+}
+
+function activeDocOutline(
+  outline: DocOutlineSection[],
+  activeBlock: string | null | undefined,
+  onBlockSelect: (blockId: string) => void,
+  level = 0,
+) {
+  return outline
+    .map((item) => [
+      <YGroup.Item>
+        <SidebarItem
+          onPress={() => {
+            onBlockSelect(item.id)
+          }}
+          active={item.id === activeBlock}
+          icon={Hash}
+          title={item.title || 'Untitled Heading'}
+          indented={2 + level}
+          // rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
+        />
+      </YGroup.Item>,
+      ...(item.children
+        ? activeDocOutline(item.children, activeBlock, onBlockSelect, level + 1)
+        : []),
+    ])
+    .flat()
+}
+
 export function SidebarDocument({
   docId,
   docVersion,
   onPress,
   active,
   authors,
-  variants,
+  pinVariants,
   isPinned,
 }: {
   docId: string
@@ -418,7 +470,7 @@ export function SidebarDocument({
   onPress: () => void
   active?: boolean
   authors?: string[]
-  variants: PublicationVariant[]
+  pinVariants?: PublicationVariant[]
   isPinned: boolean
 }) {
   const route = useNavRoute()
@@ -428,13 +480,19 @@ export function SidebarDocument({
     .map((query) => query.data)
     .filter(Boolean)
   if (!docId) return null
-  return (
+  const isRouteActive = route.key == 'publication' && route.documentId == docId
+  const activeOutline =
+    isRouteActive || active
+      ? getDocOutline(doc?.data?.document?.children || [])
+      : []
+  const pubRoute = route.key == 'publication' ? route : null
+  const activeBlock = pubRoute?.blockId
+  const replace = useNavigate('replace')
+  return [
     <YGroup.Item>
       <SidebarItem
         onPress={onPress}
-        active={
-          !isPinned || (route.key == 'publication' && route.documentId == docId)
-        }
+        active={isRouteActive || active}
         color={isPinned ? undefined : '$color11'}
         icon={
           authorAccounts.length ? (
@@ -470,8 +528,20 @@ export function SidebarDocument({
         }
         title={doc.data?.document?.title || <Spinner />}
         indented
-        rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
+        rightHover={
+          pinVariants
+            ? [<PinDocumentButton docId={docId} variants={pinVariants} />]
+            : []
+        }
       />
-    </YGroup.Item>
-  )
+    </YGroup.Item>,
+    ...activeDocOutline(activeOutline, activeBlock, (blockId) => {
+      const pubRoute = route.key == 'publication' ? route : null
+      if (!pubRoute) return
+      replace({
+        ...pubRoute,
+        blockId,
+      })
+    }),
+  ]
 }

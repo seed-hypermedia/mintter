@@ -22,6 +22,7 @@ import {
   Form,
   Spinner,
   XStack,
+  YGroup,
   YStack,
   toast,
 } from '@mintter/ui'
@@ -38,7 +39,6 @@ import {PropsWithChildren, useEffect, useState} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useMyAccount} from '../models/accounts'
-import {usePublication} from '../models/documents'
 import {
   useCreateGroupCategory,
   useDeleteCategory,
@@ -53,7 +53,11 @@ import {useNavigate} from '../utils/useNavigate'
 import {AppDialog, DialogTitle, useAppDialog} from './dialog'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
-import {GenericSidebarContainer, SidebarItem} from './sidebar-base'
+import {
+  GenericSidebarContainer,
+  SidebarDocument,
+  SidebarItem,
+} from './sidebar-base'
 
 type CategoryItem = {
   id: string
@@ -86,20 +90,23 @@ export function GroupSidebar({
   const group = useGroup(groupId, groupRoute?.version)
   const navigationPub = useGroupNavigation(groupId, groupRoute?.version)
   const activeCategorization = {}
-  const activeDocId = route.key === 'publication' ? route.documentId : null
+  const pubRoute = route.key === 'publication' ? route : null
+  const activeDocId = pubRoute?.documentId
   navigationPub.data?.document?.children?.forEach((blockNode) => {
     const {block} = blockNode
-    const activeItem = blockNode.children?.find((item) => {
-      const ref = item.block?.ref
-      const id = ref ? unpackHmId(ref) : null
-      return id && id.qid === activeDocId
-    })
+    const activeItem = activeDocId
+      ? blockNode.children?.find((item) => {
+          const ref = item.block?.ref
+          const id = ref ? unpackHmId(ref) : null
+          return id && id.qid === activeDocId
+        })
+      : null
     if (activeItem) {
       activeCategorization[block.id] = activeItem.block.ref
     }
   })
   let activeUncategorized: string | null = null
-  if (Object.entries(activeCategorization).length === 0) {
+  if (Object.entries(activeCategorization).length === 0 && activeDocId) {
     activeUncategorized = activeDocId
   }
   const sensors = useSensors(
@@ -193,9 +200,11 @@ export function GroupSidebar({
           active={isAllContentActive}
           title="All Content"
         />
-        {activeUncategorized ? (
-          <ActiveDocSidebarItem id={activeUncategorized} />
-        ) : null}
+        <YGroup borderRadius={0}>
+          {activeUncategorized ? (
+            <ActiveDocSidebarItem id={activeUncategorized} />
+          ) : null}
+        </YGroup>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -255,12 +264,14 @@ export function GroupSidebar({
                       })
                     }}
                   />
-                  {activeItemRef ? (
-                    <ActiveDocSidebarItem
-                      key={activeItemRef}
-                      id={activeItemRef}
-                    />
-                  ) : null}
+                  <YGroup borderRadius={0}>
+                    {activeItemRef ? (
+                      <ActiveDocSidebarItem
+                        key={activeItemRef}
+                        id={activeItemRef}
+                      />
+                    ) : null}
+                  </YGroup>
                 </SortableItem>
               )
             })}
@@ -400,15 +411,12 @@ function DeleteCategoryDialog({
 
 function ActiveDocSidebarItem({id}: {id: string | null}) {
   const docId = id ? unpackHmId(id) : null
-  const pub = usePublication({
-    id: docId?.qid,
-    version: docId?.version || undefined,
-  })
+  if (!docId) return null
   return (
-    <SidebarItem
-      title={pub.data?.document?.title || ''}
-      active
-      indented
+    <SidebarDocument
+      docId={docId.qid}
+      docVersion={docId.version}
+      isPinned={false}
       onPress={() => {}}
     />
   )
