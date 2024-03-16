@@ -706,6 +706,7 @@ export function GroupCategoryContent({
                     hasDraft={drafts.data?.documents.find(
                       (d) => d.id == hmId.qid,
                     )}
+                    groupVariantCategory={category}
                     onRemoveFromCategory={
                       myMemberRole === Role.ROLE_UNSPECIFIED
                         ? undefined
@@ -808,6 +809,7 @@ function SortableGroupContentItem({
 
 function GroupContentItem({
   docId,
+  groupVariantCategory,
   id,
   version,
   latestVersion,
@@ -822,6 +824,7 @@ function GroupContentItem({
   onRemoveFromCategory,
 }: {
   docId: string
+  groupVariantCategory?: string
   id: string
   version?: string
   latestVersion?: string
@@ -910,6 +913,7 @@ function GroupContentItem({
         openRoute={{
           key: 'publication',
           documentId: docId,
+          groupVariantCategory,
           ...(latestVersion === version
             ? {variants: [{key: 'group', groupId, pathName}]}
             : {

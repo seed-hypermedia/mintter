@@ -80,6 +80,7 @@ export function GroupSidebar({
     route.key === 'group' &&
     route.groupId === groupId &&
     route.listCategory === '_all'
+  const replace = useNavigate('replace')
   const navigate = useNavigate()
   const groupMembers = useGroupMembers(groupId)
   const myAccount = useMyAccount()
@@ -92,6 +93,7 @@ export function GroupSidebar({
   const activeCategorization = {}
   const pubRoute = route.key === 'publication' ? route : null
   const activeDocId = pubRoute?.documentId
+  const activeCategory = pubRoute?.groupVariantCategory
   navigationPub.data?.document?.children?.forEach((blockNode) => {
     const {block} = blockNode
     const activeItem = activeDocId
@@ -105,10 +107,18 @@ export function GroupSidebar({
       activeCategorization[block.id] = activeItem.block.ref
     }
   })
-  let activeUncategorized: string | null = null
-  if (Object.entries(activeCategorization).length === 0 && activeDocId) {
-    activeUncategorized = activeDocId
-  }
+  useEffect(() => {
+    const activeCategories = Object.entries(activeCategorization)
+    if (activeCategories.length === 1) {
+      const [categoryId, docId] = activeCategories[0]
+      if (categoryId === activeCategory) return
+      if (!pubRoute) return
+      replace({
+        ...pubRoute,
+        groupVariantCategory: categoryId,
+      })
+    }
+  }, [activeCategorization, activeCategory, pubRoute])
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -201,8 +211,8 @@ export function GroupSidebar({
           title="All Content"
         />
         <YGroup borderRadius={0}>
-          {activeUncategorized ? (
-            <ActiveDocSidebarItem id={activeUncategorized} />
+          {activeDocId && activeCategory == null ? (
+            <ActiveDocSidebarItem id={activeDocId} />
           ) : null}
         </YGroup>
         <DndContext
@@ -216,7 +226,8 @@ export function GroupSidebar({
             strategy={verticalListSortingStrategy}
           >
             {displayItems.map((item) => {
-              const activeItemRef = activeCategorization[item.id]
+              const activeItemRef =
+                item.id === activeCategory ? activeDocId : null
               return (
                 <SortableItem key={item.id} id={item.id}>
                   <SidebarItem
