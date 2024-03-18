@@ -185,6 +185,7 @@ const (
 // Table resource_links.
 const (
 	ResourceLinks         sqlitegen.Table  = "resource_links"
+	ResourceLinksID       sqlitegen.Column = "resource_links.id"
 	ResourceLinksIsPinned sqlitegen.Column = "resource_links.is_pinned"
 	ResourceLinksMeta     sqlitegen.Column = "resource_links.meta"
 	ResourceLinksSource   sqlitegen.Column = "resource_links.source"
@@ -195,6 +196,7 @@ const (
 // Table resource_links. Plain strings.
 const (
 	T_ResourceLinks         = "resource_links"
+	C_ResourceLinksID       = "resource_links.id"
 	C_ResourceLinksIsPinned = "resource_links.is_pinned"
 	C_ResourceLinksMeta     = "resource_links.meta"
 	C_ResourceLinksSource   = "resource_links.source"
@@ -377,6 +379,7 @@ var Schema = sqlitegen.Schema{
 		KVValue:                         {Table: KV, SQLType: "TEXT"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
+		ResourceLinksID:                 {Table: ResourceLinks, SQLType: "INTEGER"},
 		ResourceLinksIsPinned:           {Table: ResourceLinks, SQLType: "INTEGER"},
 		ResourceLinksMeta:               {Table: ResourceLinks, SQLType: "BLOB"},
 		ResourceLinksSource:             {Table: ResourceLinks, SQLType: "INTEGER"},

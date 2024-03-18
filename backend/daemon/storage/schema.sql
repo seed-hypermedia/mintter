@@ -137,6 +137,7 @@ CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, type, source);
 -- Non-pinned links point to the latest version of the resource we can find.
 -- Extra metadata can be stored along with the link, probably in JSON format.
 CREATE TABLE resource_links (
+    id INTEGER PRIMARY KEY,
     source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     target INTEGER REFERENCES resources (id) NOT NULL,
     type TEXT NOT NULL,
@@ -145,7 +146,7 @@ CREATE TABLE resource_links (
 );
 
 CREATE INDEX resource_links_by_source ON resource_links (source, is_pinned, target);
-CREATE INDEX resource_links_by_target ON resource_links (target);
+CREATE INDEX resource_links_by_target ON resource_links (target, source);
 
 -- Stores the accounts that used marked as trusted.
 CREATE TABLE trusted_accounts (

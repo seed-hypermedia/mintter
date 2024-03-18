@@ -427,8 +427,8 @@ export class Entity extends Message<Entity> {
 
   /**
    * Title of the entity, depending on the type:
-   * Alias in the case of account. 
-   * Title in the case of groups and documents 
+   * Alias in the case of account.
+   * Title in the case of groups and documents
    * Empty in the case of comments.
    *
    * @generated from field: string title = 2;
@@ -473,14 +473,14 @@ export class Entity extends Message<Entity> {
 }
 
 /**
- * Request to 
+ * Request to
  *
  * @generated from message com.mintter.entities.v1alpha.SearchEntitiesRequest
  */
 export class SearchEntitiesRequest extends Message<SearchEntitiesRequest> {
   /**
-   * Query to find. Since we use 
-   * Fuzzy search, a single query may return multiple 
+   * Query to find. Since we use
+   * Fuzzy search, a single query may return multiple
    * entities.
    *
    * @generated from field: string query = 1;
@@ -516,7 +516,7 @@ export class SearchEntitiesRequest extends Message<SearchEntitiesRequest> {
 }
 
 /**
- * A list of entities matching the request. 
+ * A list of entities matching the request.
  *
  * @generated from message com.mintter.entities.v1alpha.SearchEntitiesResponse
  */
@@ -561,6 +561,278 @@ export class SearchEntitiesResponse extends Message<SearchEntitiesResponse> {
 
   static equals(a: SearchEntitiesResponse | PlainMessage<SearchEntitiesResponse> | undefined, b: SearchEntitiesResponse | PlainMessage<SearchEntitiesResponse> | undefined): boolean {
     return proto3.util.equals(SearchEntitiesResponse, a, b);
+  }
+}
+
+/**
+ * Request to list mentions of an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.ListEntityMentionsRequest
+ */
+export class ListEntityMentionsRequest extends Message<ListEntityMentionsRequest> {
+  /**
+   * Required. ID of the entity to list mentions for.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Optional. The size of the page to return by the server.
+   * The server may ignore this, and return a bigger response.
+   *
+   * @generated from field: int32 page_size = 2;
+   */
+  pageSize = 0;
+
+  /**
+   * Optional. The page token to continue the pagination.
+   *
+   * @generated from field: string page_token = 3;
+   */
+  pageToken = "";
+
+  /**
+   * Optional. Whether to return the results in the descending order (newest-first).
+   * By default mentions are listed in the chronological order,
+   * according to the *locally perceived* order of the blobs that contain the mentions.
+   * I.e. we sort the links according to the time we receive the blobs, not according to the time blobs claim to have been created.
+   * This is to prevent losing new mentions in case of receiving out-of-date blobs.
+   *
+   * @generated from field: bool reverse_order = 4;
+   */
+  reverseOrder = false;
+
+  constructor(data?: PartialMessage<ListEntityMentionsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.ListEntityMentionsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "reverse_order", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListEntityMentionsRequest {
+    return new ListEntityMentionsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListEntityMentionsRequest {
+    return new ListEntityMentionsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListEntityMentionsRequest {
+    return new ListEntityMentionsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListEntityMentionsRequest | PlainMessage<ListEntityMentionsRequest> | undefined, b: ListEntityMentionsRequest | PlainMessage<ListEntityMentionsRequest> | undefined): boolean {
+    return proto3.util.equals(ListEntityMentionsRequest, a, b);
+  }
+}
+
+/**
+ * Response to list mentions of an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.ListEntityMentionsResponse
+ */
+export class ListEntityMentionsResponse extends Message<ListEntityMentionsResponse> {
+  /**
+   * Required. The list of mentions for the entity.
+   *
+   * @generated from field: repeated com.mintter.entities.v1alpha.Mention mentions = 1;
+   */
+  mentions: Mention[] = [];
+
+  /**
+   * Optional. Token for the next page if there's any.
+   *
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken = "";
+
+  constructor(data?: PartialMessage<ListEntityMentionsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.ListEntityMentionsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "mentions", kind: "message", T: Mention, repeated: true },
+    { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListEntityMentionsResponse {
+    return new ListEntityMentionsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListEntityMentionsResponse {
+    return new ListEntityMentionsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListEntityMentionsResponse {
+    return new ListEntityMentionsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListEntityMentionsResponse | PlainMessage<ListEntityMentionsResponse> | undefined, b: ListEntityMentionsResponse | PlainMessage<ListEntityMentionsResponse> | undefined): boolean {
+    return proto3.util.equals(ListEntityMentionsResponse, a, b);
+  }
+}
+
+/**
+ * Mention of an Entity.
+ * Source means the place where the mention was found.
+ * Target means the entity being mentioned.
+ *
+ * @generated from message com.mintter.entities.v1alpha.Mention
+ */
+export class Mention extends Message<Mention> {
+  /**
+   * Required. The ID of the source where the mention was found.
+   *
+   * @generated from field: string source = 1;
+   */
+  source = "";
+
+  /**
+   * Optional. Context can mean different things depending on the type of the source:
+   * it can be the block ID when source is a Document or Comment,
+   * it can be a pretty-path when source is a Group that mentions a Document,
+   * it can also be empty.
+   *
+   * @generated from field: string source_context = 2;
+   */
+  sourceContext = "";
+
+  /**
+   * Required. Information about the blob where the mention was found.
+   *
+   * @generated from field: com.mintter.entities.v1alpha.Mention.BlobInfo source_blob = 3;
+   */
+  sourceBlob?: Mention_BlobInfo;
+
+  /**
+   * Optional. The version of the target Entity the link points to,
+   * if one is specified in the link.
+   *
+   * @generated from field: string target_version = 4;
+   */
+  targetVersion = "";
+
+  /**
+   * Required. Specifies whether the link points to the exact/pinned version of the target document,
+   * or if the target version is a *suggested* minimum version, and a later one should be preferred if exists.
+   *
+   * @generated from field: bool is_exact_version = 5;
+   */
+  isExactVersion = false;
+
+  /**
+   * Optional. The fragment portion of the link.
+   *
+   * @generated from field: string target_fragment = 6;
+   */
+  targetFragment = "";
+
+  constructor(data?: PartialMessage<Mention>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.Mention";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "source", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "source_context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "source_blob", kind: "message", T: Mention_BlobInfo },
+    { no: 4, name: "target_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "is_exact_version", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "target_fragment", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Mention {
+    return new Mention().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Mention {
+    return new Mention().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Mention {
+    return new Mention().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Mention | PlainMessage<Mention> | undefined, b: Mention | PlainMessage<Mention> | undefined): boolean {
+    return proto3.util.equals(Mention, a, b);
+  }
+}
+
+/**
+ * Information about a structural blob that contains the mention.
+ *
+ * @generated from message com.mintter.entities.v1alpha.Mention.BlobInfo
+ */
+export class Mention_BlobInfo extends Message<Mention_BlobInfo> {
+  /**
+   * The CID-formatted hash of the blob.
+   *
+   * @generated from field: string cid = 1;
+   */
+  cid = "";
+
+  /**
+   * The Account ID of the author of the blob.
+   *
+   * @generated from field: string author = 2;
+   */
+  author = "";
+
+  /**
+   * The timestamp of the blob.
+   *
+   * @generated from field: google.protobuf.Timestamp create_time = 3;
+   */
+  createTime?: Timestamp;
+
+  /**
+   * Specifies whether the blob is a draft.
+   *
+   * @generated from field: bool is_draft = 4;
+   */
+  isDraft = false;
+
+  constructor(data?: PartialMessage<Mention_BlobInfo>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.Mention.BlobInfo";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "cid", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "create_time", kind: "message", T: Timestamp },
+    { no: 4, name: "is_draft", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Mention_BlobInfo {
+    return new Mention_BlobInfo().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Mention_BlobInfo {
+    return new Mention_BlobInfo().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Mention_BlobInfo {
+    return new Mention_BlobInfo().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Mention_BlobInfo | PlainMessage<Mention_BlobInfo> | undefined, b: Mention_BlobInfo | PlainMessage<Mention_BlobInfo> | undefined): boolean {
+    return proto3.util.equals(Mention_BlobInfo, a, b);
   }
 }
 

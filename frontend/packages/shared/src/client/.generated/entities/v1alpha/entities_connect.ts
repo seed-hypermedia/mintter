@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
+import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -49,7 +49,7 @@ export const Entities = {
     },
     /**
      * Finds the list of local entities whose titles match the input string.
-     * A fuzzy search is performed among documents, groups and accounts. 
+     * A fuzzy search is performed among documents, groups and accounts.
      * For groups and documents, we match the title, while we match alias in accounts.
      *
      * @generated from rpc com.mintter.entities.v1alpha.Entities.SearchEntities
@@ -58,6 +58,17 @@ export const Entities = {
       name: "SearchEntities",
       I: SearchEntitiesRequest,
       O: SearchEntitiesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * List mentions of a given Entity across the locally-available content.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.ListEntityMentions
+     */
+    listEntityMentions: {
+      name: "ListEntityMentions",
+      I: ListEntityMentionsRequest,
+      O: ListEntityMentionsResponse,
       kind: MethodKind.Unary,
     },
   }

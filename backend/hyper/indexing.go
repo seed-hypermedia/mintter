@@ -49,9 +49,9 @@ func (bs *indexer) Reindex(ctx context.Context) (err error) {
 
 func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 	start := time.Now()
-	bs.log.Debug("ReindexingStarted")
+	bs.log.Info("ReindexingStarted")
 	defer func() {
-		bs.log.Debug("ReindexingFinished", zap.Error(err), zap.Duration("duration", time.Since(start)))
+		bs.log.Info("ReindexingFinished", zap.Error(err), zap.Duration("duration", time.Since(start)))
 	}()
 
 	// Order is important to ensure foreign key constraints are not violated.

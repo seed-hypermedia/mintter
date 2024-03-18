@@ -368,6 +368,24 @@ var migrations = []migration{
 			CREATE INDEX blobs_metadata_by_hash ON blobs (multihash, codec, size, insert_time);
 		`))
 	}},
+	{Version: "2024-03-18.01", Run: func(_ *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE IF EXISTS resource_links;
+
+			CREATE TABLE resource_links (
+				id INTEGER PRIMARY KEY,
+				source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES resources (id) NOT NULL,
+				type TEXT NOT NULL,
+				is_pinned INTEGER NOT NULL DEFAULT (0),
+				meta BLOB
+			);
+			CREATE INDEX resource_links_by_source ON resource_links (source, is_pinned, target);
+			CREATE INDEX resource_links_by_target ON resource_links (target, source);
+
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

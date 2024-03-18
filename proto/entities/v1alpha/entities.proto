@@ -18,9 +18,12 @@ service Entities {
   rpc DiscoverEntity(DiscoverEntityRequest) returns (DiscoverEntityResponse);
 
   // Finds the list of local entities whose titles match the input string.
-  // A fuzzy search is performed among documents, groups and accounts. 
+  // A fuzzy search is performed among documents, groups and accounts.
   // For groups and documents, we match the title, while we match alias in accounts.
   rpc SearchEntities(SearchEntitiesRequest) returns (SearchEntitiesResponse);
+
+  // List mentions of a given Entity across the locally-available content.
+  rpc ListEntityMentions(ListEntityMentionsRequest) returns (ListEntityMentionsResponse);
 }
 
 // Request to get a change by ID.
@@ -120,8 +123,8 @@ message Entity {
   string id = 1;
 
   // Title of the entity, depending on the type:
-  // Alias in the case of account. 
-  // Title in the case of groups and documents 
+  // Alias in the case of account.
+  // Title in the case of groups and documents
   // Empty in the case of comments.
   string title = 2;
 
@@ -129,19 +132,94 @@ message Entity {
   string owner = 3;
 }
 
-// Request to 
+// Request to
 message SearchEntitiesRequest {
-  // Query to find. Since we use 
-  // Fuzzy search, a single query may return multiple 
+  // Query to find. Since we use
+  // Fuzzy search, a single query may return multiple
   // entities.
   string query = 1;
 }
 
-// A list of entities matching the request. 
+// A list of entities matching the request.
 message SearchEntitiesResponse {
   // Entities matching the input title
   repeated Entity entities = 1;
 
   // Token for the next page if there's any.
   string next_page_token = 2;
+}
+
+// Request to list mentions of an entity.
+message ListEntityMentionsRequest {
+  // Required. ID of the entity to list mentions for.
+  string id = 1;
+
+  // Optional. The size of the page to return by the server.
+  // The server may ignore this, and return a bigger response.
+  int32 page_size = 2;
+
+  // Optional. The page token to continue the pagination.
+  string page_token = 3;
+
+  // Optional. Whether to return the results in descending order (newest-first).
+  // By default mentions are listed in the chronological order,
+  // according to the *locally perceived* order of the blobs that contain the mentions.
+  //
+  // I.e. we sort the links according to the time we receive the blobs, not according to the time blobs claim to have been created.
+  // This is to prevent losing new mentions in case of receiving out-of-date blobs.
+  //
+  // This flag must remain the same when paginating through the results.
+  bool reverse_order = 4;
+}
+
+// Response to list mentions of an entity.
+message ListEntityMentionsResponse {
+  // Required. The list of mentions for the entity.
+  repeated Mention mentions = 1;
+
+  // Optional. Token for the next page if there's any.
+  string next_page_token = 2;
+}
+
+// Mention of an Entity.
+// Source means the place where the mention was found.
+// Target means the entity being mentioned.
+message Mention {
+  // Information about a structural blob that contains the mention.
+  message BlobInfo {
+    // The CID-formatted hash of the blob.
+    string cid = 1;
+
+    // The Account ID of the author of the blob.
+    string author = 2;
+
+    // The timestamp of the blob.
+    google.protobuf.Timestamp create_time = 3;
+
+    // Specifies whether the blob is a draft.
+    bool is_draft = 4;
+  }
+
+  // Required. The ID of the source where the mention was found.
+  string source = 1;
+
+  // Optional. Context can mean different things depending on the type of the source:
+  // it can be the block ID when source is a Document or Comment,
+  // it can be a pretty-path when source is a Group that mentions a Document,
+  // it can also be empty.
+  string source_context = 2;
+
+  // Required. Information about the blob where the mention was found.
+  BlobInfo source_blob = 3;
+
+  // Optional. The version of the target Entity the link points to,
+  // if one is specified in the link.
+  string target_version = 4;
+
+  // Required. Specifies whether the link points to the exact/pinned version of the target document,
+  // or if the target version is a *suggested* minimum version, and a later one should be preferred if exists.
+  bool is_exact_version = 5;
+
+  // Optional. The fragment portion of the link.
+  string target_fragment = 6;
 }
