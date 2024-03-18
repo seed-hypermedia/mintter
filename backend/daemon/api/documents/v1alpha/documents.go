@@ -551,7 +551,7 @@ var qListAllPublications = dqb.Str(`
 	WHERE
 	  sb.author IS NOT NULL
 	  AND r.iri GLOB :pattern
-	  AND r.id not in (SELECT resource from drafts) 
+	  AND sb.id not in (SELECT distinct blob from drafts) 
 	UNION ALL
 	SELECT
 	  ra.iri,
