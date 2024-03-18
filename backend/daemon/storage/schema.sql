@@ -81,6 +81,20 @@ FROM structural_blobs
 JOIN blobs ON blobs.id = structural_blobs.id
 JOIN resources ON structural_blobs.resource = resources.id;
 
+-- View blobs metadata
+CREATE VIEW meta_view AS
+SELECT sb.meta, resources.iri, public_keys.principal
+FROM structural_blobs sb
+JOIN public_keys ON public_keys.id = sb.author
+JOIN resources ON resources.id = sb.resource
+JOIN (
+    SELECT resource, MAX(ts) AS max_ts
+    FROM structural_blobs
+    WHERE type='Change' AND meta IS NOT NULL
+    GROUP BY resource
+) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts; 
+
+
 -- Stores extra information for key delegation blobs.
 CREATE TABLE key_delegations (
     id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,

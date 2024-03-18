@@ -538,7 +538,7 @@ var qListAllPublications = dqb.Str(`
 	  r.iri,
 	  r.create_time,
 	  r.owner,
-	  sb.meta,
+	  mv.meta,
 	  pk.principal AS author_raw,
 	  sb.ts,
 	  sb.id AS blob_id
@@ -546,6 +546,7 @@ var qListAllPublications = dqb.Str(`
 	  resources r
 	  JOIN structural_blobs sb ON r.id = sb.resource
 	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
 	WHERE
 	  sb.author IS NOT NULL
 	  AND r.iri GLOB :pattern
@@ -608,7 +609,7 @@ var qListTrustedPublications = dqb.Str(`
 	  r.iri,
 	  r.create_time,
 	  r.owner,
-	  sb.meta,
+	  mv.meta,
 	  pk.principal AS author_raw,
 	  sb.ts,
 	  sb.id AS blob_id
@@ -616,6 +617,7 @@ var qListTrustedPublications = dqb.Str(`
 	  resources r
 	  JOIN structural_blobs sb ON r.id = sb.resource
 	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
 	  JOIN trusted_accounts ON trusted_accounts.id = r.owner
 	WHERE
 	  sb.author IS NOT NULL

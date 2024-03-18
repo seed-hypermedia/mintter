@@ -414,6 +414,22 @@ var migrations = []migration{
 			JOIN blobs INDEXED BY blobs_metadata ON blobs.id = drafts.blob;
 		`))
 	}},
+	{Version: "2024-03-25.01", Run: func(_ *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+		DROP VIEW IF EXISTS meta_view;
+		CREATE VIEW if not exists meta_view AS
+		SELECT sb.meta, resources.iri, public_keys.principal
+		FROM structural_blobs sb
+		JOIN public_keys ON public_keys.id = sb.author
+		JOIN resources ON resources.id = sb.resource
+		JOIN (
+			SELECT resource, MAX(ts) AS max_ts
+			FROM structural_blobs
+			WHERE type='Change' AND meta IS NOT NULL
+			GROUP BY resource
+		) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts; 
+		`))
+	}},
 }
 
 const (
