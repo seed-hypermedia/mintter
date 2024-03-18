@@ -12,6 +12,7 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"strconv"
 	"testing"
 	"time"
 
@@ -251,13 +252,12 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 		return pub
 	}
 
-	want := []*documents.Publication{
-		publish(ctx, t, "Doc-1", "This is a doc-1"),
-		publish(ctx, t, "Doc-2", "This is a doc-2"),
-		publish(ctx, t, "Doc-3", "This is a doc-3"),
-		publish(ctx, t, "Doc-4", "This is a doc-4"),
+	want := []*documents.Publication{}
+	for i := 1; i <= 4; i++ {
+		doc := publish(ctx, t, "Doc-"+strconv.Itoa(i), "This is a doc-"+strconv.Itoa(i))
+		doc.Document.Children = []*documents.BlockNode{}
+		want = append(want, doc)
 	}
-
 	var g errgroup.Group
 
 	// Trying this more than once and expecting it to return the same result. This is what bug was mostly about.

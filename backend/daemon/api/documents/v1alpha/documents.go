@@ -13,6 +13,7 @@ import (
 	groups_proto "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/mttnet"
 	"strings"
+	"time"
 
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
@@ -601,7 +602,7 @@ var qListAllPublications = dqb.Str(`
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY ra.create_time asc;
+  ORDER BY latest_ts asc;
 `)
 
 var qListTrustedPublications = dqb.Str(`
@@ -674,7 +675,7 @@ var qListTrustedPublications = dqb.Str(`
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY ra.create_time asc;
+  ORDER BY latest_ts asc;
 `)
 
 // ListPublications implements the corresponding gRPC method.
@@ -699,10 +700,10 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
 		var (
 			id          = stmt.ColumnText(0)
-			createTime  = stmt.ColumnInt64(1) * 1e9
+			createTime  = stmt.ColumnInt64(1)
 			editorsStr  = stmt.ColumnText(2)
 			title       = stmt.ColumnText(3)
-			updatedTime = stmt.ColumnInt64(4) * 1e3
+			updatedTime = stmt.ColumnInt64(4)
 			ownerHex    = stmt.ColumnText(5)
 			mhash       = stmt.ColumnBytes(6)
 			codec       = stmt.ColumnInt64(7)
@@ -723,14 +724,15 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		pub := &documents.Publication{
 			Version: version.String(),
 			Document: &documents.Document{
-				Id:          id,
-				Title:       title,
-				Author:      core.Principal(ownerBin).String(),
-				Editors:     editors,
-				Children:    []*documents.BlockNode{},
-				CreateTime:  &timestamppb.Timestamp{Seconds: createTime / 1000000000, Nanos: int32(createTime % 1000000000)},
-				UpdateTime:  &timestamppb.Timestamp{Seconds: updatedTime / 1000, Nanos: int32(updatedTime % 1000)},
-				PublishTime: &timestamppb.Timestamp{Seconds: updatedTime / 1000, Nanos: int32(updatedTime % 1000)},
+				Id:       id,
+				Title:    title,
+				Author:   core.Principal(ownerBin).String(),
+				Editors:  editors,
+				Children: []*documents.BlockNode{},
+
+				CreateTime:  timestamppb.New(time.Unix(int64(createTime), 0)),
+				UpdateTime:  timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+				PublishTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
 			},
 		}
 		resp.Publications = append(resp.Publications, pub)
