@@ -3,7 +3,13 @@ import type {NavState} from '@mintter/app/utils/navigation'
 import {NavRoute, defaultRoute} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
-import {BrowserWindow, app, nativeTheme} from 'electron'
+import {
+  BrowserView,
+  BrowserWindow,
+  app,
+  globalShortcut,
+  nativeTheme,
+} from 'electron'
 import path from 'node:path'
 import {updateRecentRoute} from './app-recents'
 import {appStore} from './app-store'
@@ -189,6 +195,8 @@ export function createAppWindow(input: {
     ...bounds,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      disableDialogs: true,
+      spellcheck: false,
     },
     minWidth: windowType.minWidth,
     minHeight: windowType.minHeight,
@@ -203,6 +211,35 @@ export function createAppWindow(input: {
       y: 12,
     },
   })
+
+  let mainWindowBounds = browserWindow.getBounds()
+
+  const findInPageView = new BrowserView({
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  })
+
+  browserWindow.addBrowserView(findInPageView)
+  findInPageView.setBounds({
+    x: mainWindowBounds.width - 320,
+    y: -200,
+    width: 320,
+    height: 100,
+  })
+
+  if (FIND_IN_PAGE_VITE_DEV_SERVER_URL) {
+    findInPageView.webContents.loadURL(
+      `${FIND_IN_PAGE_VITE_DEV_SERVER_URL}/find-in-page.html`,
+    )
+  } else {
+    findInPageView.webContents.loadFile(
+      path.join(
+        __dirname,
+        `../renderer/${FIND_IN_PAGE_VITE_NAME}/find-in-page.html`,
+      ),
+    )
+  }
 
   info('[MAIN:API]: window created')
 
@@ -237,6 +274,7 @@ export function createAppWindow(input: {
   })
 
   browserWindow.webContents.ipc.on('windowIsReady', (e) => {
+    info('=================================== windowIsReady')
     browserWindow.show()
   })
 
@@ -255,6 +293,11 @@ export function createAppWindow(input: {
   }
   // @ts-expect-error
   browserWindow.on('resize', (e, a) => {
+    const bounds = browserWindow.getBounds()
+    findInPageView.setBounds({
+      ...findInPageView.getBounds(),
+      x: bounds.width - 320,
+    })
     saveWindowPositionDebounced()
   })
   // @ts-expect-error
@@ -322,9 +365,34 @@ export function createAppWindow(input: {
     if (activeRoute) {
       updateRecentRoute(activeRoute)
     }
+
+    globalShortcut.register('CommandOrControl+F', () => {
+      const focusedWindow = getFocusedWindow()
+      if (focusedWindow) {
+        focusedWindow.webContents.send('appWindowEvent', 'find_in_page')
+        const currentBounds = findInPageView.getBounds()
+        findInPageView.setBounds({
+          ...currentBounds,
+          y: currentBounds.y == -200 ? 0 : -200,
+        })
+        if (currentBounds.y == -200) {
+          findInPageView.webContents.executeJavaScript(`
+          document.querySelector('input').focus();
+        `)
+        }
+      }
+    })
+  })
+
+  browserWindow.webContents.on('found-in-page', (event, result) => {
+    console.log('=== FOUND IN PAGE ===', result)
+    // if (result.finalUpdate) {
+    //   browserWindow.webContents.stopFindInPage('clearSelection')
+    // }
   })
   browserWindow.on('blur', () => {
     windowBlurred(windowId)
+    globalShortcut.unregister('CommandOrControl+F')
   })
 
   windowFocused(windowId)

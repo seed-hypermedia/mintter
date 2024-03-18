@@ -116,11 +116,19 @@ const config: ForgeConfig = {
           entry: 'src/preload.ts',
           config: 'vite.preload.config.ts',
         },
+        {
+          entry: 'src/preload-find-in-page.ts',
+          config: 'vite.preload.config.ts',
+        },
       ],
       renderer: [
         {
           name: 'main_window',
           config: 'vite.renderer.config.ts',
+        },
+        {
+          name: 'find_in_page',
+          config: 'vite.renderer.find-in-page.config.ts',
         },
       ],
     }),

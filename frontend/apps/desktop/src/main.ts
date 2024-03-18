@@ -1,7 +1,15 @@
 import {defaultRoute} from '@mintter/app/utils/routes'
 import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
-import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  app,
+  globalShortcut,
+  ipcMain,
+  nativeTheme,
+  shell,
+} from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log/main'
 import squirrelStartup from 'electron-squirrel-startup'
@@ -145,6 +153,7 @@ if (!gotTheLock) {
 
   app.on('window-all-closed', () => {
     log.debug('[MAIN]: window-all-closed')
+    globalShortcut.unregisterAll()
     if (process.platform != 'darwin') {
       log.debug('[MAIN]: will quit the app')
       app.quit()
