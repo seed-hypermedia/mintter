@@ -256,28 +256,129 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	return mut.Hydrate(ctx, api.blobs)
 }
 
+var qListAllDrafts = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner,
+	  mv.meta,
+	  pk.principal AS author_raw,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	  AND sb.id in (SELECT distinct blob from drafts)
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  pk.principal,
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_raw AS (
+	SELECT
+	  id,
+	  principal AS owner_raw
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	HEX(oraw.owner_raw)
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY latest_ts asc;
+`)
+
 // ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "hm://d/*")
+	var (
+		entities []hyper.EntityID
+		err      error
+	)
+	conn, cancel, err := api.db.Conn(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
 	}
-
+	defer cancel()
 	resp := &documents.ListDraftsResponse{
 		Documents: make([]*documents.Document, 0, len(entities)),
 	}
-
-	for _, e := range entities {
-		docid := string(e)
-		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
-			DocumentId: docid,
-		})
-		if err != nil {
-			continue
+	pattern := "hm://d/*"
+	err = sqlitex.Exec(conn, qListAllDrafts(), func(stmt *sqlite.Stmt) error {
+		var (
+			id          = stmt.ColumnText(0)
+			createTime  = stmt.ColumnInt64(1)
+			editorsStr  = stmt.ColumnText(2)
+			title       = stmt.ColumnText(3)
+			updatedTime = stmt.ColumnInt64(4)
+			ownerHex    = stmt.ColumnText(5)
+		)
+		editors := []string{}
+		for _, editorHex := range strings.Split(editorsStr, ",") {
+			editorBin, err := hex.DecodeString(editorHex)
+			if err != nil {
+				return err
+			}
+			editors = append(editors, core.Principal(editorBin).String())
 		}
-		resp.Documents = append(resp.Documents, draft)
-	}
+		ownerBin, err := hex.DecodeString(ownerHex)
+		if err != nil {
+			return err
+		}
+		pub := &documents.Document{
+			Id:       id,
+			Title:    title,
+			Author:   core.Principal(ownerBin).String(),
+			Editors:  editors,
+			Children: []*documents.BlockNode{},
 
+			CreateTime:  timestamppb.New(time.Unix(int64(createTime), 0)),
+			UpdateTime:  timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+			PublishTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+		}
+		resp.Documents = append(resp.Documents, pub)
+		return nil
+	}, pattern)
+	if err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 
