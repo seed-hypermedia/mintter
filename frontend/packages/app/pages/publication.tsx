@@ -171,8 +171,6 @@ function PublicationGroup({groupId}: {groupId: string}) {
 
 export default function PublicationPage() {
   const route = useNavRoute()
-
-  console.log(`== ~ PublicationPage ~ route:`, route)
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 

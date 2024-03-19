@@ -1,6 +1,7 @@
 import {
   Account,
   API_FILE_URL,
+  getBlockNode,
   GroupVariant,
   HMBlockNode,
   PublicationVariant,
@@ -19,12 +20,16 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {Book, FileText, Hash, Plus} from '@tamagui/lucide-icons'
+import {ArrowUpRight, Book, FileText, Hash, Plus} from '@tamagui/lucide-icons'
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {useAccount, useAccounts} from '../models/accounts'
-import {usePublication} from '../models/documents'
+import {
+  EmbedsContent,
+  usePublication,
+  usePublicationEmbeds,
+} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {usePinAccount, usePinGroup} from '../models/pins'
 import {getAccountName} from '../pages/account-page'
@@ -411,21 +416,80 @@ export function SidebarGroup(props: {
 type DocOutlineSection = {
   title: string
   id: string
+  linkRoute?: NavRoute
   children?: DocOutlineSection[]
 }
 type DocOutline = DocOutlineSection[]
 
-function getDocOutline(children: HMBlockNode[]): DocOutline {
+function getDocOutline(
+  children: HMBlockNode[],
+  embeds: EmbedsContent,
+): DocOutline {
   const outline: DocOutline = []
   children.forEach((child) => {
     if (child.block.type === 'heading') {
       outline.push({
         title: child.block.text,
         id: child.block.id,
-        children: child.children && getDocOutline(child.children),
+        children: child.children && getDocOutline(child.children, embeds),
       })
+    } else if (
+      child.block.type === 'embed' &&
+      child.block.attributes.view === 'card' &&
+      embeds[child.block.id]
+    ) {
+      const embed = embeds[child.block.id]
+      if (embed?.type === 'd') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.document?.title || 'Untitled Document',
+          linkRoute: {
+            key: 'publication',
+            documentId: embed?.query?.refId?.qid,
+            versionId: embed?.query?.refId?.version || undefined,
+            variants: embed?.query?.refId?.variants || undefined,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      } else if (embed?.type === 'a') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.profile?.alias || 'Untitled Account',
+          linkRoute: {
+            key: 'account',
+            accountId: embed?.query?.refId?.eid,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      } else if (embed?.type === 'g') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.title || 'Untitled Group',
+          linkRoute: {
+            key: 'group',
+            groupId: embed?.query?.refId?.qid,
+            version: embed?.query?.refId?.version || undefined,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      }
+    } else if (child.block.type === 'embed' && embeds[child.block.id]) {
+      const embed = embeds[child.block.id]
+      if (embed?.type === 'd') {
+        const children = embed.query.refId.blockRef
+          ? getBlockNode(
+              embed?.data?.document?.children,
+              embed.query.refId.blockRef,
+            )?.children
+          : embed?.data?.document?.children
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.document?.title || 'Untitled Group',
+          children: children && getDocOutline(children, embeds),
+        })
+      }
     } else if (child.children) {
-      outline.push(...getDocOutline(child.children))
+      outline.push(...getDocOutline(child.children, embeds))
     }
   })
   return outline
@@ -434,7 +498,9 @@ function getDocOutline(children: HMBlockNode[]): DocOutline {
 function activeDocOutline(
   outline: DocOutlineSection[],
   activeBlock: string | null | undefined,
+  embeds: EmbedsContent,
   onBlockSelect: (blockId: string) => void,
+  onNavigate: (route: NavRoute) => void,
   level = 0,
 ) {
   return outline
@@ -442,17 +508,32 @@ function activeDocOutline(
       <YGroup.Item>
         <SidebarItem
           onPress={() => {
-            onBlockSelect(item.id)
+            if (item.linkRoute) {
+              onNavigate(item.linkRoute)
+            } else {
+              onBlockSelect(item.id)
+            }
           }}
           active={item.id === activeBlock}
-          icon={Hash}
+          icon={
+            <View width={16}>
+              {item.linkRoute ? <ArrowUpRight size={16} /> : <Hash size={16} />}
+            </View>
+          }
           title={item.title || 'Untitled Heading'}
           indented={2 + level}
           // rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
         />
       </YGroup.Item>,
       ...(item.children
-        ? activeDocOutline(item.children, activeBlock, onBlockSelect, level + 1)
+        ? activeDocOutline(
+            item.children,
+            activeBlock,
+            embeds,
+            onBlockSelect,
+            onNavigate,
+            level + 1,
+          )
         : []),
     ])
     .flat()
@@ -477,19 +558,21 @@ export function SidebarDocument({
 }) {
   const route = useNavRoute()
   const doc = usePublication({id: docId, version: docVersion || undefined})
+  const isRouteActive = route.key == 'publication' && route.documentId == docId
+  const embeds = usePublicationEmbeds(doc.data, isRouteActive)
   const authorAccountsQuery = useAccounts(authors || [])
   const authorAccounts = authorAccountsQuery
     .map((query) => query.data)
     .filter(Boolean)
   if (!docId) return null
-  const isRouteActive = route.key == 'publication' && route.documentId == docId
   const activeOutline =
     isRouteActive || active
-      ? getDocOutline(doc?.data?.document?.children || [])
+      ? getDocOutline(doc?.data?.document?.children || [], embeds)
       : []
   const pubRoute = route.key == 'publication' ? route : null
   const activeBlock = pubRoute?.blockId
   const replace = useNavigate('replace')
+  const navigate = useNavigate()
   return [
     <YGroup.Item>
       <SidebarItem
@@ -537,13 +620,19 @@ export function SidebarDocument({
         }
       />
     </YGroup.Item>,
-    ...activeDocOutline(activeOutline, activeBlock, (blockId) => {
-      const pubRoute = route.key == 'publication' ? route : null
-      if (!pubRoute) return
-      replace({
-        ...pubRoute,
-        blockId,
-      })
-    }),
+    ...activeDocOutline(
+      activeOutline,
+      activeBlock,
+      embeds,
+      (blockId) => {
+        const pubRoute = route.key == 'publication' ? route : null
+        if (!pubRoute) return
+        replace({
+          ...pubRoute,
+          blockId,
+        })
+      },
+      navigate,
+    ),
   ]
 }

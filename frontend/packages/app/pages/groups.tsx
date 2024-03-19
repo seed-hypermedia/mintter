@@ -21,7 +21,7 @@ import {
 } from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useGatewayUrl} from '../models/gateway-settings'
-import {useGroupMembers, useGroups} from '../models/groups'
+import {useAllGroups, useGroupMembers} from '../models/groups'
 import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/routes'
@@ -174,7 +174,7 @@ function GroupListItem({group, onCopy}: {group: Group; onCopy: () => void}) {
 }
 
 export default function GroupsPage() {
-  const groupQuery = useGroups()
+  const groupQuery = useAllGroups()
   const groups = groupQuery.data?.groups || []
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   let content = groupQuery.isLoading ? (

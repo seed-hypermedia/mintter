@@ -17,16 +17,20 @@ import {
   DocumentChange,
   GRPCClient,
   GroupVariant,
+  HMAccount,
   HMBlock,
   HMBlockNode,
+  HMGroup,
   HMPublication,
   ListPublicationsResponse,
   Publication,
+  UnpackedHypermediaId,
   fromHMBlock,
   hmDocument,
   hmPublication,
   toHMBlock,
   unpackDocId,
+  unpackHmId,
   writeableStateStream,
 } from '@mintter/shared'
 import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
@@ -49,11 +53,11 @@ import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
-import {useAllAccounts} from './accounts'
+import {useAccounts, useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
-import {useGroupContent} from './groups'
+import {useGroupContent, useGroups} from './groups'
 import {queryKeys} from './query-keys'
 
 export function usePublicationList(
@@ -186,14 +190,14 @@ export function usePublication(
 export function usePublications(
   pubs: {
     id?: string
-    version?: string
+    version?: string | null
   }[],
   options?: UseQueryOptions<HMPublication>,
 ) {
   const grpcClient = useGRPCClient()
   return useQueries({
     queries: pubs.map((pub) =>
-      queryPublication(grpcClient, pub.id, pub.version),
+      queryPublication(grpcClient, pub.id, pub.version || undefined),
     ),
     ...(options || {}),
   })
@@ -221,6 +225,108 @@ export function queryPublication(
       return hmPub
     },
   }
+}
+
+type ListedEmbed = {
+  blockId: string
+  ref: string
+  refId: UnpackedHypermediaId
+}
+
+function extractRefs(children: HMBlockNode[]): ListedEmbed[] {
+  let refs: ListedEmbed[] = []
+  function extractRefsFromBlock(block: HMBlockNode) {
+    if (block.block?.type === 'embed' && block.block.ref) {
+      const refId = unpackHmId(block.block.ref)
+      if (refId)
+        refs.push({
+          blockId: block.block.id,
+          ref: block.block.ref,
+          refId,
+        })
+    }
+    if (block.children) {
+      block.children.forEach(extractRefsFromBlock)
+    }
+  }
+  children.forEach(extractRefsFromBlock)
+  // console.log('extractRefs', children, refs)
+  return refs
+}
+
+export type EmbedsContent = Record<
+  string,
+  | {
+      type: 'd'
+      data: HMPublication
+      query: {refId: UnpackedHypermediaId; blockId: string}
+    }
+  | {
+      type: 'a'
+      data: HMAccount
+      query: {refId: UnpackedHypermediaId; blockId: string}
+    }
+  | {
+      type: 'g'
+      data: HMGroup
+      query: {refId: UnpackedHypermediaId; blockId: string}
+    }
+  | undefined
+>
+
+export function usePublicationEmbeds(
+  pub: HMPublication | undefined,
+  enabled?: boolean,
+): EmbedsContent {
+  const {queryPublications, queryGroups, queryAccounts} = useMemo(() => {
+    if (!enabled)
+      return {queryPublications: [], queryGroups: [], queryAccounts: []}
+    const queryPublications: {
+      blockId: string
+      refId: UnpackedHypermediaId
+    }[] = []
+    const queryAccounts: {blockId: string; refId: UnpackedHypermediaId}[] = []
+    const queryGroups: {
+      blockId: string
+      refId: UnpackedHypermediaId
+    }[] = []
+    extractRefs(pub?.document?.children || []).forEach(({refId, blockId}) => {
+      if (refId.type === 'a') {
+        queryAccounts.push({blockId, refId})
+      } else if (refId.type === 'g') {
+        queryGroups.push({blockId, refId})
+      } else if (refId.type === 'd') {
+        queryPublications.push({blockId, refId})
+      }
+    })
+    return {
+      queryPublications,
+      queryGroups,
+      queryAccounts,
+    }
+  }, [pub, enabled])
+  const pubs = usePublications(
+    queryPublications.map((q) => ({id: q.refId.qid, version: q.refId.version})),
+  )
+  const groups = useGroups(
+    queryGroups.map((q) => ({id: q.refId.qid, version: q.refId.version})),
+  )
+  const accounts = useAccounts(queryAccounts.map((q) => q.refId.eid))
+  const embeds = Object.fromEntries([
+    ...pubs.map((pub, idx) => [
+      queryPublications[idx].blockId,
+      {type: 'd', query: queryPublications[idx], data: pub.data},
+    ]),
+    ...groups.map((group, idx) => [
+      queryGroups[idx].blockId,
+      {type: 'g', query: queryGroups[idx], data: group.data},
+    ]),
+    ...accounts.map((account, idx) => [
+      queryAccounts[idx].blockId,
+      {type: 'a', query: queryAccounts[idx], data: account.data},
+    ]),
+  ]) as EmbedsContent
+  return embeds
 }
 
 export function useDocumentVersions(

@@ -35,7 +35,7 @@ import {
 } from '@mintter/shared'
 import {queryKeys} from './query-keys'
 
-export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
+export function useAllGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
   const groupsQuery = useQuery({
     ...opts,
@@ -86,11 +86,32 @@ export function useGroup(
   opts?: UseQueryOptions<Group>,
 ) {
   const grpcClient = useGRPCClient()
-  return useQuery({
+  return useQuery(groupQuery(grpcClient, {groupId, version}, opts))
+}
+
+export function useGroups(
+  groups: {id: string; version?: string | null}[],
+  opts?: UseQueryOptions<Group[]>,
+) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: groups.map(({id, version}) =>
+      createGroupQuery(grpcClient, id, version || undefined),
+    ),
+    ...opts,
+  })
+}
+
+function groupQuery(
+  grpcClient: GRPCClient,
+  {groupId, version}: {groupId?: string; version?: string},
+  opts?: UseQueryOptions<Group>,
+): UseQueryOptions {
+  return {
     ...createGroupQuery(grpcClient, groupId, version),
     enabled: !!groupId,
     ...opts,
-  })
+  }
 }
 
 export function useSelectedGroups(groupIds: string[]) {
