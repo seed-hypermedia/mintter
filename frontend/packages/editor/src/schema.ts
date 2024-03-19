@@ -12,6 +12,7 @@ import {ImageBlock} from './image'
 import {ImagePlaceholder} from './image-placeholder'
 import {NostrBlock} from './nostr'
 import CodeBlockLowlight from './tiptap-extension-code-block'
+import {TwitterBlock} from './twitter-block'
 import {VideoBlock} from './video'
 
 export const hmBlockSchema: BlockSchema = {
@@ -46,6 +47,7 @@ export const hmBlockSchema: BlockSchema = {
   video: VideoBlock,
   file: FileBlock,
   nostr: NostrBlock,
+  twitterBlock: TwitterBlock,
 }
 
 export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>

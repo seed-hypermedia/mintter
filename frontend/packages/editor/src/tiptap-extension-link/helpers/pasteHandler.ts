@@ -308,6 +308,20 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                 }),
               )
               break
+            case 4:
+              view.dispatch(
+                view.state.tr.setMeta(linkMenuPluginKey, {
+                  ref: link.href,
+                  items: getLinkMenuItems({
+                    isLoading: false,
+                    media: 'twitterBlock',
+                    sourceUrl: link.href,
+                    fileName: fileName,
+                    gwUrl: options.gwUrl,
+                  }),
+                }),
+              )
+              break
             case 0:
               const embedPromise = fetchWebLink(options.client, link.href)
                 .then((res) => {
@@ -473,6 +487,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
       ['youtu.be', 'youtube', 'vimeo'].some((value) => url.includes(value))
     ) {
       return [3, '']
+    } else if (['twitter', 'x.com'].some((value) => url.includes(value))) {
+      return [4, '']
     }
     return [0, '']
   }

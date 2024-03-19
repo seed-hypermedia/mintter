@@ -173,6 +173,11 @@ export type HMBlockVideo = HMBlockBase & {
   }
 }
 
+export type HMBlockTwitter = HMBlockBase & {
+  type: 'twitterBlock'
+  ref: string
+}
+
 export type HMBlockEmbed = HMBlockBase & {
   type: 'embed'
   ref: string
@@ -206,6 +211,7 @@ export type HMBlock =
   | HMBlockImage
   | HMBlockFile
   | HMBlockVideo
+  | HMBlockTwitter
   | HMBlockEmbed
   | HMBlockCode
   | HMBlockCodeBlock

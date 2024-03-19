@@ -12,6 +12,7 @@ import {
 import {MediaContainer} from './media-container'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {HMBlockSchema} from './schema'
+import {isValidUrl} from './utils'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -44,15 +45,6 @@ export const ImageBlock = createReactBlockSpec({
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
 })
-
-const isValidUrl = (urlString: string) => {
-  try {
-    return Boolean(new URL(urlString))
-  } catch (e) {
-    console.log(e)
-    return false
-  }
-}
 
 const Render = (
   block: Block<HMBlockSchema>,

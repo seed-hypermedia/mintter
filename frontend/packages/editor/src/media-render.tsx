@@ -210,9 +210,8 @@ function MediaForm({
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const [tabState, setTabState] = useState(
-    mediaType === 'embed' ? 'embed' : 'upload',
-  )
+  const isEmbed = ['embed', 'twitterBlock'].includes(mediaType)
+  const [tabState, setTabState] = useState(isEmbed ? 'embed' : 'upload')
   const [fileName, setFileName] = useState<{
     name: string
     color: string | undefined
@@ -374,7 +373,7 @@ function MediaForm({
               borderBottomRightRadius={0}
               borderRadius={0}
             >
-              {mediaType !== 'embed' && (
+              {!isEmbed && (
                 <Tabs.Tab
                   unstyled
                   value="upload"
@@ -410,7 +409,7 @@ function MediaForm({
               )}
             </Tabs.List>
 
-            {mediaType !== 'embed' && (
+            {!isEmbed && (
               <Tabs.Content value="upload">
                 <XStack
                   padding="$4"
@@ -443,9 +442,7 @@ function MediaForm({
                                   ? file.name
                                   : file.name.slice(0, 32) + '...'
                               } is not ${
-                                ['embed', 'image'].includes(mediaType)
-                                  ? 'an'
-                                  : 'a'
+                                mediaType === 'image' ? 'an' : 'a'
                               } ${mediaType}.`,
                               color: 'red',
                             })

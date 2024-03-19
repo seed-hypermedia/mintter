@@ -11,7 +11,7 @@ import {
 import {MediaContainer} from './media-container'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {HMBlockSchema} from './schema'
-import {youtubeParser} from './utils'
+import {isValidUrl, youtubeParser} from './utils'
 
 export const getSourceType = (name: string) => {
   const nameArray = name.split('.')
@@ -51,15 +51,6 @@ export const VideoBlock = createReactBlockSpec({
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
 })
-
-const isValidUrl = (urlString: string) => {
-  try {
-    return Boolean(new URL(urlString))
-  } catch (e) {
-    console.log(e)
-    return false
-  }
-}
 
 const Render = (
   block: Block<HMBlockSchema>,

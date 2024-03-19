@@ -7,6 +7,7 @@ import {
   HMBlockImage,
   HMBlockNostr,
   HMBlockParagraph,
+  HMBlockTwitter,
   HMBlockVideo,
   HMInlineContent,
   HMInlineContentEmbed,
@@ -338,6 +339,20 @@ export function toHMBlock(
         content: toHMInlineContent(serverBlock.block),
         children: [],
       } satisfies HMBlockVideo
+    }
+
+    if (serverBlock.block?.type === 'twitterBlock') {
+      res = {
+        type: 'twitterBlock',
+        id: serverBlock.block.id,
+        props: {
+          url: serverBlock.block.ref,
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
+        },
+        children: [],
+      } satisfies HMBlockTwitter
     }
 
     if (serverBlock.block?.type === 'embed') {

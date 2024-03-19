@@ -5121,6 +5121,7 @@ __metadata:
     react-dom: 18.2.0
     react-error-boundary: 4.0.11
     react-icons: 4.9.0
+    react-tweet: ^3.2.0
     rehype: 12.0.1
     rehype-parse: 8.0.4
     rehype-remark: 9.1.2
@@ -13060,7 +13061,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"client-only@npm:0.0.1":
+"client-only@npm:0.0.1, client-only@npm:^0.0.1":
   version: 0.0.1
   resolution: "client-only@npm:0.0.1"
   checksum: 0c16bf660dadb90610553c1d8946a7fdfb81d624adea073b8440b7d795d5b5b08beb3c950c6a2cf16279365a3265158a236876d92bce16423c485c322d7dfaf8
@@ -13138,6 +13139,13 @@ __metadata:
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 30befca8019b2eb7dbad38cff6266cf543091dae2825c856a62a8ccf2c3ab9c2907c4d12b288b73101196767f66812365400a227581484a05f968b0307cfaf12
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^2.0.0":
+  version: 2.1.0
+  resolution: "clsx@npm:2.1.0"
+  checksum: 43fefc29b6b49c9476fbce4f8b1cc75c27b67747738e598e6651dd40d63692135dc60b18fa1c5b78a2a9ba8ae6fd2055a068924b94e20b42039bd53b78b98e1d
   languageName: node
   linkType: hard
 
@@ -24755,6 +24763,21 @@ electron-log@beta:
   languageName: node
   linkType: hard
 
+"react-tweet@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "react-tweet@npm:3.2.0"
+  dependencies:
+    "@swc/helpers": ^0.5.3
+    clsx: ^2.0.0
+    date-fns: ^2.30.0
+    swr: ^2.2.4
+  peerDependencies:
+    react: ">= 18.0.0"
+    react-dom: ">= 18.0.0"
+  checksum: 55e95d231fc70381ab0a08b87a164f1ad206674cd1ff45528d15ed72620e878d9c2a4275c83369dee4cc41913c74475edd75196aea2f962c9bb520e2fa030966
+  languageName: node
+  linkType: hard
+
 "react-virtuoso@npm:4.6.2":
   version: 4.6.2
   resolution: "react-virtuoso@npm:4.6.2"
@@ -27094,6 +27117,18 @@ electron-log@beta:
     lower-case: ^1.1.1
     upper-case: ^1.1.1
   checksum: 37b0c4988e12520fba54018f7fe259d62902e97349366209d2af9b1d5e741692c8f17da9d5e780c7bd1a56864bbb51d53eaf1a101a11afdfcae157912a3691d8
+  languageName: node
+  linkType: hard
+
+"swr@npm:^2.2.4":
+  version: 2.2.5
+  resolution: "swr@npm:2.2.5"
+  dependencies:
+    client-only: ^0.0.1
+    use-sync-external-store: ^1.2.0
+  peerDependencies:
+    react: ^16.11.0 || ^17.0.0 || ^18.0.0
+  checksum: c6e6a5bd254951b22e5fd0930a95c7f79b5d0657f803c41ba1542cd6376623fb70b1895049d54ddde26da63b91951ae9d62a06772f82be28c1014d421e5b7aa9
   languageName: node
   linkType: hard
 

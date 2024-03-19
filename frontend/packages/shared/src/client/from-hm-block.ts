@@ -209,6 +209,15 @@ export function fromHMBlock(
     })
   }
 
+  if (editorBlock.type == 'twitterBlock') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'twitterBlock',
+      attributes: {},
+      ref: editorBlock.props.url,
+    })
+  }
+
   if (editorBlock.type == 'video') {
     let ref = editorBlock.props.url
 

@@ -12,6 +12,7 @@ import {
   RiImage2Fill,
   RiMessage2Fill,
   RiText,
+  RiTwitterFill,
   RiVideoAddFill,
 } from 'react-icons/ri'
 
@@ -139,6 +140,22 @@ export const slashMenuItems = [
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
         type: 'nostr',
+        props: {
+          url: '',
+        },
+      } as PartialBlock<HMBlockSchema>)
+      const {state, view} = editor._tiptapEditor
+      view.dispatch(state.tr.scrollIntoView())
+    },
+  },
+  {
+    name: 'Twitter Embed',
+    aliases: ['tweet', 'twitter'],
+    icon: <RiTwitterFill size={18} />,
+    hint: 'Insert a Twitter Embed',
+    execute: (editor) => {
+      insertOrUpdateBlock(editor, {
+        type: 'twitterBlock',
         props: {
           url: '',
         },

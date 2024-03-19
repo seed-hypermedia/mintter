@@ -7,7 +7,14 @@ import {
   isPublicGatewayLink,
   normlizeHmId,
 } from '@mintter/shared'
-import {FileText, Globe, Link, Spinner, SquareAsterisk} from '@mintter/ui'
+import {
+  FileText,
+  Globe,
+  Link,
+  Spinner,
+  SquareAsterisk,
+  Twitter,
+} from '@mintter/ui'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
@@ -143,9 +150,13 @@ export function getLinkMenuItems({
       }
     } else if (media) {
       const mediaItem = {
-        name: `Convert to ${media.charAt(0).toUpperCase() + media.slice(1)}`,
+        name: `Convert to ${
+          media === 'twitterBlock'
+            ? 'Twitter Embed'
+            : media.charAt(0).toUpperCase() + media.slice(1)
+        }`,
         disabled: false,
-        icon: undefined,
+        icon: media === 'twitterBlock' ? <Twitter size={18} /> : undefined,
         execute: (editor: BlockNoteEditor, ref: string) => {
           const {state, schema} = editor._tiptapEditor
           const {selection} = state
@@ -168,11 +179,17 @@ export function getLinkMenuItems({
             }
             embedUrl = videoUrl
           }
-          const node = schema.nodes[media].create({
-            url: embedUrl ? embedUrl : '',
-            src: embedUrl ? '' : ref,
-            name: fileName ? fileName : '',
-          })
+          const node =
+            media !== 'twitterBlock'
+              ? schema.nodes[media].create({
+                  url: embedUrl ? embedUrl : '',
+                  src: embedUrl ? '' : ref,
+                  name: fileName ? fileName : '',
+                })
+              : schema.nodes[media].create({
+                  url: ref,
+                })
+
           insertNode(editor, sourceUrl ? sourceUrl : ref, node)
         },
       }
