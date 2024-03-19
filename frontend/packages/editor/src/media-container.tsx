@@ -18,6 +18,7 @@ interface ContainerProps {
   onHoverIn?: () => void
   onHoverOut?: (e: any) => void
   width?: number | string
+  className?: string
 }
 
 export const MediaContainer = ({
@@ -32,6 +33,7 @@ export const MediaContainer = ({
   onHoverIn,
   onHoverOut,
   width = '100%',
+  className,
 }: ContainerProps) => {
   const [replace, setReplace] = useState(false)
   const [drag, setDrag] = useState(false)
@@ -177,7 +179,7 @@ export const MediaContainer = ({
         {...mediaProps}
         // @ts-ignore
         contentEditable={false}
-        className={block.type}
+        className={className ?? block.type}
         group="item"
       >
         {replace && mediaType !== 'embed'

@@ -116,8 +116,7 @@ const TweetEmbed = ({id, apiUrl, components, onError}: TweetProps) => {
   const tweet = enrichTweet(data)
 
   return (
-    // <TweetContainer className="tweet-container">
-    <YStack className="tweet-container" padding="$2">
+    <YStack>
       <TweetHeader tweet={tweet} components={components} />
       {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
       <TweetBody tweet={tweet} />
@@ -126,10 +125,7 @@ const TweetEmbed = ({id, apiUrl, components, onError}: TweetProps) => {
       ) : null}
       {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
       <TweetInfo tweet={tweet} />
-      {/* <TweetActions tweet={tweet} /> */}
-      {/* // </TweetContainer> */}
     </YStack>
-    // </TweetContainer>
   )
 }
 
@@ -150,6 +146,13 @@ const display = ({
       selected={selected}
       setSelected={setSelected}
       assign={assign}
+      styleProps={{
+        padding: '$3',
+        overflow: 'hidden',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+        fontWeight: '400',
+      }}
+      className="tweet-container"
     >
       <TweetEmbed id={tweetId} />
     </MediaContainer>

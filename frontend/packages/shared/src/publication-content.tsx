@@ -1579,11 +1579,7 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {data, error, isLoading} = useTweet(tweetId)
 
   if (isLoading)
-    return (
-      <YStack padding="$2" width={'100%'} height={'100%'}>
-        {/* <Skeleton width={'100%'} height={'100%'} /> */}
-      </YStack>
-    )
+    return <YStack padding="$2" width={'100%'} height={'100%'}></YStack>
   if (error || !data) {
     const NotFound = TweetNotFound
     return <NotFound error={error} />
@@ -1592,7 +1588,6 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const tweet = enrichTweet(data)
 
   return (
-    // <TweetContainer className="tweet-container">
     <YStack
       {...blockStyles}
       {...props}
@@ -1603,8 +1598,8 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
       padding={layoutUnit / 2}
       overflow="hidden"
       width="100%"
-      // {...debugStyles(debug, 'blue')}
       marginHorizontal={(-1 * layoutUnit) / 2}
+      className="tweet-container"
     >
       <TweetHeader tweet={tweet} />
       {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
@@ -1612,10 +1607,7 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
       {tweet.mediaDetails?.length ? <TweetMedia tweet={tweet} /> : null}
       {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
       <TweetInfo tweet={tweet} />
-      {/* <TweetActions tweet={tweet} /> */}
-      {/* // </TweetContainer> */}
     </YStack>
-    // </TweetContainer>
   )
 }
 
