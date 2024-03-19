@@ -15,7 +15,9 @@ const logger = childLogger('Go Daemon')
 
 let goDaemonExecutablePath = getDaemonBinaryPath()
 
-let lndhubFlags = IS_PROD_DESKTOP
+let lndhubFlags = userDataPath.includes('Mintter.local')
+  ? '-lndhub.mainnet=false'
+  : IS_PROD_DESKTOP
   ? '-lndhub.mainnet=true'
   : '-lndhub.mainnet=false'
 
