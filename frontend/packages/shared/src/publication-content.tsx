@@ -1258,6 +1258,33 @@ export function ContentEmbed({
   } else if (embedData.data.embedBlocks) {
     content = (
       <>
+        {!props.blockRef && pub?.document?.title ? (
+          <YStack
+            padding="$2"
+            maxWidth="95%"
+            borderBottomColor="$color8"
+            borderBottomWidth={1}
+            mb="$2"
+          >
+            <SizableText
+              padding="$2"
+              maxWidth="100%"
+              fontWeight="800"
+              fontSize={contentTextUnit * 1.6}
+              lineHeight={contentTextUnit * 1.9}
+              $gtMd={{
+                fontSize: contentTextUnit * 1.7,
+                lineHeight: contentTextUnit * 1.2 * 1.7,
+              }}
+              $gtLg={{
+                fontSize: contentTextUnit * 1.8,
+                lineHeight: contentTextUnit * 1.2 * 1.8,
+              }}
+            >
+              {pub?.document.title}
+            </SizableText>
+          </YStack>
+        ) : null}
         <BlockNodeList childrenType="group">
           {embedData.data.embedBlocks.map((bn, idx) => (
             <BlockNodeContent
