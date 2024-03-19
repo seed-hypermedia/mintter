@@ -44,6 +44,8 @@ export function getRouteGroupId(route: NavRoute): string | null {
   let activeGroupRouteId: string | null = null
   if (route.key === 'group') {
     activeGroupRouteId = route.groupId
+  } else if (route.key === 'group-feed') {
+    activeGroupRouteId = route.groupId
   } else if (route.key === 'publication') {
     if (route.variants) {
       const groupVariants = route.variants.filter(

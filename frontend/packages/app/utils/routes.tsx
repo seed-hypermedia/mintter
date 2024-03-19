@@ -103,6 +103,13 @@ export const groupRouteSchema = z.object({
     .nullable()
     .optional(),
 })
+export type GroupRoute = z.infer<typeof groupRouteSchema>
+
+export const groupFeedRouteSchema = z.object({
+  key: z.literal('group-feed'),
+  groupId: z.string(),
+})
+export type GroupFeedRoute = z.infer<typeof groupFeedRouteSchema>
 
 export const draftRouteSchema = z.object({
   key: z.literal('draft'),
@@ -118,8 +125,6 @@ export const draftRouteSchema = z.object({
 })
 export type DraftRoute = z.infer<typeof draftRouteSchema>
 
-export type GroupRoute = z.infer<typeof groupRouteSchema>
-
 export const navRouteSchema = z.discriminatedUnion('key', [
   feedRouteSchema,
   contactsRouteSchema,
@@ -127,6 +132,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   settingsRouteSchema,
   groupsRouteSchema,
   groupRouteSchema,
+  groupFeedRouteSchema,
   publicationRouteSchema,
   draftRouteSchema,
   documentsRouteSchema,

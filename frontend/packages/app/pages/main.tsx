@@ -22,6 +22,7 @@ var Documents = lazy(() => import('@mintter/app/pages/documents'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
 var Group = lazy(() => import('@mintter/app/pages/group'))
+var GroupFeed = lazy(() => import('@mintter/app/pages/group-feed'))
 var Groups = lazy(() => import('@mintter/app/pages/groups'))
 var Publication = lazy(() => import('@mintter/app/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/pages/draft'))
@@ -103,6 +104,11 @@ function getPageComponent(navRoute: NavRoute) {
     case 'group':
       return {
         PageComponent: Group,
+        Fallback: BaseLoading,
+      }
+    case 'group-feed':
+      return {
+        PageComponent: GroupFeed,
         Fallback: BaseLoading,
       }
     case 'contacts':

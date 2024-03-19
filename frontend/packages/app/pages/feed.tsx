@@ -40,7 +40,7 @@ import {useAccount} from '../models/accounts'
 import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
-import {useFeedWithLatest} from '../models/feed'
+import {useFeedWithLatest, useResourceFeed} from '../models/feed'
 import {useGroup} from '../models/groups'
 import {appRouteOfId, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -827,6 +827,43 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
           </Theme>
         </XStack>
       )}
+    </YStack>
+  )
+})
+
+export const ResourceFeed = React.memo(function ResourceFeed({
+  id,
+}: {
+  id: string
+}) {
+  const feed = useResourceFeed(id)
+  const scrollRef = useRef<FeedListHandle>(null)
+  return (
+    <YStack f={1} gap="$3">
+      <FeedList
+        ref={scrollRef}
+        header={<View height="$2" />}
+        footer={
+          feed.data?.pages?.length && (
+            <XStack jc="center" gap="$3" paddingVertical="$6">
+              {feed.isFetchingNextPage || feed.isLoading ? (
+                <Spinner />
+              ) : feed.hasNextPage ? (
+                <Button size="$2" onPress={() => feed.fetchNextPage()}>
+                  Load More Items
+                </Button>
+              ) : (
+                <ButtonText>End of Feed.</ButtonText>
+              )}
+            </XStack>
+          )
+        }
+        items={feed.data?.events || []}
+        renderItem={({item}) => <FeedItem event={item} />}
+        onEndReached={() => {
+          feed.fetchNextPage()
+        }}
+      />
     </YStack>
   )
 })

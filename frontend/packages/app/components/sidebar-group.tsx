@@ -31,6 +31,7 @@ import {
   Folder,
   FolderPen,
   List,
+  Newspaper,
   Plus,
   Undo2,
   X,
@@ -80,6 +81,7 @@ export function GroupSidebar({
     route.key === 'group' &&
     route.groupId === groupId &&
     route.listCategory === '_all'
+  const isFeedActive = route.key === 'group-feed' && route.groupId === groupId
   const replace = useNavigate('replace')
   const navigate = useNavigate()
   const groupMembers = useGroupMembers(groupId)
@@ -176,7 +178,6 @@ export function GroupSidebar({
           }}
           icon={Undo2}
         />
-
         <SidebarItem
           active={isHomeActive}
           onPress={() => {
@@ -193,6 +194,19 @@ export function GroupSidebar({
           paddingVertical="$4"
           icon={Book}
           title={group.data?.title}
+        />
+        <SidebarItem
+          onPress={() => {
+            if (!isFeedActive) {
+              navigate({
+                key: 'group-feed',
+                groupId: groupId,
+              })
+            }
+          }}
+          icon={Newspaper}
+          active={isFeedActive}
+          title="Group Feed"
         />
         <SidebarItem
           onPress={() => {

@@ -37,6 +37,32 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
   }
 }
 
+export function useResourceFeed(id: string) {
+  const grpcClient = useGRPCClient()
+  const feedQuery = useInfiniteQuery({
+    queryKey: [queryKeys.RESOURCE_FEED, id],
+    queryFn: async (context) => {
+      const feed = await grpcClient.activityFeed.listEvents({
+        pageSize: 4,
+        pageToken: context.pageParam,
+        filterResource: [id],
+      })
+
+      return feed
+    },
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextPageToken || undefined
+    },
+  })
+  return {
+    ...feedQuery,
+    data: {
+      ...feedQuery.data,
+      events: feedQuery.data?.pages.flatMap((page) => page.events) || [],
+    },
+  }
+}
+
 export function useFeed(trustedOnly: boolean = false) {
   const grpcClient = useGRPCClient()
   const feedQuery = useInfiniteQuery({
