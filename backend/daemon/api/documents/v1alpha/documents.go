@@ -363,15 +363,12 @@ func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsReques
 			return err
 		}
 		pub := &documents.Document{
-			Id:       id,
-			Title:    title,
-			Author:   core.Principal(ownerBin).String(),
-			Editors:  editors,
-			Children: []*documents.BlockNode{},
-
-			CreateTime:  timestamppb.New(time.Unix(int64(createTime), 0)),
-			UpdateTime:  timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
-			PublishTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+			Id:         id,
+			Title:      title,
+			Author:     core.Principal(ownerBin).String(),
+			Editors:    editors,
+			CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
+			UpdateTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
 		}
 		resp.Documents = append(resp.Documents, pub)
 		return nil

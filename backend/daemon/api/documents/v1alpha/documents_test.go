@@ -466,6 +466,7 @@ func TestListDrafts(t *testing.T) {
 			Text: "Hello world!",
 		}}},
 	})
+	updated.Children = nil
 	require.Equal(t, draft.CreateTime.AsTime().UnixMicro(), updated.CreateTime.AsTime().UnixMicro())
 	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
 
