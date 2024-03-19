@@ -92,7 +92,7 @@ JOIN (
     FROM structural_blobs
     WHERE type='Change' AND meta IS NOT NULL
     GROUP BY resource
-) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts; 
+) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts;
 
 
 -- Stores extra information for key delegation blobs.
