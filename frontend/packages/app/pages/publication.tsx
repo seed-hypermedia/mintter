@@ -1,7 +1,7 @@
 import {AppErrorPage} from '@mintter/app/components/app-error'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
-import {useEntityCitations} from '@mintter/app/models/content-graph'
+import {useEntityMentions} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
@@ -190,7 +190,7 @@ export default function PublicationPage() {
     variants: route.variants,
   })
 
-  const {data: citations} = useEntityCitations(
+  const mentions = useEntityMentions(
     publication.status == 'success' ? docId : undefined,
   )
 
@@ -277,7 +277,7 @@ export default function PublicationPage() {
                 alignSelf="center"
               >
                 <AppPublicationContentProvider
-                  citations={citations?.links}
+                  citations={mentions.data?.mentions}
                   onCitationClick={() => {
                     if (route.accessory?.key === 'citations')
                       return replace({...route, accessory: null})
@@ -338,11 +338,11 @@ export default function PublicationPage() {
               />
             )}
 
-            {citations?.links?.length ? (
+            {mentions.data?.mentions?.length ? (
               <FooterButton
                 active={accessoryKey === 'citations'}
-                label={`${citations?.links?.length} ${pluralS(
-                  citations?.links?.length,
+                label={`${mentions.data?.mentions?.length} ${pluralS(
+                  mentions.data?.mentions?.length,
                   'Citation',
                 )}`}
                 icon={BlockQuote}

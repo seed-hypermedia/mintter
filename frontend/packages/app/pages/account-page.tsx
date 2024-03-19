@@ -42,7 +42,7 @@ import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
-import {useEntityCitations} from '../models/content-graph'
+import {useEntityMentions} from '../models/content-graph'
 import {useAccountPublications} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
@@ -96,7 +96,7 @@ export default function AccountPage() {
   const replace = useNavigate('replace')
   const list = useAccountPublications(accountId)
   const accountEntityId = createHmId('a', accountId)
-  const {data: citations} = useEntityCitations(accountEntityId)
+  const mentions = useEntityMentions(accountEntityId)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
     function lookupAccount(accountId: string | undefined) {
@@ -178,11 +178,11 @@ export default function AccountPage() {
       </AccessoryLayout>
       {copyDialogContent}
       <Footer>
-        {citations?.links?.length ? (
+        {mentions.data?.mentions?.length ? (
           <FooterButton
             active={accessoryKey === 'citations'}
-            label={`${citations?.links?.length} ${pluralS(
-              citations?.links?.length,
+            label={`${mentions.data?.mentions?.length} ${pluralS(
+              mentions.data?.mentions?.length,
               'Citation',
             )}`}
             icon={BlockQuote}

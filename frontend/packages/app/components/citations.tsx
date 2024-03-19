@@ -1,9 +1,7 @@
-import {
-  CitationLink,
-  useEntityCitations,
-} from '@mintter/app/models/content-graph'
+import {useEntityMentions} from '@mintter/app/models/content-graph'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {formattedDateMedium, pluralS} from '@mintter/shared'
+import {formattedDateMedium, pluralS, unpackHmId} from '@mintter/shared'
+import {Mention} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {PanelCard} from '@mintter/ui'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -12,17 +10,24 @@ import {PublicationRoute} from '../utils/routes'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 
-function CitationItem({link}: {link: CitationLink}) {
-  if (!link.source || !link.source.documentId) throw 'Invalid citation'
+function CitationItem({mention}: {mention: Mention}) {
+  if (!mention.source) throw 'Invalid citation'
   const spawn = useNavigate('spawn')
-
-  const pub = usePublication({
-    id: link.source.documentId,
-    version: link.source.version,
-    enabled: !!link.source?.documentId,
-  })
-  const versionChanges = new Set(link.source.version.split('.'))
-  const timeline = useEntityTimeline(link.source.documentId)
+  console.log('CitationItem', mention)
+  const sourceId = unpackHmId(mention.source)
+  if (sourceId?.type !== 'd')
+    throw new Error('CitationItem only supports documents right now')
+  const pub = usePublication(
+    {
+      id: mention.source,
+      version: mention.sourceBlob?.cid,
+    },
+    {
+      enabled: !!mention.source,
+    },
+  )
+  const versionChanges = new Set(sourceId?.version?.split('.'))
+  const timeline = useEntityTimeline(mention.source)
   const authors = new Set(
     timeline.data?.timelineEntries
       .filter(([changeId]) => versionChanges.has(changeId))
@@ -33,9 +38,9 @@ function CitationItem({link}: {link: CitationLink}) {
   const docTextContent = useDocTextContent(pub.data)
   const destRoute: PublicationRoute = {
     key: 'publication',
-    documentId: link.source.documentId,
-    versionId: link.source.version,
-    blockId: link.source?.blockId,
+    documentId: sourceId?.qid,
+    versionId: mention.sourceBlob?.cid,
+    blockId: mention.sourceContext,
     variants: [...authors].map((author) => ({key: 'author', author})),
   }
   return (
@@ -55,14 +60,14 @@ function CitationItem({link}: {link: CitationLink}) {
 }
 
 export function DocCitationsAccessory({docId}: {docId?: string}) {
-  const {data: citations} = useEntityCitations(docId)
+  const mentions = useEntityMentions(docId)
   if (!docId) return null
-  const count = citations?.links?.length || 0
+  const count = mentions.data?.mentions?.length || 0
 
   const citationSet = new Set()
-  const distinctCitations = citations?.links.filter((item) => {
-    if (!citationSet.has(item?.source?.documentId)) {
-      citationSet.add(item?.source?.documentId)
+  const distinctMentions = mentions.data?.mentions.filter((item) => {
+    if (!citationSet.has(item?.source)) {
+      citationSet.add(item?.source)
       return true
     }
     return false
@@ -71,7 +76,7 @@ export function DocCitationsAccessory({docId}: {docId?: string}) {
   // TODO: This code also filters citations based on version of document where citation is used and on blockId, which was cited.
   // The current code will show only distinct documents, but if the first citation was in old version, it will point to the old version, which I feel is not good.
   // Maybe we could display version with document title, and/or blockId, which was cited.
-  // const distinctCitations = citations?.links?.map(item => {
+  // const distinctMentions = citations?.links?.map(item => {
   //   const { source, target } = item;
   //   const combination = `${source?.documentId}-${source?.version}-${target?.blockId}`;
 
@@ -85,10 +90,10 @@ export function DocCitationsAccessory({docId}: {docId?: string}) {
 
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
-      {distinctCitations?.map((link, index) => (
+      {distinctMentions?.map((mention, index) => (
         <CitationItem
-          key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
-          link={link}
+          key={`${mention.source}${mention.targetVersion}${mention.targetFragment}`}
+          mention={mention}
         />
       ))}
     </AccessoryContainer>
@@ -96,14 +101,14 @@ export function DocCitationsAccessory({docId}: {docId?: string}) {
 }
 
 export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
-  const {data: citations} = useEntityCitations(entityId)
+  const mentions = useEntityMentions(entityId)
   if (!entityId) return null
-  const count = citations?.links?.length || 0
+  const count = mentions?.data?.mentions?.length || 0
 
   const citationSet = new Set()
-  const distinctCitations = citations?.links.filter((item) => {
-    if (!citationSet.has(item?.source?.documentId)) {
-      citationSet.add(item?.source?.documentId)
+  const distinctMentions = mentions?.data?.mentions?.filter((item) => {
+    if (!citationSet.has(item?.source)) {
+      citationSet.add(item?.source)
       return true
     }
     return false
@@ -111,10 +116,10 @@ export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
 
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
-      {distinctCitations?.map((link, index) => (
+      {distinctMentions?.map((mention, index) => (
         <CitationItem
-          key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
-          link={link}
+          key={`${mention.source}${mention.targetVersion}${mention.targetFragment}`}
+          mention={mention}
         />
       ))}
     </AccessoryContainer>
