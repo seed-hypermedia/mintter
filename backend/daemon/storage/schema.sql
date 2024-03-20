@@ -99,7 +99,7 @@ SELECT
     iss.principal AS issuer,
     del.principal AS delegate
 FROM key_delegations kd
-JOIN blobs ON blobs.id = kd.id
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = kd.id
 JOIN public_keys iss ON iss.id = kd.issuer
 JOIN public_keys del ON del.id = kd.delegate;
 
@@ -176,7 +176,7 @@ SELECT
     blobs.multihash AS multihash
 FROM drafts
 JOIN resources ON resources.id = drafts.resource
-JOIN blobs ON blobs.id = drafts.blob;
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = drafts.blob;
 
 -- View for dependency links between changes.
 CREATE VIEW change_deps AS

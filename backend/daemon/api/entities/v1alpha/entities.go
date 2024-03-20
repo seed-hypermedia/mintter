@@ -272,7 +272,7 @@ var qGetEntityTimeline = dqb.Str(`
 		public_keys.principal AS author,
 		group_concat(change_deps.parent, ' ') AS deps
 	FROM structural_blobs
-	JOIN blobs ON blobs.id = structural_blobs.id
+	JOIN blobs INDEXED BY blobs_metadata ON blobs.id = structural_blobs.id
 	JOIN public_keys ON public_keys.id = structural_blobs.author
 	LEFT JOIN change_deps ON change_deps.child = structural_blobs.id
 	LEFT JOIN drafts ON (drafts.resource, drafts.blob) = (structural_blobs.resource, structural_blobs.id)

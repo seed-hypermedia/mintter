@@ -6,7 +6,6 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
-	"mintter/backend/pkg/dqb"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -14,16 +13,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
 )
-
-var qAllPublicBlobs = dqb.Str(`
-	SELECT
-		blobs.codec,
-		blobs.multihash
-	FROM blobs
-	LEFT OUTER JOIN drafts ON drafts.blob = blobs.id
-	WHERE blobs.size >= 0
-	AND drafts.blob IS NULL;
-`)
 
 var randSrc = rand.NewSource(time.Now().UnixNano())
 

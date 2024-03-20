@@ -18,7 +18,7 @@ type BlobsHaveResult struct {
 
 func BlobsHave(conn *sqlite.Conn, blobsMultihash []byte) (BlobsHaveResult, error) {
 	const query = `SELECT 1 AS have
-FROM blobs
+FROM blobs INDEXED BY blobs_metadata_by_hash
 WHERE blobs.multihash = :blobsMultihash
 AND blobs.size >= 0`
 
@@ -92,7 +92,7 @@ type BlobsGetSizeResult struct {
 
 func BlobsGetSize(conn *sqlite.Conn, blobsMultihash []byte) (BlobsGetSizeResult, error) {
 	const query = `SELECT blobs.id, blobs.size
-FROM blobs
+FROM blobs INDEXED BY blobs_metadata_by_hash
 WHERE blobs.multihash = :blobsMultihash`
 
 	var out BlobsGetSizeResult
@@ -195,7 +195,7 @@ type BlobsListKnownResult struct {
 
 func BlobsListKnown(conn *sqlite.Conn) ([]BlobsListKnownResult, error) {
 	const query = `SELECT blobs.id, blobs.multihash, blobs.codec
-FROM blobs
+FROM blobs INDEXED BY blobs_metadata
 LEFT JOIN drafts ON drafts.blob = blobs.id
 WHERE blobs.size >= 0
 AND drafts.blob IS NULL
@@ -538,7 +538,7 @@ type KeyDelegationsGetIssuerResult struct {
 func KeyDelegationsGetIssuer(conn *sqlite.Conn, blobsMultihash []byte) (KeyDelegationsGetIssuerResult, error) {
 	const query = `SELECT key_delegations.issuer
 FROM key_delegations
-JOIN blobs ON blobs.id = key_delegations.id
+JOIN blobs INDEXED BY blobs_metadata_by_hash ON blobs.id = key_delegations.id
 WHERE blobs.multihash = :blobsMultihash
 LIMIT 1`
 
@@ -780,52 +780,6 @@ ORDER BY structural_blobs.ts`
 	return out, err
 }
 
-type ChangesListPublicNoDataResult struct {
-	StructuralBlobsViewBlobID     int64
-	StructuralBlobsViewCodec      int64
-	StructuralBlobsViewResourceID int64
-	StructuralBlobsViewTs         int64
-	StructuralBlobsViewMultihash  []byte
-	StructuralBlobsViewSize       int64
-	StructuralBlobsViewResource   string
-	DraftsBlob                    int64
-}
-
-func ChangesListPublicNoData(conn *sqlite.Conn) ([]ChangesListPublicNoDataResult, error) {
-	const query = `SELECT structural_blobs_view.blob_id, structural_blobs_view.codec, structural_blobs_view.resource_id, structural_blobs_view.ts, structural_blobs_view.multihash, structural_blobs_view.size, structural_blobs_view.resource, drafts.blob
-FROM structural_blobs_view
-LEFT JOIN drafts ON drafts.resource = structural_blobs_view.resource_id
-WHERE drafts.blob IS NULL
-AND structural_blobs_view.blob_type = 'Change' ORDER BY structural_blobs_view.resource, structural_blobs_view.ts`
-
-	var out []ChangesListPublicNoDataResult
-
-	before := func(stmt *sqlite.Stmt) {
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ChangesListPublicNoDataResult{
-			StructuralBlobsViewBlobID:     stmt.ColumnInt64(0),
-			StructuralBlobsViewCodec:      stmt.ColumnInt64(1),
-			StructuralBlobsViewResourceID: stmt.ColumnInt64(2),
-			StructuralBlobsViewTs:         stmt.ColumnInt64(3),
-			StructuralBlobsViewMultihash:  stmt.ColumnBytes(4),
-			StructuralBlobsViewSize:       stmt.ColumnInt64(5),
-			StructuralBlobsViewResource:   stmt.ColumnText(6),
-			DraftsBlob:                    stmt.ColumnInt64(7),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangesListPublicNoData: %w", err)
-	}
-
-	return out, err
-}
-
 type ChangesResolveHeadsResult struct {
 	ResolvedJSON []byte
 }
@@ -974,7 +928,7 @@ type ChangesGetDepsResult struct {
 func ChangesGetDeps(conn *sqlite.Conn, changeDepsChild int64) ([]ChangesGetDepsResult, error) {
 	const query = `SELECT blobs.codec, blobs.multihash
 FROM change_deps
-JOIN blobs ON blobs.id = change_deps.parent
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = change_deps.parent
 WHERE change_deps.child = :changeDepsChild`
 
 	var out []ChangesGetDepsResult
@@ -1000,50 +954,6 @@ WHERE change_deps.child = :changeDepsChild`
 	return out, err
 }
 
-type ChangesInfoForEntityResult struct {
-	BlobsCodec          int64
-	BlobsMultihash      []byte
-	StructuralBlobsID   int64
-	StructuralBlobsTs   int64
-	PublicKeysPrincipal []byte
-	IsTrusted           int64
-}
-
-func ChangesInfoForEntity(conn *sqlite.Conn, structuralBlobsResource int64) ([]ChangesInfoForEntityResult, error) {
-	const query = `SELECT blobs.codec, blobs.multihash, structural_blobs.id, structural_blobs.ts, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
-FROM structural_blobs
-JOIN blobs ON blobs.id = structural_blobs.id
-JOIN public_keys ON public_keys.id = structural_blobs.author
-LEFT JOIN trusted_accounts ON trusted_accounts.id = structural_blobs.author
-WHERE structural_blobs.resource = :structuralBlobsResource`
-
-	var out []ChangesInfoForEntityResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":structuralBlobsResource", structuralBlobsResource)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ChangesInfoForEntityResult{
-			BlobsCodec:          stmt.ColumnInt64(0),
-			BlobsMultihash:      stmt.ColumnBytes(1),
-			StructuralBlobsID:   stmt.ColumnInt64(2),
-			StructuralBlobsTs:   stmt.ColumnInt64(3),
-			PublicKeysPrincipal: stmt.ColumnBytes(4),
-			IsTrusted:           stmt.ColumnInt64(5),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangesInfoForEntity: %w", err)
-	}
-
-	return out, err
-}
-
 type BacklinksForDocumentResult struct {
 	ResourcesID           int64
 	ResourcesIRI          string
@@ -1060,7 +970,7 @@ func BacklinksForDocument(conn *sqlite.Conn, resourceLinksTarget int64) ([]Backl
 FROM resource_links
 JOIN structural_blobs ON structural_blobs.id = resource_links.source
 JOIN resources ON resources.id = structural_blobs.resource
-JOIN blobs ON blobs.id = structural_blobs.id
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = structural_blobs.id
 WHERE resource_links.type GLOB 'doc/*'
 AND resource_links.target = :resourceLinksTarget`
 

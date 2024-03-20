@@ -847,7 +847,7 @@ var qListDocumentGroups = dqb.Str(`
 		structural_blobs.ts AS ts
 	FROM resource_links
 	JOIN structural_blobs ON structural_blobs.id = resource_links.source
-	JOIN blobs ON blobs.id = structural_blobs.id
+	JOIN blobs INDEXED BY blobs_metadata ON blobs.id = structural_blobs.id
 	JOIN resources ON resources.id = structural_blobs.resource
 	WHERE resource_links.type = 'group/content'
 	AND resource_links.target = :document

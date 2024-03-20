@@ -386,6 +386,34 @@ var migrations = []migration{
 			DELETE FROM kv WHERE key = 'last_reindex_time';
 		`))
 	}},
+	{Version: "2024-03-19.01", Run: func(_ *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP VIEW IF EXISTS key_delegations_view;
+			CREATE VIEW IF NOT EXISTS key_delegations_view AS
+			SELECT
+				kd.id AS blob,
+				blobs.codec AS blob_codec,
+				blobs.multihash AS blob_multihash,
+				iss.principal AS issuer,
+				del.principal AS delegate
+			FROM key_delegations kd
+			JOIN blobs INDEXED BY blobs_metadata ON blobs.id = kd.id
+			JOIN public_keys iss ON iss.id = kd.issuer
+			JOIN public_keys del ON del.id = kd.delegate;
+
+			DROP VIEW IF EXISTS drafts_view;
+			CREATE VIEW IF NOT EXISTS drafts_view AS
+			SELECT
+				drafts.resource AS resource_id,
+				drafts.blob AS blob_id,
+				resources.iri AS resource,
+				blobs.codec AS codec,
+				blobs.multihash AS multihash
+			FROM drafts
+			JOIN resources ON resources.id = drafts.resource
+			JOIN blobs INDEXED BY blobs_metadata ON blobs.id = drafts.blob;
+		`))
+	}},
 }
 
 const (

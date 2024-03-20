@@ -37,6 +37,11 @@ var (
 		Help: "Number of blobs we want to sync at this time. Same blob may be counted multiple times if it's wanted from multiple peers.",
 	}, []string{"package"})
 
+	mWantedBlobsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "mintter_syncing_wanted_blobs_total",
+		Help: "The total number of blobs we wanted to sync from a single peer sync. Same blob may be counted multiple times if it's wanted from multiple peers.",
+	})
+
 	mSyncsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "mintter_syncing_periodic_operations_total",
 		Help: "The total number of periodic sync operations performed with peers (groups don't count).",
@@ -66,8 +71,8 @@ var (
 		Name: "mintter_syncing_worker_tick_duration_seconds",
 		Help: "Duration of a single worker tick.",
 		Objectives: map[float64]float64{
-			0.25: 0.05,
 			0.5:  0.05,
+			0.75: 0.02,
 			0.9:  0.01,
 			0.99: 0.001,
 		},
@@ -407,6 +412,7 @@ func syncPeer(
 
 		if !ok {
 			want = append(want, wantBlob{cid: c, cursor: obj.Cursor})
+			mWantedBlobsTotal.Inc()
 		}
 	}
 
