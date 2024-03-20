@@ -99,7 +99,7 @@ SELECT
     iss.principal AS issuer,
     del.principal AS delegate
 FROM key_delegations kd
-JOIN blobs ON blobs.id = kd.id
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = kd.id
 JOIN public_keys iss ON iss.id = kd.issuer
 JOIN public_keys del ON del.id = kd.delegate;
 
@@ -137,6 +137,7 @@ CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, type, source);
 -- Non-pinned links point to the latest version of the resource we can find.
 -- Extra metadata can be stored along with the link, probably in JSON format.
 CREATE TABLE resource_links (
+    id INTEGER PRIMARY KEY,
     source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     target INTEGER REFERENCES resources (id) NOT NULL,
     type TEXT NOT NULL,
@@ -145,7 +146,7 @@ CREATE TABLE resource_links (
 );
 
 CREATE INDEX resource_links_by_source ON resource_links (source, is_pinned, target);
-CREATE INDEX resource_links_by_target ON resource_links (target);
+CREATE INDEX resource_links_by_target ON resource_links (target, source);
 
 -- Stores the accounts that used marked as trusted.
 CREATE TABLE trusted_accounts (
@@ -175,7 +176,7 @@ SELECT
     blobs.multihash AS multihash
 FROM drafts
 JOIN resources ON resources.id = drafts.resource
-JOIN blobs ON blobs.id = drafts.blob;
+JOIN blobs INDEXED BY blobs_metadata ON blobs.id = drafts.blob;
 
 -- View for dependency links between changes.
 CREATE VIEW change_deps AS

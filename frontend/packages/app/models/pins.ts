@@ -2,13 +2,13 @@ import {trpc} from '@mintter/desktop/src/trpc'
 import {
   AuthorVariant,
   GroupVariant,
+  PublicationVariant,
   groupsVariantsMatch,
   stringArrayMatch,
   unpackDocId,
 } from '@mintter/shared'
 import {useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
-import {PublicationRoute} from '../utils/routes'
 import {useGroupsContent} from './groups'
 
 export function usePinAccount(accountId: string) {
@@ -115,10 +115,10 @@ export function usePins() {
   }
 }
 
-function extractVariants(route: PublicationRoute) {
-  const groupVariants = (route.variants?.filter((v) => v.key === 'group') ||
+function extractVariants(variants: PublicationVariant[]) {
+  const groupVariants = (variants?.filter((v) => v.key === 'group') ||
     []) as GroupVariant[]
-  const authorVariants = (route.variants?.filter((v) => v.key === 'author') ||
+  const authorVariants = (variants?.filter((v) => v.key === 'author') ||
     []) as AuthorVariant[]
   return {
     groupVariants,
@@ -126,7 +126,7 @@ function extractVariants(route: PublicationRoute) {
   }
 }
 
-export function usePinDocument(route: PublicationRoute) {
+export function usePinDocument(docId: string, variants: PublicationVariant[]) {
   const invalidate = useQueryInvalidator()
   const mutationOpts = {
     onSuccess: () => {
@@ -138,13 +138,14 @@ export function usePinDocument(route: PublicationRoute) {
   const removePin = trpc.pins.removeDocument.useMutation(mutationOpts)
   const removeGroupPin = trpc.pins.removeGroupDocument.useMutation(mutationOpts)
   const pins = trpc.pins.get.useQuery()
-  const variants = extractVariants(route)
+  const {groupVariants, authorVariants} = extractVariants(variants)
   const isPinnedDoc = useMemo(() => {
-    const variants = extractVariants(route)
-    return !!pins.data?.documents.find(({docId, authors, groups}) => {
-      if (docId !== route.documentId) return false
-      const routeAuthors = variants.authorVariants.map((a) => a.author)
-      const routeGroups = variants.groupVariants.map((g) => ({
+    const {groupVariants, authorVariants} = extractVariants(variants)
+    return !!pins.data?.documents.find((pin) => {
+      const {authors, groups} = pin
+      if (docId !== pin.docId) return false
+      const routeAuthors = authorVariants.map((a) => a.author)
+      const routeGroups = groupVariants.map((g) => ({
         groupId: g.groupId,
         pathName: g.pathName,
       }))
@@ -154,16 +155,16 @@ export function usePinDocument(route: PublicationRoute) {
         groupsVariantsMatch(routeGroups, groups)
       )
     })
-  }, [pins.data, route])
+  }, [pins.data, variants])
 
   const singleGroupVariant:
     | undefined
     | {pathName: string | null; groupId: string} =
-    variants.authorVariants.length > 0 ||
-    variants.groupVariants.length !== 1 ||
-    variants.groupVariants[0]?.pathName === null
+    authorVariants.length > 0 ||
+    groupVariants.length !== 1 ||
+    groupVariants[0]?.pathName === null
       ? undefined
-      : variants.groupVariants[0]
+      : groupVariants[0]
   const singleGroupVariantId = singleGroupVariant?.groupId
   const isPinnedGroup =
     !!singleGroupVariant &&
@@ -183,9 +184,9 @@ export function usePinDocument(route: PublicationRoute) {
       })
     } else {
       addPin.mutate({
-        docId: route.documentId,
-        authors: variants.authorVariants.map((a) => a.author),
-        groups: variants.groupVariants.map((g) => ({
+        docId,
+        authors: authorVariants.map((a) => a.author),
+        groups: groupVariants.map((g) => ({
           groupId: g.groupId,
           pathName: g.pathName,
         })),
@@ -200,9 +201,9 @@ export function usePinDocument(route: PublicationRoute) {
       })
     } else {
       removePin.mutate({
-        docId: route.documentId,
-        authors: variants.authorVariants.map((a) => a.author),
-        groups: variants.groupVariants.map((g) => ({
+        docId,
+        authors: authorVariants.map((a) => a.author),
+        groups: groupVariants.map((g) => ({
           groupId: g.groupId,
           pathName: g.pathName || '',
         })),

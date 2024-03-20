@@ -1,7 +1,9 @@
 import {
   Account,
   API_FILE_URL,
+  getBlockNode,
   GroupVariant,
+  HMBlockNode,
   PublicationVariant,
 } from '@mintter/shared'
 import {
@@ -18,14 +20,18 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {Book, FileText, Plus} from '@tamagui/lucide-icons'
+import {ArrowUpRight, Book, FileText, Hash, Plus} from '@tamagui/lucide-icons'
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {useAccount, useAccounts} from '../models/accounts'
-import {usePublication} from '../models/documents'
+import {
+  EmbedsContent,
+  usePublication,
+  usePublicationEmbeds,
+} from '../models/documents'
 import {useGroup} from '../models/groups'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
+import {usePinAccount, usePinGroup} from '../models/pins'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
@@ -35,13 +41,15 @@ import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {PinGroupButton, UnpinButton} from './pin-entity'
+import {PinAccountButton, PinDocumentButton, PinGroupButton} from './pin-entity'
 
 const HoverRegionWidth = 30
 
 export function getRouteGroupId(route: NavRoute): string | null {
   let activeGroupRouteId: string | null = null
   if (route.key === 'group') {
+    activeGroupRouteId = route.groupId
+  } else if (route.key === 'group-feed') {
     activeGroupRouteId = route.groupId
   } else if (route.key === 'publication') {
     if (route.variants) {
@@ -211,12 +219,13 @@ export function SidebarItem({
   menuItems,
   ...props
 }: ListItemProps & {
-  indented?: boolean
+  indented?: boolean | number
   bold?: boolean
   selected?: boolean
   rightHover?: ReactNode[]
   menuItems?: MenuItemType[]
 }) {
+  const indent = indented ? (typeof indented === 'number' ? indented : 1) : 0
   return (
     <View group="item">
       <ListItem
@@ -226,7 +235,7 @@ export function SidebarItem({
         minHeight={minHeight}
         paddingVertical={paddingVertical || '$2'}
         paddingHorizontal="$4"
-        paddingLeft={indented ? '$8' : '$4'}
+        paddingLeft={indent * 10 + 18}
         textAlign="left"
         outlineColor="transparent"
         // space="$2"
@@ -326,7 +335,13 @@ export function MyAccountItem({
   )
 }
 
-export function PinnedAccount({accountId}: {accountId: string}) {
+export function PinnedAccount({
+  accountId,
+  isPinned,
+}: {
+  accountId: string
+  isPinned: boolean
+}) {
   const route = useNavRoute()
   const account = useAccount(accountId)
   const navigate = useNavigate()
@@ -334,12 +349,12 @@ export function PinnedAccount({accountId}: {accountId: string}) {
   if (!accountId) return null
   return (
     <YGroup.Item>
-      {/* <AccountCard accountId={accountId}> */}
       <SidebarItem
         onPress={() => {
           navigate({key: 'account', accountId})
         }}
         active={route.key == 'account' && route.accountId == accountId}
+        color={isPinned ? undefined : '$color11'}
         icon={
           <Avatar
             size={22}
@@ -350,18 +365,8 @@ export function PinnedAccount({accountId}: {accountId: string}) {
         }
         title={account.data?.profile?.alias || accountId}
         indented
-        rightHover={[
-          <UnpinButton
-            chromeless
-            key="pin"
-            onPress={(e) => {
-              e.stopPropagation()
-              togglePin(e)
-            }}
-          />,
-        ]}
+        rightHover={[<PinAccountButton key="pin" accountId={accountId} />]}
       />
-      {/* </AccountCard> */}
     </YGroup.Item>
   )
 }
@@ -408,37 +413,172 @@ export function SidebarGroup(props: {
   )
 }
 
+type DocOutlineSection = {
+  title: string
+  id: string
+  linkRoute?: NavRoute
+  children?: DocOutlineSection[]
+}
+type DocOutline = DocOutlineSection[]
+
+export function getDocOutline(
+  children: HMBlockNode[],
+  embeds: EmbedsContent,
+): DocOutline {
+  const outline: DocOutline = []
+  children.forEach((child) => {
+    if (child.block.type === 'heading') {
+      outline.push({
+        title: child.block.text,
+        id: child.block.id,
+        children: child.children && getDocOutline(child.children, embeds),
+      })
+    } else if (
+      child.block.type === 'embed' &&
+      child.block.attributes.view === 'card' &&
+      embeds[child.block.id]
+    ) {
+      const embed = embeds[child.block.id]
+      if (embed?.type === 'd') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.document?.title || 'Untitled Document',
+          linkRoute: {
+            key: 'publication',
+            documentId: embed?.query?.refId?.qid,
+            versionId: embed?.query?.refId?.version || undefined,
+            variants: embed?.query?.refId?.variants || undefined,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      } else if (embed?.type === 'a') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.profile?.alias || 'Untitled Account',
+          linkRoute: {
+            key: 'account',
+            accountId: embed?.query?.refId?.eid,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      } else if (embed?.type === 'g') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.title || 'Untitled Group',
+          linkRoute: {
+            key: 'group',
+            groupId: embed?.query?.refId?.qid,
+            version: embed?.query?.refId?.version || undefined,
+          },
+          children: child.children && getDocOutline(child.children, embeds),
+        })
+      }
+    } else if (child.block.type === 'embed' && embeds[child.block.id]) {
+      const embed = embeds[child.block.id]
+      if (embed?.type === 'd') {
+        const children = embed.query.refId.blockRef
+          ? getBlockNode(
+              embed?.data?.document?.children,
+              embed.query.refId.blockRef,
+            )?.children
+          : embed?.data?.document?.children
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.document?.title || 'Untitled Group',
+          children: children && getDocOutline(children, embeds),
+        })
+      }
+    } else if (child.children) {
+      outline.push(...getDocOutline(child.children, embeds))
+    }
+  })
+  return outline
+}
+
+export function activeDocOutline(
+  outline: DocOutlineSection[],
+  activeBlock: string | null | undefined,
+  embeds: EmbedsContent,
+  onBlockSelect: (blockId: string) => void,
+  onNavigate: (route: NavRoute) => void,
+  level = 0,
+) {
+  return outline
+    .map((item) => [
+      <YGroup.Item>
+        <SidebarItem
+          onPress={() => {
+            if (item.linkRoute) {
+              onNavigate(item.linkRoute)
+            } else {
+              onBlockSelect(item.id)
+            }
+          }}
+          active={item.id === activeBlock}
+          icon={
+            <View width={16}>
+              {item.linkRoute ? <ArrowUpRight size={16} /> : <Hash size={16} />}
+            </View>
+          }
+          title={item.title || 'Untitled Heading'}
+          indented={2 + level}
+          // rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
+        />
+      </YGroup.Item>,
+      ...(item.children
+        ? activeDocOutline(
+            item.children,
+            activeBlock,
+            embeds,
+            onBlockSelect,
+            onNavigate,
+            level + 1,
+          )
+        : []),
+    ])
+    .flat()
+}
+
 export function SidebarDocument({
   docId,
   docVersion,
   onPress,
   active,
   authors,
-  variants,
+  pinVariants,
+  isPinned,
 }: {
   docId: string
   docVersion?: string | null
   onPress: () => void
   active?: boolean
   authors?: string[]
-  variants: PublicationVariant[]
+  pinVariants?: PublicationVariant[]
+  isPinned: boolean
 }) {
+  const route = useNavRoute()
   const doc = usePublication({id: docId, version: docVersion || undefined})
-  const {togglePin} = usePinDocument({
-    key: 'publication',
-    documentId: docId,
-    variants,
-  })
+  const isRouteActive = route.key == 'publication' && route.documentId == docId
+  const embeds = usePublicationEmbeds(doc.data, isRouteActive)
   const authorAccountsQuery = useAccounts(authors || [])
   const authorAccounts = authorAccountsQuery
     .map((query) => query.data)
     .filter(Boolean)
   if (!docId) return null
-  return (
+  const activeOutline =
+    isRouteActive || active
+      ? getDocOutline(doc?.data?.document?.children || [], embeds)
+      : []
+  const pubRoute = route.key == 'publication' ? route : null
+  const activeBlock = pubRoute?.blockId
+  const replace = useNavigate('replace')
+  const navigate = useNavigate()
+  return [
     <YGroup.Item>
       <SidebarItem
         onPress={onPress}
-        active={active}
+        active={isRouteActive || active}
+        color={isPinned ? undefined : '$color11'}
         icon={
           authorAccounts.length ? (
             <XStack minWidth={26} paddingLeft={8}>
@@ -473,17 +613,26 @@ export function SidebarDocument({
         }
         title={doc.data?.document?.title || <Spinner />}
         indented
-        rightHover={[
-          <UnpinButton
-            chromeless
-            key="pin"
-            onPress={(e) => {
-              e.stopPropagation()
-              togglePin()
-            }}
-          />,
-        ]}
+        rightHover={
+          pinVariants
+            ? [<PinDocumentButton docId={docId} variants={pinVariants} />]
+            : []
+        }
       />
-    </YGroup.Item>
-  )
+    </YGroup.Item>,
+    ...activeDocOutline(
+      activeOutline,
+      activeBlock,
+      embeds,
+      (blockId) => {
+        const pubRoute = route.key == 'publication' ? route : null
+        if (!pubRoute) return
+        replace({
+          ...pubRoute,
+          blockId,
+        })
+      },
+      navigate,
+    ),
+  ]
 }

@@ -1,5 +1,4 @@
-import {createStyles} from '@mantine/core'
-import {createHmDocLink} from '@mintter/shared'
+import {createHmDocLink, unpackHmId} from '@mintter/shared'
 import {
   Button,
   Check,
@@ -9,35 +8,49 @@ import {
   Label,
   LinkIcon,
   Separator,
+  SizeTokens,
   TextCursorInput,
   Tooltip,
   Unlink,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {HTMLAttributes, forwardRef, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
+import {HyperlinkToolbarProps} from './blocknote'
 
-export type EditHyperlinkMenuProps = {
-  url: string
-  text: string
-  update: (url: string, text: string, latest: boolean) => void
-  openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
-}
+export function HypermediaLinkToolbar(
+  props: HyperlinkToolbarProps & {
+    openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
+  },
+) {
+  const formSize: SizeTokens = '$2'
 
-/**
- * Menu which opens when editing an existing hyperlink or creating a new one.
- * Provides input fields for setting the hyperlink URL and title.
- */
-export const EditHyperlinkMenu = forwardRef<
-  HTMLDivElement,
-  EditHyperlinkMenuProps & HTMLAttributes<HTMLDivElement>
->(({url, text, update, className, ...props}, ref) => {
-  const {classes} = createStyles({root: {}})(undefined, {
-    name: 'EditHyperlinkMenu',
-  })
+  const [_url, setUrl] = useState(props.url || '')
+  const [_text, setText] = useState(props.text || '')
+  const unpackedRef = useMemo(() => unpackHmId(_url), [_url])
+  const _latest = unpackedRef?.latest || false
 
-  const [currentUrl, setCurrentUrl] = useState(url)
-  const [currentText, setCurrentText] = useState(text)
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' || event.key == 'Enter') {
+      event.preventDefault()
+      props.editHyperlink(_url, _text)
+    }
+  }
+
+  useEffect(() => {
+    props.editor.hyperlinkToolbar.on('update', (state) => {
+      setText(state.text || '')
+      setUrl(state.url || '')
+    })
+  }, [props.editor])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeydown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown)
+    }
+  }, [])
 
   return (
     <YStack
@@ -50,6 +63,8 @@ export const EditHyperlinkMenu = forwardRef<
       zIndex="$zIndex.5"
       bottom="0"
       position="absolute"
+      onMouseEnter={props.stopHideTimer}
+      onMouseLeave={props.startHideTimer}
     >
       <XStack ai="center" gap="$2" p="$1">
         <TextCursorInput size={12} />
@@ -59,12 +74,27 @@ export const EditHyperlinkMenu = forwardRef<
           placeholder="link text"
           id="link-text"
           key={props.text}
-          value={props.text}
+          value={_text}
+          onKeyPress={handleKeydown}
+          onChangeText={(val) => {
+            setText(val)
+            props.updateHyperlink(props.url, val)
+          }}
         />
       </XStack>
       <XStack ai="center" gap="$2" p="$1">
         <LinkIcon size={12} />
-        <Input flex={1} size="$2" key={props.url} value={props.url} />
+        <Input
+          flex={1}
+          size="$2"
+          key={props.url}
+          value={_url}
+          onKeyPress={handleKeydown}
+          onChangeText={(val) => {
+            setUrl(val)
+            props.updateHyperlink(val, props.text)
+          }}
+        />
       </XStack>
       <Separator />
       <YStack p="$1">
@@ -73,9 +103,9 @@ export const EditHyperlinkMenu = forwardRef<
             <XStack ai="center" minWidth={200} gap="$2">
               <Checkbox
                 id="link-latest"
-                key={props.url}
                 size="$2"
-                defaultChecked={!!unpackedRef.latest}
+                key={_latest}
+                value={_latest}
                 onCheckedChange={(newValue) => {
                   let newUrl = createHmDocLink({
                     documentId: unpackedRef?.qid,
@@ -84,10 +114,9 @@ export const EditHyperlinkMenu = forwardRef<
                     variants: unpackedRef?.variants,
                     latest: newValue != 'indeterminate' ? newValue : false,
                   })
-
-                  console.log('== NEW URL', newValue)
-
-                  props.editHyperlink(newUrl, props.text, true)
+                  console.log('== newUrl', newUrl)
+                  props.updateHyperlink(newUrl, props.text)
+                  setUrl(newUrl)
                 }}
               >
                 <Checkbox.Indicator>
@@ -119,4 +148,4 @@ export const EditHyperlinkMenu = forwardRef<
       </YStack>
     </YStack>
   )
-})
+}

@@ -132,7 +132,7 @@ const documentTabsOptions = [
 
 function DocumentTabs() {
   const route = useNavRoute()
-  if (route.key !== 'documents') throw new Error('invalid route')
+  if (route.key !== 'documents') throw new Error(`invalid route: ${route.key}`)
   const replace = useNavigate('replace')
   return (
     <PageContainer marginVertical="$6">

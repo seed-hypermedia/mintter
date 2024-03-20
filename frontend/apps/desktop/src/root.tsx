@@ -5,7 +5,7 @@ import {AppIPC} from '@mintter/app/app-ipc'
 import {AppErrorContent, RootAppError} from '@mintter/app/components/app-error'
 import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
-import {getQueryClient} from '@mintter/app/query-client'
+import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
 import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
@@ -16,118 +16,20 @@ import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
 import {ipcLink} from 'electron-trpc/renderer'
-import React, {Suspense, useEffect, useState} from 'react'
+import React, {Suspense, useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import {ErrorBoundary} from 'react-error-boundary'
 import superjson from 'superjson'
-import type {GoDaemonState} from './daemon'
+import type {GoDaemonState} from './app-api'
 import {createIPC} from './ipc'
 import type {AppInfoType} from './preload'
 import './root.css'
 import {client, trpc} from './trpc'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Root />
-  </React.StrictMode>,
-)
-
-function Root() {
-  const darkMode = useStream<boolean>(window.darkMode)
-  const daemonState = useGoDaemonState()
-  const windowUtils = useWindowUtils(ipc)
-
-  useListenAppEvent('triggerPeerSync', () => {
-    grpcClient.daemon
-      .forceSync({})
-      .then(() => {
-        toast.success('Peer Sync Started')
-      })
-      .catch((e) => {
-        console.error('Failed to sync', e)
-        toast.error('Sync failed!')
-      })
-  })
-
-  useTrpcSubscribe()
-
-  useEffect(() => {
-    // @ts-expect-error
-    window.windowIsReady()
-  }, [])
-
-  return (
-    <trpc.Provider queryClient={queryClient.client} client={trpcClient}>
-      {daemonState?.t == 'ready' ? (
-        <AppContextProvider
-          grpcClient={grpcClient}
-          platform={appInfo.platform()}
-          queryClient={queryClient}
-          ipc={ipc}
-          externalOpen={async (url: string) => {
-            ipc.send?.('open-external-link', url)
-          }}
-          saveCidAsFile={async (cid: string, name: string) => {
-            ipc.send?.('save-file', {cid, name})
-          }}
-          windowUtils={windowUtils}
-          darkMode={darkMode}
-        >
-          <Suspense
-            fallback={
-              <YStack fullscreen ai="center" jc="center">
-                <Spinner />
-              </YStack>
-            }
-          >
-            <ErrorBoundary
-              FallbackComponent={RootAppError}
-              onReset={() => {
-                window.location.reload()
-              }}
-            >
-              <NavigationContainer
-                initialNav={
-                  // @ts-expect-error
-                  window.initNavState
-                }
-              >
-                <DaemonStatusProvider>
-                  <Main
-                    className={
-                      // this is used by editor.css which doesn't know tamagui styles, boooo!
-                      darkMode ? 'mintter-app-dark' : 'mintter-app-light'
-                    }
-                  />
-                </DaemonStatusProvider>
-              </NavigationContainer>
-              <Toaster />
-            </ErrorBoundary>
-          </Suspense>
-        </AppContextProvider>
-      ) : daemonState?.t == 'error' ? (
-        <StyleProvider darkMode={darkMode}>
-          <AppErrorContent message={daemonState?.message} />
-        </StyleProvider>
-      ) : null}
-    </trpc.Provider>
-  )
-}
-
-// ==============================
-
 const logger = {
   log: wrapLogger(console.log),
   error: wrapLogger(console.error),
 }
-
-const ipc = createIPC()
-const queryClient = getQueryClient(ipc)
-
-const trpcClient = trpc.createClient({
-  links: [ipcLink()],
-  transformer: superjson,
-})
 
 function wrapLogger(logFn: (...args: any[]) => void) {
   return (...input: any[]) => {
@@ -193,8 +95,6 @@ const transport = createGrpcWebTransport({
   baseUrl: API_HTTP_URL,
   interceptors: [loggingInterceptor],
 })
-
-const grpcClient = createGRPCClient(transport)
 
 function useWindowUtils(ipc: AppIPC): WindowUtils {
   // const win = getCurrent()
@@ -262,8 +162,30 @@ function useGoDaemonState(): GoDaemonState | undefined {
   return state
 }
 
-function useTrpcSubscribe() {
+function MainApp({
+  queryClient,
+  ipc,
+}: {
+  queryClient: AppQueryClient
+  ipc: AppIPC
+}) {
+  const darkMode = useStream<boolean>(window.darkMode)
+  const daemonState = useGoDaemonState()
+  const grpcClient = useMemo(() => createGRPCClient(transport), [])
+  const windowUtils = useWindowUtils(ipc)
   const utils = trpc.useContext()
+
+  useListenAppEvent('triggerPeerSync', () => {
+    grpcClient.daemon
+      .forceSync({})
+      .then(() => {
+        toast.success('Peer Sync Started')
+      })
+      .catch((e) => {
+        console.error('Failed to sync', e)
+        toast.error('Sync failed!')
+      })
+  })
 
   useEffect(() => {
     const sub = client.queryInvalidation.subscribe(undefined, {
@@ -297,4 +219,100 @@ function useTrpcSubscribe() {
       sub.unsubscribe()
     }
   }, [queryClient.client, utils])
+
+  useEffect(() => {
+    // @ts-expect-error
+    window.windowIsReady()
+  }, [])
+
+  if (daemonState?.t == 'ready') {
+    return (
+      <AppContextProvider
+        grpcClient={grpcClient}
+        platform={appInfo.platform()}
+        queryClient={queryClient}
+        ipc={ipc}
+        externalOpen={async (url: string) => {
+          ipc.send?.('open-external-link', url)
+        }}
+        saveCidAsFile={async (cid: string, name: string) => {
+          ipc.send?.('save-file', {cid, name})
+        }}
+        windowUtils={windowUtils}
+        darkMode={darkMode}
+      >
+        <Suspense
+          fallback={
+            <YStack fullscreen ai="center" jc="center">
+              <Spinner />
+            </YStack>
+          }
+        >
+          <ErrorBoundary
+            FallbackComponent={RootAppError}
+            onReset={() => {
+              window.location.reload()
+            }}
+          >
+            <NavigationContainer
+              initialNav={
+                // @ts-expect-error
+                window.initNavState
+              }
+            >
+              <DaemonStatusProvider>
+                <Main
+                  className={
+                    // this is used by editor.css which doesn't know tamagui styles, boooo!
+                    darkMode ? 'mintter-app-dark' : 'mintter-app-light'
+                  }
+                />
+              </DaemonStatusProvider>
+            </NavigationContainer>
+            <Toaster
+            // position="bottom-center"
+            // toastOptions={{className: 'toaster'}}
+            />
+          </ErrorBoundary>
+        </Suspense>
+      </AppContextProvider>
+    )
+  }
+
+  if (daemonState?.t == 'error') {
+    console.error('Daemon error', daemonState?.message)
+    return (
+      <StyleProvider darkMode={darkMode}>
+        <AppErrorContent message={daemonState?.message} />
+      </StyleProvider>
+    )
+  }
+
+  return null
 }
+
+function ElectronApp() {
+  const ipc = useMemo(() => createIPC(), [])
+  const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
+
+  const trpcClient = useMemo(
+    () =>
+      trpc.createClient({
+        links: [ipcLink()],
+        transformer: superjson,
+      }),
+    [],
+  )
+
+  return (
+    <trpc.Provider queryClient={queryClient.client} client={trpcClient}>
+      <MainApp queryClient={queryClient} ipc={ipc} />
+    </trpc.Provider>
+  )
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ElectronApp />
+  </React.StrictMode>,
+)

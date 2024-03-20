@@ -79,6 +79,11 @@ ipcRenderer.addListener('appWindowEvent', (info, event) => {
   dispatchAppWindow(event)
 })
 
+ipcRenderer.addListener('find_in_page', (info, event) => {
+  console.log('== FIND IN PAGE INSIDE PRELOAD')
+  dispatchAppWindow(event)
+})
+
 contextBridge.exposeInMainWorld('ipc', {
   send: (cmd, args) => {
     ipcRenderer.send(cmd, args)

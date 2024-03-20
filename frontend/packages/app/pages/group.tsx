@@ -1,5 +1,5 @@
 import * as Ariakit from '@ariakit/react'
-import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
+import { CompositeInput } from '@ariakit/react-core/composite/composite-input'
 import {
   DndContext,
   KeyboardSensor,
@@ -15,7 +15,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import {CSS} from '@dnd-kit/utilities'
+import { CSS } from '@dnd-kit/utilities'
 import Footer from '@mintter/app/components/footer'
 import {
   API_FILE_URL,
@@ -27,6 +27,7 @@ import {
   PublicationContent,
   Role,
   formattedDate,
+  getBlockNode,
   pluralS,
   unpackDocId,
   unpackHmId,
@@ -62,7 +63,7 @@ import {
   X,
 } from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import {matchSorter} from 'match-sorter'
+import { matchSorter } from 'match-sorter'
 import {
   ComponentProps,
   ReactNode,
@@ -74,58 +75,55 @@ import {
   useRef,
   useState,
 } from 'react'
-import {AccessoryLayout} from '../components/accessory-sidebar'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
+import { AccessoryLayout } from '../components/accessory-sidebar'
+import { AccountLinkAvatar } from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
-import {Avatar} from '../components/avatar'
-import {EntityVersionsAccessory} from '../components/changes-list'
-import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {useAppDialog} from '../components/dialog'
-import {EditDocButton} from '../components/edit-doc-button'
-import {useEditGroupInfoDialog} from '../components/edit-group-info'
-import {FooterButton} from '../components/footer'
-import {AppLinkText} from '../components/link'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper} from '../components/main-wrapper'
-import {OptionsDropdown} from '../components/options-dropdown'
-import {PinGroupButton} from '../components/pin-entity'
-import {PublicationListItem} from '../components/publication-list-item'
-import {CopyReferenceButton} from '../components/titlebar-common'
+import { Avatar } from '../components/avatar'
+import { EntityVersionsAccessory } from '../components/changes-list'
+import { useCopyGatewayReference } from '../components/copy-gateway-reference'
+import { useAppDialog } from '../components/dialog'
+import { EditDocButton } from '../components/edit-doc-button'
+import { useEditGroupInfoDialog } from '../components/edit-group-info'
+import { FooterButton } from '../components/footer'
+import { AppLinkText } from '../components/link'
+import { copyLinkMenuItem } from '../components/list-item'
+import { MainWrapper } from '../components/main-wrapper'
+import { OptionsDropdown } from '../components/options-dropdown'
+import { PinGroupButton } from '../components/pin-entity'
+import { PublicationListItem } from '../components/publication-list-item'
+import { CopyReferenceButton } from '../components/titlebar-common'
 import appError from '../errors'
-import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
-import {useEntityTimeline} from '../models/changes'
+import { useAccount, useAllAccounts, useMyAccount } from '../models/accounts'
+import { useEntityTimeline } from '../models/changes'
 import {
   useDraftList,
   usePublication,
   usePublications,
 } from '../models/documents'
-import {useExperiments} from '../models/experiments'
-import {useGatewayUrl} from '../models/gateway-settings'
+import { useExperiments } from '../models/experiments'
+import { useGatewayUrl } from '../models/gateway-settings'
 import {
-  getBlockNode,
   useAddGroupMember,
   useDeleteCategoryItem,
   useFullGroupContent,
   useGroup,
   useGroupContent,
   useGroupMembers,
-  useGroupNavigation,
   useMoveCategoryItem,
   useRemoveDocFromGroup,
 } from '../models/groups'
-import {useOpenUrl} from '../open-url'
-import {AddToCategoryDialog} from '../src/add-to-category-dialog'
-import {RenamePubDialog} from '../src/rename-publication-dialog'
-import {useNavRoute} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
-import {GroupRoute} from '../utils/routes'
-import {hostnameStripProtocol} from '../utils/site-hostname'
-import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { useOpenUrl } from '../open-url'
+import { AddToCategoryDialog } from '../src/add-to-category-dialog'
+import { RenamePubDialog } from '../src/rename-publication-dialog'
+import { useNavRoute } from '../utils/navigation'
+import { useOpenDraft } from '../utils/open-draft'
+import { GroupRoute } from '../utils/routes'
+import { hostnameStripProtocol } from '../utils/site-hostname'
+import { useNavigate } from '../utils/useNavigate'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 export default function GroupPage() {
   const experiments = useExperiments()
-  const experimentalGroupOrganization = experiments.data?.groupOrganization
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : undefined
   if (!groupRoute) throw new Error('Group page needs group route')
@@ -138,43 +136,16 @@ export default function GroupPage() {
     Role.ROLE_UNSPECIFIED
 
   let content: ReactNode = null
-  if (experimentalGroupOrganization) {
-    if (groupRoute.listCategory === '_all') {
-      content = (
-        <Container>
-          <GroupAllContent
-            groupRoute={groupRoute}
-            myMemberRole={myMemberRole}
-          />
-        </Container>
-      )
-    } else if (groupRoute.listCategory) {
-      content = (
-        <GroupCategoryContent
-          category={groupRoute.listCategory}
-          groupRoute={groupRoute}
-          myMemberRole={myMemberRole}
-        />
-      )
-    } else {
-      content = (
-        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
-      )
-    }
-  } else {
+  if (groupRoute.listCategory === '_all') {
     content = (
-      <>
-        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
-        <Container paddingVertical={0} marginBottom="$4">
-          <Separator marginBottom="$4" />
-          <GroupAllContent
-            groupRoute={groupRoute}
-            myMemberRole={myMemberRole}
-          />
-        </Container>
-      </>
+      <Container>
+        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      </Container>
     )
+  } else {
+    content = <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
   }
+
   return (
     <GroupPageFooterAccessory
       variantVersion={latestGroup.data?.version}
@@ -546,7 +517,6 @@ export function GroupAllContent({
         {//Object.entries(groupContent.data?.content || {})
         groupContent.data?.items.map(({key, pub, author, editors, id}) => {
           if (key === '/') return null
-          if (key === '_navigation') return null
           const latestEntry = latestGroupContent.data?.content?.[key]
           const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
 
@@ -593,7 +563,6 @@ export function GroupCategoryContent({
   const {groupId, version} = groupRoute
   const latestGroupContent = useGroupContent(groupId)
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const navPub = useGroupNavigation(groupId, version)
   const categoryContent = getBlockNode(
     navPub.data?.document?.children,
     category,
@@ -706,6 +675,7 @@ export function GroupCategoryContent({
                     hasDraft={drafts.data?.documents.find(
                       (d) => d.id == hmId.qid,
                     )}
+                    groupVariantCategory={category}
                     onRemoveFromCategory={
                       myMemberRole === Role.ROLE_UNSPECIFIED
                         ? undefined
@@ -808,6 +778,7 @@ function SortableGroupContentItem({
 
 function GroupContentItem({
   docId,
+  groupVariantCategory,
   id,
   version,
   latestVersion,
@@ -822,6 +793,7 @@ function GroupContentItem({
   onRemoveFromCategory,
 }: {
   docId: string
+  groupVariantCategory?: string
   id: string
   version?: string
   latestVersion?: string
@@ -910,6 +882,7 @@ function GroupContentItem({
         openRoute={{
           key: 'publication',
           documentId: docId,
+          groupVariantCategory,
           ...(latestVersion === version
             ? {variants: [{key: 'group', groupId, pathName}]}
             : {
@@ -1061,6 +1034,8 @@ function FrontPublicationDisplay({
   urlWithVersion: string
   groupTitle: string
 }) {
+  const route = useNavRoute()
+  const groupRoute = route.key === 'group' ? route : undefined
   const unpacked = unpackDocId(urlWithVersion)
   const pub = usePublication({
     id: unpacked?.docId || '',
@@ -1086,7 +1061,9 @@ function FrontPublicationDisplay({
           {pub.data?.document?.title}
         </Heading>
       ) : null}
-      <AppPublicationContentProvider>
+      <AppPublicationContentProvider
+        routeParams={{blockRef: groupRoute?.blockId}}
+      >
         <PublicationContent publication={pub.data} />
       </AppPublicationContentProvider>
     </YStack>

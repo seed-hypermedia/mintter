@@ -36,7 +36,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
-
     environment:
       - "HM_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
       - "GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
@@ -51,6 +50,8 @@ services:
       - "56000:56000/udp"
     networks:
       - internal_network
+    environment:
+      - "SENTRY_DSN=${MTT_SITE_SENTRY_DSN:-https://47c66bd7a6d64db68a59c03f2337e475@o4504088793841664.ingest.sentry.io/4505527493328896}"
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mtt-site:rw
       - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/grafana:/exported_grafana:rw

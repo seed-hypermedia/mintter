@@ -202,6 +202,7 @@ export function PushToGatewayDialog({
       <DialogDescription>{description}</DialogDescription>
       <CheckboxField
         value={shouldDoAlways}
+        id="do-every-time"
         onValue={(checked) => setShouldDoAlways(checked)}
       >
         Do this every time

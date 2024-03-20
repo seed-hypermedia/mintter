@@ -120,6 +120,7 @@ export const SideSectionTitle = styled(SizableText, {
   size: '$1',
   fontWeight: '800',
   opacity: 0.4,
+  marginBottom: '$3',
 })
 
 const Root = PageSectionRoot

@@ -27,6 +27,7 @@ import {
   Spinner,
   Theme,
   UIAvatar,
+  View,
   XStack,
   YStack,
   toast,
@@ -39,7 +40,7 @@ import {useAccount} from '../models/accounts'
 import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
-import {useFeedWithLatest} from '../models/feed'
+import {useFeedWithLatest, useResourceFeed} from '../models/feed'
 import {useGroup} from '../models/groups'
 import {appRouteOfId, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -61,6 +62,11 @@ export default function FeedPage() {
       <Footer />
     </>
   )
+}
+
+function HiddenFeedItem() {
+  // invisible feed item. height is non-zero because the Virtualized warning
+  return <View height={1} />
 }
 
 function FeedItemInnerContainer(props) {
@@ -293,6 +299,8 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
     version: cid,
     variants: [{key: 'author', author}],
   })
+  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
+    return <HiddenFeedItem />
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -349,6 +357,8 @@ function GroupContentChangeFeedItem({
       />
     )
   }
+  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
+    return <HiddenFeedItem />
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -433,6 +443,47 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
         contentUrl={contentUrl}
         group={group.data}
       />
+    )
+  }
+  const removalContentEntry = contentEntries.find(
+    ([key, value]) => value === '',
+  )
+  const newContentEntry = contentEntries.find(([key, value]) => value !== '')
+  const newContentId = unpackHmId(newContentEntry?.[1])
+  // detecting if a simple path rename happened
+  if (
+    group.data &&
+    patchEntries.length === 1 &&
+    contentEntries.length === 2 &&
+    removalContentEntry &&
+    newContentEntry &&
+    newContentId
+  ) {
+    const docLinkId = hmId('d', newContentId.eid, {
+      version: newContentId.version,
+      variants: [
+        {key: 'group', groupId: linkId.qid, pathName: newContentEntry[0]},
+      ],
+    })
+    return (
+      <FeedItemContainer
+        linkId={linkId}
+        header={
+          <FeedItemHeader
+            author={author}
+            eventTime={eventTime}
+            message={
+              <>
+                renamed "{removalContentEntry[0]}" to{' '}
+                <EntityLink id={docLinkId}>{newContentEntry[0]}</EntityLink> in{' '}
+                <EntityLink id={linkId}>
+                  {group.data?.title || 'Untitled Group'}
+                </EntityLink>
+              </>
+            }
+          />
+        }
+      ></FeedItemContainer>
     )
   }
   // @ts-expect-error
@@ -772,6 +823,43 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
           </Theme>
         </XStack>
       )}
+    </YStack>
+  )
+})
+
+export const ResourceFeed = React.memo(function ResourceFeed({
+  id,
+}: {
+  id: string
+}) {
+  const feed = useResourceFeed(id)
+  const scrollRef = useRef<FeedListHandle>(null)
+  return (
+    <YStack f={1} gap="$3">
+      <FeedList
+        ref={scrollRef}
+        header={<View height="$2" />}
+        footer={
+          feed.data?.pages?.length && (
+            <XStack jc="center" gap="$3" paddingVertical="$6">
+              {feed.isFetchingNextPage || feed.isLoading ? (
+                <Spinner />
+              ) : feed.hasNextPage ? (
+                <Button size="$2" onPress={() => feed.fetchNextPage()}>
+                  Load More Items
+                </Button>
+              ) : (
+                <ButtonText>End of Feed.</ButtonText>
+              )}
+            </XStack>
+          )
+        }
+        items={feed.data?.events || []}
+        renderItem={({item}) => <FeedItem event={item} />}
+        onEndReached={() => {
+          feed.fetchNextPage()
+        }}
+      />
     </YStack>
   )
 })

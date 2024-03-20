@@ -3,7 +3,13 @@ import type {NavState} from '@mintter/app/utils/navigation'
 import {NavRoute, defaultRoute} from '@mintter/app/utils/routes'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
-import {BrowserWindow, app, nativeTheme} from 'electron'
+import {
+  BrowserView,
+  BrowserWindow,
+  app,
+  globalShortcut,
+  nativeTheme,
+} from 'electron'
 import path from 'node:path'
 import {updateRecentRoute} from './app-recents'
 import {appStore} from './app-store'
@@ -189,6 +195,8 @@ export function createAppWindow(input: {
     ...bounds,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      disableDialogs: true,
+      spellcheck: false,
     },
     minWidth: windowType.minWidth,
     minHeight: windowType.minHeight,
@@ -203,6 +211,8 @@ export function createAppWindow(input: {
       y: 12,
     },
   })
+
+  createFindView(browserWindow)
 
   info('[MAIN:API]: window created')
 
@@ -255,6 +265,7 @@ export function createAppWindow(input: {
   }
   // @ts-expect-error
   browserWindow.on('resize', (e, a) => {
+    updateFindInPageView(browserWindow)
     saveWindowPositionDebounced()
   })
   // @ts-expect-error
@@ -322,9 +333,54 @@ export function createAppWindow(input: {
     if (activeRoute) {
       updateRecentRoute(activeRoute)
     }
+
+    globalShortcut.register('CommandOrControl+F', () => {
+      const focusedWindow = getFocusedWindow()
+      if (focusedWindow) {
+        let findInPageView = focusedWindow.getBrowserView()
+
+        if (!findInPageView) {
+          info('[CMD+F]: no view present')
+          createFindView(focusedWindow)
+        } else {
+          findInPageView.setBounds({
+            ...findInPageView.getBounds(),
+            y: 0,
+          })
+          findInPageView.webContents.focus()
+          findInPageView.webContents.send(
+            'appWindowEvent',
+            'find_in_page_focus',
+          )
+          const currentBounds = findInPageView.getBounds()
+          info('[CMD+F]: view present', currentBounds)
+          if (currentBounds.y < 0) {
+            findInPageView.setBounds({
+              ...currentBounds,
+              y: 0,
+            })
+          } else {
+            findInPageView.webContents.focus()
+            findInPageView.webContents.send(
+              'appWindowEvent',
+              'find_in_page_focus',
+            )
+          }
+        }
+      }
+    })
   })
+
+  browserWindow.webContents.on('found-in-page', (event, result) => {
+    console.log('=== FOUND IN PAGE ===', result)
+    // if (result.finalUpdate) {
+    //   browserWindow.webContents.stopFindInPage('clearSelection')
+    // }
+  })
+
   browserWindow.on('blur', () => {
     windowBlurred(windowId)
+    globalShortcut.unregister('CommandOrControl+F')
   })
 
   windowFocused(windowId)
@@ -339,4 +395,46 @@ export function createAppWindow(input: {
   }
 
   return browserWindow
+}
+
+function updateFindInPageView(win: BrowserWindow) {
+  const bounds = win.getBounds()
+  const view = win.getBrowserView()
+  if (view) {
+    view.setBounds({
+      ...view.getBounds(),
+      x: bounds.width - 320,
+    })
+  }
+}
+
+function createFindView(win: BrowserWindow) {
+  const {width} = win.getBounds()
+
+  const findView = new BrowserView({
+    webPreferences: {
+      preload: path.join(__dirname, 'preload-find-in-page.js'),
+    },
+  })
+
+  win.setBrowserView(findView)
+
+  findView.setBounds({
+    x: width - 320,
+    y: -200,
+    width: 320,
+    height: 100,
+  })
+
+  // findView.webContents.loadURL(`https://electronjs.org`)
+
+  if (FIND_IN_PAGE_VITE_DEV_SERVER_URL) {
+    findView.webContents.loadURL(
+      `${FIND_IN_PAGE_VITE_DEV_SERVER_URL}/find.html`,
+    )
+  } else {
+    findView.webContents.loadFile(
+      path.join(__dirname, `../renderer/${FIND_IN_PAGE_VITE_NAME}/find.html`),
+    )
+  }
 }

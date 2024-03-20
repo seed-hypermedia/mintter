@@ -62,6 +62,25 @@ ipcMain.on('close_window', (_event, _info) => {
   getFocusedWindow()?.close()
 })
 
+ipcMain.on('find_in_page_query', (_event, _info) => {
+  getFocusedWindow()?.webContents?.findInPage(_info.query, {
+    findNext: _info.findNext,
+    forward: _info.forward,
+  })
+})
+
+ipcMain.on('find_in_page_cancel', () => {
+  let focusedWindow = getFocusedWindow()
+  focusedWindow?.webContents?.stopFindInPage('keepSelection')
+  let findInPageView = focusedWindow?.getBrowserView()
+  if (findInPageView) {
+    findInPageView.setBounds({
+      ...findInPageView.getBounds(),
+      y: -200,
+    })
+  }
+})
+
 nativeTheme.addListener('updated', () => {
   getAllWindows().forEach((window) => {
     window.webContents.send('darkMode', nativeTheme.shouldUseDarkColors)

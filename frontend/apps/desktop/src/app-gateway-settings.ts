@@ -4,7 +4,7 @@ import {t} from './app-trpc'
 
 const DEFAULT_GATEWAY_URL =
   process.env.MINTTER_P2P_TESTNET_NAME === 'dev'
-    ? 'https://mintter.xyz'
+    ? 'https://test.hyper.media'
     : 'https://hyper.media'
 const GATEWAY_URL_KEY = 'GatewayUrl'
 let gatewayUrl =

@@ -175,8 +175,11 @@ export function PublicationPage({
     },
     {enabled: !!groupVariant?.groupId},
   )
+  const groupId = unpackHmId(groupVariant?.groupId)
+  const groupEid = groupId?.eid
   const pub = publication.data?.publication
   const pubId = pub?.document?.id ? unpackHmId(pub?.document?.id) : null
+  const loadedGroup = contextGroup.data?.group
   const pubVersion = pub?.version
   const ogImageUrl =
     pubId && pubVersion
@@ -231,10 +234,14 @@ export function PublicationPage({
       <MainSiteLayout
         head={<SiteHead pageTitle={pub?.document?.title} />}
         leftSide={
-          <PublicationContextSide
-            group={contextGroup?.data?.group}
-            activePathName={pathName || ''}
-          />
+          loadedGroup?.version && groupEid ? (
+            <PublicationContextSide
+              group={loadedGroup}
+              groupVersion={loadedGroup?.version}
+              groupEid={groupEid}
+              activePathName={pathName || ''}
+            />
+          ) : null
         }
         rightSide={
           <>
@@ -399,10 +406,14 @@ function GroupSidebarContent({
 function PublicationContextSide({
   group,
   activePathName,
+  groupVersion,
+  groupEid,
   ...props
 }: {
   group?: HMGroup | null
   activePathName: string
+  groupVersion: string
+  groupEid: string
 }) {
   const groupContent = trpc.group.listContent.useQuery(
     {
@@ -411,6 +422,20 @@ function PublicationContextSide({
     },
     {enabled: !!group?.id},
   )
+
+  // const navigationDoc = groupContent.data?.find(
+  //   (item) => item?.pathName === '_navigation',
+  // )
+  // if (navigationDoc?.publication) {
+  //   return (
+  //     <GroupNavigation
+  //       publication={navigationDoc.publication}
+  //       group={group}
+  //       groupEid={groupEid}
+  //       groupVersion={groupVersion}
+  //     />
+  //   )
+  // }
   const groupSidebarContent = group ? (
     <GroupSidebarContent
       activePathName={activePathName}

@@ -39,6 +39,15 @@ export function GroupDocPage({}) {
   if (groupContent.isInitialLoading) return <Spinner />
   if (!groupContent.data) return <NotFoundPage />
   const pathItem = groupContent.data.find((item) => item?.pathName === pathName)
+  // const categoryId = router.query?.pathName?.slice(2)
+  // if (
+  //   router.query?.pathName?.slice(0, 2) === '--' &&
+  //   categoryId &&
+  //   typeof categoryId === 'string'
+  // ) {
+  //   if (categoryId === 'all') return <GroupAllCategoryPage />
+  //   return <GroupCategoryPage categoryId={categoryId} />
+  // }
   if (!pathItem) return <NotFoundPage />
   return (
     <PublicationPage

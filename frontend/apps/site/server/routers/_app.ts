@@ -153,13 +153,38 @@ const publicationRouter = router({
     )
     .query(async ({input}) => {
       if (!input.documentId) {
-        return {citationLinks: []}
+        return {citations: []}
       }
       const citationList = await queryClient.contentGraph.listCitations({
         documentId: input.documentId,
       })
+      const citationLinks = citationList.links.map(hmLink)
+      const sourcePubs = await Promise.all(
+        citationLinks.map(async (link) => {
+          const pub = await queryClient.publications.getPublication({
+            documentId: link?.source?.documentId,
+            version: link?.source?.version,
+          })
+          return hmPublication(pub)
+        }),
+      )
       return {
-        citationLinks: citationList.links.map(hmLink),
+        citations: citationLinks
+          .map((link) => {
+            const sourcePublication = sourcePubs.find(
+              (pub) => pub?.document?.id === link?.source?.documentId,
+            )
+            return {
+              link,
+              sourcePublication,
+            }
+          })
+          .filter((citation) => {
+            return (
+              citation.sourcePublication?.document?.title !==
+              '(HIDDEN) Group Navigation'
+            )
+          }),
       }
     }),
 

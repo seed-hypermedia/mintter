@@ -73,6 +73,7 @@ export const publicationRouteSchema = z.object({
   versionId: z.string().optional(),
   variants: z.array(publicationVariantSchema).optional(),
   blockId: z.string().optional(),
+  groupVariantCategory: z.string().optional(),
   accessory: z
     .discriminatedUnion('key', [
       entityVersionsAccessorySchema,
@@ -96,12 +97,20 @@ export const groupRouteSchema = z.object({
   key: z.literal('group'),
   groupId: z.string(),
   version: z.string().optional(),
+  blockId: z.string().optional(),
   listCategory: z.string().optional(),
   accessory: z
     .discriminatedUnion('key', [entityVersionsAccessorySchema])
     .nullable()
     .optional(),
 })
+export type GroupRoute = z.infer<typeof groupRouteSchema>
+
+export const groupFeedRouteSchema = z.object({
+  key: z.literal('group-feed'),
+  groupId: z.string(),
+})
+export type GroupFeedRoute = z.infer<typeof groupFeedRouteSchema>
 
 export const draftRouteSchema = z.object({
   key: z.literal('draft'),
@@ -117,8 +126,6 @@ export const draftRouteSchema = z.object({
 })
 export type DraftRoute = z.infer<typeof draftRouteSchema>
 
-export type GroupRoute = z.infer<typeof groupRouteSchema>
-
 export const navRouteSchema = z.discriminatedUnion('key', [
   feedRouteSchema,
   contactsRouteSchema,
@@ -126,6 +133,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   settingsRouteSchema,
   groupsRouteSchema,
   groupRouteSchema,
+  groupFeedRouteSchema,
   publicationRouteSchema,
   draftRouteSchema,
   documentsRouteSchema,

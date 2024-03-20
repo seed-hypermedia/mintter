@@ -11,6 +11,8 @@ import {
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
+import {HMFormattingToolbar} from './hm-formatting-toolbar'
+import {HypermediaLinkToolbar} from './hyperlink-toolbar'
 
 export function HyperMediaEditorView({
   editor,
@@ -21,8 +23,15 @@ export function HyperMediaEditorView({
   const openUrl = useOpenUrl()
   return (
     <BlockNoteView editor={editor}>
-      <FormattingToolbarPositioner editor={editor} />
-      <HyperlinkToolbarPositioner editor={editor} openUrl={openUrl} />
+      <FormattingToolbarPositioner
+        editor={editor}
+        formattingToolbar={HMFormattingToolbar}
+      />
+      <HyperlinkToolbarPositioner
+        hyperlinkToolbar={HypermediaLinkToolbar}
+        editor={editor}
+        openUrl={openUrl}
+      />
       <SlashMenuPositioner editor={editor} />
       <SideMenuPositioner editor={editor} placement="left" />
       <LinkMenuPositioner editor={editor} />

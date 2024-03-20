@@ -4,19 +4,25 @@ import {useGRPCClient} from '../app-context'
 import {queryKeys} from './query-keys'
 
 export type CitationLink = Awaited<
-  ReturnType<GRPCClient['contentGraph']['listCitations']>
->['links'][number]
+  ReturnType<GRPCClient['entities']['listEntityMentions']>
+>
 
-export function useEntityCitations(entityId?: string) {
+export function useEntityMentions(entityId?: string) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryFn: () => {
-      const id = entityId != null ? unpackHmId(entityId) : null
-      if (id?.type === 'd') {
-        return grpcClient.contentGraph.listCitations({documentId: entityId})
+    queryFn: async () => {
+      const result = await grpcClient.entities.listEntityMentions({
+        id: entityId,
+      })
+
+      return {
+        ...result,
+        mentions: result.mentions.filter((mention) => {
+          const sourceId = unpackHmId(mention.source)
+          if (sourceId?.type !== 'd') return false
+          return true
+        }),
       }
-      // grpcClient.contentGraph.listCitations({documentId: entityId}), // TODO: replace with new API
-      return {links: [] as CitationLink[]}
     },
     queryKey: [queryKeys.ENTITY_CITATIONS, entityId],
     enabled: !!entityId,

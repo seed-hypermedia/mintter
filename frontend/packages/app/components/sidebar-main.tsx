@@ -73,6 +73,20 @@ export function MainAppSidebar({
   )
     ? null
     : activeGroupRouteId
+  const publicationRoute = route.key === 'publication' ? route : null
+  const activeDocId = publicationRoute?.documentId
+  const unpinnedActiveDocId = pins.data?.documents.find(
+    (pinned) => pinned.docId === activeDocId,
+  )
+    ? null
+    : activeDocId
+  const accountRoute = route.key === 'account' ? route : null
+  const activeAccountId = accountRoute?.accountId
+  const unpinnedActiveAccountId = pins.data?.accounts.find(
+    (pinned) => pinned === activeAccountId,
+  )
+    ? null
+    : activeAccountId
   return (
     <GenericSidebarContainer>
       <YGroup
@@ -119,6 +133,14 @@ export function MainAppSidebar({
             ]}
           />
         </YGroup.Item>
+        {unpinnedActiveDocId && publicationRoute ? (
+          <SidebarDocument
+            docId={unpinnedActiveDocId}
+            isPinned={false}
+            onPress={() => {}}
+            pinVariants={publicationRoute.variants || []}
+          />
+        ) : null}
         {pins.data?.documents.map((pin) => {
           return (
             <SidebarDocument
@@ -132,6 +154,7 @@ export function MainAppSidebar({
                   })),
                 })
               }}
+              isPinned={true}
               authors={pin.authors}
               active={
                 route.key === 'publication' &&
@@ -140,7 +163,7 @@ export function MainAppSidebar({
                 stringArrayMatch(pin.authors, pubAuthorVariantAuthors) &&
                 groupsVariantsMatch(pin.groups, pubGroupVariants || [])
               }
-              variants={pin.authors.map((author) => ({
+              pinVariants={pin.authors.map((author) => ({
                 key: 'author',
                 author,
               }))}
@@ -168,12 +191,12 @@ export function MainAppSidebar({
             ]}
           />
         </YGroup.Item>
-        {unpinnedActiveGroupRouteId && onSelectGroupId && (
+        {unpinnedActiveGroupRouteId && (
           <SidebarGroup
             group={{groupId: unpinnedActiveGroupRouteId}}
             isPinned={false}
             onPress={() => {
-              onSelectGroupId(unpinnedActiveGroupRouteId)
+              onSelectGroupId?.(unpinnedActiveGroupRouteId)
             }}
           />
         )}
@@ -197,6 +220,7 @@ export function MainAppSidebar({
                 const {pathName, docId, docVersion} = pin
                 return (
                   <SidebarDocument
+                    isPinned={true}
                     variants={[
                       {
                         key: 'group',
@@ -255,8 +279,17 @@ export function MainAppSidebar({
             bold
           />
         </YGroup.Item>
+        {unpinnedActiveAccountId && accountRoute ? (
+          <PinnedAccount accountId={unpinnedActiveAccountId} isPinned={false} />
+        ) : null}
         {pins.data?.accounts.map((accountId) => {
-          return <PinnedAccount accountId={accountId} key={accountId} />
+          return (
+            <PinnedAccount
+              isPinned={true}
+              accountId={accountId}
+              key={accountId}
+            />
+          )
         })}
       </YGroup>
       <View f={1} minHeight={20} />

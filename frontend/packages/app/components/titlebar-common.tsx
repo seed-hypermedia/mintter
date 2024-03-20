@@ -85,7 +85,7 @@ export function DocOptionsButton() {
     groupVariants?.length === 1 ? groupVariants[0] : undefined
   const gwHost = useGatewayHost()
   const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
-  const pin = usePinDocument(route)
+  const pin = usePinDocument(docId, route.variants || [])
   const push = usePushPublication()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
   const menuItems: MenuItemType[] = [

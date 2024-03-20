@@ -1,18 +1,4 @@
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
+import {useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {HMGroup, Role, unpackHmId} from '@mintter/shared'
@@ -22,43 +8,36 @@ import {
   Form,
   Spinner,
   XStack,
+  YGroup,
   YStack,
   toast,
 } from '@mintter/ui'
-import {
-  Book,
-  Folder,
-  FolderPen,
-  List,
-  Plus,
-  Undo2,
-  X,
-} from '@tamagui/lucide-icons'
-import {PropsWithChildren, useEffect, useState} from 'react'
+import {Book, List, Newspaper, Plus, Undo2} from '@tamagui/lucide-icons'
+import {PropsWithChildren, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useMyAccount} from '../models/accounts'
-import {usePublication} from '../models/documents'
+import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {
   useCreateGroupCategory,
   useDeleteCategory,
   useGroup,
+  useGroupContent,
   useGroupMembers,
-  useGroupNavigation,
-  useMoveCategory,
   useRenameGroupCateogry,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {AppDialog, DialogTitle, useAppDialog} from './dialog'
+import {DialogTitle} from './dialog'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
-import {GenericSidebarContainer, SidebarItem} from './sidebar-base'
-
-type CategoryItem = {
-  id: string
-  label: string
-}
+import {
+  GenericSidebarContainer,
+  SidebarDocument,
+  SidebarItem,
+  activeDocOutline,
+  getDocOutline,
+} from './sidebar-base'
 
 export function GroupSidebar({
   groupId,
@@ -68,84 +47,38 @@ export function GroupSidebar({
   onBackToMain: () => void
 }) {
   const route = useNavRoute()
+  const groupRoute = route.key === 'group' ? route : null
   const isHomeActive =
-    route.key === 'group' &&
-    route.groupId === groupId &&
-    route.listCategory == null
-  const isAllContentActive =
-    route.key === 'group' &&
-    route.groupId === groupId &&
-    route.listCategory === '_all'
+    groupRoute?.groupId === groupId &&
+    !groupRoute?.listCategory &&
+    !groupRoute?.blockId
+  const isAllContentActive = groupRoute?.listCategory === '_all'
+  const isFeedActive = route.key === 'group-feed' && route.groupId === groupId
+  const replace = useNavigate('replace')
   const navigate = useNavigate()
   const groupMembers = useGroupMembers(groupId)
   const myAccount = useMyAccount()
   const myMemberRole =
     groupMembers.data?.members[myAccount.data?.id || ''] ||
     Role.ROLE_UNSPECIFIED
-  const groupRoute = route.key === 'group' ? route : null
   const group = useGroup(groupId, groupRoute?.version)
-  const navigationPub = useGroupNavigation(groupId, groupRoute?.version)
-  const activeCategorization = {}
-  const activeDocId = route.key === 'publication' ? route.documentId : null
-  navigationPub.data?.document?.children?.forEach((blockNode) => {
-    const {block} = blockNode
-    const activeItem = blockNode.children?.find((item) => {
-      const ref = item.block?.ref
-      const id = ref ? unpackHmId(ref) : null
-      return id && id.qid === activeDocId
-    })
-    if (activeItem) {
-      activeCategorization[block.id] = activeItem.block.ref
-    }
+  const pubRoute = route.key === 'publication' ? route : null
+  const activeDocId = pubRoute?.documentId
+  const groupContent = useGroupContent(groupId, groupRoute?.version)
+  const frontDocId = groupContent.data?.content['/']
+    ? unpackHmId(groupContent.data?.content['/'])
+    : null
+  const frontDoc = usePublication({
+    id: frontDocId?.qid,
+    version: frontDocId?.version || undefined,
   })
-  let activeUncategorized: string | null = null
-  if (Object.entries(activeCategorization).length === 0) {
-    activeUncategorized = activeDocId
-  }
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data)
+  const activeBlock = groupRoute?.blockId
+  const frontDocOutline = getDocOutline(
+    frontDoc?.data?.document?.children || [],
+    frontDocEmbeds,
   )
-  const items: CategoryItem[] =
-    navigationPub.data?.document?.children
-      ?.filter((blockNode) => {
-        if (blockNode.block.type !== 'heading') return false
-        return true
-      })
-      .map((blockNode) => {
-        return {
-          id: blockNode.block.id,
-          label: blockNode.block.text,
-        }
-      }) || []
-  const [temporaryItems, setTemporaryItems] = useState<null | CategoryItem[]>(
-    null,
-  )
-  const moveCategory = useMoveCategory(groupId)
-  const deleteCategoryDialog = useAppDialog(DeleteCategoryDialog, {
-    isAlert: true,
-  })
-  const renameCategoryDialog = useAppDialog(RenameCategoryDialog)
-  function handleDragEnd({active, over}) {
-    const oldIndex = items.findIndex((item) => item.id === active.id)
-    const toIndex = items.findIndex((item) => item.id === over.id)
-    const referenceIndices = items.map((item) => item.id)
-    let leftSibling = referenceIndices[toIndex - 1]
-    if (leftSibling === active.id) leftSibling = referenceIndices[toIndex]
-    if (active.id === over.id) return
-    setTemporaryItems(arrayMove(items, oldIndex, toIndex))
-    setTimeout(() => {
-      setTemporaryItems(null)
-    }, 200)
-    moveCategory.mutate({categoryId: active.id, leftSibling})
-  }
-  const displayItems = temporaryItems || items
+
   return (
     <GenericSidebarContainer>
       <YStack paddingVertical="$2">
@@ -159,7 +92,6 @@ export function GroupSidebar({
           }}
           icon={Undo2}
         />
-
         <SidebarItem
           active={isHomeActive}
           onPress={() => {
@@ -177,6 +109,36 @@ export function GroupSidebar({
           icon={Book}
           title={group.data?.title}
         />
+        <YGroup>
+          {activeDocOutline(
+            frontDocOutline,
+            activeBlock,
+            frontDocEmbeds,
+            (blockId) => {
+              const groupRoute = route.key == 'group' ? route : null
+              if (!groupRoute) return
+              replace({
+                ...groupRoute,
+                blockId,
+              })
+            },
+            navigate,
+          )}
+        </YGroup>
+
+        <SidebarItem
+          onPress={() => {
+            if (!isFeedActive) {
+              navigate({
+                key: 'group-feed',
+                groupId: groupId,
+              })
+            }
+          }}
+          icon={Newspaper}
+          active={isFeedActive}
+          title="Group Feed"
+        />
         <SidebarItem
           onPress={() => {
             if (!isAllContentActive) {
@@ -193,92 +155,10 @@ export function GroupSidebar({
           active={isAllContentActive}
           title="All Content"
         />
-        {activeUncategorized ? (
-          <ActiveDocSidebarItem id={activeUncategorized} />
-        ) : null}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={displayItems}
-            disabled={myMemberRole === Role.ROLE_UNSPECIFIED}
-            strategy={verticalListSortingStrategy}
-          >
-            {displayItems.map((item) => {
-              const activeItemRef = activeCategorization[item.id]
-              return (
-                <SortableItem key={item.id} id={item.id}>
-                  <SidebarItem
-                    title={item.label}
-                    active={
-                      route.key === 'group' && route.listCategory === item.id
-                    }
-                    menuItems={
-                      myMemberRole === Role.ROLE_UNSPECIFIED
-                        ? []
-                        : [
-                            {
-                              key: 'delete',
-                              icon: X,
-                              label: 'Delete Category',
-                              onPress: () => {
-                                deleteCategoryDialog.open({
-                                  groupId,
-                                  categoryId: item.id,
-                                })
-                              },
-                            },
-                            {
-                              key: 'rename',
-                              icon: FolderPen,
-                              label: 'Rename Category',
-                              onPress: () => {
-                                renameCategoryDialog.open({
-                                  groupId,
-                                  categoryId: item.id,
-                                  title: item.label,
-                                })
-                              },
-                            },
-                          ]
-                    }
-                    icon={Folder}
-                    onPress={() => {
-                      navigate({
-                        key: 'group',
-                        groupId,
-                        version: groupRoute?.version,
-                        accessory: groupRoute?.accessory,
-                        listCategory: item.id,
-                      })
-                    }}
-                  />
-                  {activeItemRef ? (
-                    <ActiveDocSidebarItem
-                      key={activeItemRef}
-                      id={activeItemRef}
-                    />
-                  ) : null}
-                </SortableItem>
-              )
-            })}
-          </SortableContext>
-        </DndContext>
-        {myMemberRole === Role.ROLE_UNSPECIFIED ? null : (
-          <XStack padding="$4">
-            <AppDialog
-              ContentComponent={CreateGroupCategoryDialog}
-              TriggerComponent={NewCategoryButton}
-              triggerComponentProps={{}}
-              contentComponentProps={{input: groupId}}
-            />
-          </XStack>
-        )}
+        <YGroup borderRadius={0}>
+          <ActiveDocSidebarItem id={activeDocId} />
+        </YGroup>
       </YStack>
-      {deleteCategoryDialog.content}
-      {renameCategoryDialog.content}
     </GenericSidebarContainer>
   )
 }
@@ -400,15 +280,12 @@ function DeleteCategoryDialog({
 
 function ActiveDocSidebarItem({id}: {id: string | null}) {
   const docId = id ? unpackHmId(id) : null
-  const pub = usePublication({
-    id: docId?.qid,
-    version: docId?.version || undefined,
-  })
+  if (!docId) return null
   return (
-    <SidebarItem
-      title={pub.data?.document?.title || ''}
-      active
-      indented
+    <SidebarDocument
+      docId={docId.qid}
+      docVersion={docId.version}
+      isPinned={false}
       onPress={() => {}}
     />
   )

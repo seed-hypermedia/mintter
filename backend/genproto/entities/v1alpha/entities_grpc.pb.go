@@ -32,6 +32,8 @@ type EntitiesClient interface {
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
 	SearchEntities(ctx context.Context, in *SearchEntitiesRequest, opts ...grpc.CallOption) (*SearchEntitiesResponse, error)
+	// List mentions of a given Entity across the locally-available content.
+	ListEntityMentions(ctx context.Context, in *ListEntityMentionsRequest, opts ...grpc.CallOption) (*ListEntityMentionsResponse, error)
 }
 
 type entitiesClient struct {
@@ -78,6 +80,15 @@ func (c *entitiesClient) SearchEntities(ctx context.Context, in *SearchEntitiesR
 	return out, nil
 }
 
+func (c *entitiesClient) ListEntityMentions(ctx context.Context, in *ListEntityMentionsRequest, opts ...grpc.CallOption) (*ListEntityMentionsResponse, error) {
+	out := new(ListEntityMentionsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/ListEntityMentions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EntitiesServer is the server API for Entities service.
 // All implementations should embed UnimplementedEntitiesServer
 // for forward compatibility
@@ -92,6 +103,8 @@ type EntitiesServer interface {
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
 	SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error)
+	// List mentions of a given Entity across the locally-available content.
+	ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error)
 }
 
 // UnimplementedEntitiesServer should be embedded to have forward compatible implementations.
@@ -109,6 +122,9 @@ func (UnimplementedEntitiesServer) DiscoverEntity(context.Context, *DiscoverEnti
 }
 func (UnimplementedEntitiesServer) SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchEntities not implemented")
+}
+func (UnimplementedEntitiesServer) ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListEntityMentions not implemented")
 }
 
 // UnsafeEntitiesServer may be embedded to opt out of forward compatibility for this service.
@@ -194,6 +210,24 @@ func _Entities_SearchEntities_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Entities_ListEntityMentions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListEntityMentionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).ListEntityMentions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/ListEntityMentions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).ListEntityMentions(ctx, req.(*ListEntityMentionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Entities_ServiceDesc is the grpc.ServiceDesc for Entities service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -216,6 +250,10 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchEntities",
 			Handler:    _Entities_SearchEntities_Handler,
+		},
+		{
+			MethodName: "ListEntityMentions",
+			Handler:    _Entities_ListEntityMentions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

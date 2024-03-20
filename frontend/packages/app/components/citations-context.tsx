@@ -1,12 +1,12 @@
-import {useEntityCitations} from '@mintter/app/models/content-graph'
-import {MttLink as Link} from '@mintter/shared'
+import {useEntityMentions} from '@mintter/app/models/content-graph'
+import {Mention} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {createContext, ReactNode, useContext, useMemo, useState} from 'react'
 
 export type CitationsContext = {
-  citations: ReturnType<typeof useEntityCitations>
-  onCitationsOpen: (citations: Array<Link>) => void
-  highlights: Array<Link>
-  onHighlightCitations: (citations: Array<Link>) => void
+  citations: Mention[] | undefined
+  onCitationsOpen: (mentions: Array<Mention>) => void
+  highlights: Array<Mention>
+  onHighlightCitations: (mentions: Array<Mention>) => void
 }
 
 let citationsContext = createContext<CitationsContext>({
@@ -24,22 +24,22 @@ export function CitationsProvider({
 }: {
   children: ReactNode
   documentId: string
-  onCitationsOpen: (citations: Array<Link>) => void
+  onCitationsOpen: (citations: Array<Mention>) => void
 }) {
-  let queryResult = useEntityCitations(documentId)
+  let queryResult = useEntityMentions(documentId)
 
-  let [highlights, setHighlights] = useState<Array<Link>>([])
+  let [highlights, setHighlights] = useState<Array<Mention>>([])
 
-  function onHighlightCitations(value: Array<Link>) {
+  function onHighlightCitations(value: Array<Mention>) {
     setHighlights(value)
   }
 
   return (
     <citationsContext.Provider
       value={{
-        citations: queryResult,
+        citations: queryResult.data?.mentions,
         highlights,
-        onCitationsOpen: (citations: Array<Link>) => {
+        onCitationsOpen: (citations: Array<Mention>) => {
           onCitationsOpen(citations)
           setHighlights(citations)
         },
@@ -59,8 +59,8 @@ export function useCitationsForBlock(blockId: string) {
   let context = useContext(citationsContext)
   let citations = useMemo(() => {
     if (!context) return []
-    return context.citations?.data?.links.filter((link) => {
-      return link.target?.blockId == blockId
+    return context.citations?.filter((link) => {
+      return link.targetFragment == blockId
     })
   }, [blockId, context])
 

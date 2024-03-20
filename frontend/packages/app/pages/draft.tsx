@@ -22,6 +22,7 @@ import {
   Input,
   SizableText,
   Theme,
+  Tooltip,
   XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
@@ -275,52 +276,81 @@ export default function DraftPage() {
             }}
           >
             {data.state.matches({ready: 'saveError'}) ? (
-              <Theme name="red">
-                <XStack padding="$4" position="sticky" top={0} zIndex={100}>
-                  <XStack
-                    flex={1}
-                    paddingHorizontal="$4"
-                    paddingVertical="$2"
-                    borderRadius="$3"
-                    backgroundColor="$backgroundFocus"
-                    alignItems="center"
-                    gap="$4"
-                    borderColor="$color6"
-                    borderWidth={1}
+              <XStack padding="$4" position="sticky" top={0} zIndex={100}>
+                <XStack
+                  flex={1}
+                  paddingHorizontal="$4"
+                  paddingVertical="$2"
+                  borderRadius="$3"
+                  backgroundColor="$red4"
+                  alignItems="center"
+                  gap="$4"
+                  borderColor="$color6"
+                  borderWidth={1}
+                >
+                  <XStack flexGrow={0} flexShrink={0}>
+                    <ErrorIcon color="$red11" size={12} />
+                  </XStack>
+                  <XStack flex={1}>
+                    <SizableText color="$red11">
+                      Oh No! Your draft is in a corrupt state. Need to restore
+                      or reset :(
+                    </SizableText>
+                  </XStack>
+                  <YStack
+                    gap="$2"
+                    ai="center"
+                    $gtSm={{
+                      flexDirection: 'row',
+                    }}
                   >
-                    <ErrorIcon size={12} />
-                    <XStack flex={1}>
-                      <SizableText>
-                        Your draft is in a corrupt state. Need to restore or
-                        reset
-                      </SizableText>
-                    </XStack>
-                    <XStack gap="$2" ai="center">
-                      {data.state.context.restoreTries == 0 ? (
+                    {data.state.context.restoreTries == 0 ? (
+                      <Tooltip content="This will remove all the current changes you made to the draft and will try to restore the last saved draft">
                         <Button
+                          // backgroundColor="$red5"
+                          // color="$red11"
+                          // borderColor="$red7"
+                          // hoverStyle={{
+                          //   backgroundColor: '$red11',
+                          //   color: '$red1',
+                          //   borderColor: '$red7',
+                          // }}
                           size="$2"
-                          theme="red"
                           onPress={() => data.send({type: 'RESTORE.DRAFT'})}
+                          $sm={{
+                            alignSelf: 'stretch',
+                          }}
                         >
-                          restore
+                          Restore to previous saved state
                         </Button>
-                      ) : (
-                        <SizableText size="$2" fontWeight="600">
-                          Restore failed
-                        </SizableText>
-                      )}
-
+                      </Tooltip>
+                    ) : (
+                      <SizableText size="$2" fontWeight="600" color="$red11">
+                        Restore failed
+                      </SizableText>
+                    )}
+                    <Tooltip content="It will remove all the changes made to this draft and reset to the original state of it. If it was an Empty draft, it will delete all its content. IF you started from another document, it will reset to that document state.">
                       <Button
+                        // backgroundColor="$red5"
+                        // color="$red11"
+                        // borderColor="$red7"
+                        // hoverStyle={{
+                        //   backgroundColor: '$red11',
+                        //   color: '$red1',
+                        //   borderColor: '$red7',
+                        // }}
+                        $sm={{
+                          alignSelf: 'stretch',
+                        }}
                         size="$2"
-                        theme="red"
                         onPress={() => data.send({type: 'RESET.DRAFT'})}
                       >
-                        reset
+                        Reset to the initial state
                       </Button>
-                    </XStack>
-                  </XStack>
+                    </Tooltip>
+                  </YStack>
                 </XStack>
-              </Theme>
+              </XStack>
             ) : null}
             <YStack
               id="editor-title"

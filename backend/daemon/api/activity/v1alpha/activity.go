@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"math"
 	"mintter/backend/core"
+	"mintter/backend/daemon/storage"
 	activity "mintter/backend/genproto/activity/v1alpha"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +23,8 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var resourcePattern = regexp.MustCompile(`^hm://[acdg]/[a-zA-Z0-9]+$`)
 
 // Repo is a subset of the [ondisk.OnDisk] used by this server.
 type Repo interface {
@@ -76,29 +80,13 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 
 	var events []*activity.Event
 
-	var getEventsTrustedStr = `
-		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
-		FROM structural_blobs 
-		JOIN blobs ON blobs.id=structural_blobs.id 
-		JOIN public_keys ON structural_blobs.author=public_keys.id
-		LEFT JOIN resources ON structural_blobs.resource=resources.id
-		JOIN trusted_accounts ON trusted_accounts.id=public_keys.id
-	`
-	var getEventsAllStr = `
-		SELECT blobs.id, structural_blobs.type ,public_keys.principal, resources.iri, structural_blobs.ts, blobs.insert_time, blobs.multihash, blobs.codec
-		FROM structural_blobs 
-		JOIN blobs ON blobs.id=structural_blobs.id 
-		JOIN public_keys ON structural_blobs.author=public_keys.id
-		LEFT JOIN resources ON structural_blobs.resource=resources.id
-	`
-	queryStr := getEventsAllStr
+	var trustedStr string
 	if req.TrustedOnly {
-		queryStr = getEventsTrustedStr
+		trustedStr = "JOIN " + storage.TrustedAccounts.String() + " ON " + storage.TrustedAccountsID.String() + "=" + storage.PublicKeysID.String()
 	}
-	const pageTokenStr = "blobs.id <= :idx AND (resources.iri NOT IN (SELECT resource from drafts_view) OR resources.iri IS NULL) ORDER BY blobs.id desc limit :page_token"
 	var filtersStr string
 	if len(req.FilterUsers) > 0 {
-		filtersStr = "hex(public_keys.principal) in ("
+		filtersStr = storage.PublicKeysPrincipal.String() + " in ("
 		for i, user := range req.FilterUsers {
 			if i > 0 {
 				filtersStr += ", "
@@ -107,16 +95,16 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 			if err != nil {
 				return nil, fmt.Errorf("Invalid user filter [%s]: %w", user, err)
 			}
-			filtersStr += "'" + strings.ToUpper(hex.EncodeToString(principal)) + "'"
+			filtersStr += "unhex('" + strings.ToUpper(hex.EncodeToString(principal)) + "')"
 		}
 		filtersStr += ") AND "
 	}
 
 	if len(req.FilterEventType) > 0 {
-		filtersStr += "lower(structural_blobs.type) in ("
+		filtersStr += "lower(" + storage.StructuralBlobsType.String() + ") in ("
 		for i, eventType := range req.FilterEventType {
 			// Hardcode this to prevent injection attacks
-			if strings.ToLower(eventType) != "keydelegation" && strings.ToLower(eventType) != "change" && strings.ToLower(eventType) != "Comment" && strings.ToLower(eventType) != "DagPB" {
+			if strings.ToLower(eventType) != "keydelegation" && strings.ToLower(eventType) != "change" && strings.ToLower(eventType) != "comment" && strings.ToLower(eventType) != "dagpb" {
 				return nil, fmt.Errorf("Invalid event type filter [%s]: Only KeyDelegation | Change | Comment | DagPB aresupported at the moment", eventType)
 			}
 			if i > 0 {
@@ -126,11 +114,39 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		}
 		filtersStr += ") AND "
 	}
-	queryStr += " WHERE " + filtersStr + pageTokenStr + ";"
+	if len(req.FilterResource) > 0 {
+		filtersStr += storage.ResourcesIRI.String() + " in ("
+		for i, resource := range req.FilterResource {
+			if !resourcePattern.MatchString(resource) {
+				return nil, fmt.Errorf("Invalid resource format [%s]", resource)
+			}
+			if i > 0 {
+				filtersStr += ", "
+			}
+			filtersStr += "'" + resource + "'"
+		}
+		filtersStr += ") AND "
+	}
+	var (
+		selectStr    = "SELECT " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
+		tableStr     = "FROM " + storage.T_StructuralBlobs
+		joinIDStr    = "JOIN " + storage.Blobs.String() + " ON " + storage.BlobsID.String() + "=" + storage.StructuralBlobsID.String()
+		joinpkStr    = "JOIN " + storage.PublicKeys.String() + " ON " + storage.StructuralBlobsAuthor.String() + "=" + storage.PublicKeysID.String()
+		leftjoinStr  = "LEFT JOIN " + storage.Resources.String() + " ON " + storage.StructuralBlobsResource.String() + "=" + storage.ResourcesID.String()
+		pageTokenStr = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) ORDER BY " + storage.BlobsID.String() + " desc limit :page_token"
+	)
 
-	query := dqb.Str(queryStr)
+	var getEventsStr = fmt.Sprintf(`
+		%s
+		%s
+		%s
+		%s
+		%s
+		%s
+		WHERE %s %s;
+	`, selectStr, tableStr, joinIDStr, joinpkStr, leftjoinStr, trustedStr, filtersStr, pageTokenStr)
 	var lastBlobID int64
-	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
+	err = sqlitex.Exec(conn, dqb.Str(getEventsStr)(), func(stmt *sqlite.Stmt) error {
 		lastBlobID = stmt.ColumnInt64(0)
 		eventType := stmt.ColumnText(1)
 		author := stmt.ColumnBytes(2)

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Seed - Find in Page View</title>
+    <style>
+      html, body {
+        background-color: transparent !important;        
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+      }
+
+      #root {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      global = globalThis
+    </script>
+    <script type="module" src="/src/renderer-find.ts"></script>
+  </body>
+</html>

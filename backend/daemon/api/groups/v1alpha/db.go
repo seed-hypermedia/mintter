@@ -176,7 +176,7 @@ var QCollectBlobs = dqb.Str(`
 		blobs.codec,
 		blobs.multihash
 	FROM selected
-	JOIN blobs ON blobs.id = selected.id AND selected.kind = 1
+	JOIN blobs INDEXED BY blobs_metadata ON blobs.id = selected.id AND selected.kind = 1
 	ORDER BY blobs.id;
 `)
 

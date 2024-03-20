@@ -1,8 +1,7 @@
-import {useHover} from '@mintter/shared'
+import {PublicationVariant, useHover} from '@mintter/shared'
 import {Button, ButtonProps, Tooltip} from '@mintter/ui'
 import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
-import {PublicationRoute} from '../utils/routes'
 
 export function PinAccountButton({accountId}: {accountId: string}) {
   const {isPinned, togglePin} = usePinAccount(accountId)
@@ -79,8 +78,14 @@ export function PinGroupButton({groupId}: {groupId: string}) {
   )
 }
 
-export function PinDocumentButton({route}: {route: PublicationRoute}) {
-  const {isPinned, togglePin} = usePinDocument(route)
+export function PinDocumentButton({
+  docId,
+  variants,
+}: {
+  docId: string
+  variants: PublicationVariant[]
+}) {
+  const {isPinned, togglePin} = usePinDocument(docId, variants)
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }

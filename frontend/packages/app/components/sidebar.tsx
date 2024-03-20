@@ -1,5 +1,4 @@
 import {memo, useEffect, useState} from 'react'
-import {useExperiments} from '../models/experiments'
 import {useNavRoute} from '../utils/navigation'
 import {getRouteGroupId} from './sidebar-base'
 import {GroupSidebar} from './sidebar-group'
@@ -9,14 +8,13 @@ export const AppSidebar = memo(FullAppSidebar)
 
 function FullAppSidebar() {
   let [sidebarGroupId, setSidebarGroupId] = useState<string | null>(null)
-  const experiments = useExperiments()
   const route = useNavRoute()
   const activeGroupRouteId = getRouteGroupId(route)
   useEffect(() => {
     setSidebarGroupId(activeGroupRouteId)
   }, [activeGroupRouteId])
 
-  if (sidebarGroupId && !!experiments.data?.groupOrganization) {
+  if (sidebarGroupId) {
     return (
       <GroupSidebar
         groupId={sidebarGroupId}
@@ -28,13 +26,9 @@ function FullAppSidebar() {
   }
   return (
     <MainAppSidebar
-      onSelectGroupId={
-        experiments.data?.groupOrganization
-          ? (groupId: string) => {
-              setSidebarGroupId(groupId)
-            }
-          : null
-      }
+      onSelectGroupId={(groupId: string) => {
+        setSidebarGroupId(groupId)
+      }}
     />
   )
 }

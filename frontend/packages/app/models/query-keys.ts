@@ -11,6 +11,8 @@ export const queryKeys = {
   // feed
   FEED: 'FEED', // trustedOnly: boolean
   FEED_LATEST_EVENT: 'FEED_LATEST_EVENT', // trustedOnly: boolean
+  RESOURCE_FEED: 'RESOURCE_FEED', //, resourceId: string
+  RESOURCE_FEED_LATEST_EVENT: 'RESOURCE_FEED_LATEST_EVENT', //, resourceId: string
 
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
