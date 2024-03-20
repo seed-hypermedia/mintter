@@ -83,7 +83,6 @@ export function GroupPage() {
         {groupContent.data
           ? groupContent.data.map((contentItem) => {
               if (contentItem?.pathName === '/') return null
-              if (contentItem?.pathName === '_navigation') return null
               return (
                 contentItem && (
                   <GroupContentItem
@@ -109,10 +108,10 @@ export function GroupPage() {
   const frontDocView = (
     <FrontDoc item={frontPageItem} groupTitle={loadedGroup?.title} />
   )
-  const navigationDoc = groupContent.data?.find(
-    (item) => item?.pathName === '_navigation',
-  )
-  if (navigationDoc && router.query.category) {
+  // const navigationDoc = groupContent.data?.find(
+  //   (item) => item?.pathName === '_navigation',
+  // )
+  if (router.query.category) {
     mainView = <SizableText>{router.query.category}</SizableText>
   } else if (view == 'front') {
     mainView = frontDocView
@@ -167,14 +166,15 @@ export function GroupPage() {
           />
         }
         leftSide={
-          navigationDoc?.publication ? (
-            <GroupNavigation
-              publication={navigationDoc.publication}
-              group={loadedGroup}
-              groupEid={groupEid}
-              groupVersion={displayVersion}
-            />
-          ) : null
+          // navigationDoc?.publication ? (
+          //   <GroupNavigation
+          //     publication={navigationDoc.publication}
+          //     group={loadedGroup}
+          //     groupEid={groupEid}
+          //     groupVersion={displayVersion}
+          //   />
+          // ) : null
+          null
         }
         rightSide={
           <GroupMetadata group={group.data?.group} groupId={groupId} />
@@ -213,9 +213,9 @@ export function GroupAllCategoryPage() {
       enabled: enabledContentQuery,
     },
   )
-  const navigationDoc = groupContent.data?.find(
-    (item) => item?.pathName === '_navigation',
-  )
+  // const navigationDoc = groupContent.data?.find(
+  //   (item) => item?.pathName === '_navigation',
+  // )
   const loadedGroup = group.data?.group
   const isMainSiteGroup = groupEid === siteInfo.data?.groupEid
   return (
@@ -230,14 +230,15 @@ export function GroupAllCategoryPage() {
           />
         }
         leftSide={
-          navigationDoc?.publication && loadedGroup ? (
-            <GroupNavigation
-              publication={navigationDoc.publication}
-              group={loadedGroup}
-              groupEid={groupEid}
-              groupVersion={displayVersion}
-            />
-          ) : null
+          null
+          // navigationDoc?.publication && loadedGroup ? (
+          //   <GroupNavigation
+          //     publication={navigationDoc.publication}
+          //     group={loadedGroup}
+          //     groupEid={groupEid}
+          //     groupVersion={displayVersion}
+          //   />
+          // ) : null
         }
         rightSide={
           <GroupMetadata group={group.data?.group} groupId={groupId} />
@@ -310,16 +311,6 @@ export function GroupCategoryPage({categoryId}: {categoryId: string}) {
       <MainSiteLayout
         head={
           <SiteHead pageTitle={selectedCategory?.block?.text || undefined} />
-        }
-        leftSide={
-          navigationDoc?.publication && loadedGroup ? (
-            <GroupNavigation
-              publication={navigationDoc.publication}
-              group={loadedGroup}
-              groupEid={groupEid}
-              groupVersion={displayVersion}
-            />
-          ) : null
         }
         rightSide={
           <GroupMetadata group={group.data?.group} groupId={groupId} />

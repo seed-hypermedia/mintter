@@ -1,18 +1,10 @@
 import {
-  DndContext,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
+import {sortableKeyboardCoordinates, useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {HMGroup, Role, unpackHmId} from '@mintter/shared'
@@ -26,17 +18,8 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {
-  Book,
-  Folder,
-  FolderPen,
-  List,
-  Newspaper,
-  Plus,
-  Undo2,
-  X,
-} from '@tamagui/lucide-icons'
-import {PropsWithChildren, useEffect, useState} from 'react'
+import {Book, List, Newspaper, Plus, Undo2} from '@tamagui/lucide-icons'
+import {PropsWithChildren, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useMyAccount} from '../models/accounts'
@@ -45,13 +28,11 @@ import {
   useDeleteCategory,
   useGroup,
   useGroupMembers,
-  useGroupNavigation,
-  useMoveCategory,
   useRenameGroupCateogry,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {AppDialog, DialogTitle, useAppDialog} from './dialog'
+import {DialogTitle} from './dialog'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
 import {
@@ -59,11 +40,6 @@ import {
   SidebarDocument,
   SidebarItem,
 } from './sidebar-base'
-
-type CategoryItem = {
-  id: string
-  label: string
-}
 
 export function GroupSidebar({
   groupId,
@@ -91,36 +67,8 @@ export function GroupSidebar({
     Role.ROLE_UNSPECIFIED
   const groupRoute = route.key === 'group' ? route : null
   const group = useGroup(groupId, groupRoute?.version)
-  const navigationPub = useGroupNavigation(groupId, groupRoute?.version)
-  const activeCategorization = {}
   const pubRoute = route.key === 'publication' ? route : null
   const activeDocId = pubRoute?.documentId
-  const activeCategory = pubRoute?.groupVariantCategory
-  navigationPub.data?.document?.children?.forEach((blockNode) => {
-    const {block} = blockNode
-    const activeItem = activeDocId
-      ? blockNode.children?.find((item) => {
-          const ref = item.block?.ref
-          const id = ref ? unpackHmId(ref) : null
-          return id && id.qid === activeDocId
-        })
-      : null
-    if (activeItem) {
-      activeCategorization[block.id] = activeItem.block.ref
-    }
-  })
-  useEffect(() => {
-    const activeCategories = Object.entries(activeCategorization)
-    if (activeCategories.length === 1) {
-      const [categoryId, docId] = activeCategories[0]
-      if (categoryId === activeCategory) return
-      if (!pubRoute) return
-      replace({
-        ...pubRoute,
-        groupVariantCategory: categoryId,
-      })
-    }
-  }, [activeCategorization, activeCategory, pubRoute])
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -131,40 +79,6 @@ export function GroupSidebar({
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   )
-  const items: CategoryItem[] =
-    navigationPub.data?.document?.children
-      ?.filter((blockNode) => {
-        if (blockNode.block.type !== 'heading') return false
-        return true
-      })
-      .map((blockNode) => {
-        return {
-          id: blockNode.block.id,
-          label: blockNode.block.text,
-        }
-      }) || []
-  const [temporaryItems, setTemporaryItems] = useState<null | CategoryItem[]>(
-    null,
-  )
-  const moveCategory = useMoveCategory(groupId)
-  const deleteCategoryDialog = useAppDialog(DeleteCategoryDialog, {
-    isAlert: true,
-  })
-  const renameCategoryDialog = useAppDialog(RenameCategoryDialog)
-  function handleDragEnd({active, over}) {
-    const oldIndex = items.findIndex((item) => item.id === active.id)
-    const toIndex = items.findIndex((item) => item.id === over.id)
-    const referenceIndices = items.map((item) => item.id)
-    let leftSibling = referenceIndices[toIndex - 1]
-    if (leftSibling === active.id) leftSibling = referenceIndices[toIndex]
-    if (active.id === over.id) return
-    setTemporaryItems(arrayMove(items, oldIndex, toIndex))
-    setTimeout(() => {
-      setTemporaryItems(null)
-    }, 200)
-    moveCategory.mutate({categoryId: active.id, leftSibling})
-  }
-  const displayItems = temporaryItems || items
   return (
     <GenericSidebarContainer>
       <YStack paddingVertical="$2">
@@ -225,96 +139,9 @@ export function GroupSidebar({
           title="All Content"
         />
         <YGroup borderRadius={0}>
-          {activeDocId && activeCategory == null ? (
-            <ActiveDocSidebarItem id={activeDocId} />
-          ) : null}
+          <ActiveDocSidebarItem id={activeDocId} />
         </YGroup>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={displayItems}
-            disabled={myMemberRole === Role.ROLE_UNSPECIFIED}
-            strategy={verticalListSortingStrategy}
-          >
-            {displayItems.map((item) => {
-              const activeItemRef =
-                item.id === activeCategory ? activeDocId : null
-              return (
-                <SortableItem key={item.id} id={item.id}>
-                  <SidebarItem
-                    title={item.label}
-                    active={
-                      route.key === 'group' && route.listCategory === item.id
-                    }
-                    menuItems={
-                      myMemberRole === Role.ROLE_UNSPECIFIED
-                        ? []
-                        : [
-                            {
-                              key: 'delete',
-                              icon: X,
-                              label: 'Delete Category',
-                              onPress: () => {
-                                deleteCategoryDialog.open({
-                                  groupId,
-                                  categoryId: item.id,
-                                })
-                              },
-                            },
-                            {
-                              key: 'rename',
-                              icon: FolderPen,
-                              label: 'Rename Category',
-                              onPress: () => {
-                                renameCategoryDialog.open({
-                                  groupId,
-                                  categoryId: item.id,
-                                  title: item.label,
-                                })
-                              },
-                            },
-                          ]
-                    }
-                    icon={Folder}
-                    onPress={() => {
-                      navigate({
-                        key: 'group',
-                        groupId,
-                        version: groupRoute?.version,
-                        accessory: groupRoute?.accessory,
-                        listCategory: item.id,
-                      })
-                    }}
-                  />
-                  <YGroup borderRadius={0}>
-                    {activeItemRef ? (
-                      <ActiveDocSidebarItem
-                        key={activeItemRef}
-                        id={activeItemRef}
-                      />
-                    ) : null}
-                  </YGroup>
-                </SortableItem>
-              )
-            })}
-          </SortableContext>
-        </DndContext>
-        {myMemberRole === Role.ROLE_UNSPECIFIED ? null : (
-          <XStack padding="$4">
-            <AppDialog
-              ContentComponent={CreateGroupCategoryDialog}
-              TriggerComponent={NewCategoryButton}
-              triggerComponentProps={{}}
-              contentComponentProps={{input: groupId}}
-            />
-          </XStack>
-        )}
       </YStack>
-      {deleteCategoryDialog.content}
-      {renameCategoryDialog.content}
     </GenericSidebarContainer>
   )
 }

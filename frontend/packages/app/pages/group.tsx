@@ -109,7 +109,6 @@ import {
   useGroup,
   useGroupContent,
   useGroupMembers,
-  useGroupNavigation,
   useMoveCategoryItem,
   useRemoveDocFromGroup,
 } from '../models/groups'
@@ -125,7 +124,6 @@ import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
   const experiments = useExperiments()
-  const experimentalGroupOrganization = experiments.data?.groupOrganization
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : undefined
   if (!groupRoute) throw new Error('Group page needs group route')
@@ -138,43 +136,16 @@ export default function GroupPage() {
     Role.ROLE_UNSPECIFIED
 
   let content: ReactNode = null
-  if (experimentalGroupOrganization) {
-    if (groupRoute.listCategory === '_all') {
-      content = (
-        <Container>
-          <GroupAllContent
-            groupRoute={groupRoute}
-            myMemberRole={myMemberRole}
-          />
-        </Container>
-      )
-    } else if (groupRoute.listCategory) {
-      content = (
-        <GroupCategoryContent
-          category={groupRoute.listCategory}
-          groupRoute={groupRoute}
-          myMemberRole={myMemberRole}
-        />
-      )
-    } else {
-      content = (
-        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
-      )
-    }
-  } else {
+  if (groupRoute.listCategory === '_all') {
     content = (
-      <>
-        <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
-        <Container paddingVertical={0} marginBottom="$4">
-          <Separator marginBottom="$4" />
-          <GroupAllContent
-            groupRoute={groupRoute}
-            myMemberRole={myMemberRole}
-          />
-        </Container>
-      </>
+      <Container>
+        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      </Container>
     )
+  } else {
+    content = <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
   }
+
   return (
     <GroupPageFooterAccessory
       variantVersion={latestGroup.data?.version}
@@ -546,7 +517,6 @@ export function GroupAllContent({
         {//Object.entries(groupContent.data?.content || {})
         groupContent.data?.items.map(({key, pub, author, editors, id}) => {
           if (key === '/') return null
-          if (key === '_navigation') return null
           const latestEntry = latestGroupContent.data?.content?.[key]
           const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
 
@@ -593,7 +563,6 @@ export function GroupCategoryContent({
   const {groupId, version} = groupRoute
   const latestGroupContent = useGroupContent(groupId)
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const navPub = useGroupNavigation(groupId, version)
   const categoryContent = getBlockNode(
     navPub.data?.document?.children,
     category,

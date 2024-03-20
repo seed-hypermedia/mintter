@@ -36,7 +36,6 @@ import {BasicOGMeta, OGImageMeta, getPublicationDescription} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import {SmallContainer} from './error-page'
-import {GroupNavigation} from './group-page'
 import {OpenInAppLink} from './metadata'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
@@ -424,19 +423,19 @@ function PublicationContextSide({
     {enabled: !!group?.id},
   )
 
-  const navigationDoc = groupContent.data?.find(
-    (item) => item?.pathName === '_navigation',
-  )
-  if (navigationDoc?.publication) {
-    return (
-      <GroupNavigation
-        publication={navigationDoc.publication}
-        group={group}
-        groupEid={groupEid}
-        groupVersion={groupVersion}
-      />
-    )
-  }
+  // const navigationDoc = groupContent.data?.find(
+  //   (item) => item?.pathName === '_navigation',
+  // )
+  // if (navigationDoc?.publication) {
+  //   return (
+  //     <GroupNavigation
+  //       publication={navigationDoc.publication}
+  //       group={group}
+  //       groupEid={groupEid}
+  //       groupVersion={groupVersion}
+  //     />
+  //   )
+  // }
   const groupSidebarContent = group ? (
     <GroupSidebarContent
       activePathName={activePathName}

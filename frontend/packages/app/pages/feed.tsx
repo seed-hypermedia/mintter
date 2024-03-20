@@ -411,9 +411,7 @@ function GroupChangeFeedItem(props: ChangeFeedItemProps) {
     )
   const contentPatch = patchEntries.find(([key]) => key === 'content')
   const contentUpdate = contentPatch?.[1]
-  const contentEntries = Object.entries(contentUpdate || {}).filter(
-    ([key]) => key !== '_navigation',
-  )
+  const contentEntries = Object.entries(contentUpdate || {})
   const linkId = hmId('g', id.eid, {version: cid})
   if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
     const [pathName, contentUrl] = contentEntries[0]
@@ -631,22 +629,20 @@ function getPatchedGroupEntries(
     })
   }
   if (patch.content) {
-    Object.entries(patch.content)
-      .filter(([key]) => key !== '_navigation')
-      .forEach(([pathName, contentUrl]) => {
-        const labelKey = pathName === '/' ? 'Front Page' : pathName
-        const docId = unpackHmId(contentUrl)
-        if (docId)
-          entries.push({
-            labelKey,
-            content: (
-              <PublicationLink
-                id={docId}
-                variants={[{key: 'group', groupId, pathName}]}
-              />
-            ),
-          })
-      })
+    Object.entries(patch.content).forEach(([pathName, contentUrl]) => {
+      const labelKey = pathName === '/' ? 'Front Page' : pathName
+      const docId = unpackHmId(contentUrl)
+      if (docId)
+        entries.push({
+          labelKey,
+          content: (
+            <PublicationLink
+              id={docId}
+              variants={[{key: 'group', groupId, pathName}]}
+            />
+          ),
+        })
+    })
   }
   return entries
 }

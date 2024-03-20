@@ -5,7 +5,7 @@ import NotFoundPage from 'pages/404'
 import {PublicationPage} from 'src/publication-page'
 import {trpc} from 'src/trpc'
 import {ErrorPage} from './error-page'
-import {GroupAllCategoryPage, GroupCategoryPage, GroupPage} from './group-page'
+import {GroupPage} from './group-page'
 
 export function GroupDocPage({}) {
   const router = useRouter()
@@ -39,15 +39,15 @@ export function GroupDocPage({}) {
   if (groupContent.isInitialLoading) return <Spinner />
   if (!groupContent.data) return <NotFoundPage />
   const pathItem = groupContent.data.find((item) => item?.pathName === pathName)
-  const categoryId = router.query?.pathName?.slice(2)
-  if (
-    router.query?.pathName?.slice(0, 2) === '--' &&
-    categoryId &&
-    typeof categoryId === 'string'
-  ) {
-    if (categoryId === 'all') return <GroupAllCategoryPage />
-    return <GroupCategoryPage categoryId={categoryId} />
-  }
+  // const categoryId = router.query?.pathName?.slice(2)
+  // if (
+  //   router.query?.pathName?.slice(0, 2) === '--' &&
+  //   categoryId &&
+  //   typeof categoryId === 'string'
+  // ) {
+  //   if (categoryId === 'all') return <GroupAllCategoryPage />
+  //   return <GroupCategoryPage categoryId={categoryId} />
+  // }
   if (!pathItem) return <NotFoundPage />
   return (
     <PublicationPage
