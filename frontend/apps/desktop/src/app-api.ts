@@ -63,7 +63,10 @@ ipcMain.on('close_window', (_event, _info) => {
 })
 
 ipcMain.on('find_in_page_query', (_event, _info) => {
-  getFocusedWindow()?.webContents?.findInPage(_info.query, {findNext: true})
+  getFocusedWindow()?.webContents?.findInPage(_info.query, {
+    findNext: _info.findNext,
+    forward: _info.forward,
+  })
 })
 
 ipcMain.on('find_in_page_cancel', () => {

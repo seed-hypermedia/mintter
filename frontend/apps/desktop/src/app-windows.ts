@@ -212,35 +212,6 @@ export function createAppWindow(input: {
     },
   })
 
-  let mainWindowBounds = browserWindow.getBounds()
-
-  const findInPageView = new BrowserView({
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-    },
-  })
-
-  browserWindow.addBrowserView(findInPageView)
-  findInPageView.setBounds({
-    x: mainWindowBounds.width - 320,
-    y: -200,
-    width: 320,
-    height: 100,
-  })
-
-  if (FIND_IN_PAGE_VITE_DEV_SERVER_URL) {
-    findInPageView.webContents.loadURL(
-      `${FIND_IN_PAGE_VITE_DEV_SERVER_URL}/find-in-page.html`,
-    )
-  } else {
-    findInPageView.webContents.loadFile(
-      path.join(
-        __dirname,
-        `../renderer/${FIND_IN_PAGE_VITE_NAME}/find-in-page.html`,
-      ),
-    )
-  }
-
   info('[MAIN:API]: window created')
 
   const windowLogger = childLogger(windowId)
@@ -274,7 +245,6 @@ export function createAppWindow(input: {
   })
 
   browserWindow.webContents.ipc.on('windowIsReady', (e) => {
-    info('=================================== windowIsReady')
     browserWindow.show()
   })
 
@@ -294,10 +264,7 @@ export function createAppWindow(input: {
   // @ts-expect-error
   browserWindow.on('resize', (e, a) => {
     const bounds = browserWindow.getBounds()
-    findInPageView.setBounds({
-      ...findInPageView.getBounds(),
-      x: bounds.width - 320,
-    })
+    updateFindInPageView(browserWindow)
     saveWindowPositionDebounced()
   })
   // @ts-expect-error
@@ -368,18 +335,45 @@ export function createAppWindow(input: {
 
     globalShortcut.register('CommandOrControl+F', () => {
       const focusedWindow = getFocusedWindow()
+      info('[CMD+F]: shortcut triggered')
       if (focusedWindow) {
-        focusedWindow.webContents.send('appWindowEvent', 'find_in_page')
-        const currentBounds = findInPageView.getBounds()
-        findInPageView.setBounds({
-          ...currentBounds,
-          y: currentBounds.y == -200 ? 0 : -200,
-        })
-        if (currentBounds.y == -200) {
-          findInPageView.webContents.executeJavaScript(`
-          document.querySelector('input').focus();
-        `)
+        let findInPageView = focusedWindow.getBrowserView()
+
+        if (!findInPageView) {
+          info('[CMD+F]: no view present')
+          findInPageView = createFindInPageView(focusedWindow)
+          findInPageView.webContents.focus()
+          findInPageView.webContents.send(
+            'appWindowEvent',
+            'find_in_page_focus',
+          )
+        } else {
+          findInPageView.webContents.focus()
+          const currentBounds = findInPageView.getBounds()
+          info('[CMD+F]: view present', currentBounds)
+          if (currentBounds.y < 0) {
+            findInPageView.setBounds({
+              ...currentBounds,
+              y: 0,
+            })
+          } else {
+            findInPageView.webContents.focus()
+            findInPageView.webContents.send(
+              'appWindowEvent',
+              'find_in_page_focus',
+            )
+          }
         }
+        // const currentBounds = findInPageView.getBounds()
+        // findInPageView.setBounds({
+        //   ...currentBounds,
+        //   y: currentBounds.y == -200 ? 0 : -200,
+        // })
+        // if (currentBounds.y == -200) {
+        //   findInPageView.webContents.executeJavaScript(`
+        //   document.querySelector('input').focus();
+        // `)
+        // }
       }
     })
   })
@@ -390,6 +384,7 @@ export function createAppWindow(input: {
     //   browserWindow.webContents.stopFindInPage('clearSelection')
     // }
   })
+
   browserWindow.on('blur', () => {
     windowBlurred(windowId)
     globalShortcut.unregister('CommandOrControl+F')
@@ -407,4 +402,48 @@ export function createAppWindow(input: {
   }
 
   return browserWindow
+}
+
+function createFindInPageView(win: BrowserWindow) {
+  let winBounds = win.getBounds()
+  const findInPageView = new BrowserView({
+    webPreferences: {
+      preload: path.join(__dirname, 'preload-find-in-page.js'),
+    },
+  })
+
+  win.addBrowserView(findInPageView)
+  findInPageView.setBounds({
+    x: winBounds.width - 320,
+    // y: -200,
+    y: 0,
+    width: 320,
+    height: 100,
+  })
+
+  if (FIND_IN_PAGE_VITE_DEV_SERVER_URL) {
+    findInPageView.webContents.loadURL(
+      `${FIND_IN_PAGE_VITE_DEV_SERVER_URL}/find-in-page.html`,
+    )
+  } else {
+    findInPageView.webContents.loadFile(
+      path.join(
+        __dirname,
+        `../renderer/${FIND_IN_PAGE_VITE_NAME}/find-in-page.html`,
+      ),
+    )
+  }
+
+  return findInPageView
+}
+
+function updateFindInPageView(win: BrowserWindow) {
+  const bounds = win.getBounds()
+  const view = win.getBrowserView()
+  if (view) {
+    view.setBounds({
+      ...view.getBounds(),
+      x: bounds.width - 320,
+    })
+  }
 }

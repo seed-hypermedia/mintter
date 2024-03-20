@@ -1,5 +1,6 @@
 import '@sentry/electron/preload'
 import {contextBridge, ipcRenderer} from 'electron'
+import {exposeElectronTRPC} from 'electron-trpc/main'
 // import directly from this deep path for shared/utils/stream! Bad things happen if you try to directly import from @mintter/shared
 import {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {
@@ -8,16 +9,26 @@ import {
 } from '@mintter/shared/src/utils/stream'
 import {GoDaemonState} from './daemon'
 
+process.once('loaded', async () => {
+  exposeElectronTRPC()
+})
+
 // const [updateInitNavState, initNavState] =
 //   writeableStateStream<NavState | null>(null)
 
 const [dispatchAppWindow, appWindowEvents] = eventStream<AppWindowEvent>()
-const windowInfo = ipcRenderer.sendSync('initWindow')
 
 contextBridge.exposeInMainWorld('appWindowEvents', appWindowEvents)
 
+const AppInfo = {
+  platform: () => process.platform,
+  arch: () => process.arch,
+} as const
+export type AppInfoType = typeof AppInfo
+contextBridge.exposeInMainWorld('appInfo', AppInfo)
+
 // let windowId: string | null = null
-console.log('---preloooadddd')
+// console.log('---preloooadddd')
 // ipcRenderer.addListener('initWindow', (info, event) => {
 //   console.log('💡 Init Window', event)
 //   windowId = event.windowId
@@ -29,10 +40,36 @@ console.log('---preloooadddd')
 //   updateDaemonState(event.daemonState)
 // })
 
+const windowInfo = ipcRenderer.sendSync('initWindow')
+
+contextBridge.exposeInMainWorld('windowId', windowInfo.windowId)
+contextBridge.exposeInMainWorld('windowType', windowInfo.windowType)
+contextBridge.exposeInMainWorld('initNavState', windowInfo.navState)
+
 const [updateDarkMode, darkMode] = writeableStateStream<GoDaemonState>(
   windowInfo.darkMode,
 )
 contextBridge.exposeInMainWorld('darkMode', darkMode)
+
+const [updateDaemonState, daemonState] = writeableStateStream<GoDaemonState>(
+  windowInfo.daemonState,
+)
+contextBridge.exposeInMainWorld('daemonState', daemonState)
+
+contextBridge.exposeInMainWorld('windowIsReady', () => {
+  ipcRenderer.send('windowIsReady')
+})
+const routeHandlers = new Set<(route: any) => void>()
+
+contextBridge.exposeInMainWorld('routeHandlers', routeHandlers)
+
+ipcRenderer.addListener('openRoute', (info, route) => {
+  routeHandlers.forEach((handler) => handler(route))
+})
+
+ipcRenderer.addListener('goDaemonState', (info, state) => {
+  updateDaemonState(state)
+})
 
 ipcRenderer.addListener('darkMode', (info, state) => {
   updateDarkMode(state)

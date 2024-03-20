@@ -7,15 +7,15 @@ import {
   XGroup,
   XStack,
 } from '@mintter/ui'
-import {useDeferredValue, useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {AppIPC} from '../app-ipc'
 
 export function FindInPage({ipc}: {ipc: AppIPC}) {
-  const [active, setActive] = useState(false)
   const size = '$2'
   const [query, setQuery] = useState('')
-  const deferredQuery = useDeferredValue(query)
   const queryInput = useRef<HTMLInputElement>(null)
+  const [totalResults, setTotalResults] = useState(0)
+  const [current, setCurrent] = useState(0)
 
   function clearFind() {
     setQuery('')
@@ -23,27 +23,43 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
   }
 
   useEffect(() => {
-    // @ts-expect-error
-    return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
-      if (event === 'find_in_page') {
-        setActive((newVal) => {
-          if (newVal) {
-            clearFind()
-          } else {
-            queryInput.current?.focus()
-          }
-
-          return !newVal
-        })
+    window.addEventListener('keydown', (e) => {
+      if (e.key == 'Escape') {
+        alert('Escape pressed')
+        clearFind()
       }
     })
   }, [])
 
   useEffect(() => {
-    if (deferredQuery.length > 0) {
-      ipc.send('find_in_page_query', {query: deferredQuery, findNext: true})
+    // @ts-expect-error
+    return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
+      setTimeout(() => {
+        queryInput.current?.focus()
+        queryInput.current?.select()
+      }, 100)
+    })
+  }, [])
+
+  function handleKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      clearFind()
+    } else if (event.key === 'Enter') {
+      event.preventDefault()
+      ipc.send('find_in_page_query', {
+        query,
+        findNext: false,
+        forward: !event.shiftKey,
+      })
     }
-  }, [deferredQuery])
+  }
+
+  useEffect(() => {
+    if (query.length > 0) {
+      ipc.send('find_in_page_query', {query, findNext: true})
+    }
+  }, [query])
 
   return (
     <XStack fullscreen ai="center" jc="center">
@@ -67,6 +83,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
             borderWidth={0}
             outline="none"
             onChangeText={setQuery}
+            onKeyPress={handleKeyPress}
           />
         </XGroup.Item>
 
@@ -78,9 +95,9 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
             icon={ChevronUp}
             onPress={() =>
               ipc.send('find_in_page_query', {
-                query: deferredQuery,
+                query,
                 findNext: false,
-                forward: false,
+                forward: true,
               })
             }
           />
@@ -93,8 +110,9 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
             icon={ChevronDown}
             onPress={() =>
               ipc.send('find_in_page_query', {
-                query: deferredQuery,
+                query,
                 findNext: false,
+                forward: false,
               })
             }
           />
@@ -106,7 +124,6 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
             size={size}
             icon={Close}
             onPress={() => {
-              setActive(false)
               clearFind()
             }}
           />
