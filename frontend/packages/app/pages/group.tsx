@@ -1034,6 +1034,8 @@ function FrontPublicationDisplay({
   urlWithVersion: string
   groupTitle: string
 }) {
+  const route = useNavRoute()
+  const groupRoute = route.key === 'group' ? route : undefined
   const unpacked = unpackDocId(urlWithVersion)
   const pub = usePublication({
     id: unpacked?.docId || '',
@@ -1059,7 +1061,9 @@ function FrontPublicationDisplay({
           {pub.data?.document?.title}
         </Heading>
       ) : null}
-      <AppPublicationContentProvider>
+      <AppPublicationContentProvider
+        routeParams={{blockRef: groupRoute?.blockId}}
+      >
         <PublicationContent publication={pub.data} />
       </AppPublicationContentProvider>
     </YStack>

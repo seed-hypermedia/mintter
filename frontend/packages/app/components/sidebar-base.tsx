@@ -421,7 +421,7 @@ type DocOutlineSection = {
 }
 type DocOutline = DocOutlineSection[]
 
-function getDocOutline(
+export function getDocOutline(
   children: HMBlockNode[],
   embeds: EmbedsContent,
 ): DocOutline {
@@ -495,7 +495,7 @@ function getDocOutline(
   return outline
 }
 
-function activeDocOutline(
+export function activeDocOutline(
   outline: DocOutlineSection[],
   activeBlock: string | null | undefined,
   embeds: EmbedsContent,

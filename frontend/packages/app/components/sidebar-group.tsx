@@ -1,10 +1,4 @@
-import {
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {sortableKeyboardCoordinates, useSortable} from '@dnd-kit/sortable'
+import {useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {HMGroup, Role, unpackHmId} from '@mintter/shared'
@@ -23,10 +17,12 @@ import {PropsWithChildren, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useMyAccount} from '../models/accounts'
+import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {
   useCreateGroupCategory,
   useDeleteCategory,
   useGroup,
+  useGroupContent,
   useGroupMembers,
   useRenameGroupCateogry,
 } from '../models/groups'
@@ -39,6 +35,8 @@ import {
   GenericSidebarContainer,
   SidebarDocument,
   SidebarItem,
+  activeDocOutline,
+  getDocOutline,
 } from './sidebar-base'
 
 export function GroupSidebar({
@@ -49,14 +47,12 @@ export function GroupSidebar({
   onBackToMain: () => void
 }) {
   const route = useNavRoute()
+  const groupRoute = route.key === 'group' ? route : null
   const isHomeActive =
-    route.key === 'group' &&
-    route.groupId === groupId &&
-    route.listCategory == null
-  const isAllContentActive =
-    route.key === 'group' &&
-    route.groupId === groupId &&
-    route.listCategory === '_all'
+    groupRoute?.groupId === groupId &&
+    !groupRoute?.listCategory &&
+    !groupRoute?.blockId
+  const isAllContentActive = groupRoute?.listCategory === '_all'
   const isFeedActive = route.key === 'group-feed' && route.groupId === groupId
   const replace = useNavigate('replace')
   const navigate = useNavigate()
@@ -65,20 +61,24 @@ export function GroupSidebar({
   const myMemberRole =
     groupMembers.data?.members[myAccount.data?.id || ''] ||
     Role.ROLE_UNSPECIFIED
-  const groupRoute = route.key === 'group' ? route : null
   const group = useGroup(groupId, groupRoute?.version)
   const pubRoute = route.key === 'publication' ? route : null
   const activeDocId = pubRoute?.documentId
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+  const groupContent = useGroupContent(groupId, groupRoute?.version)
+  const frontDocId = groupContent.data?.content['/']
+    ? unpackHmId(groupContent.data?.content['/'])
+    : null
+  const frontDoc = usePublication({
+    id: frontDocId?.qid,
+    version: frontDocId?.version || undefined,
+  })
+  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data)
+  const activeBlock = groupRoute?.blockId
+  const frontDocOutline = getDocOutline(
+    frontDoc?.data?.document?.children || [],
+    frontDocEmbeds,
   )
+
   return (
     <GenericSidebarContainer>
       <YStack paddingVertical="$2">
@@ -109,6 +109,23 @@ export function GroupSidebar({
           icon={Book}
           title={group.data?.title}
         />
+        <YGroup>
+          {activeDocOutline(
+            frontDocOutline,
+            activeBlock,
+            frontDocEmbeds,
+            (blockId) => {
+              const groupRoute = route.key == 'group' ? route : null
+              if (!groupRoute) return
+              replace({
+                ...groupRoute,
+                blockId,
+              })
+            },
+            navigate,
+          )}
+        </YGroup>
+
         <SidebarItem
           onPress={() => {
             if (!isFeedActive) {
