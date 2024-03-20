@@ -1,7 +1,7 @@
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
 import react from '@vitejs/plugin-react'
-import {defineConfig, loadEnv} from 'vite'
+import {defineConfig} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 
 const extensions = [
@@ -20,28 +20,12 @@ const extensions = [
 
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
-  // Load env file based on `mode` in the current working directory.
-  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '')
   const config = {
     build: {
       sourcemap: true,
       rollupOptions: {
         input: {
-          app: './find-in-page.html',
-        },
-        /**
-         * Ignore "use client" waning since we are not using SSR
-         * @see {@link https://github.com/TanStack/query/pull/5161#issuecomment-1477389761 Preserve 'use client' directives TanStack/query#5161}
-         */
-        onwarn(warning, warn) {
-          if (
-            warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-            warning.message.includes(`"use client"`)
-          ) {
-            return
-          }
-          warn(warning)
+          app: './find.html',
         },
       },
     },

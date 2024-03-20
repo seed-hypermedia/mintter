@@ -14,8 +14,6 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
   const size = '$2'
   const [query, setQuery] = useState('')
   const queryInput = useRef<HTMLInputElement>(null)
-  const [totalResults, setTotalResults] = useState(0)
-  const [current, setCurrent] = useState(0)
 
   function clearFind() {
     setQuery('')
@@ -23,13 +21,19 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
   }
 
   useEffect(() => {
-    window.addEventListener('keydown', (e) => {
+    function handleEscape(e) {
       if (e.key == 'Escape') {
-        alert('Escape pressed')
+        e.preventDefault()
         clearFind()
       }
-    })
-  }, [])
+    }
+
+    window.addEventListener('keydown', handleEscape)
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [query])
 
   useEffect(() => {
     // @ts-expect-error

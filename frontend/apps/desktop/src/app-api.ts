@@ -79,11 +79,6 @@ ipcMain.on('find_in_page_cancel', () => {
       y: -200,
     })
   }
-
-  console.log(
-    'focusedWindow?.getBrowserViews()',
-    focusedWindow?.getBrowserViews(),
-  )
 })
 
 nativeTheme.addListener('updated', () => {

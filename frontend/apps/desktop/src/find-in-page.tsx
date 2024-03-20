@@ -7,11 +7,12 @@ import '@tamagui/font-inter/css/700.css'
 import React, {useMemo} from 'react'
 import ReactDOM from 'react-dom/client'
 import {createIPC} from './ipc'
-import './root.css'
 
 function FindInPageView() {
   const ipc = useMemo(() => createIPC(), [])
+  // @ts-expect-error
   const darkMode = useStream<boolean>(window.darkMode)
+
   return (
     <div
       className={
