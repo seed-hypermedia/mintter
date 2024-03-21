@@ -82,11 +82,19 @@ export function GroupSidebar({
     frontDocEmbeds,
     (blockId) => {
       const groupRoute = route.key == 'group' ? route : null
-      if (!groupRoute) return
-      replace({
-        ...groupRoute,
-        blockId,
-      })
+      if (!groupRoute) {
+        navigate({
+          key: 'group',
+          groupId,
+          blockId,
+        })
+      } else {
+        replace({
+          ...groupRoute,
+          blockId,
+          listCategory: undefined,
+        })
+      }
     },
     navigate,
   )
@@ -124,7 +132,7 @@ export function GroupSidebar({
           icon={Book}
           title={group.data?.title}
         />
-        <YGroup>{outlineContent}</YGroup>
+        <YGroup borderRadius={0}>{outlineContent}</YGroup>
 
         <SidebarItem
           onPress={() => {
