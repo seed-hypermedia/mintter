@@ -21,6 +21,7 @@ import {useGroup} from '../models/groups'
 import {
   AccountRoute,
   DraftRoute,
+  GroupFeedRoute,
   GroupRoute,
   NavRoute,
   PublicationRoute,
@@ -99,7 +100,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'group') {
+  if (route.key === 'group' || route.key === 'group-feed') {
     return (
       <>
         <GroupTitle route={route} />
@@ -160,7 +161,7 @@ function AccountProfileTitle({
   )
 }
 
-function GroupTitle({route}: {route: GroupRoute}) {
+function GroupTitle({route}: {route: GroupRoute | GroupFeedRoute}) {
   const group = useGroup(route.groupId)
   useWindowTitle(group.data?.title ? `Group: ${group.data?.title}` : undefined)
   if (!group.data) return null
