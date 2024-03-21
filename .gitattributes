@@ -1,2 +1,5 @@
 # Force unix-style linefeeds.
 * text=auto eol=lf
+# GitHub syntax highlighting
+pixi.lock linguist-language=YAML
+
