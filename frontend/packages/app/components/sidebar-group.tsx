@@ -48,10 +48,7 @@ export function GroupSidebar({
 }) {
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : null
-  const isHomeActive =
-    groupRoute?.groupId === groupId &&
-    !groupRoute?.listCategory &&
-    !groupRoute?.blockId
+
   const isAllContentActive = groupRoute?.listCategory === '_all'
   const isFeedActive = route.key === 'group-feed' && route.groupId === groupId
   const replace = useNavigate('replace')
@@ -79,6 +76,24 @@ export function GroupSidebar({
     frontDocEmbeds,
   )
 
+  const {outlineContent, isBlockActive} = activeDocOutline(
+    frontDocOutline,
+    activeBlock,
+    frontDocEmbeds,
+    (blockId) => {
+      const groupRoute = route.key == 'group' ? route : null
+      if (!groupRoute) return
+      replace({
+        ...groupRoute,
+        blockId,
+      })
+    },
+    navigate,
+  )
+  const isHomeActive =
+    groupRoute?.groupId === groupId &&
+    !groupRoute?.listCategory &&
+    !isBlockActive
   return (
     <GenericSidebarContainer>
       <YStack paddingVertical="$2">
@@ -109,22 +124,7 @@ export function GroupSidebar({
           icon={Book}
           title={group.data?.title}
         />
-        <YGroup>
-          {activeDocOutline(
-            frontDocOutline,
-            activeBlock,
-            frontDocEmbeds,
-            (blockId) => {
-              const groupRoute = route.key == 'group' ? route : null
-              if (!groupRoute) return
-              replace({
-                ...groupRoute,
-                blockId,
-              })
-            },
-            navigate,
-          )}
-        </YGroup>
+        <YGroup>{outlineContent}</YGroup>
 
         <SidebarItem
           onPress={() => {
