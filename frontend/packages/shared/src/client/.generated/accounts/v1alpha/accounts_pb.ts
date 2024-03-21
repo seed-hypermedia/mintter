@@ -195,23 +195,39 @@ export class Account extends Message<Account> {
 }
 
 /**
+ * Profile information of the user Account.
+ *
  * @generated from message com.mintter.accounts.v1alpha.Profile
  */
 export class Profile extends Message<Profile> {
   /**
+   * Optional. Alias is a user-defined handle for their profile.
+   * There's no enforcement on this being unique.
+   *
    * @generated from field: string alias = 1;
    */
   alias = "";
 
   /**
+   * Optional. Description of the user's profile.
+   *
    * @generated from field: string bio = 2;
    */
   bio = "";
 
   /**
+   * Optional. CID to the avatar image hosted on IPFS.
+   *
    * @generated from field: string avatar = 3;
    */
   avatar = "";
+
+  /**
+   * Optional. Hypermedia ID of the Account's root/entrypoint document.
+   *
+   * @generated from field: string root_document = 4;
+   */
+  rootDocument = "";
 
   constructor(data?: PartialMessage<Profile>) {
     super();
@@ -224,6 +240,7 @@ export class Profile extends Message<Profile> {
     { no: 1, name: "alias", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "bio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "avatar", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "root_document", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Profile {

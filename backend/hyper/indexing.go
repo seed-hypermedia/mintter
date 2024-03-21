@@ -342,9 +342,13 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 		if v, ok := v.Patch["avatar"].(cid.Cid); ok {
 			sb.AddBlobLink("account/avatar", v)
 		}
-		alias, ok := v.Patch["alias"].(string)
-		if ok {
+
+		if alias, ok := v.Patch["alias"].(string); ok {
 			sb.Meta = alias
+		}
+
+		if doc, ok := v.Patch["rootDocument"].(string); ok {
+			sb.AddResourceLink("account/root-document", IRI(doc), false, nil)
 		}
 	case v.Entity.HasPrefix("hm://d/"):
 		title, ok := v.Patch["title"].(string)

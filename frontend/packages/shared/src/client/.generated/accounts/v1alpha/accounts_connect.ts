@@ -52,7 +52,7 @@ export const Accounts = {
     },
     /**
      * Set or unset the trustness of an account. An account is untrusted by default except for our own.
-     * Returns the modified account. 
+     * Returns the modified account.
      *
      * @generated from rpc com.mintter.accounts.v1alpha.Accounts.SetAccountTrust
      */

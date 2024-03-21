@@ -10,6 +10,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/future"
+	"regexp"
 	"strings"
 
 	"crawshaw.io/sqlite"
@@ -121,6 +122,11 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		acc.Profile.Avatar = v.(cid.Cid).String()
 	}
 
+	v, ok = entity.Get("rootDocument")
+	if ok {
+		acc.Profile.RootDocument = v.(string)
+	}
+
 	return acc, nil
 }
 
@@ -170,6 +176,8 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
 }
 
+var rootDocMatch = regexp.MustCompile(`^hm:\/\/d\/[a-zA-Z0-9]+$`)
+
 // UpdateProfile is public so it can be called from sites.
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
 	eid := hyper.EntityID("hm://a/" + me.Account().Principal().String())
@@ -206,6 +214,17 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		v, ok := e.Get("avatar")
 		if (ok && !v.(cid.Cid).Equals(avatar)) || (!ok && in.Avatar != "") {
 			patch["avatar"] = avatar
+		}
+	}
+
+	if in.RootDocument != "" {
+		if !rootDocMatch.MatchString(in.RootDocument) {
+			return status.Errorf(codes.InvalidArgument, "root document must be ID of a document entity in form of 'hm://d/<id>' got: %s", in.RootDocument)
+		}
+
+		v, ok := e.Get("rootDocument")
+		if (ok && v.(string) != in.RootDocument) || (!ok && in.RootDocument != "") {
+			patch["rootDocument"] = in.RootDocument
 		}
 	}
 

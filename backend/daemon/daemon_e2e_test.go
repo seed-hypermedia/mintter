@@ -6,6 +6,7 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	entities "mintter/backend/genproto/entities/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
@@ -380,6 +381,44 @@ func TestNetworkingListPeers(t *testing.T) {
 	pList, err = alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.Peers, 1)
+}
+
+func TestAccountRootDocument(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	var rootDocID string
+	{
+		draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
+		require.NoError(t, err)
+
+		resp, err := alice.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+			DocumentId: draft.Id,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_SetTitle{SetTitle: "My Root Document"}},
+			},
+		})
+		draft = resp.UpdatedDocument
+
+		pub, err := alice.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+
+		rootDocID = pub.Document.Id
+	}
+
+	acc, err := alice.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
+		RootDocument: rootDocID,
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, rootDocID, acc.Profile.RootDocument)
+
+	mentions, err := alice.RPC.Entities.ListEntityMentions(ctx, &entities.ListEntityMentionsRequest{Id: rootDocID})
+	require.NoError(t, err)
+
+	require.Len(t, mentions.Mentions, 1, "root document must have a mentions from the account")
 }
 
 func getAddrs(t *testing.T, a *App) []string {

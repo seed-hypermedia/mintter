@@ -19,9 +19,8 @@ service Accounts {
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
 
   // Set or unset the trustness of an account. An account is untrusted by default except for our own.
-  // Returns the modified account. 
+  // Returns the modified account.
   rpc SetAccountTrust(SetAccountTrustRequest) returns (Account);
-  
 }
 
 message GetAccountRequest {
@@ -55,12 +54,20 @@ message Account {
   bool is_trusted = 4;
 }
 
+// Profile information of the user Account.
 message Profile {
+  // Optional. Alias is a user-defined handle for their profile.
+  // There's no enforcement on this being unique.
   string alias = 1;
 
+  // Optional. Description of the user's profile.
   string bio = 2;
 
+  // Optional. CID to the avatar image hosted on IPFS.
   string avatar = 3;
+
+  // Optional. Hypermedia ID of the Account's root/entrypoint document.
+  string root_document = 4;
 }
 
 message Device {
