@@ -33,7 +33,6 @@ import {
   Copy,
   ExternalLink,
   Link,
-  PackageOpen,
   Pencil,
   Pin,
   PinOff,
@@ -117,19 +116,19 @@ export function DocOptionsButton() {
         })
       },
     },
-    ...(groupVariant && groupVariant.pathName
-      ? [
-          {
-            key: 'add-to-category',
-            label: 'Add to Category',
-            icon: PackageOpen,
-            onPress: () => {
-              const {groupId, pathName} = groupVariant
-              addToCategoryDialog.open({groupId, docId, pathName})
-            },
-          },
-        ]
-      : []),
+    // ...(groupVariant && groupVariant.pathName
+    //   ? [
+    //       {
+    //         key: 'add-to-category',
+    //         label: 'Add to Category',
+    //         icon: PackageOpen,
+    //         onPress: () => {
+    //           const {groupId, pathName} = groupVariant
+    //           addToCategoryDialog.open({groupId, docId, pathName})
+    //         },
+    //       },
+    //     ]
+    //   : []),
   ]
   if (pin.isPinned) {
     menuItems.push({

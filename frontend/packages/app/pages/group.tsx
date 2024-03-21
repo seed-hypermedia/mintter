@@ -55,7 +55,6 @@ import {
 } from '@mintter/ui'
 import {
   ArrowUpRight,
-  PackageOpen,
   Pencil,
   PlusCircle,
   Store,
@@ -833,24 +832,24 @@ function GroupContentItem({
       },
       key: 'rename',
     },
-    ...(onRemoveFromCategory
-      ? [
-          {
-            key: 'remove-from-category',
-            label: 'Remove from this Category',
-            icon: X,
-            onPress: onRemoveFromCategory,
-          },
-        ]
-      : []),
-    {
-      label: 'Add to Category',
-      icon: PackageOpen,
-      onPress: () => {
-        addToCategoryDialog.open({groupId, docId, pathName})
-      },
-      key: 'add-to-category',
-    },
+    // ...(onRemoveFromCategory
+    //   ? [
+    //       {
+    //         key: 'remove-from-category',
+    //         label: 'Remove from this Category',
+    //         icon: X,
+    //         onPress: onRemoveFromCategory,
+    //       },
+    //     ]
+    //   : []),
+    // {
+    //   label: 'Add to Category',
+    //   icon: PackageOpen,
+    //   onPress: () => {
+    //     addToCategoryDialog.open({groupId, docId, pathName})
+    //   },
+    //   key: 'add-to-category',
+    // },
   ]
   const ownerId = pub.document?.author
   if (!ownerId) return null
