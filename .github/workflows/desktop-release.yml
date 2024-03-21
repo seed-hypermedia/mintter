@@ -24,24 +24,24 @@ jobs:
       version: ${{ steps.set_version.outputs.version }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
-    - name: Set Version
-      id: set_version
-      run: |
-        if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
-          VERSION=${{ github.ref_name }}
-        elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
-          chmod +x ./scripts/generate-rc-version.sh
-          VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
-        else
-          VERSION=0.0.1
-        fi
-        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-    - name: Display Version
-      run: |
-        echo "App Version: ${{ steps.set_version.outputs.version }}"
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Version
+        id: set_version
+        run: |
+          if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+            VERSION=${{ github.ref_name }}
+          elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+            chmod +x ./scripts/generate-rc-version.sh
+            VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
+          else
+            VERSION=0.0.1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Display Version
+        run: |
+          echo "App Version: ${{ steps.set_version.outputs.version }}"
 
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
@@ -78,7 +78,7 @@ jobs:
           # matrix-arch: ${{ matrix.config.arch }}
 
       - name: Build Backend (Unix)
-        if: matrix.config.os != 'windows-latest-l'
+        if: matrix.config.os != 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
@@ -87,7 +87,7 @@ jobs:
           CGO_ENABLED: 1
 
       - name: Build Backend (Windows)
-        if: matrix.config.os == 'windows-latest-l'
+        if: matrix.config.os == 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
@@ -119,7 +119,7 @@ jobs:
           VITE_VERSION: "${{ needs.get-version.outputs.version }}"
 
       - name: Build, package & make (Unix)
-        if: matrix.config.os != 'windows-latest-l'
+        if: matrix.config.os != 'windows-latest'
         run: |
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
@@ -141,7 +141,7 @@ jobs:
           SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}"
 
       - name: Build, package and make (Win32)
-        if: matrix.config.os == 'windows-latest-l'
+        if: matrix.config.os == 'windows-latest'
         run: |
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
