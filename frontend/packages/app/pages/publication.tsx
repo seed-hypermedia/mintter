@@ -307,7 +307,7 @@ export default function PublicationPage() {
                       >
                         <PinDocumentButton
                           docId={route.documentId}
-                          variants={route.variants}
+                          variants={route.variants || []}
                         />
                         <CopyReferenceButton />
                       </XStack>

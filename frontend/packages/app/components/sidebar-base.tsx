@@ -10,6 +10,7 @@ import {
   Button,
   ListItem,
   ListItemProps,
+  Separator,
   SizableText,
   Spinner,
   Tooltip,
@@ -20,7 +21,15 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {ArrowUpRight, Book, FileText, Hash, Plus} from '@tamagui/lucide-icons'
+import {
+  ArrowUpRight,
+  Book,
+  FileText,
+  Hash,
+  Plus,
+  Search,
+  Settings,
+} from '@tamagui/lucide-icons'
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
@@ -39,6 +48,7 @@ import {useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
+import {useTriggerWindowEvent} from '../utils/window-events'
 import {Avatar} from './avatar'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {PinAccountButton, PinDocumentButton, PinGroupButton} from './pin-entity'
@@ -86,6 +96,8 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
     top += 8
     bottom += 8
   }
+  const triggerFocusedWindow = useTriggerWindowEvent()
+  const navigate = useNavigate()
   return (
     <>
       {isFocused && !isLocked && !isWindowTooNarrowForHoverSidebar ? (
@@ -126,10 +138,40 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
         onMouseEnter={ctx.onMenuHover}
         onMouseLeave={ctx.onMenuHoverLeave}
         opacity={isVisible ? 1 : 0}
-        // @ts-expect-error
-        overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
       >
-        {children}
+        <YStack
+          flex={1}
+          // @ts-expect-error
+          overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
+        >
+          {children}
+        </YStack>
+        <YGroup
+          separator={<Separator />}
+          borderRadius={0}
+          borderTopWidth={1}
+          borderColor="$borderColor"
+        >
+          <YGroup.Item>
+            <SidebarItem
+              onPress={() => {
+                triggerFocusedWindow('openLauncher')
+              }}
+              title="Search / Open"
+              icon={Search}
+            />
+          </YGroup.Item>
+          <YGroup.Item>
+            <SidebarItem
+              onPress={() => {
+                navigate({key: 'settings'})
+              }}
+              cursor="pointer"
+              icon={Settings}
+              title="Settings"
+            />
+          </YGroup.Item>
+        </YGroup>
       </YStack>
     </>
   )

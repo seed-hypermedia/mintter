@@ -5,18 +5,11 @@ import {
   stringArrayMatch,
 } from '@mintter/shared'
 import {Home, Separator, toast, Tooltip, View, YGroup} from '@mintter/ui'
-import {
-  Contact,
-  FileText,
-  Library,
-  Search,
-  Settings,
-} from '@tamagui/lucide-icons'
+import {Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useMyAccount} from '../models/accounts'
 import {usePins} from '../models/pins'
 import {useHmIdToAppRouteResolver, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {useTriggerWindowEvent} from '../utils/window-events'
 import {CreateGroupButton} from './new-group'
 import {
   GenericSidebarContainer,
@@ -39,8 +32,6 @@ export function MainAppSidebar({
   const account = useMyAccount()
 
   const pins = usePins()
-
-  const triggerFocusedWindow = useTriggerWindowEvent()
 
   const resolveId = useHmIdToAppRouteResolver()
   const pubRoute = route.key === 'publication' ? route : null
@@ -291,33 +282,6 @@ export function MainAppSidebar({
             />
           )
         })}
-      </YGroup>
-      <View f={1} minHeight={20} />
-      <YGroup
-        separator={<Separator />}
-        borderRadius={0}
-        borderTopWidth={1}
-        borderColor="$borderColor"
-      >
-        <YGroup.Item>
-          <SidebarItem
-            onPress={() => {
-              triggerFocusedWindow('openLauncher')
-            }}
-            title="Search / Open"
-            icon={Search}
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            onPress={() => {
-              navigate({key: 'settings'})
-            }}
-            cursor="pointer"
-            icon={Settings}
-            title="Settings"
-          />
-        </YGroup.Item>
       </YGroup>
     </GenericSidebarContainer>
   )
