@@ -502,9 +502,25 @@ export function activeDocOutline(
   onBlockSelect: (blockId: string) => void,
   onNavigate: (route: NavRoute) => void,
   level = 0,
-) {
-  return outline
-    .map((item) => [
+): {outlineContent: ReactNode[]; isBlockActive: boolean} {
+  let isBlockActive = false
+  const outlineContent = outline.map((item) => {
+    const childrenOutline = item.children
+      ? activeDocOutline(
+          item.children,
+          activeBlock,
+          embeds,
+          onBlockSelect,
+          onNavigate,
+          level + 1,
+        )
+      : null
+    if (childrenOutline?.isBlockActive) {
+      isBlockActive = true
+    } else if (item.id === activeBlock) {
+      isBlockActive = true
+    }
+    return [
       <YGroup.Item>
         <SidebarItem
           onPress={() => {
@@ -525,18 +541,10 @@ export function activeDocOutline(
           // rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
         />
       </YGroup.Item>,
-      ...(item.children
-        ? activeDocOutline(
-            item.children,
-            activeBlock,
-            embeds,
-            onBlockSelect,
-            onNavigate,
-            level + 1,
-          )
-        : []),
-    ])
-    .flat()
+      ...(childrenOutline?.outlineContent || []),
+    ]
+  })
+  return {outlineContent, isBlockActive}
 }
 
 export function SidebarDocument({
@@ -573,11 +581,25 @@ export function SidebarDocument({
   const activeBlock = pubRoute?.blockId
   const replace = useNavigate('replace')
   const navigate = useNavigate()
+  const {outlineContent, isBlockActive} = activeDocOutline(
+    activeOutline,
+    activeBlock,
+    embeds,
+    (blockId) => {
+      const pubRoute = route.key == 'publication' ? route : null
+      if (!pubRoute) return
+      replace({
+        ...pubRoute,
+        blockId,
+      })
+    },
+    navigate,
+  )
   return [
     <YGroup.Item>
       <SidebarItem
         onPress={onPress}
-        active={isRouteActive || active}
+        active={(isRouteActive || active) && !isBlockActive}
         color={isPinned ? undefined : '$color11'}
         icon={
           authorAccounts.length ? (
@@ -620,19 +642,6 @@ export function SidebarDocument({
         }
       />
     </YGroup.Item>,
-    ...activeDocOutline(
-      activeOutline,
-      activeBlock,
-      embeds,
-      (blockId) => {
-        const pubRoute = route.key == 'publication' ? route : null
-        if (!pubRoute) return
-        replace({
-          ...pubRoute,
-          blockId,
-        })
-      },
-      navigate,
-    ),
+    ...outlineContent,
   ]
 }
