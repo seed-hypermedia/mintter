@@ -305,7 +305,10 @@ export default function PublicationPage() {
                         // opacity={0}
                         // $group-header-hover={{opacity: 1}}
                       >
-                        <PinDocumentButton route={route} />
+                        <PinDocumentButton
+                          docId={route.documentId}
+                          variants={route.variants}
+                        />
                         <CopyReferenceButton />
                       </XStack>
                     }
