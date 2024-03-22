@@ -72,7 +72,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
         borderWidth={1}
         borderColor="$color8"
         animation="fast"
-        bg="$color6"
+        bg="$backgroundStrong"
         p="$1.5"
         borderRadius="$2"
         overflow="hidden"
@@ -94,7 +94,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
         <XGroup.Item>
           <Button
             chromeless
-            bg="$color6"
+            bg="$backgroundStrong"
             size={size}
             icon={ChevronUp}
             onPress={() =>
@@ -109,7 +109,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
         <XGroup.Item>
           <Button
             chromeless
-            bg="$color6"
+            bg="$backgroundStrong"
             size={size}
             icon={ChevronDown}
             onPress={() =>
@@ -124,7 +124,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
         <XGroup.Item>
           <Button
             chromeless
-            bg="$color6"
+            bg="$backgroundStrong"
             size={size}
             icon={Close}
             onPress={() => {

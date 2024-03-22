@@ -345,7 +345,7 @@ export function createAppWindow(input: {
         } else {
           findInPageView.setBounds({
             ...findInPageView.getBounds(),
-            y: 0,
+            y: 20,
           })
           findInPageView.webContents.focus()
           findInPageView.webContents.send(
@@ -357,7 +357,7 @@ export function createAppWindow(input: {
           if (currentBounds.y < 0) {
             findInPageView.setBounds({
               ...currentBounds,
-              y: 0,
+              y: 20,
             })
           } else {
             findInPageView.webContents.focus()
