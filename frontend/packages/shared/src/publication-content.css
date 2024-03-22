@@ -3,7 +3,7 @@
 }
 
 .block-paragraph .content-inline,
-.block-paragraph .content-inline * {
+.block-paragraph .content-inline * :not(code) {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
 }
 
