@@ -477,7 +477,7 @@ export function getDocOutline(
       })
     } else if (
       child.block.type === 'embed' &&
-      child.block.attributes.view === 'card' &&
+      child.block.attributes?.view === 'card' &&
       embeds[child.block.id]
     ) {
       const embed = embeds[child.block.id]
