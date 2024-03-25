@@ -82,7 +82,7 @@ JOIN blobs ON blobs.id = structural_blobs.id
 JOIN resources ON structural_blobs.resource = resources.id;
 
 -- View blobs metadata It returns the latest non null title or the 
--- latest blob in case of untitled.
+-- latest blob in case of untitled meta.
 CREATE VIEW meta_view AS
 WITH RankedBlobs AS (
     SELECT 
