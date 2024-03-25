@@ -15,7 +15,7 @@
   },
   "main": ".vite/build/main.js",
   "scripts": {
-    "dev": "electron-forge start",
+    "dev": "electron-forge start --inspect-electron",
     "format": "echo TODO",
     "make": "electron-forge make",
     "package": "electron-forge package",
