@@ -37,7 +37,7 @@ export const MediaContainer = ({
 }: ContainerProps) => {
   const [replace, setReplace] = useState(false)
   const [drag, setDrag] = useState(false)
-  const isEmbed = ['embed', 'twitterBlock'].includes(mediaType)
+  const isEmbed = ['embed', 'webEmbed'].includes(mediaType)
 
   const handleDragReplace = async (file: File) => {
     if (file.size > MaxFileSizeB) {

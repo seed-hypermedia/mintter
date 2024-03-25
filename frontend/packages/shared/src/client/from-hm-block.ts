@@ -209,12 +209,14 @@ export function fromHMBlock(
     })
   }
 
-  if (editorBlock.type == 'twitterBlock') {
+  if (editorBlock.type == 'webEmbed') {
     res = new ServerBlock({
       id: editorBlock.id,
-      type: 'twitterBlock',
-      attributes: {},
-      ref: editorBlock.props.url,
+      type: 'web-embed',
+      attributes: {
+        url: editorBlock.props.url,
+      },
+      ref: '',
     })
   }
 

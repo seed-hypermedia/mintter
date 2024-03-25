@@ -24,8 +24,8 @@ import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {HMBlockSchema} from './schema'
 import {isValidUrl} from './utils'
 
-export const TwitterBlock = createReactBlockSpec({
-  type: 'twitterBlock',
+export const WebEmbed = createReactBlockSpec({
+  type: 'webEmbed',
   propSchema: {
     ...defaultProps,
     url: {
@@ -91,7 +91,7 @@ const Render = (
     <MediaRender
       block={block}
       editor={editor}
-      mediaType="twitterBlock"
+      mediaType="webEmbed"
       submit={submitTwitterLink}
       DisplayComponent={display}
       icon={<RiTwitterLine fill={theme.color12.get()} />}
@@ -142,7 +142,7 @@ const display = ({
     <MediaContainer
       editor={editor}
       block={block}
-      mediaType="twitterBlock"
+      mediaType="webEmbed"
       selected={selected}
       setSelected={setSelected}
       assign={assign}

@@ -173,8 +173,11 @@ export type HMBlockVideo = HMBlockBase & {
   }
 }
 
-export type HMBlockTwitter = HMBlockBase & {
-  type: 'twitterBlock'
+export type HMBlockWebEmbed = HMBlockBase & {
+  type: 'webEmbed'
+  attributes: {
+    url: string
+  }
   ref: string
 }
 
@@ -211,7 +214,7 @@ export type HMBlock =
   | HMBlockImage
   | HMBlockFile
   | HMBlockVideo
-  | HMBlockTwitter
+  | HMBlockWebEmbed
   | HMBlockEmbed
   | HMBlockCode
   | HMBlockCodeBlock

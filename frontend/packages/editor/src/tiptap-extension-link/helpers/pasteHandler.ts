@@ -314,7 +314,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: link.href,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    media: 'twitterBlock',
+                    media: 'twitter',
                     sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,

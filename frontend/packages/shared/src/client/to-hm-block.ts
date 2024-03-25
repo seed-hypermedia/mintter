@@ -7,8 +7,8 @@ import {
   HMBlockImage,
   HMBlockNostr,
   HMBlockParagraph,
-  HMBlockTwitter,
   HMBlockVideo,
+  HMBlockWebEmbed,
   HMInlineContent,
   HMInlineContentEmbed,
   HMInlineContentLink,
@@ -341,18 +341,18 @@ export function toHMBlock(
       } satisfies HMBlockVideo
     }
 
-    if (serverBlock.block?.type === 'twitterBlock') {
+    if (serverBlock.block?.type === 'web-embed') {
       res = {
-        type: 'twitterBlock',
+        type: 'webEmbed',
         id: serverBlock.block.id,
         props: {
-          url: serverBlock.block.ref,
+          url: serverBlock.block.attributes.url,
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
         },
         children: [],
-      } satisfies HMBlockTwitter
+      } satisfies HMBlockWebEmbed
     }
 
     if (serverBlock.block?.type === 'embed') {

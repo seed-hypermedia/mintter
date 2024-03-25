@@ -151,12 +151,12 @@ export function getLinkMenuItems({
     } else if (media) {
       const mediaItem = {
         name: `Convert to ${
-          media === 'twitterBlock'
+          media === 'twitter'
             ? 'Twitter Embed'
             : media.charAt(0).toUpperCase() + media.slice(1)
         }`,
         disabled: false,
-        icon: media === 'twitterBlock' ? <Twitter size={18} /> : undefined,
+        icon: media === 'twitter' ? <Twitter size={18} /> : undefined,
         execute: (editor: BlockNoteEditor, ref: string) => {
           const {state, schema} = editor._tiptapEditor
           const {selection} = state
@@ -180,13 +180,13 @@ export function getLinkMenuItems({
             embedUrl = videoUrl
           }
           const node =
-            media !== 'twitterBlock'
+            media !== 'twitter'
               ? schema.nodes[media].create({
                   url: embedUrl ? embedUrl : '',
                   src: embedUrl ? '' : ref,
                   name: fileName ? fileName : '',
                 })
-              : schema.nodes[media].create({
+              : schema.nodes['webEmbed'].create({
                   url: ref,
                 })
 

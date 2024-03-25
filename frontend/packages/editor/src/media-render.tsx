@@ -16,6 +16,7 @@ import {ChangeEvent, FunctionComponent, useEffect, useState} from 'react'
 import {Block, BlockNoteEditor, getBlockInfoFromPos} from './blocknote'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
 import {HMBlockSchema} from './schema'
+import {camelToFlat} from './utils'
 
 export type MediaType = {
   id: string
@@ -210,7 +211,7 @@ function MediaForm({
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const isEmbed = ['embed', 'twitterBlock'].includes(mediaType)
+  const isEmbed = ['embed', 'webEmbed'].includes(mediaType)
   const [tabState, setTabState] = useState(isEmbed ? 'embed' : 'upload')
   const [fileName, setFileName] = useState<{
     name: string
@@ -328,7 +329,8 @@ function MediaForm({
             }}
           >
             {`Add ${['embed', 'image'].includes(mediaType) ? 'an' : 'a'} ${
-              mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
+              mediaType.charAt(0).toUpperCase() +
+              camelToFlat(mediaType.slice(1))
             }`}
           </Button>
         </Popover.Trigger>
@@ -552,7 +554,9 @@ function MediaForm({
                           borderWidth="$0.5"
                           borderRadius="$3"
                           size="$3.5"
-                          placeholder={`Input ${mediaType} link...`}
+                          placeholder={`Input ${
+                            mediaType === 'webEmbed' ? 'X.com' : mediaType
+                          } link...`}
                           focusStyle={{
                             borderColor: '$colorFocus',
                             outlineWidth: 0,

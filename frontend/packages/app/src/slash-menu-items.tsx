@@ -155,7 +155,7 @@ export const slashMenuItems = [
     hint: 'Insert a Twitter Embed',
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
-        type: 'twitterBlock',
+        type: 'webEmbed',
         props: {
           url: '',
         },
