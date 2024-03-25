@@ -140,6 +140,15 @@ export function fromHMBlock(
     })
   }
 
+  if (editorBlock.type === 'math') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'math',
+      attributes: {},
+      ...extractContent(editorBlock.content),
+    })
+  }
+
   if (editorBlock.type === 'image') {
     let ref = editorBlock.props.url
 

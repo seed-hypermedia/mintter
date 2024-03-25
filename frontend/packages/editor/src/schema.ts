@@ -10,6 +10,7 @@ import {FileBlock} from './file'
 import {HMHeadingBlockContent} from './heading-component-plugin'
 import {ImageBlock} from './image'
 import {ImagePlaceholder} from './image-placeholder'
+import {MathBlock} from './math'
 import {NostrBlock} from './nostr'
 import CodeBlockLowlight from './tiptap-extension-code-block'
 import {VideoBlock} from './video'
@@ -48,6 +49,7 @@ export const hmBlockSchema: BlockSchema = {
   file: FileBlock,
   nostr: NostrBlock,
   ['web-embed']: WebEmbed,
+  math: MathBlock,
 }
 
 export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>

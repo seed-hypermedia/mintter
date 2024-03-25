@@ -5,6 +5,7 @@ import {
   HMBlockFile,
   HMBlockHeading,
   HMBlockImage,
+  HMBlockMath,
   HMBlockNostr,
   HMBlockParagraph,
   HMBlockVideo,
@@ -259,6 +260,32 @@ export function toHMBlockHeading(
   return res
 }
 
+export function toHMBlockMath(
+  serverBlock: BlockNode,
+  opts?: ServerToEditorRecursiveOpts,
+): HMBlockMath {
+  if (!serverBlock.block) {
+    throw new Error('Server BlockNode is missing Block data')
+  }
+  const {block, children} = serverBlock
+  let childrenType = extractChildrenType(block.attributes.childrenType)
+
+  let res: HMBlockMath = {
+    type: 'math',
+    id: block.id,
+    content: toHMInlineContent(block),
+    children: toHMBlock(children, {
+      ...opts,
+      childrenType,
+    }),
+    props: {
+      childrenType,
+    },
+  }
+
+  return res
+}
+
 export function toHMBlock(
   children: Array<BlockNode> = [],
   opts: ServerToEditorRecursiveOpts & {
@@ -391,6 +418,10 @@ export function toHMBlock(
     // for now, we prioritize the node type
     if (serverBlock.block?.type === 'heading') {
       res = toHMBlockHeading(serverBlock, childRecursiveOpts)
+    }
+
+    if (serverBlock.block?.type === 'math') {
+      res = toHMBlockMath(serverBlock, childRecursiveOpts)
     }
     // if (opts?.childrenType === 'numbers') {
     //   return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)

@@ -5110,6 +5110,7 @@ __metadata:
     hast-util-from-dom: 4.2.0
     highlight.js: 11.9.0
     jsdom: 22.1.0
+    katex: ^0.16.9
     linkifyjs: 4.1.1
     lowlight: 3.1.0
     nanoid: 4.0.2
@@ -19497,6 +19498,17 @@ electron-log@beta:
   version: 3.1.0
   resolution: "junk@npm:3.1.0"
   checksum: 6c4d68e8f8bc25b546baed802cd0e7be6a971e92f1e885c92cbfe98946d5690b961a32f8e7909e77765d3204c3e556d13c17f73e31697ffae1db07a58b9e68c0
+  languageName: node
+  linkType: hard
+
+"katex@npm:^0.16.9":
+  version: 0.16.9
+  resolution: "katex@npm:0.16.9"
+  dependencies:
+    commander: ^8.3.0
+  bin:
+    katex: cli.js
+  checksum: 861194dfd4d86505e657f688fb73048d46ac498edafce71199502a35b03c0ecc35ba930c631be79c4a09d90a0d23476673cd52f6bc367c7a161854d64005fa95
   languageName: node
   linkType: hard
 
