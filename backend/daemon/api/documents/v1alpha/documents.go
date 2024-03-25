@@ -4,14 +4,17 @@ package documents
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api/documents/v1alpha/docmodel"
 	groups "mintter/backend/daemon/api/groups/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	groups_proto "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/mttnet"
+	"strconv"
 	"strings"
 	"time"
 
@@ -316,22 +319,28 @@ var qListAllDrafts = dqb.Str(`
 	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
 	ra.meta,
 	MAX(ra.ts) AS latest_ts,
-	HEX(oraw.owner_raw)
+	HEX(oraw.owner_raw),
+	ra.blob_id
   FROM
 	resource_authors ra
 	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY latest_ts asc;
+  ORDER BY ra.blob_id desc LIMIT :page_size;
 `)
 
 // ListDrafts implements the corresponding gRPC method.
-func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+func (api *Server) ListDrafts(ctx context.Context, req *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	var (
 		entities []hyper.EntityID
 		err      error
 	)
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
+	}
 	conn, cancel, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
@@ -340,7 +349,27 @@ func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsReques
 	resp := &documents.ListDraftsResponse{
 		Documents: make([]*documents.Document, 0, len(entities)),
 	}
+	var cursorBlobID int64 = math.MaxInt32
+	if req.PageSize == 0 {
+		req.PageSize = 30
+	}
+	if req.PageToken != "" {
+		pageTokenBytes, _ := base64.StdEncoding.DecodeString(req.PageToken)
+		if err != nil {
+			return nil, fmt.Errorf("Token encoding not valid: %w", err)
+		}
+		clearPageToken, err := me.DeviceKey().Decrypt(pageTokenBytes)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		pageToken, err := strconv.ParseUint(string(clearPageToken), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		cursorBlobID = int64(pageToken)
+	}
 	pattern := "hm://d/*"
+	var lastBlobID int64
 	err = sqlitex.Exec(conn, qListAllDrafts(), func(stmt *sqlite.Stmt) error {
 		var (
 			id          = stmt.ColumnText(0)
@@ -350,6 +379,7 @@ func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsReques
 			updatedTime = stmt.ColumnInt64(4)
 			ownerHex    = stmt.ColumnText(5)
 		)
+		lastBlobID = stmt.ColumnInt64(6)
 		editors := []string{}
 		for _, editorHex := range strings.Split(editorsStr, ",") {
 			editorBin, err := hex.DecodeString(editorHex)
@@ -372,9 +402,17 @@ func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsReques
 		}
 		resp.Documents = append(resp.Documents, pub)
 		return nil
-	}, pattern)
+	}, pattern, cursorBlobID, req.PageSize)
 	if err != nil {
 		return nil, err
+	}
+
+	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
+	if err != nil {
+		return nil, err
+	}
+	if lastBlobID != 0 && req.PageSize == int32(len(resp.Documents)) {
+		resp.NextPageToken = base64.StdEncoding.EncodeToString(pageToken)
 	}
 	return resp, nil
 }
