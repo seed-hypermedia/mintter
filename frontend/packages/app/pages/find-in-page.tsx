@@ -101,7 +101,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
               ipc.send('find_in_page_query', {
                 query,
                 findNext: false,
-                forward: true,
+                forward: false,
               })
             }
           />
@@ -116,7 +116,7 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
               ipc.send('find_in_page_query', {
                 query,
                 findNext: false,
-                forward: false,
+                forward: true,
               })
             }
           />
