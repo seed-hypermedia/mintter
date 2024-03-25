@@ -981,8 +981,7 @@ function InviteMemberDialog({
         }}
       >
         <DialogTitle>Add Group Editor</DialogTitle>
-
-        <YStack paddingVertical="$3" gap="$2">
+        <YStack paddingVertical="$3">
           <Label>Contacts</Label>
           <TagInput
             label="Accounts"
@@ -1015,12 +1014,16 @@ function InviteMemberDialog({
             ) : null}
           </TagInput>
         </YStack>
-        <DialogDescription gap="$3">
-          <SizableText>Search for member alias, or paste member ID</SizableText>
-        </DialogDescription>
-        <Form.Trigger asChild>
-          <Button>Add Member</Button>
-        </Form.Trigger>
+        <YStack gap="$3">
+          <DialogDescription gap="$3">
+            <SizableText>
+              Search for member alias, or paste member ID
+            </SizableText>
+          </DialogDescription>
+          <Form.Trigger asChild>
+            <Button>Add Member</Button>
+          </Form.Trigger>
+        </YStack>
       </Form>
     </>
   )
@@ -1234,7 +1237,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
             // borderWidth={1}
             borderRadius="$2"
             padding="$1"
-            backgroundColor="white"
+            backgroundColor="$backgroundStrong"
           />
         }
       >
