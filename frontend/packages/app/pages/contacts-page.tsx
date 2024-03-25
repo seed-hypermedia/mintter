@@ -108,10 +108,7 @@ export default function ContactsPage() {
   const myAccount = useMyAccount()
   const allAccounts = contacts.data?.accounts || []
   const trustedAccounts = allAccounts.filter(
-    (account) =>
-      account.isTrusted &&
-      account.id !== myAccount.data?.id &&
-      !!account.profile?.alias, // hide contacts without an alias because this is confusing for users
+    (account) => account.isTrusted && account.id !== myAccount.data?.id,
   )
   const untrustedAccounts = allAccounts.filter(
     (account) => !account.isTrusted && !!account.profile?.alias, // hide contacts without an alias because this is confusing for users
