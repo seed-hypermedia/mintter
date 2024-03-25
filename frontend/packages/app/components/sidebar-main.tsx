@@ -24,8 +24,10 @@ import {
 
 export function MainAppSidebar({
   onSelectGroupId,
+  onSelectAccountId,
 }: {
   onSelectGroupId: null | ((groupId: string) => void)
+  onSelectAccountId: null | ((accountId: string) => void)
 }) {
   const route = useNavRoute()
   const navigate = useNavigate()
@@ -271,11 +273,24 @@ export function MainAppSidebar({
           />
         </YGroup.Item>
         {unpinnedActiveAccountId && accountRoute ? (
-          <PinnedAccount accountId={unpinnedActiveAccountId} isPinned={false} />
+          <PinnedAccount
+            onPress={() => {
+              onSelectAccountId?.(unpinnedActiveAccountId)
+            }}
+            accountId={unpinnedActiveAccountId}
+            isPinned={false}
+          />
         ) : null}
         {pins.data?.accounts.map((accountId) => {
           return (
             <PinnedAccount
+              onPress={() => {
+                if (accountId === activeAccountId && onSelectAccountId) {
+                  onSelectAccountId(accountId)
+                } else {
+                  navigate({key: 'account', accountId})
+                }
+              }}
               isPinned={true}
               accountId={accountId}
               key={accountId}

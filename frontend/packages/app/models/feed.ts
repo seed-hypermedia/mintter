@@ -39,13 +39,15 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
 
 export function useResourceFeed(id: string) {
   const grpcClient = useGRPCClient()
+  const hmId = unpackHmId(id)
   const feedQuery = useInfiniteQuery({
     queryKey: [queryKeys.RESOURCE_FEED, id],
     queryFn: async (context) => {
       const feed = await grpcClient.activityFeed.listEvents({
         pageSize: 4,
         pageToken: context.pageParam,
-        filterResource: [id],
+        filterResource: hmId?.type === 'a' ? undefined : [id],
+        filterUsers: hmId?.type === 'a' ? [hmId.eid] : undefined,
       })
 
       return feed
@@ -54,11 +56,17 @@ export function useResourceFeed(id: string) {
       return lastPage.nextPageToken || undefined
     },
   })
+  const allEvents = feedQuery.data?.pages.flatMap((page) => page.events) || []
   return {
     ...feedQuery,
     data: {
       ...feedQuery.data,
-      events: feedQuery.data?.pages.flatMap((page) => page.events) || [],
+      events: allEvents.filter((event) => {
+        if (event.data.case === 'newBlob') {
+          if (event.data.value.blobType === 'KeyDelegation') return false
+        }
+        return true
+      }),
     },
   }
 }

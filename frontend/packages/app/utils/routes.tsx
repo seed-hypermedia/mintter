@@ -46,6 +46,12 @@ export const accountRouteSchema = z.object({
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
 
+export const accountFeedRouteSchema = z.object({
+  key: z.literal('account-feed'),
+  accountId: z.string(),
+})
+export type AccountFeedRoute = z.infer<typeof accountFeedRouteSchema>
+
 export const publicationCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
 })
@@ -130,6 +136,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   feedRouteSchema,
   contactsRouteSchema,
   accountRouteSchema,
+  accountFeedRouteSchema,
   settingsRouteSchema,
   groupsRouteSchema,
   groupRouteSchema,

@@ -80,6 +80,16 @@ export function getRouteGroupId(route: NavRoute): string | null {
   return activeGroupRouteId
 }
 
+export function getRouteAccountId(route: NavRoute): string | null {
+  let activeAccountId: string | null = null
+  if (route.key === 'account') {
+    activeAccountId = route.accountId
+  } else if (route.key === 'account-feed') {
+    activeAccountId = route.accountId
+  }
+  return activeAccountId
+}
+
 export function GenericSidebarContainer({children}: {children: ReactNode}) {
   const ctx = useSidebarContext()
   const isFocused = useIsWindowFocused({
@@ -380,9 +390,11 @@ export function MyAccountItem({
 export function PinnedAccount({
   accountId,
   isPinned,
+  onPress,
 }: {
   accountId: string
   isPinned: boolean
+  onPress: () => void
 }) {
   const route = useNavRoute()
   const account = useAccount(accountId)
@@ -393,7 +405,8 @@ export function PinnedAccount({
     <YGroup.Item>
       <SidebarItem
         onPress={() => {
-          navigate({key: 'account', accountId})
+          onPress()
+          // navigate({key: 'account', accountId})
         }}
         active={route.key == 'account' && route.accountId == accountId}
         color={isPinned ? undefined : '$color11'}
