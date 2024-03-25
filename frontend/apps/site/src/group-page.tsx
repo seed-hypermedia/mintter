@@ -561,10 +561,7 @@ export function ContentListItem({
 export function ListviewWrapper({children}: {children: ReactNode}) {
   return (
     <YStack
-      paddingHorizontal="$2"
-      marginHorizontal="$3"
-      $gtMd={{paddingHorizontal: '$3'}}
-      $gtLg={{paddingHorizontal: '$4'}}
+      marginHorizontal="$4"
       gap="$2"
       alignItems="baseline"
       marginTop="$5"
