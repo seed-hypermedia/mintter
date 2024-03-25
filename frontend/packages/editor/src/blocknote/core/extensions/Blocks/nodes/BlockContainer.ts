@@ -165,7 +165,7 @@ class HeadingGroupPlugin {
       this.line.style.left = `${rect.left - 30 - editorRect.left}px`
       this.line.style.width = `3px`
       this.line.style.height = `${rect.height}px`
-      this.line.style.backgroundColor = 'blue'
+      this.line.style.backgroundColor = 'var(--mint11)'
       this.line.style.opacity = '0.4'
     } else {
       this.line.style.opacity = '0'
