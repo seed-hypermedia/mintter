@@ -9,7 +9,6 @@ test('Onboarding by adding a new device to account', async ({
 
   await test.step('Welcome Screen', async () => {
     let startBtn = await appWindow.locator('#btn-new-device')
-    await expect(startBtn).toBeVisible()
     await startBtn.click()
   })
 

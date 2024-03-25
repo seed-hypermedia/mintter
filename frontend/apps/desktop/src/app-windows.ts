@@ -343,29 +343,18 @@ export function createAppWindow(input: {
           info('[CMD+F]: no view present')
           createFindView(focusedWindow)
         } else {
+          info('[CMD+F]: view present', findInPageView.getBounds())
           findInPageView.setBounds({
             ...findInPageView.getBounds(),
             y: 20,
           })
-          findInPageView.webContents.focus()
-          findInPageView.webContents.send(
-            'appWindowEvent',
-            'find_in_page_focus',
-          )
-          const currentBounds = findInPageView.getBounds()
-          info('[CMD+F]: view present', currentBounds)
-          if (currentBounds.y < 0) {
-            findInPageView.setBounds({
-              ...currentBounds,
-              y: 20,
-            })
-          } else {
-            findInPageView.webContents.focus()
-            findInPageView.webContents.send(
+          setTimeout(() => {
+            findInPageView?.webContents.focus()
+            findInPageView?.webContents.send(
               'appWindowEvent',
               'find_in_page_focus',
             )
-          }
+          }, 100)
         }
       }
     })

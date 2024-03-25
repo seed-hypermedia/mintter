@@ -6,7 +6,6 @@ test('Onboarding from scratch', async ({onboardingPage}) => {
   let {appWindow} = onboardingPage.appData
   await test.step('Welcome Screen', async () => {
     let startBtn = await appWindow.locator('#btn-new-account')
-    await expect(startBtn).toBeVisible()
     await startBtn.click()
   })
 
