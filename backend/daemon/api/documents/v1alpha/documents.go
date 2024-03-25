@@ -328,7 +328,7 @@ var qListAllDrafts = dqb.Str(`
   WHERE ra.blob_id <= :idx 
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY ra.blob_id desc LIMIT :page_size;
+  ORDER BY ra.blob_id asc LIMIT :page_size;
 `)
 
 // ListDrafts implements the corresponding gRPC method.
@@ -731,14 +731,16 @@ var qListAllPublications = dqb.Str(`
 	MAX(ra.ts) AS latest_ts,
 	HEX(oraw.owner_raw),
 	lb.multihash AS latest_multihash,
-	lb.codec AS latest_codec
+	lb.codec AS latest_codec,
+	ra.blob_id
   FROM
 	resource_authors ra
 	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY latest_ts asc;
+  ORDER BY ra.blob_id asc LIMIT :page_size;
 `)
 
 var qListTrustedPublications = dqb.Str(`
@@ -804,14 +806,16 @@ var qListTrustedPublications = dqb.Str(`
 	MAX(ra.ts) AS latest_ts,
 	HEX(oraw.owner_raw),
 	lb.multihash AS latest_multihash,
-	lb.codec AS latest_codec
+	lb.codec AS latest_codec,
+	ra.blob_id
   FROM
 	resource_authors ra
 	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
 	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
   GROUP BY
 	ra.iri, ra.create_time, ra.meta
-  ORDER BY latest_ts asc;
+  ORDER BY ra.blob_id asc LIMIT :page_size;
 `)
 
 // ListPublications implements the corresponding gRPC method.
@@ -820,6 +824,10 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		entities []hyper.EntityID
 		err      error
 	)
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
+	}
 	conn, cancel, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
@@ -828,11 +836,31 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	resp := &documents.ListPublicationsResponse{
 		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
+	var cursorBlobID int64 = math.MaxInt32
+	if in.PageSize == 0 {
+		in.PageSize = 30
+	}
+	if in.PageToken != "" {
+		pageTokenBytes, _ := base64.StdEncoding.DecodeString(in.PageToken)
+		if err != nil {
+			return nil, fmt.Errorf("Token encoding not valid: %w", err)
+		}
+		clearPageToken, err := me.DeviceKey().Decrypt(pageTokenBytes)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		pageToken, err := strconv.ParseUint(string(clearPageToken), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		cursorBlobID = int64(pageToken)
+	}
 	pattern := "hm://d/*"
 	query := qListAllPublications
 	if in.TrustedOnly {
 		query = qListTrustedPublications
 	}
+	var lastBlobID int64
 	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
 		var (
 			id          = stmt.ColumnText(0)
@@ -844,6 +872,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 			mhash       = stmt.ColumnBytes(6)
 			codec       = stmt.ColumnInt64(7)
 		)
+		lastBlobID = stmt.ColumnInt64(7)
 		editors := []string{}
 		for _, editorHex := range strings.Split(editorsStr, ",") {
 			editorBin, err := hex.DecodeString(editorHex)
@@ -873,9 +902,16 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		}
 		resp.Publications = append(resp.Publications, pub)
 		return nil
-	}, pattern)
+	}, pattern, cursorBlobID, in.PageSize)
 	if err != nil {
 		return nil, err
+	}
+	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
+	if err != nil {
+		return nil, err
+	}
+	if lastBlobID != 0 && in.PageSize == int32(len(resp.Publications)) {
+		resp.NextPageToken = base64.StdEncoding.EncodeToString(pageToken)
 	}
 	return resp, nil
 }
