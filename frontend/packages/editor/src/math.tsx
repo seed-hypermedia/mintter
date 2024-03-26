@@ -15,7 +15,6 @@ export const MathBlock = createReactBlockSpec({
   propSchema: {
     ...defaultProps,
   },
-  // content: 'inline',
   containsInlineContent: true,
   // @ts-ignore
   render: ({
@@ -32,78 +31,83 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [hovered, setHovered] = useState(false)
+  const [popoverOpen, setPopoverOpen] = useState(false)
   const mathRef = useRef(null)
-  const renderMath = (content) => {
-    try {
-      return katex.renderToString(content, {
-        throwOnError: false,
-      })
-    } catch (e) {
-      return content // or handle the error in a more sophisticated way
-    }
-  }
+  // const renderMath = (content) => {
+  //   try {
+  //     return katex.renderToString(content, {
+  //       throwOnError: false,
+  //     })
+  //   } catch (e) {
+  //     return content // or handle the error in a more sophisticated way
+  //   }
+  // }
 
   useEffect(() => {
     if (mathRef.current) {
-      console.log(block.content)
       if (block.content[0]) {
-        katex.render(block.content[0].text, mathRef.current, {
+        try {
+          katex.render(block.content[0].text, mathRef.current, {
+            throwOnError: true,
+            displayMode: true,
+          })
+        } catch (e) {
+          if (e instanceof katex.ParseError) {
+            // KaTeX can't parse the expression
+            katex.render(
+              "Error in LaTeX '" + block.content[0].text + "': " + e.message,
+              mathRef.current,
+              {
+                throwOnError: false,
+              },
+            )
+          } else {
+            throw e
+          }
+        }
+      } else {
+        katex.render('\\color{gray} E = mc^2', mathRef.current, {
           throwOnError: false,
+          displayMode: true,
         })
       }
     }
   }, [block.content])
 
   return (
-    // <MediaContainer
-    //   editor={editor}
-    //   block={block}
-    //   mediaType="math"
-    //   selected={false}
-    //   setSelected={() => {}}
-    //   assign={() => {}}
-    //   styleProps={{
-    //     height: '500px',
-    //   }}
-    // >
-    // {/* {renderMath(`$${block.content}$`)} */}
-    // {/* {renderMath('c = \\pm\\sqrt{a^2 + b^2}')} */}
-    // <span ref={mathRef} />
-    // </MediaContainer>
-    // background-color: var(--color4);
-    // border-radius: 6px;
-    // padding: 10px 16px;
-    // overflow: auto;
-    // position: 'relative';
     <YStack
+      // @ts-ignore
       contentEditable={false}
-      alignContent="center"
-      alignItems="center"
+      minHeight="$7"
       backgroundColor="$color4"
       borderRadius="6px"
       paddingVertical="10px"
       paddingHorizontal="16px"
       position="relative"
       onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverOut={() => {
+        if (!popoverOpen) setHovered(false)
+        else return
+      }}
     >
       {hovered && (
         <XStack
           position="absolute"
-          top={-8}
-          right={-12}
-          width={150}
-          zIndex={100}
+          top={0}
+          right={0}
+          zIndex="$zIndex.5"
+          width="100%"
           ai="center"
           jc="flex-end"
           opacity={hovered ? 1 : 0}
-          padding="$1"
-          gap="$4"
+          padding="$2"
+          gap="$2"
           $group-item-hover={{opacity: 1}}
         >
           <Popover
             placement="bottom"
             size="$5"
+            open={popoverOpen}
             // defaultOpen={boolRegex.test(block.props.defaultOpen)}
             stayInFrame
           >
@@ -117,6 +121,7 @@ const Render = (
                 hoverStyle={{
                   backgroundColor: '$color4',
                 }}
+                onPress={() => setPopoverOpen(true)}
               >
                 Update Equation
               </Button>
@@ -140,34 +145,30 @@ const Render = (
               ]}
             >
               <Input
-                value={block.content[0].text}
+                onBlur={() => {
+                  setPopoverOpen(false)
+                }}
+                placeholder="E = mc^2"
+                value={block.content[0] ? block.content[0].text : ''}
                 onChange={(e) => {
                   // @ts-ignore
                   editor.updateBlock(block, {
                     ...block,
-                    content:
-                      e.nativeEvent.text.length > 0
-                        ? e.nativeEvent.text
-                        : undefined,
+                    content: [
+                      {
+                        type: 'text',
+                        text: e.nativeEvent.text,
+                        styles: {},
+                      },
+                    ],
                   })
                 }}
               />
             </Popover.Content>
           </Popover>
-          {/* <Input
-            onChange={(e) => {
-              // @ts-ignore
-              editor.updateBlock(block, {
-                ...block,
-                content:
-                  e.nativeEvent.text.length > 0 ? e.nativeEvent.text : undefined,
-              })
-            }}
-          /> */}
         </XStack>
       )}
-      <SizableText ref={mathRef} />
-      {/* <InlineContent ref={mathRef} /> */}
+      <SizableText ai="center" ac="center" ref={mathRef} />
     </YStack>
   )
 }
