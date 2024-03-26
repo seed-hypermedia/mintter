@@ -1,6 +1,4 @@
-import {Skeleton} from '@mantine/core'
-import {YStack, useTheme} from '@mintter/ui'
-import {RiTwitterLine} from 'react-icons/ri'
+import {TwitterXIcon, YStack, useTheme} from '@mintter/ui'
 import {
   QuotedTweet,
   TweetBody,
@@ -9,7 +7,7 @@ import {
   TweetInfo,
   TweetMedia,
   TweetNotFound,
-  TweetProps,
+  TweetSkeleton,
   enrichTweet,
   useTweet,
 } from 'react-tweet'
@@ -94,40 +92,40 @@ const Render = (
       mediaType="webEmbed"
       submit={submitTwitterLink}
       DisplayComponent={display}
-      icon={<RiTwitterLine fill={theme.color12.get()} />}
+      icon={<TwitterXIcon fill={theme.color12.get()} />}
     />
   )
 }
 
-const TweetEmbed = ({id, apiUrl, components, onError}: TweetProps) => {
-  const {data, error, isLoading} = useTweet(id, apiUrl)
+// const TweetEmbed = ({id, apiUrl, components, onError}: TweetProps) => {
+//   const {data, error, isLoading} = useTweet(id, apiUrl)
 
-  if (isLoading)
-    return (
-      <YStack padding="$2" width={'100%'} height={'100%'}>
-        <Skeleton width={'100%'} height={'100%'} />
-      </YStack>
-    )
-  if (error || !data) {
-    const NotFound = components?.TweetNotFound || TweetNotFound
-    return <NotFound error={onError ? onError(error) : error} />
-  }
+//   if (isLoading)
+//     return (
+//       <YStack padding="$2" width={'100%'} height={'100%'}>
+//         <Skeleton width={'100%'} height={'100%'} />
+//       </YStack>
+//     )
+//   if (error || !data) {
+//     const NotFound = components?.TweetNotFound || TweetNotFound
+//     return <NotFound error={onError ? onError(error) : error} />
+//   }
 
-  const tweet = enrichTweet(data)
+//   const tweet = enrichTweet(data)
 
-  return (
-    <YStack>
-      <TweetHeader tweet={tweet} components={components} />
-      {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
-      <TweetBody tweet={tweet} />
-      {tweet.mediaDetails?.length ? (
-        <TweetMedia tweet={tweet} components={components} />
-      ) : null}
-      {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
-      <TweetInfo tweet={tweet} />
-    </YStack>
-  )
-}
+//   return (
+//     <YStack>
+//       <TweetHeader tweet={tweet} components={components} />
+//       {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
+//       <TweetBody tweet={tweet} />
+//       {tweet.mediaDetails?.length ? (
+//         <TweetMedia tweet={tweet} components={components} />
+//       ) : null}
+//       {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
+//       <TweetInfo tweet={tweet} />
+//     </YStack>
+//   )
+// }
 
 const display = ({
   editor,
@@ -138,6 +136,21 @@ const display = ({
 }: DisplayComponentProps) => {
   const urlArray = block.props.url.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
+  const {data, error, isLoading} = useTweet(tweetId)
+
+  if (isLoading)
+    return (
+      <YStack padding="$2" width={'100%'} height={'100%'}>
+        <TweetSkeleton />
+      </YStack>
+    )
+  if (error || !data) {
+    const NotFound = TweetNotFound
+    return <NotFound error={error} />
+  }
+
+  const tweet = enrichTweet(data)
+
   return (
     <MediaContainer
       editor={editor}
@@ -154,7 +167,12 @@ const display = ({
       }}
       className="tweet-container"
     >
-      <TweetEmbed id={tweetId} />
+      <TweetHeader tweet={tweet} />
+      {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
+      <TweetBody tweet={tweet} />
+      {tweet.mediaDetails?.length ? <TweetMedia tweet={tweet} /> : null}
+      {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
+      <TweetInfo tweet={tweet} />
     </MediaContainer>
   )
 }

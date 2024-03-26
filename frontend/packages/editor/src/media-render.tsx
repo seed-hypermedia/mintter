@@ -16,7 +16,6 @@ import {ChangeEvent, FunctionComponent, useEffect, useState} from 'react'
 import {Block, BlockNoteEditor, getBlockInfoFromPos} from './blocknote'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
 import {HMBlockSchema} from './schema'
-import {camelToFlat} from './utils'
 
 export type MediaType = {
   id: string
@@ -328,9 +327,12 @@ function MediaForm({
               backgroundColor: '$color4',
             }}
           >
-            {`Add ${['embed', 'image'].includes(mediaType) ? 'an' : 'a'} ${
-              mediaType.charAt(0).toUpperCase() +
-              camelToFlat(mediaType.slice(1))
+            {`Add ${
+              ['embed', 'image', 'webEmbed'].includes(mediaType) ? 'an' : 'a'
+            } ${
+              mediaType === 'webEmbed'
+                ? 'X Post embed'
+                : mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
             }`}
           </Button>
         </Popover.Trigger>

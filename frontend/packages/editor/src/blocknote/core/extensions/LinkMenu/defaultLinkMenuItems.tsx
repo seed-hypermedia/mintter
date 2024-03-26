@@ -13,7 +13,7 @@ import {
   Link,
   Spinner,
   SquareAsterisk,
-  Twitter,
+  TwitterXIcon,
 } from '@mintter/ui'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
@@ -152,11 +152,14 @@ export function getLinkMenuItems({
       const mediaItem = {
         name: `Convert to ${
           media === 'twitter'
-            ? 'Twitter Embed'
+            ? 'X Post embed'
             : media.charAt(0).toUpperCase() + media.slice(1)
         }`,
         disabled: false,
-        icon: media === 'twitter' ? <Twitter size={18} /> : undefined,
+        icon:
+          media === 'twitter' ? (
+            <TwitterXIcon width={18} height={18} />
+          ) : undefined,
         execute: (editor: BlockNoteEditor, ref: string) => {
           const {state, schema} = editor._tiptapEditor
           const {selection} = state
