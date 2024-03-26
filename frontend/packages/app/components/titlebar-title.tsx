@@ -19,6 +19,8 @@ import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
 import {
+  AccountContentRoute,
+  AccountFeedRoute,
   AccountRoute,
   DraftRoute,
   GroupFeedRoute,
@@ -108,7 +110,11 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'account') {
+  if (
+    route.key === 'account' ||
+    route.key === 'account-content' ||
+    route.key === 'account-feed'
+  ) {
     return (
       <>
         <AccountProfileTitle route={route} size={size} />
@@ -141,22 +147,27 @@ function AccountProfileTitle({
   route,
   size,
 }: {
-  route: AccountRoute
+  route: AccountRoute | AccountFeedRoute | AccountContentRoute
   size?: FontSizeTokens
 }) {
   const account = useAccount(route.accountId)
+  let windowLabel = 'Profile'
+  if (route.key === 'account-content' && route.type === 'documents') {
+    windowLabel = 'Documents'
+  } else if (route.key === 'account-content' && route.type === 'groups') {
+    windowLabel = 'Groups'
+  } else if (route.key === 'account-feed') {
+    windowLabel = 'Feed'
+  }
 
-  useWindowTitle(
-    account.data?.profile?.alias
-      ? `Account Profile: ${account.data.profile.alias}`
-      : 'Account Profile',
-  )
+  const title = account.data?.profile?.alias
+    ? `Account ${windowLabel}: ${account.data.profile.alias}`
+    : `Account ${windowLabel}`
+  useWindowTitle(title)
 
   return (
     <TitleText data-testid="titlebar-title" size={size}>
-      {account.data?.profile?.alias
-        ? `Account Profile: ${account.data.profile.alias}`
-        : 'Account Profile'}
+      {title}
     </TitleText>
   )
 }

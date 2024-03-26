@@ -1,4 +1,5 @@
 import {memo, useEffect, useState} from 'react'
+import {useMyAccount} from '../models/accounts'
 import {useNavRoute} from '../utils/navigation'
 import {AccountSidebar} from './sidebar-account'
 import {getRouteAccountId, getRouteGroupId} from './sidebar-base'
@@ -12,7 +13,8 @@ function FullAppSidebar() {
   let [sidebarAccountId, setSidebarAccountId] = useState<string | null>(null)
   const route = useNavRoute()
   const activeGroupRouteId = getRouteGroupId(route)
-  const activeAccountRouteId = getRouteAccountId(route)
+  const myAccount = useMyAccount()
+  const activeAccountRouteId = getRouteAccountId(route, myAccount.data)
   useEffect(() => {
     setSidebarGroupId(activeGroupRouteId)
   }, [activeGroupRouteId])

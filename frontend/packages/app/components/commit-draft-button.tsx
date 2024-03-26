@@ -161,6 +161,15 @@ export default function CommitDraftButton() {
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
   const draftTitle = useDraftTitle({documentId: draftId || undefined})
   if (route.key != 'draft' || !draftId) return null
+  const isProfileDoc =
+    draftRoute?.isProfileDocument ||
+    draftId === myAccount?.data?.profile?.rootDocument
+  let publishMessage = 'Publish'
+  if (groupVariant) {
+    publishMessage = `Publish to ${group.data?.title || 'Group'}`
+  } else if (isProfileDoc) {
+    publishMessage = 'Publish to Profile'
+  }
   return (
     <>
       {mediaDialog.content}
@@ -196,9 +205,7 @@ export default function CommitDraftButton() {
               }}
               theme="green"
             >
-              {groupVariant
-                ? `Publish to ${group.data?.title || 'Group'}`
-                : 'Publish'}
+              {publishMessage}
             </Button>
           ) : null}
         </XGroup.Item>

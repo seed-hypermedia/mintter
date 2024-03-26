@@ -52,6 +52,13 @@ export const accountFeedRouteSchema = z.object({
 })
 export type AccountFeedRoute = z.infer<typeof accountFeedRouteSchema>
 
+export const accountContentRouteSchema = z.object({
+  key: z.literal('account-content'),
+  accountId: z.string(),
+  type: z.union([z.literal('documents'), z.literal('groups')]),
+})
+export type AccountContentRoute = z.infer<typeof accountContentRouteSchema>
+
 export const publicationCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
 })
@@ -122,6 +129,7 @@ export const draftRouteSchema = z.object({
   key: z.literal('draft'),
   draftId: z.string().optional(),
   variant: groupVariantSchema.nullable(),
+  isProfileDocument: z.boolean().optional(),
   contextRoute: z
     .discriminatedUnion('key', [
       documentsRouteSchema,
@@ -137,6 +145,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   contactsRouteSchema,
   accountRouteSchema,
   accountFeedRouteSchema,
+  accountContentRouteSchema,
   settingsRouteSchema,
   groupsRouteSchema,
   groupRouteSchema,

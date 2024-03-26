@@ -1,6 +1,6 @@
 import {unpackHmId} from '@mintter/shared'
 import {YStack} from '@mintter/ui'
-import {Newspaper, Undo2} from '@tamagui/lucide-icons'
+import {Book, FileText, Newspaper, Undo2} from '@tamagui/lucide-icons'
 import {useAccount} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
@@ -60,6 +60,34 @@ export function AccountSidebar({
             />
           }
           title={account.data?.profile?.alias}
+        />
+        <SidebarItem
+          onPress={() => {
+            if (route.key !== 'account-content' || route.type !== 'documents') {
+              navigate({
+                key: 'account-content',
+                accountId,
+                type: 'documents',
+              })
+            }
+          }}
+          icon={FileText}
+          active={route.key === 'account-content' && route.type === 'documents'}
+          title="Documents"
+        />
+        <SidebarItem
+          onPress={() => {
+            if (route.key !== 'account-content' || route.type !== 'groups') {
+              navigate({
+                key: 'account-content',
+                accountId,
+                type: 'groups',
+              })
+            }
+          }}
+          icon={Book}
+          active={route.key === 'account-content' && route.type === 'groups'}
+          title="Groups"
         />
         <SidebarItem
           onPress={() => {

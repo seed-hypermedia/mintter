@@ -14,13 +14,18 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   const grpcClient = useGRPCClient()
   function openNewDraft(
     groupVariant?: GroupVariant | undefined,
-    opts?: {pathName?: string | null; initialTitle?: string},
+    opts?: {
+      pathName?: string | null
+      initialTitle?: string
+      isProfileDocument?: boolean
+    },
   ) {
     createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
+          isProfileDocument: opts.isProfileDocument,
           variant: groupVariant,
           contextRoute: route,
         }

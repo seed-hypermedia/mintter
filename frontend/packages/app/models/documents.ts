@@ -53,7 +53,7 @@ import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
-import {useAccounts, useAllAccounts} from './accounts'
+import {useAccounts, useAllAccounts, useMyAccount} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
@@ -402,6 +402,10 @@ export function usePublishDraft(
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
   const groupVariant = draftRoute?.variant
+  const myAccount = useMyAccount()
+  const isProfileDocument =
+    draftRoute?.isProfileDocument ||
+    myAccount.data?.profile?.rootDocument === draftRoute?.draftId
   const groupVariantContent = useGroupContent(
     groupVariant?.key === 'group' ? groupVariant.groupId : undefined,
   )
@@ -424,6 +428,7 @@ export function usePublishDraft(
       pub: Publication
       groupVariant?: GroupVariant | null | undefined
       isFirstPublish: boolean
+      isProfileDocument: boolean
     }> => {
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       await diagnosis.complete(draftId, {
@@ -437,7 +442,13 @@ export function usePublishDraft(
       const groupVariantChanged =
         publishedId !== prevGroupVariantId?.docId ||
         pub.version !== prevGroupVariantId?.version
-      if (groupVariant && groupVariantChanged) {
+      const publishedDocId = `${publishedId}?v=${pub.version}`
+      if (isProfileDocument) {
+        await grpcClient.accounts.updateProfile({
+          ...myAccount.data?.profile,
+          rootDocument: publishedId,
+        })
+      } else if (groupVariant && groupVariantChanged) {
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([
             queryKeys.EDITOR_DRAFT,
@@ -451,7 +462,7 @@ export function usePublishDraft(
           await grpcClient.groups.updateGroup({
             id: groupVariant.groupId,
             updatedContent: {
-              [publishPathName]: `${publishedId}?v=${pub.version}`,
+              [publishPathName]: publishedDocId,
             },
           })
           return {
@@ -462,10 +473,11 @@ export function usePublishDraft(
               groupId: groupVariant.groupId,
               pathName: publishPathName,
             },
+            isProfileDocument,
           }
         }
       }
-      return {isFirstPublish, pub, groupVariant}
+      return {isFirstPublish, pub, groupVariant, isProfileDocument}
     },
     onSuccess: (result, variables, context) => {
       const documentId = result.pub.document?.id

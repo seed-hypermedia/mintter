@@ -1,26 +1,26 @@
 import {Avatar} from '@mintter/app/components/avatar'
 import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
-import {PublicationListItem} from '@mintter/app/components/publication-list-item'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
   Profile,
+  PublicationContent,
   abbreviateCid,
   createHmId,
   pluralS,
   pluralizer,
-  unpackDocId,
 } from '@mintter/shared'
 import {
   BlockQuote,
   Button,
   ChevronDown,
-  List,
+  Heading,
   ListItem,
   Popover,
   SizableText,
+  Tooltip,
   XStack,
   YGroup,
   YStack,
@@ -28,24 +28,27 @@ import {
   toast,
 } from '@mintter/ui'
 import {PageContainer} from '@mintter/ui/src/container'
-import {Pencil} from '@tamagui/lucide-icons'
-import {ReactNode, useMemo} from 'react'
+import {ArrowUpRight, Pencil, X} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
 import {EntityCitationsAccessory} from '../components/citations'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {MenuItem} from '../components/dropdown'
+import {EditDocButton} from '../components/edit-doc-button'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {FooterButton} from '../components/footer'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
+import {MainWrapper} from '../components/main-wrapper'
+import {OptionsDropdown} from '../components/options-dropdown'
 import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
-import {useAllAccounts, useMyAccount} from '../models/accounts'
+import {useMyAccount} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
-import {useAccountPublications} from '../models/documents'
+import {usePublication} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
+import {useOpenDraft} from '../utils/open-draft'
 import {useNavigate} from '../utils/useNavigate'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 function DeviceRow({
   isOnline,
@@ -94,37 +97,9 @@ export default function AccountPage() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const accessoryKey = route.accessory?.key
   const replace = useNavigate('replace')
-  const list = useAccountPublications(accountId)
   const accountEntityId = createHmId('a', accountId)
   const mentions = useEntityMentions(accountEntityId)
-  const accounts = useAllAccounts()
-  const data = useMemo(() => {
-    function lookupAccount(accountId: string | undefined) {
-      return (
-        (accountId &&
-          accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
-        accountId
-      )
-    }
-    return list.data?.publications
-      .sort((a, b) => {
-        const aTime = a?.document?.publishTime
-          ? new Date(a?.document?.publishTime).getTime()
-          : undefined
-        const bTime = b?.document?.publishTime
-          ? new Date(b?.document?.publishTime).getTime()
-          : undefined
-        if (!aTime || !bTime) return 0
-        return bTime - aTime
-      })
-      .map((pub) => {
-        return {
-          publication: pub,
-          author: lookupAccount(pub?.document?.author),
-          editors: pub?.document?.editors?.map(lookupAccount) || [],
-        }
-      })
-  }, [list.data, accounts.data])
+
   const [copyDialogContent, onCopy] = useCopyGatewayReference()
   let accessory: ReactNode = null
   if (accessoryKey === 'citations') {
@@ -133,48 +108,9 @@ export default function AccountPage() {
   return (
     <>
       <AccessoryLayout accessory={accessory}>
-        <MainWrapperNoScroll>
-          <List
-            header={<AccountPageHeader />}
-            items={data || []}
-            renderItem={({item}) => {
-              const {publication, author, editors} = item
-              const docId = publication.document?.id
-              if (!docId) return null
-              return (
-                <PublicationListItem
-                  key={docId}
-                  publication={publication}
-                  hasDraft={undefined}
-                  author={author}
-                  editors={editors}
-                  menuItems={() => [
-                    copyLinkMenuItem(() => {
-                      const id = unpackDocId(docId)
-                      if (!id) return
-                      onCopy({
-                        ...id,
-                        version: publication.version || null,
-                        variants: [{key: 'author', author: accountId}],
-                      })
-                    }, 'Publication'),
-                  ]}
-                  openRoute={{
-                    key: 'publication',
-                    documentId: docId,
-                    versionId: publication.version,
-                    variants: [
-                      {
-                        key: 'author',
-                        author: accountId,
-                      },
-                    ],
-                  }}
-                />
-              )
-            }}
-          />
-        </MainWrapperNoScroll>
+        <MainWrapper>
+          <MainAccountPage />
+        </MainWrapper>
       </AccessoryLayout>
       {copyDialogContent}
       <Footer>
@@ -198,7 +134,7 @@ export default function AccountPage() {
   )
 }
 
-function AccountPageHeader() {
+function MainAccountPage() {
   const route = useNavRoute()
   const nav = useNavigate('push')
   const accountId = route.key === 'account' && route.accountId
@@ -307,31 +243,131 @@ function AccountPageHeader() {
       </XStack>
       <Section>
         <SizableText size="$4">{account.profile?.bio}</SizableText>
-        {groups?.items.length ? (
-          <XStack alignItems="center" space flexWrap="wrap">
-            <SizableText size="$2" marginBottom="$2" fontWeight="bold">
-              Groups
-            </SizableText>
-            {groups.items.map((item) => (
-              <Button
-                size="$2"
-                marginBottom="$2"
-                key={item.group?.id}
-                theme="blue"
-                onPress={() =>
-                  item.group
-                    ? nav({key: 'group', groupId: item.group.id})
-                    : null
-                }
-              >
-                {item.group?.title}
-              </Button>
-            ))}
-          </XStack>
-        ) : null}
       </Section>
-
+      <YStack gap="$4" marginVertical="$4">
+        {account.profile?.rootDocument ? (
+          <ProfileDoc
+            docId={account.profile.rootDocument}
+            profileAlias={account.profile?.alias}
+            accountId={accountId}
+          />
+        ) : (
+          <CreateProfileDocument accountId={accountId} />
+        )}
+      </YStack>
       {editProfileDialog.content}
     </PageContainer>
   )
+}
+
+function CreateProfileDocument({accountId}: {accountId: string}) {
+  const myAccount = useMyAccount()
+  const isMyAccount = myAccount.data?.id === accountId
+  const openDraft = useOpenDraft('push')
+  if (!isMyAccount) return null
+  return (
+    <XStack gap="$4">
+      <Button
+        size="$2"
+        icon={Pencil}
+        onPress={() => {
+          openDraft(undefined, {isProfileDocument: true})
+        }}
+      >
+        Create Profile Document
+      </Button>
+    </XStack>
+  )
+}
+
+function ProfileDoc({
+  docId,
+  profileAlias,
+  accountId,
+}: {
+  docId: string
+  profileAlias: string
+  accountId: string
+}) {
+  const route = useNavRoute()
+  const myAccount = useMyAccount()
+  const isMyAccount = myAccount.data?.id === accountId
+  const spawn = useNavigate('spawn')
+  const groupRoute = route.key === 'group' ? route : undefined
+  const pub = usePublication({
+    id: docId,
+  })
+  return pub.status == 'success' && pub.data ? (
+    <YStack
+      width="100%"
+      maxWidth="calc(90ch + 20vw)"
+      paddingHorizontal="$5"
+      alignSelf="center"
+    >
+      <XStack gap="$2" jc="flex-end" ai="center">
+        <EditDocButton
+          // variants={[
+          //   {
+          //     key: 'group',
+          //     groupId,
+          //     pathName: '/',
+          //   },
+          // ]}
+          docId={docId}
+          baseVersion={undefined}
+          navMode="push"
+        />
+        <Tooltip content="Open in New Window">
+          <Button
+            icon={ArrowUpRight}
+            size="$2"
+            onPress={() => {
+              spawn({
+                key: 'publication',
+                documentId: docId,
+                variants: [
+                  {
+                    key: 'author',
+                    author: accountId,
+                  },
+                ],
+              })
+            }}
+          />
+        </Tooltip>
+        <OptionsDropdown
+          menuItems={[
+            ...(isMyAccount
+              ? [
+                  {
+                    key: 'remove',
+                    icon: X,
+                    label: 'Remove Publication Document',
+                    onPress: () => {},
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </XStack>
+      {pub.data?.document?.title &&
+      profileAlias !== pub.data?.document?.title ? (
+        <Heading
+          size="$1"
+          fontSize={'$2'}
+          paddingHorizontal="$5"
+          $gtMd={{
+            paddingHorizontal: '$6',
+          }}
+        >
+          {pub.data?.document?.title}
+        </Heading>
+      ) : null}
+      <AppPublicationContentProvider
+        routeParams={{blockRef: groupRoute?.blockId}}
+      >
+        <PublicationContent publication={pub.data} />
+      </AppPublicationContentProvider>
+    </YStack>
+  ) : null
 }

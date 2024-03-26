@@ -80,12 +80,19 @@ export function getRouteGroupId(route: NavRoute): string | null {
   return activeGroupRouteId
 }
 
-export function getRouteAccountId(route: NavRoute): string | null {
+export function getRouteAccountId(
+  route: NavRoute,
+  myAccount: Account | null | undefined,
+): string | null {
   let activeAccountId: string | null = null
   if (route.key === 'account') {
     activeAccountId = route.accountId
   } else if (route.key === 'account-feed') {
     activeAccountId = route.accountId
+  } else if (route.key === 'account-content') {
+    activeAccountId = route.accountId
+  } else if (route.key === 'draft' && route.isProfileDocument) {
+    return myAccount?.id || null
   }
   return activeAccountId
 }
