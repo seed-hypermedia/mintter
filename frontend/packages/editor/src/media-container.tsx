@@ -19,6 +19,7 @@ interface ContainerProps {
   onHoverOut?: (e: any) => void
   width?: number | string
   className?: string
+  onPress?: (e: Event) => void
 }
 
 export const MediaContainer = ({
@@ -34,6 +35,7 @@ export const MediaContainer = ({
   onHoverOut,
   width = '100%',
   className,
+  onPress,
 }: ContainerProps) => {
   const [replace, setReplace] = useState(false)
   const [drag, setDrag] = useState(false)
@@ -136,7 +138,21 @@ export const MediaContainer = ({
   }
 
   return (
-    <YStack gap="$2" group="item" width={width} alignSelf="center">
+    <YStack
+      gap="$2"
+      group="item"
+      width={width}
+      alignSelf="center"
+      onPress={
+        onPress
+          ? (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onPress(e)
+            }
+          : undefined
+      }
+    >
       {drag && !isEmbed ? (
         <XStack
           position="absolute"

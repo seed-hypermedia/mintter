@@ -1,4 +1,5 @@
 import {Timestamp} from '@bufbuild/protobuf'
+import {useOpenUrl} from '@mintter/app/open-url'
 import {
   API_HTTP_URL,
   Block,
@@ -1578,6 +1579,7 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const urlArray = block.attributes!.url.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
+  const openUrl = useOpenUrl()
 
   if (isLoading)
     return (
@@ -1605,6 +1607,11 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
       width="100%"
       marginHorizontal={(-1 * layoutUnit) / 2}
       className="tweet-container"
+      onPress={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        openUrl(block.attributes?.url)
+      }}
     >
       <TweetHeader tweet={tweet} />
       {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}

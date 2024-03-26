@@ -1,3 +1,4 @@
+import {useOpenUrl} from '@mintter/app/open-url'
 import {TwitterXIcon, YStack, useTheme} from '@mintter/ui'
 import {
   QuotedTweet,
@@ -137,7 +138,7 @@ const display = ({
   const urlArray = block.props.url.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
-
+  const openUrl = useOpenUrl()
   if (isLoading)
     return (
       <YStack padding="$2" width={'100%'} height={'100%'}>
@@ -159,6 +160,9 @@ const display = ({
       selected={selected}
       setSelected={setSelected}
       assign={assign}
+      onPress={() => {
+        openUrl(block.props.url)
+      }}
       styleProps={{
         padding: '$3',
         overflow: 'hidden',
