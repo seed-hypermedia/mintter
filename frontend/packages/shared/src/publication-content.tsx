@@ -71,6 +71,7 @@ import {
   TweetInfo,
   TweetMedia,
   TweetNotFound,
+  TweetSkeleton,
   enrichTweet,
   useTweet,
 } from 'react-tweet'
@@ -639,7 +640,7 @@ function BlockContent(props: BlockContentProps) {
     }
   }
 
-  if (props.block.type == 'twitterBlock') {
+  if (props.block.type == 'web-embed') {
     return <BlockContentTwitter {...props} block={props.block} />
   }
 
@@ -1574,12 +1575,16 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
-  const urlArray = block.ref!.split('/')
+  const urlArray = block.attributes!.url.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
 
   if (isLoading)
-    return <YStack padding="$2" width={'100%'} height={'100%'}></YStack>
+    return (
+      <YStack padding="$2" width={'100%'} height={'100%'}>
+        <TweetSkeleton />
+      </YStack>
+    )
   if (error || !data) {
     const NotFound = TweetNotFound
     return <NotFound error={error} />
