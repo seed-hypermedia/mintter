@@ -105,10 +105,9 @@ const Render = (
           $group-item-hover={{opacity: 1}}
         >
           <Popover
-            placement="bottom"
+            placement="bottom-end"
             size="$5"
             open={popoverOpen}
-            // defaultOpen={boolRegex.test(block.props.defaultOpen)}
             stayInFrame
           >
             <Popover.Trigger asChild>
