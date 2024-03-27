@@ -12,8 +12,8 @@ import {ImageBlock} from './image'
 import {ImagePlaceholder} from './image-placeholder'
 import {NostrBlock} from './nostr'
 import CodeBlockLowlight from './tiptap-extension-code-block'
-import {WebEmbed} from './web-embed'
 import {VideoBlock} from './video'
+import {WebEmbed} from './web-embed'
 
 export const hmBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
@@ -47,7 +47,7 @@ export const hmBlockSchema: BlockSchema = {
   video: VideoBlock,
   file: FileBlock,
   nostr: NostrBlock,
-  webEmbed: WebEmbed,
+  ['web-embed']: WebEmbed,
 }
 
 export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>

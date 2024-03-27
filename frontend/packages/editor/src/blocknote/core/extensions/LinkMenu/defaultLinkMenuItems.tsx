@@ -189,7 +189,7 @@ export function getLinkMenuItems({
                   src: embedUrl ? '' : ref,
                   name: fileName ? fileName : '',
                 })
-              : schema.nodes['webEmbed'].create({
+              : schema.nodes['web-embed'].create({
                   url: ref,
                 })
 

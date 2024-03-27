@@ -343,10 +343,10 @@ export function toHMBlock(
 
     if (serverBlock.block?.type === 'web-embed') {
       res = {
-        type: 'webEmbed',
+        type: 'web-embed',
         id: serverBlock.block.id,
         props: {
-          url: serverBlock.block.attributes.url,
+          url: serverBlock.block.ref,
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
@@ -361,9 +361,6 @@ export function toHMBlock(
         id: serverBlock.block.id,
         props: {
           url: serverBlock.block.ref,
-          sourceUrl: serverBlock.block.attributes.sourceUrl || '',
-          sourceRef: serverBlock.block.attributes.sourceRef || '',
-          latest: serverBlock.block.attributes.latest || false,
           view: serverBlock.block.attributes.view || 'content',
           textAlignment: 'left',
           childrenType: extractChildrenType(

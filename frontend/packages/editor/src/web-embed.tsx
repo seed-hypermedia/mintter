@@ -24,7 +24,7 @@ import {HMBlockSchema} from './schema'
 import {isValidUrl} from './utils'
 
 export const WebEmbed = createReactBlockSpec({
-  type: 'webEmbed',
+  type: 'web-embed',
   propSchema: {
     ...defaultProps,
     url: {
@@ -90,7 +90,7 @@ const Render = (
     <MediaRender
       block={block}
       editor={editor}
-      mediaType="webEmbed"
+      mediaType="web-embed"
       submit={submitTwitterLink}
       DisplayComponent={display}
       icon={<TwitterXIcon fill={theme.color12.get()} />}
@@ -156,12 +156,12 @@ const display = ({
     <MediaContainer
       editor={editor}
       block={block}
-      mediaType="webEmbed"
+      mediaType="web-embed"
       selected={selected}
       setSelected={setSelected}
       assign={assign}
       onPress={() => {
-        openUrl(block.props.url)
+        openUrl(block.props.ref)
       }}
       styleProps={{
         padding: '$3',

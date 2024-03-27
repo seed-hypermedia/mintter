@@ -1575,7 +1575,7 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {layoutUnit, onLinkClick} = usePublicationContentContext()
-  const urlArray = block.attributes!.url.split('/')
+  const urlArray = block.ref.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
   const openUrl = () => {}
@@ -1609,8 +1609,8 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
       onPress={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        if (block.attributes?.url) {
-          onLinkClick(block.attributes.url, e)
+        if (block.ref) {
+          onLinkClick(block.ref, e)
         }
       }}
     >

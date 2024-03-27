@@ -210,7 +210,7 @@ function MediaForm({
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const isEmbed = ['embed', 'webEmbed'].includes(mediaType)
+  const isEmbed = ['embed', 'web-embed'].includes(mediaType)
   const [tabState, setTabState] = useState(isEmbed ? 'embed' : 'upload')
   const [fileName, setFileName] = useState<{
     name: string
@@ -328,9 +328,9 @@ function MediaForm({
             }}
           >
             {`Add ${
-              ['embed', 'image', 'webEmbed'].includes(mediaType) ? 'an' : 'a'
+              ['embed', 'image', 'web-embed'].includes(mediaType) ? 'an' : 'a'
             } ${
-              mediaType === 'webEmbed'
+              mediaType === 'web-embed'
                 ? 'X Post embed'
                 : mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
             }`}
@@ -557,7 +557,7 @@ function MediaForm({
                           borderRadius="$3"
                           size="$3.5"
                           placeholder={`Input ${
-                            mediaType === 'webEmbed' ? 'X.com' : mediaType
+                            mediaType === 'web-embed' ? 'X.com' : mediaType
                           } link...`}
                           focusStyle={{
                             borderColor: '$colorFocus',

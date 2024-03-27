@@ -273,7 +273,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   items: getLinkMenuItems({
                     isLoading: false,
                     media: 'image',
-                    sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,
                   }),
@@ -287,7 +286,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   items: getLinkMenuItems({
                     isLoading: false,
                     media: 'file',
-                    sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,
                   }),

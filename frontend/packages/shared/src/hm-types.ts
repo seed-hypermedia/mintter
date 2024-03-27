@@ -174,10 +174,7 @@ export type HMBlockVideo = HMBlockBase & {
 }
 
 export type HMBlockWebEmbed = HMBlockBase & {
-  type: 'webEmbed'
-  attributes: {
-    url: string
-  }
+  type: 'web-embed'
   ref: string
 }
 
@@ -186,9 +183,6 @@ export type HMBlockEmbed = HMBlockBase & {
   ref: string
   attributes: {
     view?: 'content' | 'card'
-    latest?: boolean
-    sourceUrl?: string
-    sourceRef?: string
   }
 }
 

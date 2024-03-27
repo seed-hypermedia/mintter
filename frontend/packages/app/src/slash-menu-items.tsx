@@ -157,7 +157,7 @@ export const slashMenuItems = [
     hint: 'Insert an X Post embed',
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
-        type: 'webEmbed',
+        type: 'web-embed',
         props: {
           url: '',
         },

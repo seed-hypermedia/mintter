@@ -583,7 +583,7 @@ export function activeDocOutline(
       isBlockActive = true
     }
     return [
-      <YGroup.Item>
+      <YGroup.Item key={item.id}>
         <SidebarItem
           onPress={() => {
             if (item.linkRoute) {

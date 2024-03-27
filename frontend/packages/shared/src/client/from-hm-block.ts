@@ -209,14 +209,11 @@ export function fromHMBlock(
     })
   }
 
-  if (editorBlock.type == 'webEmbed') {
+  if (editorBlock.type == 'web-embed') {
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'web-embed',
-      attributes: {
-        url: editorBlock.props.url,
-      },
-      ref: '',
+      ref: editorBlock.props.url,
     })
   }
 
@@ -246,9 +243,6 @@ export function fromHMBlock(
       annotations: [],
       attributes: {
         view: editorBlock.props.view,
-        latest: editorBlock.props.latest,
-        sourceUrl: editorBlock.props.sourceUrl,
-        sourceRef: editorBlock.props.sourceRef,
       },
     })
   }
