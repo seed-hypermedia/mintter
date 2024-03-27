@@ -209,6 +209,17 @@ export function fromHMBlock(
     })
   }
 
+  if (editorBlock.type == 'webEmbed') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'web-embed',
+      attributes: {
+        url: editorBlock.props.url,
+      },
+      ref: '',
+    })
+  }
+
   if (editorBlock.type == 'video') {
     let ref = editorBlock.props.url
 

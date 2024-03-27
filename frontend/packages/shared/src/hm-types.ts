@@ -173,6 +173,14 @@ export type HMBlockVideo = HMBlockBase & {
   }
 }
 
+export type HMBlockWebEmbed = HMBlockBase & {
+  type: 'webEmbed'
+  attributes: {
+    url: string
+  }
+  ref: string
+}
+
 export type HMBlockEmbed = HMBlockBase & {
   type: 'embed'
   ref: string
@@ -206,6 +214,7 @@ export type HMBlock =
   | HMBlockImage
   | HMBlockFile
   | HMBlockVideo
+  | HMBlockWebEmbed
   | HMBlockEmbed
   | HMBlockCode
   | HMBlockCodeBlock

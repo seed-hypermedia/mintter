@@ -29,6 +29,7 @@ let transpilePackages = [
   // 'expo-constants',
   // 'expo-modules-core',
   '@mintter/ui',
+  'react-tweet',
 ]
 
 const plugins = [
@@ -88,6 +89,8 @@ const createNextConfig = function () {
           port: '56001',
           pathname: '/ipfs/**',
         },
+        {protocol: 'https', hostname: 'pbs.twimg.com'},
+        {protocol: 'https', hostname: 'abs.twimg.com'},
       ],
     },
     typescript: {

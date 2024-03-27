@@ -4,6 +4,7 @@ import {
   PartialBlock,
   insertOrUpdateBlock,
 } from '@mintter/editor'
+import {TwitterXIcon} from '@mintter/ui'
 import {
   RiArticleFill,
   RiCodeBoxFill,
@@ -119,7 +120,7 @@ export const slashMenuItems = [
     aliases: ['embed', 'card'],
     group: 'Media blocks',
     icon: <RiArticleFill size={18} />,
-    hint: 'Insert an Embed',
+    hint: 'Insert a Hypermedia Embed',
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
         type: 'embed',
@@ -134,11 +135,29 @@ export const slashMenuItems = [
   {
     name: 'Nostr',
     aliases: ['nostr', 'note', 'event'],
+    group: 'Web embeds',
     icon: <RiMessage2Fill size={18} />,
     hint: 'Insert a nostr note',
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
         type: 'nostr',
+        props: {
+          url: '',
+        },
+      } as PartialBlock<HMBlockSchema>)
+      const {state, view} = editor._tiptapEditor
+      view.dispatch(state.tr.scrollIntoView())
+    },
+  },
+  {
+    name: 'X Post',
+    aliases: ['tweet', 'twitter', 'x'],
+    group: 'Web embeds',
+    icon: <TwitterXIcon width={18} height={18} />,
+    hint: 'Insert an X Post embed',
+    execute: (editor) => {
+      insertOrUpdateBlock(editor, {
+        type: 'webEmbed',
         props: {
           url: '',
         },

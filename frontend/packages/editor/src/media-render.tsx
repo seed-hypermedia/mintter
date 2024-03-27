@@ -210,9 +210,8 @@ function MediaForm({
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const [tabState, setTabState] = useState(
-    mediaType === 'embed' ? 'embed' : 'upload',
-  )
+  const isEmbed = ['embed', 'webEmbed'].includes(mediaType)
+  const [tabState, setTabState] = useState(isEmbed ? 'embed' : 'upload')
   const [fileName, setFileName] = useState<{
     name: string
     color: string | undefined
@@ -328,8 +327,12 @@ function MediaForm({
               backgroundColor: '$color4',
             }}
           >
-            {`Add ${['embed', 'image'].includes(mediaType) ? 'an' : 'a'} ${
-              mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
+            {`Add ${
+              ['embed', 'image', 'webEmbed'].includes(mediaType) ? 'an' : 'a'
+            } ${
+              mediaType === 'webEmbed'
+                ? 'X Post embed'
+                : mediaType.charAt(0).toUpperCase() + mediaType.slice(1)
             }`}
           </Button>
         </Popover.Trigger>
@@ -374,7 +377,7 @@ function MediaForm({
               borderBottomRightRadius={0}
               borderRadius={0}
             >
-              {mediaType !== 'embed' && (
+              {!isEmbed && (
                 <Tabs.Tab
                   unstyled
                   value="upload"
@@ -410,7 +413,7 @@ function MediaForm({
               )}
             </Tabs.List>
 
-            {mediaType !== 'embed' && (
+            {!isEmbed && (
               <Tabs.Content value="upload">
                 <XStack
                   padding="$4"
@@ -443,9 +446,7 @@ function MediaForm({
                                   ? file.name
                                   : file.name.slice(0, 32) + '...'
                               } is not ${
-                                ['embed', 'image'].includes(mediaType)
-                                  ? 'an'
-                                  : 'a'
+                                mediaType === 'image' ? 'an' : 'a'
                               } ${mediaType}.`,
                               color: 'red',
                             })
@@ -555,7 +556,9 @@ function MediaForm({
                           borderWidth="$0.5"
                           borderRadius="$3"
                           size="$3.5"
-                          placeholder={`Input ${mediaType} link...`}
+                          placeholder={`Input ${
+                            mediaType === 'webEmbed' ? 'X.com' : mediaType
+                          } link...`}
                           focusStyle={{
                             borderColor: '$colorFocus',
                             outlineWidth: 0,

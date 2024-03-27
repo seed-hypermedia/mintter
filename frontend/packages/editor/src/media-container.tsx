@@ -18,6 +18,8 @@ interface ContainerProps {
   onHoverIn?: () => void
   onHoverOut?: (e: any) => void
   width?: number | string
+  className?: string
+  onPress?: (e: Event) => void
 }
 
 export const MediaContainer = ({
@@ -32,9 +34,12 @@ export const MediaContainer = ({
   onHoverIn,
   onHoverOut,
   width = '100%',
+  className,
+  onPress,
 }: ContainerProps) => {
   const [replace, setReplace] = useState(false)
   const [drag, setDrag] = useState(false)
+  const isEmbed = ['embed', 'webEmbed'].includes(mediaType)
 
   const handleDragReplace = async (file: File) => {
     if (file.size > MaxFileSizeB) {
@@ -66,16 +71,7 @@ export const MediaContainer = ({
     }
   }
 
-  const mediaProps = {
-    ...styleProps,
-    onHoverIn: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (onHoverIn) onHoverIn()
-      setReplace(true)
-    },
-    onHoverOut: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (onHoverOut) onHoverOut(e)
-      setReplace(false)
-    },
+  const dragProps = {
     onDrop: (e: React.DragEvent<HTMLDivElement>) => {
       if (e.dataTransfer.effectAllowed === 'move') return
       e.preventDefault()
@@ -125,12 +121,39 @@ export const MediaContainer = ({
         setSelected(false)
       }
     },
+  }
+
+  const mediaProps = {
+    ...styleProps,
+    ...(isEmbed ? {} : dragProps),
+    onHoverIn: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (onHoverIn) onHoverIn()
+      setReplace(true)
+    },
+    onHoverOut: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (onHoverOut) onHoverOut(e)
+      setReplace(false)
+    },
     outlineWidth: 0,
   }
 
   return (
-    <YStack gap="$2" group="item" width={width} alignSelf="center">
-      {drag && mediaType !== 'embed' ? (
+    <YStack
+      gap="$2"
+      group="item"
+      width={width}
+      alignSelf="center"
+      onPress={
+        onPress
+          ? (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onPress(e)
+            }
+          : undefined
+      }
+    >
+      {drag && !isEmbed ? (
         <XStack
           position="absolute"
           zIndex={100}
@@ -172,7 +195,7 @@ export const MediaContainer = ({
         {...mediaProps}
         // @ts-ignore
         contentEditable={false}
-        className={block.type}
+        className={className ?? block.type}
         group="item"
       >
         {replace && mediaType !== 'embed'

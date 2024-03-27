@@ -63,6 +63,18 @@ import {
   useState,
 } from 'react'
 import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
+import {
+  QuotedTweet,
+  TweetBody,
+  TweetHeader,
+  TweetInReplyTo,
+  TweetInfo,
+  TweetMedia,
+  TweetNotFound,
+  TweetSkeleton,
+  enrichTweet,
+  useTweet,
+} from 'react-tweet'
 import {HMAccount, HMGroup} from './hm-types'
 import {
   contentLayoutUnit,
@@ -626,6 +638,10 @@ function BlockContent(props: BlockContentProps) {
     } else {
       return <BlockContentFile {...props} block={props.block} />
     }
+  }
+
+  if (props.block.type == 'web-embed') {
+    return <BlockContentTwitter {...props} block={props.block} />
   }
 
   if (props.block.type == 'embed') {
@@ -1553,6 +1569,57 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
           {content}
         </Text>
       </XStack>
+    </YStack>
+  )
+}
+
+export function BlockContentTwitter({block, ...props}: BlockContentProps) {
+  const {layoutUnit, onLinkClick} = usePublicationContentContext()
+  const urlArray = block.attributes!.url.split('/')
+  const tweetId = urlArray[urlArray.length - 1].split('?')[0]
+  const {data, error, isLoading} = useTweet(tweetId)
+  const openUrl = () => {}
+
+  if (isLoading)
+    return (
+      <YStack padding="$2" width={'100%'} height={'100%'}>
+        <TweetSkeleton />
+      </YStack>
+    )
+  if (error || !data) {
+    const NotFound = TweetNotFound
+    return <NotFound error={error} />
+  }
+
+  const tweet = enrichTweet(data)
+
+  return (
+    <YStack
+      {...blockStyles}
+      {...props}
+      borderColor="$color6"
+      backgroundColor="$color4"
+      borderWidth={1}
+      borderRadius={layoutUnit / 4}
+      padding={layoutUnit / 2}
+      overflow="hidden"
+      width="100%"
+      marginHorizontal={(-1 * layoutUnit) / 2}
+      className="tweet-container"
+      onPress={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (block.attributes?.url) {
+          onLinkClick(block.attributes.url, e)
+        }
+      }}
+    >
+      <TweetHeader tweet={tweet} />
+      {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
+      <TweetBody tweet={tweet} />
+      {tweet.mediaDetails?.length ? <TweetMedia tweet={tweet} /> : null}
+      {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
+      <TweetInfo tweet={tweet} />
     </YStack>
   )
 }

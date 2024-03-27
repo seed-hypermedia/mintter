@@ -8,6 +8,7 @@ import {
   HMBlockNostr,
   HMBlockParagraph,
   HMBlockVideo,
+  HMBlockWebEmbed,
   HMInlineContent,
   HMInlineContentEmbed,
   HMInlineContentLink,
@@ -338,6 +339,20 @@ export function toHMBlock(
         content: toHMInlineContent(serverBlock.block),
         children: [],
       } satisfies HMBlockVideo
+    }
+
+    if (serverBlock.block?.type === 'web-embed') {
+      res = {
+        type: 'webEmbed',
+        id: serverBlock.block.id,
+        props: {
+          url: serverBlock.block.attributes.url,
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
+        },
+        children: [],
+      } satisfies HMBlockWebEmbed
     }
 
     if (serverBlock.block?.type === 'embed') {
