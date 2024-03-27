@@ -28,6 +28,7 @@ let transpilePackages = [
   // 'expo-linking',
   // 'expo-constants',
   // 'expo-modules-core',
+  'react-tweet',
   '@mintter/ui',
   'react-tweet',
 ]
