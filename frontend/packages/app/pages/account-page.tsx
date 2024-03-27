@@ -13,6 +13,7 @@ import {
   pluralizer,
 } from '@mintter/shared'
 import {
+  AlertDialog,
   BlockQuote,
   Button,
   ChevronDown,
@@ -20,6 +21,7 @@ import {
   ListItem,
   Popover,
   SizableText,
+  Spinner,
   Tooltip,
   XStack,
   YGroup,
@@ -34,6 +36,7 @@ import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
 import {EntityCitationsAccessory} from '../components/citations'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useAppDialog} from '../components/dialog'
 import {MenuItem} from '../components/dropdown'
 import {EditDocButton} from '../components/edit-doc-button'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
@@ -42,7 +45,7 @@ import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
 import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
-import {useMyAccount} from '../models/accounts'
+import {useMyAccount, useSetProfile} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {usePublication} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
@@ -293,10 +296,11 @@ function ProfileDoc({
   const myAccount = useMyAccount()
   const isMyAccount = myAccount.data?.id === accountId
   const spawn = useNavigate('spawn')
-  const groupRoute = route.key === 'group' ? route : undefined
+  const accountRoute = route.key === 'account' ? route : undefined
   const pub = usePublication({
     id: docId,
   })
+  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, {isAlert: true})
   return pub.status == 'success' && pub.data ? (
     <YStack
       width="100%"
@@ -306,16 +310,10 @@ function ProfileDoc({
     >
       <XStack gap="$2" jc="flex-end" ai="center">
         <EditDocButton
-          // variants={[
-          //   {
-          //     key: 'group',
-          //     groupId,
-          //     pathName: '/',
-          //   },
-          // ]}
           docId={docId}
           baseVersion={undefined}
           navMode="push"
+          contextRoute={accountRoute}
         />
         <Tooltip content="Open in New Window">
           <Button
@@ -342,14 +340,17 @@ function ProfileDoc({
                   {
                     key: 'remove',
                     icon: X,
-                    label: 'Remove Publication Document',
-                    onPress: () => {},
+                    label: 'Remove Profile Document',
+                    onPress: () => {
+                      removeProfileDoc.open({})
+                    },
                   },
                 ]
               : []),
           ]}
         />
       </XStack>
+      {removeProfileDoc.content}
       {pub.data?.document?.title &&
       profileAlias !== pub.data?.document?.title ? (
         <Heading
@@ -364,10 +365,57 @@ function ProfileDoc({
         </Heading>
       ) : null}
       <AppPublicationContentProvider
-        routeParams={{blockRef: groupRoute?.blockId}}
+        routeParams={{blockRef: accountRoute?.blockId}}
       >
         <PublicationContent publication={pub.data} />
       </AppPublicationContentProvider>
     </YStack>
   ) : null
+}
+
+function RemoveProfileDocDialog({
+  onClose,
+  input,
+}: {
+  onClose: () => void
+  input: {}
+}) {
+  const setProfile = useSetProfile({
+    onSuccess: onClose,
+  })
+  return (
+    <YStack space backgroundColor="$background" padding="$4" borderRadius="$3">
+      <AlertDialog.Title>Remove Profile Document</AlertDialog.Title>
+      <AlertDialog.Description>
+        Unlink this document from your profile? This will remove all your
+        profile's organization.
+      </AlertDialog.Description>
+      <Spinner opacity={setProfile.isLoading ? 1 : 0} />
+      <XStack space="$3" justifyContent="flex-end">
+        <AlertDialog.Cancel asChild>
+          <Button
+            onPress={() => {
+              onClose()
+            }}
+            chromeless
+          >
+            Cancel
+          </Button>
+        </AlertDialog.Cancel>
+        <AlertDialog.Action asChild>
+          <Button
+            theme="red"
+            onPress={() => {
+              setProfile.mutate({
+                rootDocument: '',
+              })
+              onClose()
+            }}
+          >
+            Remove
+          </Button>
+        </AlertDialog.Action>
+      </XStack>
+    </YStack>
+  )
 }

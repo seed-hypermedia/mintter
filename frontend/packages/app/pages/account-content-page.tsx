@@ -3,9 +3,14 @@ import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {PublicationListItem} from '@mintter/app/components/publication-list-item'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {Profile, abbreviateCid, createHmId, unpackDocId} from '@mintter/shared'
 import {
-  Button,
+  Profile,
+  abbreviateCid,
+  createHmId,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
+import {
   List,
   ListItem,
   YGroup,
@@ -13,7 +18,6 @@ import {
   copyTextToClipboard,
   toast,
 } from '@mintter/ui'
-import {PageContainer} from '@mintter/ui/src/container'
 import {ReactNode, useMemo} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
@@ -23,6 +27,7 @@ import {useAllAccounts} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {useAccountPublications} from '../models/documents'
 import {useNavigate} from '../utils/useNavigate'
+import {GroupListItem} from './groups'
 
 function DeviceRow({
   isOnline,
@@ -172,21 +177,29 @@ function AccountGroups() {
   const accountId = route.key === 'account-content' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const {data: groups} = useAccountGroups(accountId)
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+
   return (
-    <PageContainer marginVertical="$6">
-      {groups?.items?.map((item) => (
-        <Button
-          size="$2"
-          marginBottom="$2"
-          key={item.group?.id}
-          theme="blue"
-          onPress={() =>
-            item.group ? nav({key: 'group', groupId: item.group.id}) : null
-          }
-        >
-          {item.group?.title}
-        </Button>
-      ))}
-    </PageContainer>
+    <>
+      <MainWrapperNoScroll>
+        {groups?.items ? (
+          <List
+            items={groups.items}
+            renderItem={({item}) => (
+              <GroupListItem
+                group={item.group}
+                onCopy={() => {
+                  const groupId = unpackHmId(item?.group?.id)
+                  if (!groupId) return
+                  onCopyId(groupId)
+                }}
+              />
+            )}
+          />
+        ) : null}
+        {copyDialogContent}
+      </MainWrapperNoScroll>
+      <Footer></Footer>
+    </>
   )
 }

@@ -389,6 +389,7 @@ export function usePublishDraft(
       pub: Publication
       groupVariant?: GroupVariant | null | undefined
       isFirstPublish: boolean
+      isProfileDocument: boolean
     },
     unknown,
     {
@@ -444,10 +445,12 @@ export function usePublishDraft(
         pub.version !== prevGroupVariantId?.version
       const publishedDocId = `${publishedId}?v=${pub.version}`
       if (isProfileDocument) {
-        await grpcClient.accounts.updateProfile({
-          ...myAccount.data?.profile,
-          rootDocument: publishedId,
-        })
+        if (myAccount.data?.profile?.rootDocument !== publishedId) {
+          await grpcClient.accounts.updateProfile({
+            ...myAccount.data?.profile,
+            rootDocument: publishedId,
+          })
+        }
       } else if (groupVariant && groupVariantChanged) {
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([

@@ -1,7 +1,8 @@
 import {unpackHmId} from '@mintter/shared'
-import {YStack} from '@mintter/ui'
+import {YGroup, YStack} from '@mintter/ui'
 import {Book, FileText, Newspaper, Undo2} from '@tamagui/lucide-icons'
 import {useAccount} from '../models/accounts'
+import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -10,6 +11,8 @@ import {
   GenericSidebarContainer,
   SidebarDocument,
   SidebarItem,
+  activeDocOutline,
+  getDocOutline,
 } from './sidebar-base'
 
 export function AccountSidebar({
@@ -20,12 +23,49 @@ export function AccountSidebar({
   onBackToMain: () => void
 }) {
   const route = useNavRoute()
+  const replace = useNavigate('replace')
   const navigate = useNavigate()
   const accountRoute = route.key === 'account' ? route : null
-  const isAccountActive = accountRoute?.accountId === accountId
+  const isAccountActive =
+    accountRoute?.accountId === accountId && accountRoute?.blockId == null
   const account = useAccount(accountId)
+  const frontDoc = usePublication(
+    {
+      id: account.data?.profile?.rootDocument,
+    },
+    {
+      keepPreviousData: false,
+    },
+  )
+  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data)
   const isFeedActive =
     route.key === 'account-feed' && route.accountId === accountId
+  const activeBlock = accountRoute?.blockId
+  const frontDocOutline = getDocOutline(
+    frontDoc?.data?.document?.children || [],
+    frontDocEmbeds,
+  )
+  const {outlineContent, isBlockActive} = activeDocOutline(
+    frontDocOutline,
+    activeBlock,
+    frontDocEmbeds,
+    (blockId) => {
+      const accountRoute = route.key == 'account' ? route : null
+      if (!accountRoute) {
+        navigate({
+          key: 'account',
+          accountId,
+          blockId,
+        })
+      } else {
+        replace({
+          ...accountRoute,
+          blockId,
+        })
+      }
+    },
+    navigate,
+  )
   return (
     <GenericSidebarContainer>
       <YStack paddingVertical="$2">
@@ -61,6 +101,8 @@ export function AccountSidebar({
           }
           title={account.data?.profile?.alias}
         />
+        <YGroup borderRadius={0}>{outlineContent}</YGroup>
+
         <SidebarItem
           onPress={() => {
             if (route.key !== 'account-content' || route.type !== 'documents') {

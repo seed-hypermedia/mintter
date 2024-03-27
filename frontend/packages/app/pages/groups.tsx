@@ -119,7 +119,13 @@ function SiteUrlButton({group}: {group: Group}) {
   )
 }
 
-function GroupListItem({group, onCopy}: {group: Group; onCopy: () => void}) {
+export function GroupListItem({
+  group,
+  onCopy,
+}: {
+  group: Group
+  onCopy: () => void
+}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)

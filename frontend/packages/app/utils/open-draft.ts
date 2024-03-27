@@ -25,7 +25,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
-          isProfileDocument: opts.isProfileDocument,
+          isProfileDocument: opts?.isProfileDocument,
           variant: groupVariant,
           contextRoute: route,
         }

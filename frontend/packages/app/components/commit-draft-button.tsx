@@ -77,7 +77,7 @@ export default function CommitDraftButton() {
   const push = usePushPublication()
   const gwHost = useGatewayHost()
   const publish = usePublishDraft({
-    onSuccess: ({pub: publishedDoc, groupVariant}) => {
+    onSuccess: ({pub: publishedDoc, groupVariant, isProfileDocument}) => {
       if (!publishedDoc || !draftId || !myAuthorVariant) return
       if (
         draftRoute.contextRoute?.key === 'group' &&
@@ -85,6 +85,11 @@ export default function CommitDraftButton() {
         groupVariant.pathName === '/'
       ) {
         navBack(draftRoute.contextRoute)
+      } else if (isProfileDocument && publishedDoc.document?.author) {
+        navReplace({
+          key: 'account',
+          accountId: publishedDoc.document?.author,
+        })
       } else {
         navReplace({
           key: 'publication',

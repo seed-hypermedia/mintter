@@ -39,6 +39,7 @@ export type PublicationCitationsAccessory = z.infer<
 export const accountRouteSchema = z.object({
   key: z.literal('account'),
   accountId: z.string(),
+  blockId: z.string().optional(),
   accessory: z
     .discriminatedUnion('key', [entityCitationsAccessorySchema])
     .nullable()
@@ -135,6 +136,7 @@ export const draftRouteSchema = z.object({
       documentsRouteSchema,
       publicationRouteSchema,
       groupRouteSchema,
+      accountRouteSchema,
     ])
     .optional(),
 })

@@ -9,7 +9,12 @@ import {Pencil} from '@tamagui/lucide-icons'
 import {useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {queryKeys} from '../models/query-keys'
-import {DocumentsRoute, GroupRoute, PublicationRoute} from '../utils/routes'
+import {
+  AccountRoute,
+  DocumentsRoute,
+  GroupRoute,
+  PublicationRoute,
+} from '../utils/routes'
 
 export function useEditDraft(
   docId: string,
@@ -21,7 +26,7 @@ export function useEditDraft(
   }: {
     version: string | undefined
     navMode?: NavMode
-    contextRoute: PublicationRoute | DocumentsRoute | GroupRoute
+    contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
     variants?: PublicationVariant[]
   },
 ) {
@@ -95,7 +100,7 @@ export function EditDocButton({
 }: {
   docId: string
   navMode?: NavMode
-  contextRoute: PublicationRoute | DocumentsRoute | GroupRoute
+  contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
   variants?: PublicationVariant[]
   baseVersion?: string
 }) {

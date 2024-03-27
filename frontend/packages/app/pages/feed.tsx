@@ -299,8 +299,11 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
     version: cid,
     variants: [{key: 'author', author}],
   })
+  const account = useAccount(author)
+  const isProfileUpdate = account.data?.profile?.rootDocument === id.qid
   if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
     return <HiddenFeedItem />
+  const message = isProfileUpdate ? 'updated their profile' : 'updated'
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -311,7 +314,7 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
           eventTime={eventTime}
           message={
             <>
-              updated{' '}
+              {message}{' '}
               <EntityLink id={linkId}>
                 {pub.data?.document?.title || 'Untitled Document'}
               </EntityLink>
@@ -657,6 +660,7 @@ function AccountChangeFeedItem({
   if (accountChange.isInitialLoading) return <Spinner />
   // @ts-expect-error
   const updates = getPatchedAccountEntries(accountChange.data?.patch || {})
+  if (updates.length === 0) return <HiddenFeedItem />
   return (
     <FeedItemContainer
       linkId={id}
