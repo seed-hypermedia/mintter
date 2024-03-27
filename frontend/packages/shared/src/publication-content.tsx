@@ -1578,7 +1578,6 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const urlArray = block.ref.split('/')
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
-  const openUrl = () => {}
 
   if (isLoading)
     return (
