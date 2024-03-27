@@ -6,6 +6,7 @@ import {queryKeys} from '@mintter/app/models/query-keys'
 import {Account, GRPCClient, Profile} from '@mintter/shared'
 import {
   UseMutationOptions,
+  useInfiniteQuery,
   useMutation,
   useQueries,
   useQuery,
@@ -41,13 +42,19 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
 export function useAllAccounts(filterSites?: boolean) {
   // let isDaemonReady = useDaemonReady()
   const grpcClient = useGRPCClient()
-  const contacts = useQuery<{accounts: Array<Account>}, ConnectError>({
-    // enabled: !!isDaemonReady,
+  const accountsQuery = useInfiniteQuery<
+    {accounts: Array<Account>},
+    ConnectError
+  >({
     queryKey: [queryKeys.GET_ALL_ACCOUNTS, filterSites],
-    queryFn: async () => {
-      const listed = await grpcClient.accounts.listAccounts({})
+    queryFn: async (context) => {
+      const listed = await grpcClient.accounts.listAccounts({
+        pageToken: context.pageParam,
+        pageSize: 20,
+      })
       if (filterSites) {
         return {
+          ...listed,
           accounts: listed.accounts.filter(
             (account) =>
               account.profile?.bio !== 'Hypermedia Site. Powered by Mintter.',
@@ -59,8 +66,21 @@ export function useAllAccounts(filterSites?: boolean) {
     onError: (err) => {
       appError(`useAllAccounts Error ${err.code}: ${err.message}`, err.metadata)
     },
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextPageToken || undefined
+    },
   })
-  return contacts
+
+  const allAccounts =
+    accountsQuery.data?.pages.flatMap((page) => page.accounts) ?? []
+  console.log(`== ~ useAllAccounts ~ accountsQuery:`, accountsQuery)
+  return {
+    ...accountsQuery,
+    data: {
+      ...accountsQuery.data,
+      accounts: allAccounts,
+    },
+  }
 }
 
 export function useSetTrusted(

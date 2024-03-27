@@ -42,8 +42,9 @@ import {
 } from '../models/documents'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useWaitForPublication} from '../models/web-links'
-import {DraftRoute, useNavRoute} from '../utils/navigation'
+import {useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
+import {DraftRoute} from '../utils/routes'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
 export const PublicationListPage = memo(PublicationListPageUnmemo)
@@ -253,6 +254,10 @@ export function PublicationsList({
         key={trustedOnly ? 'trusted' : 'all'}
         items={items}
         header={header}
+        fixedItemHeight={52}
+        onEndReached={() => {
+          publications.fetchNextPage()
+        }}
         renderItem={({item}) => {
           const {publication, author, editors} = item
           if (!publication.document) return null
@@ -326,6 +331,7 @@ function DraftsList() {
   if (drafts.data?.documents.length === 0) {
     return (
       <List
+        fixedItemHeight={52}
         header={<DocumentTabs />}
         items={['You have no current Drafts.']}
         renderItem={({item}) => {
@@ -345,8 +351,13 @@ function DraftsList() {
     <List
       header={<DocumentTabs />}
       items={drafts.data.documents}
+      fixedItemHeight={52}
       renderItem={({item}) => {
         return <DraftListItem key={item.id} draft={item} />
+      }}
+      onEndReached={() => {
+        console.log('== ~ DraftsList ~ onEndReached')
+        drafts.fetchNextPage()
       }}
     />
   )
@@ -362,9 +373,13 @@ const DraftListItem = React.memo(function DraftListItem({
   const navigate = useClickNavigate()
   const {queryClient, grpcClient} = useAppContext()
   if (!draft.id) throw new Error('DraftListItem requires an id')
-  const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
+  const draftRoute: DraftRoute = {
+    key: 'draft',
+    draftId: draft.id,
+    variant: null,
+  }
   const goToItem = (e: any) => {
-    navigate(draftRoute, e)
+    navigate(draftRoute as DraftRoute, e)
   }
   return (
     <>

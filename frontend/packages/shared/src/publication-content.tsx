@@ -640,7 +640,7 @@ function BlockContent(props: BlockContentProps) {
     }
   }
 
-  if (props.block.type == 'web-embed') {
+  if (props.block.type == 'web-embed' && props.block.ref) {
     return <BlockContentTwitter {...props} block={props.block} />
   }
 
@@ -1575,7 +1575,7 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {layoutUnit, onLinkClick} = usePublicationContentContext()
-  const urlArray = block.ref.split('/')
+  const urlArray = block.ref?.split('/') ?? []
   const tweetId = urlArray[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
 
