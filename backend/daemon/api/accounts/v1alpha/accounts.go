@@ -194,6 +194,7 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	patch := map[string]any{}
 
 	in.Alias = strings.TrimSpace(in.Alias)
+	in.Bio = strings.TrimSpace(in.Bio)
 
 	v, ok := e.Get("alias")
 	if (ok && v.(string) != in.Alias) || (!ok && in.Alias != "") {
@@ -205,27 +206,32 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		patch["bio"] = in.Bio
 	}
 
-	if in.Avatar != "" {
+	v, ok = e.Get("avatar")
+	vcid, iscid := v.(cid.Cid)
+	isnil := v == nil
+	switch {
+	case in.Avatar == "" && ok && !isnil:
+		patch["avatar"] = nil
+	case in.Avatar != "":
 		avatar, err := cid.Decode(in.Avatar)
 		if err != nil {
-			return fmt.Errorf("failed to decode avatar %s as CID: %w", in.Avatar, err)
+			return status.Errorf(codes.InvalidArgument, "failed to decode avatar %s as CID: %v", in.Avatar, err)
 		}
 
-		v, ok := e.Get("avatar")
-		if (ok && !v.(cid.Cid).Equals(avatar)) || (!ok && in.Avatar != "") {
-			patch["avatar"] = avatar
+		if iscid && vcid.Equals(avatar) {
+			break
 		}
+
+		patch["avatar"] = avatar
 	}
 
-	if in.RootDocument != "" {
-		if !rootDocMatch.MatchString(in.RootDocument) {
+	v, ok = e.Get("rootDocument")
+	if (ok && v.(string) != in.RootDocument) || (!ok && in.RootDocument != "") {
+		if in.RootDocument != "" && !rootDocMatch.MatchString(in.RootDocument) {
 			return status.Errorf(codes.InvalidArgument, "root document must be ID of a document entity in form of 'hm://d/<id>' got: %s", in.RootDocument)
 		}
 
-		v, ok := e.Get("rootDocument")
-		if (ok && v.(string) != in.RootDocument) || (!ok && in.RootDocument != "") {
-			patch["rootDocument"] = in.RootDocument
-		}
+		patch["rootDocument"] = in.RootDocument
 	}
 
 	if len(patch) == 0 {

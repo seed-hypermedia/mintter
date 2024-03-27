@@ -10,7 +10,11 @@ service Accounts {
   // Can also be used to retrieve our own account.
   rpc GetAccount(GetAccountRequest) returns (Account);
 
-  // Update Profile information of our own Account.
+  // Updates profile information of our own Account.
+  // Doesn't support partial updates!
+  // Users should call GetAccount first,
+  // change the necessary fields in place,
+  // and then send the same Profile object back to UpdateProfile.
   rpc UpdateProfile(Profile) returns (Account);
 
   // List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
