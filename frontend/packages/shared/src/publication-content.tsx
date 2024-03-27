@@ -45,6 +45,8 @@ import {
   Tooltip,
   UIAvatar,
   Undo2,
+  XPostNotFound,
+  XPostSkeleton,
   XStack,
   XStackProps,
   YStack,
@@ -71,8 +73,6 @@ import {
   TweetInReplyTo,
   TweetInfo,
   TweetMedia,
-  TweetNotFound,
-  TweetSkeleton,
   enrichTweet,
   useTweet,
 } from 'react-tweet'
@@ -642,7 +642,7 @@ function BlockContent(props: BlockContentProps) {
   }
 
   if (props.block.type == 'web-embed') {
-    return <BlockContentTwitter {...props} block={props.block} />
+    return <BlockContentXPost {...props} block={props.block} />
   }
 
   if (props.block.type == 'embed') {
@@ -1574,25 +1574,31 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentTwitter({block, ...props}: BlockContentProps) {
+export function BlockContentXPost({block, ...props}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
   const urlArray = block.attributes!.url.split('/')
-  const tweetId = urlArray[urlArray.length - 1].split('?')[0]
-  const {data, error, isLoading} = useTweet(tweetId)
+  const xPostId = urlArray[urlArray.length - 1].split('?')[0]
+  const {data, error, isLoading} = useTweet(xPostId)
   const openUrl = useOpenUrl()
 
-  if (isLoading)
-    return (
-      <YStack padding="$2" width={'100%'} height={'100%'}>
-        <TweetSkeleton />
-      </YStack>
-    )
-  if (error || !data) {
-    const NotFound = TweetNotFound
-    return <NotFound error={error} />
-  }
+  let xPostContent
 
-  const tweet = enrichTweet(data)
+  if (isLoading) xPostContent = <XPostSkeleton />
+  else if (error || !data) {
+    xPostContent = <XPostNotFound error={error} />
+  } else {
+    const xPost = enrichTweet(data)
+    xPostContent = (
+      <>
+        <TweetHeader tweet={xPost} />
+        {xPost.in_reply_to_status_id_str && <TweetInReplyTo tweet={xPost} />}
+        <TweetBody tweet={xPost} />
+        {xPost.mediaDetails?.length ? <TweetMedia tweet={xPost} /> : null}
+        {xPost.quoted_tweet && <QuotedTweet tweet={xPost.quoted_tweet} />}
+        <TweetInfo tweet={xPost} />
+      </>
+    )
+  }
 
   return (
     <YStack
@@ -1606,19 +1612,14 @@ export function BlockContentTwitter({block, ...props}: BlockContentProps) {
       overflow="hidden"
       width="100%"
       marginHorizontal={(-1 * layoutUnit) / 2}
-      className="tweet-container"
+      className="x-post-container"
       onPress={(e) => {
         e.preventDefault()
         e.stopPropagation()
         openUrl(block.attributes?.url)
       }}
     >
-      <TweetHeader tweet={tweet} />
-      {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
-      <TweetBody tweet={tweet} />
-      {tweet.mediaDetails?.length ? <TweetMedia tweet={tweet} /> : null}
-      {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
-      <TweetInfo tweet={tweet} />
+      {xPostContent}
     </YStack>
   )
 }
