@@ -25,7 +25,11 @@ type AccountsClient interface {
 	// Lookup an Account information across the already known accounts.
 	// Can also be used to retrieve our own account.
 	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*Account, error)
-	// Update Profile information of our own Account.
+	// Updates profile information of our own Account.
+	// Doesn't support partial updates!
+	// Users should call GetAccount first,
+	// change the necessary fields in place,
+	// and then send the same Profile object back to UpdateProfile.
 	UpdateProfile(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Account, error)
 	// List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
 	// interacting with the network, or users can ask to discover specific accounts using
@@ -87,7 +91,11 @@ type AccountsServer interface {
 	// Lookup an Account information across the already known accounts.
 	// Can also be used to retrieve our own account.
 	GetAccount(context.Context, *GetAccountRequest) (*Account, error)
-	// Update Profile information of our own Account.
+	// Updates profile information of our own Account.
+	// Doesn't support partial updates!
+	// Users should call GetAccount first,
+	// change the necessary fields in place,
+	// and then send the same Profile object back to UpdateProfile.
 	UpdateProfile(context.Context, *Profile) (*Account, error)
 	// List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
 	// interacting with the network, or users can ask to discover specific accounts using

@@ -27,7 +27,11 @@ export const Accounts = {
       kind: MethodKind.Unary,
     },
     /**
-     * Update Profile information of our own Account.
+     * Updates profile information of our own Account.
+     * Doesn't support partial updates!
+     * Users should call GetAccount first,
+     * change the necessary fields in place,
+     * and then send the same Profile object back to UpdateProfile.
      *
      * @generated from rpc com.mintter.accounts.v1alpha.Accounts.UpdateProfile
      */
