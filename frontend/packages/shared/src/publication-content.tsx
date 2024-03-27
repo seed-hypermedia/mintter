@@ -239,6 +239,22 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
     : {}
 }
 
+function getParentElId(el: Node | null) {
+  if (!el) return null
+  // @ts-expect-error - this is a HTMLElement but TS says Node
+  if (el.id) return el.id
+  if (!el.parentElement) return null
+  return getParentElId(el.parentElement)
+}
+
+function getRangeOffset(el: Node | null) {
+  if (!el) return 0
+  // @ts-expect-error - this is a HTMLElement but TS says Node
+  if (el.dataset?.rangeOffset != null) return Number(el.dataset?.rangeOffset)
+  if (!el.parentElement) return 0
+  return getRangeOffset(el.parentElement)
+}
+
 export function PublicationContent({
   publication,
   maxBlockCount,
@@ -249,6 +265,45 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
+  useEffect(() => {
+    let debouncer: NodeJS.Timeout | null = null
+    window.document.onselectionchange = (e) => {
+      const sel = window.document.getSelection()
+      if (!sel) return
+      const {anchorNode, anchorOffset, focusNode, focusOffset} = sel
+      debouncer && clearTimeout(debouncer)
+      debouncer = setTimeout(() => {
+        const anchorBlockId = getParentElId(anchorNode)
+        const focusBlockId = getParentElId(focusNode)
+        const anchorRangeOffset = getRangeOffset(anchorNode)
+        const focusRangeOffset = getRangeOffset(focusNode)
+        if (focusBlockId !== anchorBlockId) {
+          // console.log('invalid selection, probably multiple blocks selected.')
+          return
+        }
+        const blockId = focusBlockId
+        const anchorRange = anchorRangeOffset + anchorOffset
+        const focusRange = focusRangeOffset + focusOffset
+        if (anchorRange === focusRange) {
+          // console.log("empty range not supported")
+          return
+        }
+        const rangeStart = Math.min(anchorRange, focusRange)
+        const rangeEnd = Math.max(anchorRange, focusRange)
+        const blockRef = `${blockId}[${rangeStart}:${rangeEnd}]`
+        console.log('blockRef', blockRef)
+        // console.log('selection debug', {
+        //   anchorNode,
+        //   anchorOffset,
+        //   focusOffset,
+        //   anchorBlockId,
+        //   focusBlockId,
+        //   anchorRangeOffset,
+        //   focusRangeOffset,
+        // })
+      }, 100)
+    }
+  }, [])
   const {layoutUnit} = usePublicationContentContext()
   const allBlocks = publication.document?.children || []
   const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
@@ -667,7 +722,7 @@ function BlockContentParagraph({block, ...props}: BlockContentProps) {
       className="block-content block-paragraph"
     >
       <Text
-        className={`content-inline${comment ? 'is-comment' : ''}`}
+        className={`content-inline ${comment ? 'is-comment' : ''}`}
         {...inlineContentSize(textUnit)}
       >
         <InlineContentView inline={inline} />
@@ -951,26 +1006,44 @@ function hmTextColor(linkType: LinkType): string {
   return '$color12'
 }
 
+function getInlineContentOffset(inline: HMInlineContent): number {
+  if (inline.type === 'link') {
+    return inline.content.map(getInlineContentOffset).reduce((a, b) => a + b, 0)
+  }
+  return inline.text.length
+}
+
 function InlineContentView({
   inline,
   style,
   linkType = null,
   fontSize,
+  rangeOffset,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
   linkType?: LinkType
   fontSize?: number
+  rangeOffset?: number
 }) {
   const {onLinkClick, textUnit, entityComponents} =
     usePublicationContentContext()
 
   const InlineEmbed = entityComponents.InlineEmbed
 
+  let contentOffset = rangeOffset || 0
+
   const fSize = fontSize || textUnit
   return (
-    <Text fontSize={fSize} lineHeight={fSize * 1.5} {...props}>
+    <Text
+      fontSize={fSize}
+      lineHeight={fSize * 1.5}
+      data-range-offset={contentOffset}
+      {...props}
+    >
       {inline.map((content, index) => {
+        const inlineContentOffset = contentOffset
+        contentOffset += getInlineContentOffset(content)
         if (content.type === 'text') {
           let textDecorationLine:
             | 'none'
@@ -1013,7 +1086,12 @@ function InlineContentView({
 
           if (content.styles.bold) {
             children = (
-              <Text fontWeight="bold" fontSize={fSize} lineHeight={fSize * 1.5}>
+              <Text
+                fontWeight="bold"
+                fontSize={fSize}
+                lineHeight={fSize * 1.5}
+                data-range-offset={inlineContentOffset}
+              >
                 {children}
               </Text>
             )
@@ -1025,6 +1103,7 @@ function InlineContentView({
                 fontStyle="italic"
                 fontSize={fSize}
                 lineHeight={fSize * 1.5}
+                data-range-offset={inlineContentOffset}
               >
                 {children}
               </Text>
@@ -1043,6 +1122,7 @@ function InlineContentView({
                 lineHeight={fSize * 1.5}
                 paddingHorizontal="$2"
                 paddingVertical={2}
+                data-range-offset={inlineContentOffset}
               >
                 {children}
               </Text>
@@ -1077,6 +1157,7 @@ function InlineContentView({
               style={{textDecorationLine}}
               fontSize={fSize}
               lineHeight={fSize * 1.5}
+              data-range-offset={inlineContentOffset}
             >
               {children}
             </Text>
@@ -1101,6 +1182,7 @@ function InlineContentView({
                 lineHeight={fSize * 1.5}
                 inline={content.content}
                 linkType={isHmLink ? 'hypermedia' : 'basic'}
+                rangeOffset={inlineContentOffset}
               />
             </a>
           )
