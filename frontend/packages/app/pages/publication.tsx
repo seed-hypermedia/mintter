@@ -26,7 +26,7 @@ import {
 } from '@mintter/ui'
 import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import {ReactNode, useCallback, useEffect} from 'react'
+import {ReactNode, useCallback, useEffect, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
@@ -226,6 +226,9 @@ export default function PublicationPage() {
       })
   }, [docId, gwHost, route.immediatelyPromptPush])
 
+  // const [rangeState, rangeSend, rangeActor] = useRangeSelection()
+  const rangeRef = useRef<HTMLDivElement>(null)
+
   if (publication.data) {
     let accessory: ReactNode | null = null
 
@@ -321,6 +324,7 @@ export default function PublicationPage() {
                         publication={publication.data?.publication}
                       />
                       <PublicationContent
+                        ref={rangeRef}
                         publication={publication.data?.publication}
                       />
                     </>

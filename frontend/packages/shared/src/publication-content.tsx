@@ -5,7 +5,6 @@ import {
   BlockNode,
   HMBlock,
   HMBlockChildrenType,
-  HMBlockFile,
   HMBlockNode,
   HMInlineContent,
   HMPublication,
@@ -30,6 +29,7 @@ import {
   Checkbox,
   CheckboxProps,
   ColorProp,
+  Comment,
   File,
   Label,
   Link,
@@ -81,6 +81,7 @@ import {
   contentTextUnit,
 } from './publication-content-constants'
 import './publication-content.css'
+import {useRangeSelection} from './range-selection'
 
 export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>
@@ -265,46 +266,42 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
+  const [state] = useRangeSelection()
+  const pubWrapper = useRef<HTMLDivElement>(null)
+  const bubble = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState({
+    top: 0,
+    left: 0,
+  })
+
   useEffect(() => {
-    let debouncer: NodeJS.Timeout | null = null
-    window.document.onselectionchange = (e) => {
-      const sel = window.document.getSelection()
-      if (!sel) return
-      const {anchorNode, anchorOffset, focusNode, focusOffset} = sel
-      debouncer && clearTimeout(debouncer)
-      debouncer = setTimeout(() => {
-        const anchorBlockId = getParentElId(anchorNode)
-        const focusBlockId = getParentElId(focusNode)
-        const anchorRangeOffset = getRangeOffset(anchorNode)
-        const focusRangeOffset = getRangeOffset(focusNode)
-        if (focusBlockId !== anchorBlockId) {
-          // console.log('invalid selection, probably multiple blocks selected.')
-          return
-        }
-        const blockId = focusBlockId
-        const anchorRange = anchorRangeOffset + anchorOffset
-        const focusRange = focusRangeOffset + focusOffset
-        if (anchorRange === focusRange) {
-          // console.log("empty range not supported")
-          return
-        }
-        const rangeStart = Math.min(anchorRange, focusRange)
-        const rangeEnd = Math.max(anchorRange, focusRange)
-        const blockRef = `${blockId}[${rangeStart}:${rangeEnd}]`
-        console.log('blockRef', blockRef)
-        // console.log('selection debug', {
-        //   anchorNode,
-        //   anchorOffset,
-        //   focusOffset,
-        //   anchorBlockId,
-        //   focusBlockId,
-        //   anchorRangeOffset,
-        //   focusRangeOffset,
-        // })
-      }, 100)
+    if (
+      pubWrapper.current &&
+      bubble.current &&
+      state.matches({active: 'selected'}) &&
+      state.context.selection
+    ) {
+      console.log(`=== SELECTION === ~ state.context.selection:`, state)
+
+      const wrapperRect = pubWrapper.current.getBoundingClientRect()
+      const bubbleRect = bubble.current.getBoundingClientRect()
+
+      const range = state.context.selection.getRangeAt(0)
+      const rect = range.getBoundingClientRect()
+
+      setCoords({
+        top: rect.top - wrapperRect.top - (bubbleRect.height + 8),
+
+        left:
+          rect.left + rect.width / 2 - wrapperRect.left - bubbleRect.width / 2,
+      })
+    } else {
+      setCoords({top: -9999, left: -9999})
     }
-  }, [])
-  const {layoutUnit} = usePublicationContentContext()
+  }, [pubWrapper.current, state])
+
+  const {layoutUnit, onCopyBlock, onBlockComment} =
+    usePublicationContentContext()
   const allBlocks = publication.document?.children || []
   const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
     !!publication.document?.title &&
@@ -318,11 +315,47 @@ export function PublicationContent({
     : displayableBlocks
   return (
     <YStack
+      ref={pubWrapper}
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
       marginVertical={marginVertical}
       {...props}
     >
+      <XStack
+        ref={bubble}
+        {...coords}
+        zIndex={99999}
+        position="absolute"
+        elevation="$4"
+      >
+        {onCopyBlock ? (
+          <Tooltip content="Copy Block Range">
+            <Button
+              size="$2"
+              icon={Link}
+              onPress={() => {
+                onCopyBlock(
+                  `${state.context.blockId}[${state.context.rangeStart}:${state.context.rangeEnd}]`,
+                )
+              }}
+            />
+          </Tooltip>
+        ) : null}
+        {onBlockComment ? (
+          <Button
+            size="$2"
+            icon={Comment}
+            onPress={() => {
+              console.log('=== CREATE COMMENT FOR')
+              onBlockComment(
+                `${state.context.blockId}[${state.context.rangeStart}:${state.context.rangeEnd}]`,
+              )
+            }}
+          >
+            Add a Comment
+          </Button>
+        ) : null}
+      </XStack>
       <BlocksContent blocks={displayBlocks} />
     </YStack>
   )
@@ -671,40 +704,44 @@ export type BlockContentProps = {
 }
 
 function BlockContent(props: BlockContentProps) {
+  const dataProps = {
+    depth: props.depth || 1,
+    'data-blockid': props.block.id,
+  }
   if (props.block.type == 'paragraph') {
-    return <BlockContentParagraph {...props} depth={props.depth || 1} />
+    return <BlockContentParagraph {...props} {...dataProps} />
   }
 
   if (props.block.type == 'heading') {
-    return <BlockContentHeading {...props} depth={props.depth || 1} />
+    return <BlockContentHeading {...props} {...dataProps} />
   }
 
   if (props.block.type == 'image') {
-    return <BlockContentImage {...props} depth={props.depth || 1} />
+    return <BlockContentImage {...props} {...dataProps} />
   }
 
   if (props.block.type == 'video') {
-    return <BlockContentVideo {...props} depth={props.depth} />
+    return <BlockContentVideo {...props} {...dataProps} />
   }
 
   if (props.block.type == 'file') {
     if (props.block.attributes.subType?.startsWith('nostr:')) {
-      return <BlockContentNostr {...props} block={props.block} />
+      return <BlockContentNostr {...props} {...dataProps} />
     } else {
-      return <BlockContentFile {...props} block={props.block} />
+      return <BlockContentFile {...props} {...dataProps} />
     }
   }
 
   if (props.block.type == 'web-embed') {
-    return <BlockContentTwitter {...props} block={props.block} />
+    return <BlockContentTwitter {...props} {...dataProps} />
   }
 
   if (props.block.type == 'embed') {
-    return <BlockContentEmbed {...props} depth={props.depth} />
+    return <BlockContentEmbed {...props} {...dataProps} />
   }
 
   if (props.block.type == 'codeBlock') {
-    return <BlockContentCode {...props} block={props.block} />
+    return <BlockContentCode {...props} {...dataProps} />
   }
 
   return <BlockContentUnknown {...props} />
@@ -1496,7 +1533,7 @@ export function getBlockNodeById(
   return res || null
 }
 
-export function BlockContentFile({block}: {block: HMBlockFile}) {
+export function BlockContentFile({block, ...props}: BlockContentProps) {
   const {hover, ...hoverProps} = useHover()
   const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
@@ -1513,6 +1550,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
+      {...props}
     >
       <XStack
         borderWidth={0}
@@ -1657,8 +1695,8 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {layoutUnit, onLinkClick} = usePublicationContentContext()
-  const urlArray = block.ref.split('/')
-  const tweetId = urlArray[urlArray.length - 1].split('?')[0]
+  const urlArray = block.ref?.split('/')
+  const tweetId = urlArray?.[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
 
   if (isLoading)
