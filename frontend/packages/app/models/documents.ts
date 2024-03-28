@@ -233,10 +233,14 @@ type ListedEmbed = {
   refId: UnpackedHypermediaId
 }
 
-function extractRefs(children: HMBlockNode[]): ListedEmbed[] {
+function extractRefs(
+  children: HMBlockNode[],
+  skipCards?: boolean,
+): ListedEmbed[] {
   let refs: ListedEmbed[] = []
   function extractRefsFromBlock(block: HMBlockNode) {
     if (block.block?.type === 'embed' && block.block.ref) {
+      if (block.block.attributes?.view === 'card' && skipCards) return
       const refId = unpackHmId(block.block.ref)
       if (refId)
         refs.push({
@@ -277,6 +281,7 @@ export type EmbedsContent = Record<
 export function usePublicationEmbeds(
   pub: HMPublication | undefined,
   enabled?: boolean,
+  opts?: {skipCards: boolean},
 ): EmbedsContent {
   const {queryPublications, queryGroups, queryAccounts} = useMemo(() => {
     if (!enabled)
@@ -290,15 +295,17 @@ export function usePublicationEmbeds(
       blockId: string
       refId: UnpackedHypermediaId
     }[] = []
-    extractRefs(pub?.document?.children || []).forEach(({refId, blockId}) => {
-      if (refId.type === 'a') {
-        queryAccounts.push({blockId, refId})
-      } else if (refId.type === 'g') {
-        queryGroups.push({blockId, refId})
-      } else if (refId.type === 'd') {
-        queryPublications.push({blockId, refId})
-      }
-    })
+    extractRefs(pub?.document?.children || [], opts?.skipCards).forEach(
+      ({refId, blockId}) => {
+        if (refId.type === 'a') {
+          queryAccounts.push({blockId, refId})
+        } else if (refId.type === 'g') {
+          queryGroups.push({blockId, refId})
+        } else if (refId.type === 'd') {
+          queryPublications.push({blockId, refId})
+        }
+      },
+    )
     return {
       queryPublications,
       queryGroups,
@@ -1357,10 +1364,33 @@ function observeBlocks(
   })
 }
 
-export function useAccountPublications(accountId: string) {
+export function useAccountPublicationFullList(
+  accountId: string | undefined,
+  opts?: UseQueryOptions<ListPublicationsResponse>,
+) {
+  const pubList = useAccountPublications(accountId)
+  const accounts = useAllAccounts()
+  const data = useMemo(() => {
+    function lookupAccount(accountId: string | undefined) {
+      if (!accountId) return undefined
+      return accounts.data?.accounts.find((acc) => acc.id === accountId)
+    }
+    return pubList.data?.publications.map((pub) => {
+      return {
+        publication: pub,
+        author: lookupAccount(pub?.document?.author),
+        editors: pub?.document?.editors?.map(lookupAccount) || [],
+      }
+    })
+  }, [pubList.data, accounts.data])
+  return {...pubList, data}
+}
+
+export function useAccountPublications(accountId?: string | undefined) {
   const grpcClient = useGRPCClient()
   return useQuery({
     queryKey: [queryKeys.GET_ACCOUNT_PUBLICATIONS, accountId],
+    enabled: !!accountId,
     queryFn: async () => {
       const result = await grpcClient.publications.listAccountPublications({
         accountId,

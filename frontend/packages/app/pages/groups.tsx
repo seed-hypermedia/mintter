@@ -20,8 +20,9 @@ import {
   copyLinkMenuItem,
 } from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
+import {useMyAccount} from '../models/accounts'
 import {useGatewayUrl} from '../models/gateway-settings'
-import {useAllGroups, useGroupMembers} from '../models/groups'
+import {useAccountGroups, useGroupMembers} from '../models/groups'
 import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/routes'
@@ -180,26 +181,31 @@ export function GroupListItem({
 }
 
 export default function GroupsPage() {
-  const groupQuery = useAllGroups()
-  const groups = groupQuery.data?.groups || []
+  const myAccount = useMyAccount()
+  const myGroups = useAccountGroups(myAccount.data?.id)
+  const groups = myGroups.data?.items || []
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  let content = groupQuery.isLoading ? (
+  let content = myGroups.isLoading ? (
     <Container>
       <Spinner />
     </Container>
   ) : groups.length > 0 ? (
     <List
       items={groups}
-      renderItem={({item}) => (
-        <GroupListItem
-          group={item}
-          onCopy={() => {
-            const groupId = unpackHmId(item.id)
-            if (!groupId) return
-            onCopyId(groupId)
-          }}
-        />
-      )}
+      renderItem={({item}) => {
+        if (!item.group) return null
+        return (
+          <GroupListItem
+            group={item.group}
+            onCopy={() => {
+              if (!item.group) return null
+              const groupId = unpackHmId(item.group.id)
+              if (!groupId) return
+              onCopyId(groupId)
+            }}
+          />
+        )
+      }}
     />
   ) : (
     <Container>

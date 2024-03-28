@@ -5,14 +5,18 @@ import {
   stringArrayMatch,
 } from '@mintter/shared'
 import {Home, Separator, toast, Tooltip, View, YGroup} from '@mintter/ui'
-import {Contact, FileText, Library} from '@tamagui/lucide-icons'
+import {Contact, FileText, Library, Sparkles} from '@tamagui/lucide-icons'
 import {useMyAccount} from '../models/accounts'
+import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {usePins} from '../models/pins'
 import {useHmIdToAppRouteResolver, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {CreateGroupButton} from './new-group'
 import {
+  activeDocOutline,
   GenericSidebarContainer,
+  getDocOutline,
+  getRouteAccountId,
   getRouteGroupId,
   MyAccountItem,
   NewDocumentButton,
@@ -31,6 +35,7 @@ export function MainAppSidebar({
 }) {
   const route = useNavRoute()
   const navigate = useNavigate()
+  const replace = useNavigate('replace')
   const account = useMyAccount()
 
   const pins = usePins()
@@ -73,13 +78,58 @@ export function MainAppSidebar({
   )
     ? null
     : activeDocId
-  const accountRoute = route.key === 'account' ? route : null
-  const activeAccountId = accountRoute?.accountId
+  const myAccount = useMyAccount()
+  const activeAccountId = getRouteAccountId(route, myAccount.data)
   const unpinnedActiveAccountId = pins.data?.accounts.find(
     (pinned) => pinned === activeAccountId,
   )
     ? null
+    : myAccount.data?.id === activeAccountId
+    ? null
     : activeAccountId
+  const accountRoute = route.key === 'account' ? route : null
+  const activeBlock = accountRoute?.blockId
+  const myProfileDoc = usePublication(
+    {
+      id: myAccount.data?.profile?.rootDocument,
+    },
+    {
+      keepPreviousData: false,
+    },
+  )
+  const myProfileDocEmbeds = usePublicationEmbeds(
+    myProfileDoc.data,
+    !!myProfileDoc.data,
+    {skipCards: true},
+  )
+  const frontDocOutline = getDocOutline(
+    myProfileDoc?.data?.document?.children || [],
+    myProfileDocEmbeds,
+  )
+  const {outlineContent, isBlockActive} = activeDocOutline(
+    frontDocOutline,
+    activeBlock,
+    myProfileDocEmbeds,
+    (blockId) => {
+      const myAccountId = myAccount.data?.id
+      if (!myAccountId) return
+      const accountRoute =
+        route.key == 'account' && myAccountId === route.accountId ? route : null
+      if (!accountRoute) {
+        navigate({
+          key: 'account',
+          accountId: myAccountId,
+          blockId,
+        })
+      } else {
+        replace({
+          ...accountRoute,
+          blockId,
+        })
+      }
+    },
+    navigate,
+  )
   return (
     <GenericSidebarContainer>
       <YGroup
@@ -90,9 +140,18 @@ export function MainAppSidebar({
       >
         {account.data && (
           <YGroup.Item>
-            <MyAccountItem account={account.data} onRoute={navigate} />
+            <MyAccountItem
+              active={
+                route.key == 'account' &&
+                route.accountId == myAccount.data?.id &&
+                !isBlockActive
+              }
+              account={account.data}
+              onRoute={navigate}
+            />
           </YGroup.Item>
         )}
+        <YGroup borderRadius={0}>{outlineContent}</YGroup>
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'feed'}
@@ -109,7 +168,7 @@ export function MainAppSidebar({
             active={route.key == 'documents'}
             data-testid="menu-item-global"
             onPress={() => {
-              navigate({key: 'documents', tab: 'trusted'})
+              navigate({key: 'documents', tab: 'mine'})
             }}
             title="Documents"
             bold
@@ -248,19 +307,18 @@ export function MainAppSidebar({
             ]
           })
           .flat()}
-
-        {/* <YGroup.Item>
-              <SidebarItem
-                active={route.key == 'drafts'}
-                data-testid="menu-item-drafts"
-                onPress={() => {
-                  navigate({key: 'documents', tab: 'drafts' })
-                }}
-                icon={Draft}
-                title="Drafts"
-                bold
-              />
-            </YGroup.Item> */}
+        <YGroup.Item>
+          <SidebarItem
+            active={route.key == 'explore'}
+            onPress={() => {
+              navigate({key: 'explore', tab: 'docs'})
+            }}
+            title="Explore Content"
+            bold
+            icon={Sparkles}
+            rightHover={[]}
+          />
+        </YGroup.Item>
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'contacts'}
@@ -272,13 +330,14 @@ export function MainAppSidebar({
             bold
           />
         </YGroup.Item>
-        {unpinnedActiveAccountId && accountRoute ? (
+        {unpinnedActiveAccountId ? (
           <PinnedAccount
             onPress={() => {
               onSelectAccountId?.(unpinnedActiveAccountId)
             }}
             accountId={unpinnedActiveAccountId}
             isPinned={false}
+            active={true}
           />
         ) : null}
         {pins.data?.accounts.map((accountId) => {
@@ -291,6 +350,7 @@ export function MainAppSidebar({
                   navigate({key: 'account', accountId})
                 }
               }}
+              active={accountId === activeAccountId}
               isPinned={true}
               accountId={accountId}
               key={accountId}

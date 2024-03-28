@@ -86,13 +86,16 @@ export function getRouteAccountId(
 ): string | null {
   let activeAccountId: string | null = null
   if (route.key === 'account') {
+    if (route.accountId === myAccount?.id) return null
     activeAccountId = route.accountId
   } else if (route.key === 'account-feed') {
+    if (route.accountId === myAccount?.id) return null
     activeAccountId = route.accountId
   } else if (route.key === 'account-content') {
+    if (route.accountId === myAccount?.id) return null
     activeAccountId = route.accountId
   } else if (route.key === 'draft' && route.isProfileDocument) {
-    return myAccount?.id || null
+    return null
   }
   return activeAccountId
 }
@@ -339,12 +342,12 @@ export function SidebarItem({
 export function MyAccountItem({
   account,
   onRoute,
+  active,
 }: {
   account?: Account
   onRoute: (route: NavRoute) => void
+  active: boolean
 }) {
-  const route = useNavRoute()
-  const active = route.key == 'account' && route.accountId == account?.id
   return (
     <ListItem
       hoverTheme
@@ -398,10 +401,12 @@ export function PinnedAccount({
   accountId,
   isPinned,
   onPress,
+  active,
 }: {
   accountId: string
   isPinned: boolean
   onPress: () => void
+  active: boolean
 }) {
   const route = useNavRoute()
   const account = useAccount(accountId)
@@ -415,7 +420,7 @@ export function PinnedAccount({
           onPress()
           // navigate({key: 'account', accountId})
         }}
-        active={route.key == 'account' && route.accountId == accountId}
+        active={active}
         color={isPinned ? undefined : '$color11'}
         icon={
           <Avatar
@@ -495,46 +500,46 @@ export function getDocOutline(
         id: child.block.id,
         children: child.children && getDocOutline(child.children, embeds),
       })
-    } else if (
-      child.block.type === 'embed' &&
-      child.block.attributes?.view === 'card' &&
-      embeds[child.block.id]
-    ) {
-      const embed = embeds[child.block.id]
-      if (embed?.type === 'd') {
-        outline.push({
-          id: child.block.id,
-          title: embed?.data?.document?.title || 'Untitled Document',
-          linkRoute: {
-            key: 'publication',
-            documentId: embed?.query?.refId?.qid,
-            versionId: embed?.query?.refId?.version || undefined,
-            variants: embed?.query?.refId?.variants || undefined,
-          },
-          children: child.children && getDocOutline(child.children, embeds),
-        })
-      } else if (embed?.type === 'a') {
-        outline.push({
-          id: child.block.id,
-          title: embed?.data?.profile?.alias || 'Untitled Account',
-          linkRoute: {
-            key: 'account',
-            accountId: embed?.query?.refId?.eid,
-          },
-          children: child.children && getDocOutline(child.children, embeds),
-        })
-      } else if (embed?.type === 'g') {
-        outline.push({
-          id: child.block.id,
-          title: embed?.data?.title || 'Untitled Group',
-          linkRoute: {
-            key: 'group',
-            groupId: embed?.query?.refId?.qid,
-            version: embed?.query?.refId?.version || undefined,
-          },
-          children: child.children && getDocOutline(child.children, embeds),
-        })
-      }
+      // } else if ( // disable card links for now
+      //   child.block.type === 'embed' &&
+      //   child.block.attributes?.view === 'card' &&
+      //   embeds[child.block.id]
+      // ) {
+      //   const embed = embeds[child.block.id]
+      //   if (embed?.type === 'd') {
+      //     outline.push({
+      //       id: child.block.id,
+      //       title: embed?.data?.document?.title || 'Untitled Document',
+      //       linkRoute: {
+      //         key: 'publication',
+      //         documentId: embed?.query?.refId?.qid,
+      //         versionId: embed?.query?.refId?.version || undefined,
+      //         variants: embed?.query?.refId?.variants || undefined,
+      //       },
+      //       children: child.children && getDocOutline(child.children, embeds),
+      //     })
+      //   } else if (embed?.type === 'a') {
+      //     outline.push({
+      //       id: child.block.id,
+      //       title: embed?.data?.profile?.alias || 'Untitled Account',
+      //       linkRoute: {
+      //         key: 'account',
+      //         accountId: embed?.query?.refId?.eid,
+      //       },
+      //       children: child.children && getDocOutline(child.children, embeds),
+      //     })
+      //   } else if (embed?.type === 'g') {
+      //     outline.push({
+      //       id: child.block.id,
+      //       title: embed?.data?.title || 'Untitled Group',
+      //       linkRoute: {
+      //         key: 'group',
+      //         groupId: embed?.query?.refId?.qid,
+      //         version: embed?.query?.refId?.version || undefined,
+      //       },
+      //       children: child.children && getDocOutline(child.children, embeds),
+      //     })
+      //   }
     } else if (child.block.type === 'embed' && embeds[child.block.id]) {
       const embed = embeds[child.block.id]
       if (embed?.type === 'd') {
@@ -629,7 +634,9 @@ export function SidebarDocument({
   const route = useNavRoute()
   const doc = usePublication({id: docId, version: docVersion || undefined})
   const isRouteActive = route.key == 'publication' && route.documentId == docId
-  const embeds = usePublicationEmbeds(doc.data, isRouteActive)
+  const embeds = usePublicationEmbeds(doc.data, isRouteActive, {
+    skipCards: true,
+  })
   const authorAccountsQuery = useAccounts(authors || [])
   const authorAccounts = authorAccountsQuery
     .map((query) => query.data)
