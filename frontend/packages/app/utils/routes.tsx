@@ -15,9 +15,15 @@ export type FeedRoute = z.infer<typeof feedRouteSchema>
 
 export const documentsRouteSchema = z.object({
   key: z.literal('documents'),
-  tab: z.union([z.literal('all'), z.literal('trusted'), z.literal('drafts')]),
+  tab: z.enum(['mine', 'all', 'trusted', 'drafts']),
 })
 export type DocumentsRoute = z.infer<typeof documentsRouteSchema>
+
+export const exploreRouteSchema = z.object({
+  key: z.literal('explore'),
+  tab: z.enum(['docs', 'groups']),
+})
+export type ExploreRoute = z.infer<typeof exploreRouteSchema>
 
 export const contactsRouteSchema = z.object({key: z.literal('contacts')})
 export type ContactsRoute = z.infer<typeof contactsRouteSchema>
@@ -157,6 +163,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   documentsRouteSchema,
   commentRouteSchema,
   commentDraftRouteSchema,
+  exploreRouteSchema,
 ])
 export type NavRoute = z.infer<typeof navRouteSchema>
 

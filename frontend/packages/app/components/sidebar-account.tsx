@@ -37,7 +37,9 @@ export function AccountSidebar({
       keepPreviousData: false,
     },
   )
-  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data)
+  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data, {
+    skipCards: true,
+  })
   const isFeedActive =
     route.key === 'account-feed' && route.accountId === accountId
   const activeBlock = accountRoute?.blockId

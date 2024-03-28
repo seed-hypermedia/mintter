@@ -69,7 +69,9 @@ export function GroupSidebar({
     id: frontDocId?.qid,
     version: frontDocId?.version || undefined,
   })
-  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data)
+  const frontDocEmbeds = usePublicationEmbeds(frontDoc.data, !!frontDoc.data, {
+    skipCards: true,
+  })
   const activeBlock = groupRoute?.blockId
   const frontDocOutline = getDocOutline(
     frontDoc?.data?.document?.children || [],

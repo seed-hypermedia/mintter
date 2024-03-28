@@ -21,14 +21,9 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {toast} from '@mintter/ui'
-import {
-  Globe,
-  Pencil,
-  Trash,
-  BadgeCheck as Verified,
-} from '@tamagui/lucide-icons'
+import {FileText, Pencil, Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import React, {memo} from 'react'
+import React, {ReactNode, memo} from 'react'
 import {useAppContext} from '../app-context'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
@@ -38,9 +33,11 @@ import {EmptyList} from '../components/empty-list'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
+import {useMyAccount} from '../models/accounts'
 import {
   queryDraft,
   queryPublication,
+  useAccountPublicationFullList,
   usePublicationFullList,
 } from '../models/documents'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -54,12 +51,17 @@ export const PublicationListPage = memo(PublicationListPageUnmemo)
 export function PublicationListPageUnmemo() {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
-  const draftsOnly = route.tab === 'drafts'
 
-  let content = <PublicationsList />
+  let content = (
+    <PublicationsList
+      header={<DocumentTabs />}
+      trustedOnly={route.tab === 'trusted'}
+    />
+  )
   // if (trustedOnly)
   //   content = <PublicationsList trustedOnly={true} key="trusted" />
-  if (draftsOnly) content = <DraftsList />
+  if (route.tab === 'drafts') content = <DraftsList />
+  if (route.tab === 'mine') content = <MyPublicationsList />
 
   return (
     <>
@@ -125,8 +127,9 @@ export function PublishedFirstDocDialog({
   )
 }
 const documentTabsOptions = [
-  {key: 'trusted', label: 'Trusted Creators', icon: Verified},
-  {key: 'all', label: 'All Creators', icon: Globe},
+  // {key: 'trusted', label: 'Trusted Creators', icon: Verified},
+  // {key: 'all', label: 'All Creators', icon: Globe},
+  {key: 'mine', label: 'My Documents', icon: FileText},
   {key: 'drafts', label: 'My Drafts', icon: Pencil},
 ] as const
 
@@ -149,10 +152,93 @@ function DocumentTabs() {
   )
 }
 
-function PublicationsList({}: {}) {
-  const route = useNavRoute()
-  if (route.key !== 'documents') throw new Error('invalid route')
-  const trustedOnly = route.tab === 'trusted' || route.tab == null
+function MyPublicationsList() {
+  const myAccount = useMyAccount()
+  const publications = useAccountPublicationFullList(myAccount.data?.id)
+  const drafts = useDraftList()
+  const {queryClient, grpcClient} = useAppContext()
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+
+  const items = publications.data
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  if (!items) return <Spinner />
+  return (
+    <>
+      <List
+        items={items}
+        header={<DocumentTabs />}
+        renderItem={({item}) => {
+          const {publication, author, editors} = item
+          if (!publication.document) return null
+          const docId = publication.document.id
+          if (!docId) return null
+          const id = unpackHmId(docId)
+          if (!id) return null
+          const variants: PublicationVariant[] = [
+            {
+              key: 'author',
+              author: publication.document.author,
+            },
+          ]
+          return (
+            <PublicationListItem
+              variants={variants}
+              openRoute={{
+                key: 'publication',
+                documentId: docId,
+                variants,
+              }}
+              hasDraft={drafts.data?.documents.find(
+                (d) => d.id == publication.document?.id,
+              )}
+              onPointerEnter={() => {
+                if (publication.document?.id) {
+                  queryClient.client.prefetchQuery(
+                    queryPublication(
+                      grpcClient,
+                      publication.document.id,
+                      publication.version,
+                    ),
+                  )
+                }
+              }}
+              publication={publication}
+              author={author}
+              editors={editors}
+              menuItems={() => [
+                copyLinkMenuItem(() => {
+                  onCopyId({
+                    ...id,
+                    variants,
+                    version: publication.version || null,
+                  })
+                }, 'Publication'),
+                {
+                  key: 'delete',
+                  label: 'Delete Publication',
+                  icon: Delete,
+                  onPress: () => {
+                    deleteDialog.open(docId)
+                  },
+                },
+              ]}
+            />
+          )
+        }}
+      />
+      {copyDialogContent}
+      {deleteDialog.content}
+    </>
+  )
+}
+
+export function PublicationsList({
+  header,
+  trustedOnly,
+}: {
+  header: ReactNode
+  trustedOnly: boolean
+}) {
   const publications = usePublicationFullList({trustedOnly})
   const drafts = useDraftList()
   const {queryClient, grpcClient} = useAppContext()
@@ -166,7 +252,7 @@ function PublicationsList({}: {}) {
       <List
         key={trustedOnly ? 'trusted' : 'all'}
         items={items}
-        header={<DocumentTabs />}
+        header={header}
         renderItem={({item}) => {
           const {publication, author, editors} = item
           if (!publication.document) return null

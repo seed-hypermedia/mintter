@@ -15,6 +15,7 @@ import {
   TitleText,
   XStack,
 } from '@mintter/ui'
+import {Sparkles} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
@@ -102,6 +103,17 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
+  if (route.key === 'explore') {
+    return (
+      <>
+        <Sparkles size={12} />
+        <TitleText size={size}>
+          Explore: {route.tab === 'docs' ? 'Documents' : 'Groups'}
+        </TitleText>
+      </>
+    )
+  }
+
   if (route.key === 'group' || route.key === 'group-feed') {
     return (
       <>
