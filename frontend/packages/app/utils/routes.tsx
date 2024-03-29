@@ -93,6 +93,13 @@ export const publicationRouteSchema = z.object({
   versionId: z.string().optional(),
   variants: z.array(publicationVariantSchema).optional(),
   blockId: z.string().optional(),
+  blockRange: z
+    .object({
+      start: z.number().optional(),
+      end: z.number().optional(),
+      expanded: z.boolean().optional(),
+    })
+    .optional(),
   groupVariantCategory: z.string().optional(),
   accessory: z
     .discriminatedUnion('key', [

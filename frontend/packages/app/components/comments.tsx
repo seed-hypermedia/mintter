@@ -1,12 +1,15 @@
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
   API_FILE_URL,
+  BlockRange,
   BlocksContent,
+  ExpandedBlockRange,
   HMComment,
   StateStream,
   UnpackedHypermediaId,
   createHmId,
   formattedDateMedium,
+  serializeBlockRange,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -280,8 +283,13 @@ export function CommentPresentation({
         <AppPublicationContentProvider
           comment
           onReplyBlock={onReplyBlock}
-          onCopyBlock={(blockId: string) => {
-            const url = `${comment.id}#${blockId}`
+          onCopyBlock={(
+            blockId: string,
+            blockRange: BlockRange | ExpandedBlockRange | undefined,
+          ) => {
+            const url = `${comment.id}#${blockId}${serializeBlockRange(
+              blockRange,
+            )}`
             copyUrlToClipboardWithFeedback(url, 'Comment Block')
           }}
         >

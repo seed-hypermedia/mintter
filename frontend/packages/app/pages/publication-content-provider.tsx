@@ -1,6 +1,8 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
   API_FILE_URL,
+  BlockRange,
+  ExpandedBlockRange,
   PublicationContentContextValue,
   PublicationContentProvider,
   contentLayoutUnit,
@@ -51,9 +53,12 @@ export function AppPublicationContentProvider({
         }}
         onCopyBlock={
           reference
-            ? (blockId: string) => {
+            ? (
+                blockId: string,
+                blockRange: BlockRange | ExpandedBlockRange | undefined,
+              ) => {
                 if (blockId && reference) {
-                  reference.onCopy(blockId)
+                  reference.onCopy(blockId, blockRange)
                 }
               }
             : null

@@ -144,7 +144,6 @@ export function useDraftList() {
         pageToken: context.pageParam,
       })
 
-      console.log(`== ~ queryFn: ~ result:`, result)
       const documents =
         result.documents.sort((a, b) =>
           sortDocuments(a.updateTime, b.updateTime),
@@ -161,12 +160,6 @@ export function useDraftList() {
 
   const allDrafts =
     draftListQuery.data?.pages.flatMap((page) => page.documents) || []
-
-  console.log(
-    `== ~ useDraftList ~ draftListQuery:`,
-    draftListQuery.data,
-    allDrafts,
-  )
 
   return {
     ...draftListQuery,

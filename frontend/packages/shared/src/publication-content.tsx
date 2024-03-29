@@ -1,15 +1,17 @@
 import {Timestamp} from '@bufbuild/protobuf'
+import {CitationLink} from '@mintter/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
   BlockNode,
+  BlockRange,
+  ExpandedBlockRange,
   HMBlock,
   HMBlockChildrenType,
-  HMBlockFile,
   HMBlockNode,
   HMInlineContent,
   HMPublication,
-  MttLink,
+  UnpackedHypermediaId,
   clipContentBlocks,
   formatBytes,
   formattedDate,
@@ -30,6 +32,7 @@ import {
   Checkbox,
   CheckboxProps,
   ColorProp,
+  Comment,
   File,
   Label,
   Link,
@@ -81,6 +84,7 @@ import {
   contentTextUnit,
 } from './publication-content-constants'
 import './publication-content.css'
+import {useRangeSelection} from './range-selection'
 
 export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>
@@ -96,12 +100,17 @@ export type PublicationContentContextValue = {
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  citations?: Array<MttLink>
+  citations?: CitationLink['mentions']
+
   onCitationClick?: () => void
   disableEmbedClick?: boolean
-  onCopyBlock: null | ((blockId: string) => void)
+  onCopyBlock:
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   onReplyBlock?: null | ((blockId: string) => void)
-  onBlockComment?: null | ((blockId: string) => void)
+  onBlockComment?:
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -118,8 +127,7 @@ export type PublicationContentContextValue = {
 export const publicationContentContext =
   createContext<PublicationContentContextValue | null>(null)
 
-export type EntityComponentProps = BlockContentProps &
-  ReturnType<typeof unpackHmId>
+export type EntityComponentProps = BlockContentProps & UnpackedHypermediaId
 
 export type InlineEmbedComponentProps = ReturnType<typeof unpackHmId>
 
@@ -249,7 +257,10 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
-  const {layoutUnit} = usePublicationContentContext()
+  const {wrapper, bubble, coords, state, send} = useRangeSelection()
+
+  const {layoutUnit, onCopyBlock, onBlockComment} =
+    usePublicationContentContext()
   const allBlocks = publication.document?.children || []
   const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
     !!publication.document?.title &&
@@ -263,11 +274,61 @@ export function PublicationContent({
     : displayableBlocks
   return (
     <YStack
+      ref={wrapper}
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
       marginVertical={marginVertical}
       {...props}
     >
+      <XStack
+        ref={bubble}
+        {...coords}
+        zIndex={99999}
+        position="absolute"
+        elevation="$4"
+      >
+        {onCopyBlock ? (
+          <Tooltip content="Copy Block Range">
+            <Button
+              size="$2"
+              icon={Link}
+              onPress={() => {
+                onCopyBlock(
+                  state.context.blockId,
+                  typeof state.context.rangeStart == 'number' &&
+                    typeof state.context.rangeEnd == 'number'
+                    ? {
+                        start: state.context.rangeStart,
+                        end: state.context.rangeEnd,
+                      }
+                    : undefined,
+                )
+              }}
+            />
+          </Tooltip>
+        ) : null}
+        {onBlockComment ? (
+          <Button
+            size="$2"
+            icon={Comment}
+            onPress={() => {
+              send({type: 'CREATE_COMMENT'})
+              onBlockComment(
+                state.context.blockId,
+                typeof state.context.rangeStart == 'number' &&
+                  typeof state.context.rangeEnd == 'number'
+                  ? {
+                      start: state.context.rangeStart,
+                      end: state.context.rangeEnd,
+                    }
+                  : undefined,
+              )
+            }}
+          >
+            Add a Comment
+          </Button>
+        ) : null}
+      </XStack>
       <BlocksContent blocks={displayBlocks} />
     </YStack>
   )
@@ -394,6 +455,7 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
+
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -468,12 +530,13 @@ export function BlockNodeContent({
         />
         {!props.embedDepth && !renderOnly ? (
           <XStack
-            position="absolute"
-            top={layoutUnit / 4}
-            right={layoutUnit / 4}
+            // position="absolute"
+            // top={layoutUnit / 4}
+            // right={layoutUnit / 4}
             backgroundColor={hover ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
+            gap="$2"
             $gtMd={
               {
                 // disabled because it intersects with the sidebar at narrow screen widths:
@@ -487,6 +550,32 @@ export function BlockNodeContent({
               props.embedDepth ? undefined : hoverProps.onHoverOut()
             }
           >
+            {citations?.length ? (
+              <Tooltip
+                content={`See ${citations.length} ${pluralS(
+                  citations.length,
+                  'document',
+                )} referencing this`}
+                delay={800}
+              >
+                <Button
+                  size="$2"
+                  chromeless
+                  opacity={hover ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  theme="blue"
+                  onPress={() => onCitationClick?.()}
+                >
+                  <XStack gap="$2" ai="center">
+                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
+                    <SizableText color="$blue11" size="$2">
+                      {String(citations.length)}
+                    </SizableText>
+                  </XStack>
+                </Button>
+              </Tooltip>
+            ) : null}
             {onCopyBlock ? (
               <Tooltip content="Copy block reference" delay={800}>
                 <Button
@@ -546,32 +635,6 @@ export function BlockNodeContent({
                 />
               </Tooltip>
             ) : null}
-            {citations?.length ? (
-              <Tooltip
-                content={`See ${citations.length} ${pluralS(
-                  citations.length,
-                  'document',
-                )} referencing this`}
-                delay={800}
-              >
-                <Button
-                  size="$2"
-                  chromeless
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  theme="blue"
-                  onPress={() => onCitationClick?.()}
-                >
-                  <XStack gap="$2" ai="center">
-                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
-                    <SizableText color="$blue11" size="$2">
-                      {String(citations.length)}
-                    </SizableText>
-                  </XStack>
-                </Button>
-              </Tooltip>
-            ) : null}
           </XStack>
         ) : null}
       </XStack>
@@ -616,40 +679,44 @@ export type BlockContentProps = {
 }
 
 function BlockContent(props: BlockContentProps) {
+  const dataProps = {
+    depth: props.depth || 1,
+    'data-blockid': props.block.id,
+  }
   if (props.block.type == 'paragraph') {
-    return <BlockContentParagraph {...props} depth={props.depth || 1} />
+    return <BlockContentParagraph {...props} {...dataProps} />
   }
 
   if (props.block.type == 'heading') {
-    return <BlockContentHeading {...props} depth={props.depth || 1} />
+    return <BlockContentHeading {...props} {...dataProps} />
   }
 
   if (props.block.type == 'image') {
-    return <BlockContentImage {...props} depth={props.depth || 1} />
+    return <BlockContentImage {...props} {...dataProps} />
   }
 
   if (props.block.type == 'video') {
-    return <BlockContentVideo {...props} depth={props.depth} />
+    return <BlockContentVideo {...props} {...dataProps} />
   }
 
   if (props.block.type == 'file') {
     if (props.block.attributes.subType?.startsWith('nostr:')) {
-      return <BlockContentNostr {...props} block={props.block} />
+      return <BlockContentNostr {...props} {...dataProps} />
     } else {
-      return <BlockContentFile {...props} block={props.block} />
+      return <BlockContentFile {...props} {...dataProps} />
     }
   }
 
-  if (props.block.type == 'web-embed' && props.block.ref) {
-    return <BlockContentTwitter {...props} block={props.block} />
+  if (props.block.type == 'web-embed') {
+    return <BlockContentTwitter {...props} {...dataProps} />
   }
 
   if (props.block.type == 'embed') {
-    return <BlockContentEmbed {...props} depth={props.depth} />
+    return <BlockContentEmbed {...props} {...dataProps} />
   }
 
   if (props.block.type == 'codeBlock') {
-    return <BlockContentCode {...props} block={props.block} />
+    return <BlockContentCode {...props} {...dataProps} />
   }
 
   return <BlockContentUnknown {...props} />
@@ -667,7 +734,7 @@ function BlockContentParagraph({block, ...props}: BlockContentProps) {
       className="block-content block-paragraph"
     >
       <Text
-        className={`content-inline${comment ? 'is-comment' : ''}`}
+        className={`content-inline ${comment ? 'is-comment' : ''}`}
         {...inlineContentSize(textUnit)}
       >
         <InlineContentView inline={inline} />
@@ -951,26 +1018,44 @@ function hmTextColor(linkType: LinkType): string {
   return '$color12'
 }
 
+function getInlineContentOffset(inline: HMInlineContent): number {
+  if (inline.type === 'link') {
+    return inline.content.map(getInlineContentOffset).reduce((a, b) => a + b, 0)
+  }
+  return inline.text?.length || 0
+}
+
 function InlineContentView({
   inline,
   style,
   linkType = null,
   fontSize,
+  rangeOffset,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
   linkType?: LinkType
   fontSize?: number
+  rangeOffset?: number
 }) {
   const {onLinkClick, textUnit, entityComponents} =
     usePublicationContentContext()
 
   const InlineEmbed = entityComponents.InlineEmbed
 
+  let contentOffset = rangeOffset || 0
+
   const fSize = fontSize || textUnit
   return (
-    <Text fontSize={fSize} lineHeight={fSize * 1.5} {...props}>
+    <Text
+      fontSize={fSize}
+      lineHeight={fSize * 1.5}
+      data-range-offset={contentOffset}
+      {...props}
+    >
       {inline.map((content, index) => {
+        const inlineContentOffset = contentOffset
+        contentOffset += getInlineContentOffset(content)
         if (content.type === 'text') {
           let textDecorationLine:
             | 'none'
@@ -1013,7 +1098,12 @@ function InlineContentView({
 
           if (content.styles.bold) {
             children = (
-              <Text fontWeight="bold" fontSize={fSize} lineHeight={fSize * 1.5}>
+              <Text
+                fontWeight="bold"
+                fontSize={fSize}
+                lineHeight={fSize * 1.5}
+                data-range-offset={inlineContentOffset}
+              >
                 {children}
               </Text>
             )
@@ -1025,6 +1115,7 @@ function InlineContentView({
                 fontStyle="italic"
                 fontSize={fSize}
                 lineHeight={fSize * 1.5}
+                data-range-offset={inlineContentOffset}
               >
                 {children}
               </Text>
@@ -1043,6 +1134,7 @@ function InlineContentView({
                 lineHeight={fSize * 1.5}
                 paddingHorizontal="$2"
                 paddingVertical={2}
+                data-range-offset={inlineContentOffset}
               >
                 {children}
               </Text>
@@ -1077,6 +1169,7 @@ function InlineContentView({
               style={{textDecorationLine}}
               fontSize={fSize}
               lineHeight={fSize * 1.5}
+              data-range-offset={inlineContentOffset}
             >
               {children}
             </Text>
@@ -1101,6 +1194,7 @@ function InlineContentView({
                 lineHeight={fSize * 1.5}
                 inline={content.content}
                 linkType={isHmLink ? 'hypermedia' : 'basic'}
+                rangeOffset={inlineContentOffset}
               />
             </a>
           )
@@ -1249,6 +1343,7 @@ export function ContentEmbed({
   renderOpenButton: () => React.ReactNode
   EmbedWrapper: React.ComponentType<React.PropsWithChildren<{hmRef: string}>>
 }) {
+  const {textUnit} = usePublicationContentContext()
   const embedData = useMemo(() => {
     const selectedBlock =
       props.blockRef && pub?.document?.children
@@ -1259,11 +1354,19 @@ export function ContentEmbed({
         ? [selectedBlock]
         : null
       : pub?.document?.children
+
     return {
       ...pub,
       data: {
         publication: pub,
         embedBlocks,
+        blockRange:
+          props.blockRange && 'start' in props.blockRange && selectedBlock
+            ? selectedBlock.block?.text.slice(
+                props.blockRange.start,
+                props.blockRange.end,
+              )
+            : null,
       },
     }
   }, [props.blockRef, pub])
@@ -1271,6 +1374,16 @@ export function ContentEmbed({
   let content = <BlockContentUnknown {...props} />
   if (isLoading) {
     content = <Spinner />
+  } else if (embedData.data.blockRange) {
+    content = (
+      <SizableText
+        {...inlineContentSize(textUnit * 0.8)}
+        fontFamily="$editorBody"
+        fontStyle="italic"
+      >
+        {embedData.data.blockRange}
+      </SizableText>
+    )
   } else if (embedData.data.embedBlocks) {
     content = (
       <>
@@ -1414,7 +1527,7 @@ export function getBlockNodeById(
   return res || null
 }
 
-export function BlockContentFile({block}: {block: HMBlockFile}) {
+export function BlockContentFile({block, ...props}: BlockContentProps) {
   const {hover, ...hoverProps} = useHover()
   const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
@@ -1431,6 +1544,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
+      {...props}
     >
       <XStack
         borderWidth={0}
@@ -1575,8 +1689,8 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
 
 export function BlockContentTwitter({block, ...props}: BlockContentProps) {
   const {layoutUnit, onLinkClick} = usePublicationContentContext()
-  const urlArray = block.ref?.split('/') ?? []
-  const tweetId = urlArray[urlArray.length - 1].split('?')[0]
+  const urlArray = block.ref?.split('/')
+  const tweetId = urlArray?.[urlArray.length - 1].split('?')[0]
   const {data, error, isLoading} = useTweet(tweetId)
 
   if (isLoading)
@@ -1699,12 +1813,16 @@ function getSourceType(name?: string) {
 
 export function useBlockCitations(blockId?: string) {
   const context = usePublicationContentContext()
+
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
-    return context.citations.filter((link) => {
-      return link.target?.blockId == blockId
+    return context.citations.filter((c) => {
+      console.log(`== ~ returncontext.citations.filter ~ c:`, blockId, c)
+      return c.sourceContext == blockId
     })
   }, [blockId, context.citations])
+
+  console.log(`== ~ citations ~ citations:`, citations)
 
   return {
     citations,

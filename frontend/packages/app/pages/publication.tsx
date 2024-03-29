@@ -26,7 +26,7 @@ import {
 } from '@mintter/ui'
 import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import {ReactNode, useCallback, useEffect} from 'react'
+import {ReactNode, useCallback, useEffect, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
@@ -129,7 +129,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
           </SizableText>
         </XStack>
         <XStack ai="center">
-          <Text marginHorizontal="$4" color="$color10" verticalAlign="middle">
+          <Text marginHorizontal="$4" color="$color10">
             {formattedDateMedium(publication.document?.publishTime)}
           </Text>
         </XStack>
@@ -226,6 +226,9 @@ export default function PublicationPage() {
       })
   }, [docId, gwHost, route.immediatelyPromptPush])
 
+  // const [rangeState, rangeSend, rangeActor] = useRangeSelection()
+  const rangeRef = useRef<HTMLDivElement>(null)
+
   if (publication.data) {
     let accessory: ReactNode | null = null
 
@@ -281,7 +284,7 @@ export default function PublicationPage() {
                       return replace({...route, accessory: null})
                     replace({...route, accessory: {key: 'citations'}})
                   }}
-                  onBlockComment={(blockId) => {
+                  onBlockComment={(blockId, blockRange) => {
                     replace({...route, accessory: {key: 'comments'}})
                     const version = publication.data?.publication?.version
                     if (!id) throw new Error('invalid doc id')
@@ -294,6 +297,7 @@ export default function PublicationPage() {
                       createHmId('d', id.eid, {
                         version,
                         blockRef: blockId,
+                        blockRange,
                       }),
                     )
                   }}
@@ -321,6 +325,7 @@ export default function PublicationPage() {
                         publication={publication.data?.publication}
                       />
                       <PublicationContent
+                        ref={rangeRef}
                         publication={publication.data?.publication}
                       />
                     </>

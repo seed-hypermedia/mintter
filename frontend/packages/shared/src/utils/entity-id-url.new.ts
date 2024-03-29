@@ -1,4 +1,5 @@
 import {z} from 'zod'
+import {serializeBlockRange} from './entity-id-url'
 import {StateStream} from './stream'
 
 export const HYPERMEDIA_PUBLIC_WEB_GATEWAY = 'https://hyper.media'
@@ -26,7 +27,7 @@ export function createPublicWebHmUrl(
   }: {
     version?: string | null | undefined
     blockRef?: string | null | undefined
-    blockRange?: BlockRange | ExpandedBlockRange | null
+    blockRange?: {start: number; end: number} | null
     hostname?: string | null | undefined
     variants?: PublicationVariant[] | null
     latest?: boolean | null
@@ -103,7 +104,7 @@ export function createHmId(
   opts: {
     version?: string | null
     blockRef?: string | null
-    blockRange?: BlockRange | ExpandedBlockRange | null
+    blockRange?: {start: number; end: number} | null
     id?: string
     groupPathName?: string | null
     variants?: PublicationVariant[] | null
@@ -126,9 +127,11 @@ export function createHmId(
   }
   responseUrl += serializeQueryString(query)
   if (opts?.blockRef) {
-    responseUrl += `#${opts.blockRef}${serializeBlockRange(opts.blockRange)}`
+    responseUrl += `#${opts.blockRef}`
   }
-
+  if (opts?.blockRange) {
+    responseUrl += `[${opts.blockRange.start}:${opts.blockRange.end}]`
+  }
   return responseUrl
 }
 
@@ -191,7 +194,7 @@ export type UnpackedHypermediaId = {
   groupPathName: string | null
   version: string | null
   blockRef: string | null
-  blockRange?: BlockRange | ExpandedBlockRange | null
+  blockRange: {start: number; end: number} | null
   hostname: string | null
   scheme: string | null
   variants?: PublicationVariant[] | null
@@ -204,13 +207,14 @@ export function hmId(
   opts: {
     version?: string | null
     blockRef?: string | null
-    blockRange?: BlockRange | ExpandedBlockRange | null
     groupPathName?: string | null
     variants?: PublicationVariant[] | null
     latest?: boolean | null
     hostname?: string | null
   } = {},
 ): UnpackedHypermediaId {
+  const blockRange = opts.blockRef ? parseBlockRange(opts.blockRef) : null
+
   return {
     id: createHmId(type, eid, opts),
     type,
@@ -218,8 +222,10 @@ export function hmId(
     qid: createHmId(type, eid),
     groupPathName: opts.groupPathName || null,
     version: opts.version || null,
-    blockRef: opts.blockRef || null,
-    blockRange: opts.blockRange || null,
+    blockRef: blockRange ? blockRange.blockId : null,
+    blockRange: blockRange
+      ? {start: blockRange.start, end: blockRange.end}
+      : null,
     hostname: opts.hostname || null,
     scheme: null,
     ...opts,
@@ -253,6 +259,7 @@ export function parseVariantsQuery(
 }
 
 export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
+  console.log('== UNPACK ME', hypermediaId)
   const parsed = parseCustomURL(hypermediaId)
   if (!parsed) return null
   if (parsed.scheme === HYPERMEDIA_SCHEME) {
@@ -263,8 +270,10 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const variants = parseVariantsQuery(parsed.query.get('b'))
     if (!type) return null
     const qid = createHmId(type, eid)
-    const blockRef = extractBlockRefOfUrl(hypermediaId)
-    const blockRange = extractBlockRangeOfUrl(hypermediaId)
+    const blockRange = parseBlockRange(parsed.fragment) || null
+
+    console.log(`== ~ unpackHmId ~ blockRange:`, blockRange)
+
     return {
       id: hypermediaId,
       qid,
@@ -273,8 +282,10 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       groupPathName: parsed.path[2] || null,
       version,
       variants,
-      blockRef,
-      blockRange,
+      blockRef: blockRange ? blockRange.blockId : null,
+      blockRange: blockRange
+        ? {start: blockRange.start, end: blockRange.end}
+        : null,
       hostname: null,
       latest,
       scheme: parsed.scheme,
@@ -289,8 +300,9 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     let hostname = parsed.path[0]
     if (!type) return null
     const qid = createHmId(type, eid)
-    const blockRef = extractBlockRefOfUrl(hypermediaId)
-    const blockRange = extractBlockRangeOfUrl(hypermediaId)
+
+    const blockRange = parsed.fragment ? parseBlockRange(parsed.fragment) : null
+
     return {
       id: hypermediaId,
       qid,
@@ -299,14 +311,32 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       groupPathName: parsed.path[3] || null,
       version,
       variants,
-      blockRef,
-      blockRange,
+      blockRef: blockRange ? blockRange.blockId : null,
+      blockRange: blockRange
+        ? {start: blockRange.start, end: blockRange.end}
+        : null,
       hostname,
       latest,
       scheme: parsed.scheme,
     }
   }
   return null
+}
+
+function parseBlockRange(
+  input: string | null,
+): {blockId: string; start: number; end: number} | null {
+  if (!input) return null
+  const regex =
+    /^(?<blockId>\w+)((?<expanded>\+)|\[(?<rangeStart>\d+)\:(?<rangeEnd>\d+)\])?$/
+  const match = input.match(regex)
+
+  if (match) {
+    const [, blockId, start, end] = match
+    return {blockId, start: parseInt(start), end: parseInt(end)}
+  } else {
+    return null
+  }
 }
 
 export type UnpackedDocId = UnpackedHypermediaId & {docId: string}
@@ -340,12 +370,10 @@ export function idToUrl(
   {
     version,
     blockRef,
-    blockRange,
     variants,
   }: {
     version?: string | null | undefined
     blockRef?: string | null | undefined
-    blockRange?: BlockRange | ExpandedBlockRange | null | undefined
     variants?: PublicationVariant[] | null | undefined
   } = {},
 ) {
@@ -354,7 +382,7 @@ export function idToUrl(
   return createPublicWebHmUrl(unpacked.type, unpacked.eid, {
     version: version || unpacked.version,
     blockRef: blockRef || unpacked.blockRef,
-    blockRange: blockRange || unpacked.blockRange,
+    blockRange: unpacked.blockRange,
     hostname,
     variants,
   })
@@ -379,14 +407,12 @@ export function createHmDocLink({
   documentId,
   version,
   blockRef,
-  blockRange,
   latest,
   variants,
 }: {
   documentId: string
   version?: string | null
   blockRef?: string | null
-  blockRange?: BlockRange | ExpandedBlockRange | null
   latest?: boolean
   variants?: PublicationVariant[] | null | undefined
 }): string {
@@ -402,11 +428,7 @@ export function createHmDocLink({
     query.l = null
   }
   res += serializeQueryString(query)
-  if (blockRef) {
-    res += `${
-      !blockRef.startsWith('#') ? '#' : ''
-    }${blockRef}${serializeBlockRange(blockRange)}`
-  }
+  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res
 }
 
@@ -423,7 +445,6 @@ export function createHmGroupDocLink(
   pathName: string,
   version?: string | null,
   blockRef?: string | null,
-  blockRange?: BlockRange | ExpandedBlockRange | null,
 ): string {
   let res = groupId
   if (pathName) {
@@ -431,10 +452,7 @@ export function createHmGroupDocLink(
     else res += `/${pathName}`
   }
   if (version) res += `?v=${version}`
-  if (blockRef)
-    res += `${
-      !blockRef.startsWith('#') ? '#' : ''
-    }${blockRef}${serializeBlockRange(blockRange)}`
+  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res
 }
 
@@ -446,7 +464,6 @@ export function hmIdWithVersion(
   hmId: string | null | undefined,
   version: string | null | undefined,
   blockRef?: string | null | undefined,
-  blockRange?: BlockRange | ExpandedBlockRange | null,
 ) {
   if (!hmId) return null
   const unpacked = unpackHmId(hmId)
@@ -455,81 +472,11 @@ export function hmIdWithVersion(
     groupPathName: unpacked.groupPathName,
     version: version || unpacked.version,
     blockRef,
-    blockRange,
   })
 }
 
 export function extractBlockRefOfUrl(
   url: string | null | undefined,
 ): string | null {
-  const fragment = url?.match(/#(.*)$/)?.[1] || null
-
-  if (fragment) {
-    return parseFragment(fragment)?.blockId || null
-  } else {
-    return null
-  }
-}
-
-export function extractBlockRangeOfUrl(
-  url: string | null | undefined,
-): BlockRange | ExpandedBlockRange | null {
-  const fragment = url?.match(/#(.*)$/)?.[1] || null
-
-  if (fragment) {
-    let res = parseFragment(fragment)
-    if (res) {
-      const {blockId, ...range} = res
-      return range
-    } else {
-      return null
-    }
-  } else {
-    return null
-  }
-}
-
-export type ParsedFragment =
-  | (BlockRange & {blockId: string})
-  | (ExpandedBlockRange & {blockId: string})
-
-export type BlockRange = {
-  start: number
-  end: number
-}
-export type ExpandedBlockRange = {
-  expanded: boolean
-}
-
-function parseFragment(input: string | null): ParsedFragment | null {
-  if (!input) return null
-  const regex =
-    /^(?<blockId>\w+)((?<expanded>\+)|\[(?<rangeStart>\d+)\:(?<rangeEnd>\d+)\])?$/
-  const match = input.match(regex)
-
-  if (match && match.groups) {
-    return {
-      blockId: match.groups.blockId,
-      expanded: !!match.groups.expanded,
-      start: parseInt(match.groups.rangeStart || '0'),
-      end: parseInt(match.groups.rangeEnd || '0'),
-    }
-  } else {
-    return null
-  }
-}
-
-export function serializeBlockRange(
-  range: BlockRange | ExpandedBlockRange | null | undefined,
-): string {
-  let res = ''
-  if (range) {
-    if ('expanded' in range && range.expanded) {
-      res += '+'
-    } else if ('start' in range) {
-      res += `[${range.start}:${range.end}]`
-    }
-  }
-
-  return res
+  return url?.match(/#(.*)$/)?.[1] || null
 }

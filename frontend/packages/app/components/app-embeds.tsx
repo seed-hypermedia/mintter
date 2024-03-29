@@ -80,7 +80,7 @@ function EmbedWrapper({
           ? routeParams?.blockRef == unpackRef?.blockRef
             ? '$yellow3'
             : '$backgroundTransparent'
-          : '$color4'
+          : '$backgroundTransparent'
       }
       hoverStyle={{
         cursor: 'pointer',
@@ -93,9 +93,9 @@ function EmbedWrapper({
       marginHorizontal={(-1 * layoutUnit) / 2}
       padding={layoutUnit / 2}
       overflow="hidden"
-      borderRadius={isHighlight ? 0 : layoutUnit / 4}
-      borderLeftWidth={5}
-      borderLeftColor={isHighlight ? '$yellow6' : '$colorTransparent'}
+      borderRadius={0}
+      borderLeftWidth={6}
+      borderLeftColor={isHighlight ? '$yellow6' : '$color4'}
       onPress={
         !disableEmbedClick
           ? () => {
