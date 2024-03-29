@@ -191,6 +191,7 @@ export default function GroupsPage() {
     </Container>
   ) : groups.length > 0 ? (
     <List
+      fixedItemHeight={52}
       items={groups}
       renderItem={({item}) => {
         if (!item.group) return null

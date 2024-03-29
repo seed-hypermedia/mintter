@@ -81,6 +81,43 @@ FROM structural_blobs
 JOIN blobs ON blobs.id = structural_blobs.id
 JOIN resources ON structural_blobs.resource = resources.id;
 
+-- View blobs metadata It returns the latest non null title or the 
+-- latest blob in case of untitled meta.
+CREATE VIEW meta_view AS
+WITH RankedBlobs AS (
+    SELECT 
+        sb.id, 
+        sb.meta, 
+        sb.author, 
+        sb.resource, 
+        sb.ts, 
+        ROW_NUMBER() OVER (
+            PARTITION BY sb.resource 
+            ORDER BY 
+                (CASE WHEN sb.meta IS NOT NULL THEN 0 ELSE 1 END), 
+                sb.ts DESC
+        ) AS rank
+    FROM structural_blobs sb
+    WHERE sb.type = 'Change'
+),
+LatestBlobs AS (
+    SELECT 
+        rb.id,
+        rb.meta, 
+        rb.author, 
+        rb.resource, 
+        rb.ts
+    FROM RankedBlobs rb
+    WHERE rb.rank = 1
+)
+SELECT 
+    lb.meta, 
+    res.iri, 
+    pk.principal
+FROM LatestBlobs lb
+JOIN resources res ON res.id = lb.resource
+JOIN public_keys pk ON pk.id = lb.author;
+
 -- Stores extra information for key delegation blobs.
 CREATE TABLE key_delegations (
     id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,

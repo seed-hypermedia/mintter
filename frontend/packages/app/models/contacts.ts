@@ -1,24 +1,12 @@
 import {queryKeys} from '@mintter/app/models/query-keys'
 import {Device} from '@mintter/shared'
-import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
+import {UseMutationOptions, useMutation} from '@tanstack/react-query'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
 import {fullInvalidate} from './query-keys'
-
-export function useContactsList() {
-  const grpcClient = useGRPCClient()
-  const contacts = useQuery({
-    queryKey: [queryKeys.GET_ALL_ACCOUNTS],
-    queryFn: async () => {
-      return await grpcClient.accounts.listAccounts({})
-    },
-    refetchInterval: 20_000,
-  })
-  return contacts
-}
 
 export function useConnectionSummary() {
   const peerInfo = useConnectedPeers({

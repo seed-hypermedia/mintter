@@ -4,18 +4,25 @@ package documents
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"math"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api/documents/v1alpha/docmodel"
 	groups "mintter/backend/daemon/api/groups/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	groups_proto "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/mttnet"
+	"strconv"
+	"strings"
+	"time"
 
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/colx"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/future"
 
 	"crawshaw.io/sqlite"
@@ -25,6 +32,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Discoverer is a subset of the syncing service that
@@ -251,28 +259,161 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	return mut.Hydrate(ctx, api.blobs)
 }
 
+var qListAllDrafts = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner,
+	  mv.meta,
+	  pk.principal AS author_raw,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	  AND sb.id in (SELECT distinct blob from drafts)
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  pk.principal,
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_raw AS (
+	SELECT
+	  id,
+	  principal AS owner_raw
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	HEX(oraw.owner_raw),
+	ra.blob_id
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY ra.blob_id asc LIMIT :page_size;
+`)
+
 // ListDrafts implements the corresponding gRPC method.
-func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "hm://d/*")
+func (api *Server) ListDrafts(ctx context.Context, req *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+	var (
+		entities []hyper.EntityID
+		err      error
+	)
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
+	}
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
+	}
+	defer cancel()
+	resp := &documents.ListDraftsResponse{
+		Documents: make([]*documents.Document, 0, len(entities)),
+	}
+	var cursorBlobID int64 = math.MaxInt32
+	if req.PageSize == 0 {
+		req.PageSize = 30
+	}
+	if req.PageToken != "" {
+		pageTokenBytes, _ := base64.StdEncoding.DecodeString(req.PageToken)
+		if err != nil {
+			return nil, fmt.Errorf("Token encoding not valid: %w", err)
+		}
+		clearPageToken, err := me.DeviceKey().Decrypt(pageTokenBytes)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		pageToken, err := strconv.ParseUint(string(clearPageToken), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		cursorBlobID = int64(pageToken)
+	}
+	pattern := "hm://d/*"
+	var lastBlobID int64
+	err = sqlitex.Exec(conn, qListAllDrafts(), func(stmt *sqlite.Stmt) error {
+		var (
+			id          = stmt.ColumnText(0)
+			createTime  = stmt.ColumnInt64(1)
+			editorsStr  = stmt.ColumnText(2)
+			title       = stmt.ColumnText(3)
+			updatedTime = stmt.ColumnInt64(4)
+			ownerHex    = stmt.ColumnText(5)
+		)
+		lastBlobID = stmt.ColumnInt64(6)
+		editors := []string{}
+		for _, editorHex := range strings.Split(editorsStr, ",") {
+			editorBin, err := hex.DecodeString(editorHex)
+			if err != nil {
+				return err
+			}
+			editors = append(editors, core.Principal(editorBin).String())
+		}
+		ownerBin, err := hex.DecodeString(ownerHex)
+		if err != nil {
+			return err
+		}
+		pub := &documents.Document{
+			Id:         id,
+			Title:      title,
+			Author:     core.Principal(ownerBin).String(),
+			Editors:    editors,
+			CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
+			UpdateTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+		}
+		resp.Documents = append(resp.Documents, pub)
+		return nil
+	}, pattern, cursorBlobID, req.PageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &documents.ListDraftsResponse{
-		Documents: make([]*documents.Document, 0, len(entities)),
+	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
+	if err != nil {
+		return nil, err
 	}
-
-	for _, e := range entities {
-		docid := string(e)
-		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
-			DocumentId: docid,
-		})
-		if err != nil {
-			continue
-		}
-		resp.Documents = append(resp.Documents, draft)
+	if lastBlobID != 0 && req.PageSize == int32(len(resp.Documents)) {
+		resp.NextPageToken = base64.StdEncoding.EncodeToString(pageToken)
 	}
-
 	return resp, nil
 }
 
@@ -528,42 +669,250 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 	return &emptypb.Empty{}, nil
 }
 
+var qListAllPublications = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner,
+	  mv.meta,
+	  pk.principal AS author_raw,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	  AND sb.id not in (SELECT distinct blob from drafts) 
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  pk.principal,
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_raw AS (
+	SELECT
+	  id,
+	  principal AS owner_raw
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	HEX(oraw.owner_raw),
+	lb.multihash AS latest_multihash,
+	lb.codec AS latest_codec,
+	ra.blob_id
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY ra.blob_id asc LIMIT :page_size;
+`)
+
+var qListTrustedPublications = dqb.Str(`
+  WITH RECURSIVE resource_authors AS (
+	SELECT
+	  r.iri,
+	  r.create_time,
+	  r.owner,
+	  mv.meta,
+	  pk.principal AS author_raw,
+	  sb.ts,
+	  sb.id AS blob_id
+	FROM
+	  resources r
+	  JOIN structural_blobs sb ON r.id = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	  JOIN meta_view mv ON r.iri = mv.iri
+	  JOIN trusted_accounts ON trusted_accounts.id = r.owner
+	WHERE
+	  sb.author IS NOT NULL
+	  AND r.iri GLOB :pattern
+	  AND r.id not in (SELECT resource from drafts) 
+	UNION ALL
+	SELECT
+	  ra.iri,
+	  ra.create_time,
+	  ra.owner,
+	  sb.meta,
+	  pk.principal,
+	  sb.ts,
+	  sb.id
+	FROM
+	  resource_authors ra
+	  JOIN structural_blobs sb ON ra.iri = sb.resource
+	  JOIN public_keys pk ON sb.author = pk.id
+	WHERE
+	  sb.author IS NOT NULL
+	  AND ra.iri GLOB :pattern
+  ),
+  owners_raw AS (
+	SELECT
+	  id,
+	  principal AS owner_raw
+	FROM
+	  public_keys
+  ),
+  latest_blobs AS (
+	SELECT
+	  ra.iri,
+	  MAX(ra.ts) AS latest_ts,
+	  b.multihash,
+	  b.codec
+	FROM
+	  resource_authors ra
+	  JOIN blobs b ON ra.blob_id = b.id
+	  GROUP BY ra.iri
+  )
+  SELECT
+	ra.iri,
+	ra.create_time,
+	GROUP_CONCAT(DISTINCT HEX(ra.author_raw)) AS authors_hex,
+	ra.meta,
+	MAX(ra.ts) AS latest_ts,
+	HEX(oraw.owner_raw),
+	lb.multihash AS latest_multihash,
+	lb.codec AS latest_codec,
+	ra.blob_id
+  FROM
+	resource_authors ra
+	LEFT JOIN owners_raw oraw ON ra.owner = oraw.id
+	LEFT JOIN latest_blobs lb ON ra.iri = lb.iri
+  WHERE ra.blob_id <= :idx 
+  GROUP BY
+	ra.iri, ra.create_time, ra.meta
+  ORDER BY ra.blob_id asc LIMIT :page_size;
+`)
+
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	var (
 		entities []hyper.EntityID
 		err      error
 	)
-	if in.TrustedOnly {
-		entities, err = api.blobs.ListTrustedEntities(ctx, "hm://d/*")
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		entities, err = api.blobs.ListEntities(ctx, "hm://d/*")
-		if err != nil {
-			return nil, err
-		}
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
 	}
-
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
+	}
+	defer cancel()
 	resp := &documents.ListPublicationsResponse{
 		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
-
-	// TODO(burdiyan): this is very inefficient. Index the attributes necessary for listing,
-	// and use the database without loading the changes from disk all the time one by one.
-	for _, e := range entities {
-		docid := string(e)
-		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: docid,
-			LocalOnly:  true,
-		})
+	var cursorBlobID int64 = math.MaxInt32
+	if in.PageSize == 0 {
+		in.PageSize = 30
+	}
+	if in.PageToken != "" {
+		pageTokenBytes, _ := base64.StdEncoding.DecodeString(in.PageToken)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("Token encoding not valid: %w", err)
+		}
+		clearPageToken, err := me.DeviceKey().Decrypt(pageTokenBytes)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		pageToken, err := strconv.ParseUint(string(clearPageToken), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("Token not valid: %w", err)
+		}
+		cursorBlobID = int64(pageToken)
+	}
+	pattern := "hm://d/*"
+	query := qListAllPublications
+	if in.TrustedOnly {
+		query = qListTrustedPublications
+	}
+	var lastBlobID int64
+	err = sqlitex.Exec(conn, query(), func(stmt *sqlite.Stmt) error {
+		var (
+			id          = stmt.ColumnText(0)
+			createTime  = stmt.ColumnInt64(1)
+			editorsStr  = stmt.ColumnText(2)
+			title       = stmt.ColumnText(3)
+			updatedTime = stmt.ColumnInt64(4)
+			ownerHex    = stmt.ColumnText(5)
+			mhash       = stmt.ColumnBytes(6)
+			codec       = stmt.ColumnInt64(7)
+		)
+		lastBlobID = stmt.ColumnInt64(7)
+		editors := []string{}
+		for _, editorHex := range strings.Split(editorsStr, ",") {
+			editorBin, err := hex.DecodeString(editorHex)
+			if err != nil {
+				return err
+			}
+			editors = append(editors, core.Principal(editorBin).String())
+		}
+		ownerBin, err := hex.DecodeString(ownerHex)
+		if err != nil {
+			return err
+		}
+		version := cid.NewCidV1(uint64(codec), mhash)
+		pub := &documents.Publication{
+			Version: version.String(),
+			Document: &documents.Document{
+				Id:       id,
+				Title:    title,
+				Author:   core.Principal(ownerBin).String(),
+				Editors:  editors,
+				Children: []*documents.BlockNode{},
+
+				CreateTime:  timestamppb.New(time.Unix(int64(createTime), 0)),
+				UpdateTime:  timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+				PublishTime: timestamppb.New(time.Unix(int64(updatedTime/1000000), (updatedTime%1000000)*1000)),
+			},
 		}
 		resp.Publications = append(resp.Publications, pub)
+		return nil
+	}, pattern, cursorBlobID, in.PageSize)
+	if err != nil {
+		return nil, err
 	}
-
+	pageToken, err := me.DeviceKey().Encrypt([]byte(strconv.Itoa(int(lastBlobID - 1))))
+	if err != nil {
+		return nil, err
+	}
+	if lastBlobID != 0 && in.PageSize == int32(len(resp.Publications)) {
+		resp.NextPageToken = base64.StdEncoding.EncodeToString(pageToken)
+	}
 	return resp, nil
 }
 

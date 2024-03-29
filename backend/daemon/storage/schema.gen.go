@@ -168,6 +168,22 @@ const (
 	C_KVValue = "kv.value"
 )
 
+// Table meta_view.
+const (
+	MetaView          sqlitegen.Table  = "meta_view"
+	MetaViewIRI       sqlitegen.Column = "meta_view.iri"
+	MetaViewMeta      sqlitegen.Column = "meta_view.meta"
+	MetaViewPrincipal sqlitegen.Column = "meta_view.principal"
+)
+
+// Table meta_view. Plain strings.
+const (
+	T_MetaView          = "meta_view"
+	C_MetaViewIRI       = "meta_view.iri"
+	C_MetaViewMeta      = "meta_view.meta"
+	C_MetaViewPrincipal = "meta_view.principal"
+)
+
 // Table public_keys.
 const (
 	PublicKeys          sqlitegen.Table  = "public_keys"
@@ -377,6 +393,9 @@ var Schema = sqlitegen.Schema{
 		KeyDelegationsViewIssuer:        {Table: KeyDelegationsView, SQLType: "BLOB"},
 		KVKey:                           {Table: KV, SQLType: "TEXT"},
 		KVValue:                         {Table: KV, SQLType: "TEXT"},
+		MetaViewIRI:                     {Table: MetaView, SQLType: "TEXT"},
+		MetaViewMeta:                    {Table: MetaView, SQLType: "TEXT"},
+		MetaViewPrincipal:               {Table: MetaView, SQLType: "BLOB"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
 		ResourceLinksID:                 {Table: ResourceLinks, SQLType: "INTEGER"},

@@ -36,8 +36,10 @@ import {
 import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   FetchQueryOptions,
+  UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
+  useInfiniteQuery,
   useMutation,
   useQueries,
   useQuery,
@@ -61,38 +63,58 @@ import {useGroupContent, useGroups} from './groups'
 import {queryKeys} from './query-keys'
 
 export function usePublicationList(
-  opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
+  opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
+    trustedOnly: boolean
+  },
 ) {
   const {trustedOnly, ...queryOpts} = opts || {}
   const grpcClient = useGRPCClient()
-  return useQuery({
+  const pubListQuery = useInfiniteQuery({
     ...queryOpts,
     queryKey: [
       queryKeys.GET_PUBLICATION_LIST,
       trustedOnly ? 'trusted' : 'global',
     ],
     refetchOnMount: true,
-    queryFn: async () => {
+    queryFn: async (context) => {
       const result = await grpcClient.publications.listPublications({
         trustedOnly: trustedOnly,
+        pageSize: 50,
+        pageToken: context.pageParam,
       })
       let publications =
         result.publications.sort((a, b) =>
           sortDocuments(a.document?.updateTime, b.document?.updateTime),
         ) || []
-      publications = publications.filter((pub) => {
-        return pub.document?.title !== '(HIDDEN) Group Navigation'
-      })
+      // publications = publications.filter((pub) => {
+      //   return pub.document?.title !== '(HIDDEN) Group Navigation'
+      // })
       return {
         ...result,
         publications,
       }
     },
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextPageToken
+    },
   })
+
+  const allPublications =
+    pubListQuery.data?.pages.flatMap((page) => page.publications) || []
+  console.log(`== ~ allPublications:`, allPublications)
+  return {
+    ...pubListQuery,
+    data: {
+      ...pubListQuery.data,
+      publications: allPublications,
+    },
+  }
 }
 
 export function usePublicationFullList(
-  opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
+  opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
+    trustedOnly: boolean
+  },
 ) {
   const pubList = usePublicationList(opts)
   const accounts = useAllAccounts()
@@ -114,14 +136,15 @@ export function usePublicationFullList(
 
 export function useDraftList() {
   const grpcClient = useGRPCClient()
-  return useQuery({
+  const draftListQuery = useInfiniteQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
     refetchOnMount: true,
-    queryFn: async () => {
+    queryFn: async (context) => {
       const result = await grpcClient.drafts.listDrafts({
-        pageSize: undefined,
-        pageToken: undefined,
+        pageToken: context.pageParam,
       })
+
+      console.log(`== ~ queryFn: ~ result:`, result)
       const documents =
         result.documents.sort((a, b) =>
           sortDocuments(a.updateTime, b.updateTime),
@@ -131,7 +154,27 @@ export function useDraftList() {
         documents,
       }
     },
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextPageToken || undefined
+    },
   })
+
+  const allDrafts =
+    draftListQuery.data?.pages.flatMap((page) => page.documents) || []
+
+  console.log(
+    `== ~ useDraftList ~ draftListQuery:`,
+    draftListQuery.data,
+    allDrafts,
+  )
+
+  return {
+    ...draftListQuery,
+    data: {
+      ...draftListQuery.data,
+      documents: allDrafts,
+    },
+  }
 }
 
 export function useDeleteDraft(

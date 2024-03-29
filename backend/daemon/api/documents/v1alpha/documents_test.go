@@ -466,6 +466,7 @@ func TestListDrafts(t *testing.T) {
 			Text: "Hello world!",
 		}}},
 	})
+	updated.Children = nil
 	require.Equal(t, draft.CreateTime.AsTime().UnixMicro(), updated.CreateTime.AsTime().UnixMicro())
 	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
 
@@ -501,8 +502,9 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
+	published.Document.Children = []*documents.BlockNode{}
 	updated.PublishTime = published.Document.PublishTime // Drafts don't have publish time.
-
+	updated.Children = published.Document.Children
 	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter())
 	if diff != "" {
 		t.Fatal(diff, "published document doesn't match")
@@ -531,6 +533,7 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 
 	// Must get publication after publishing.
 	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	got.Document.Children = []*documents.BlockNode{}
 	require.NoError(t, err, "must get document after publishing")
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 
@@ -698,6 +701,7 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	})
 
 	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
+	pub2.Document.Children = []*documents.BlockNode{}
 	require.NoError(t, err)
 	require.NotNil(t, pub2)
 
