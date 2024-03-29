@@ -1334,6 +1334,7 @@ export function ContentEmbed({
   renderOpenButton: () => React.ReactNode
   EmbedWrapper: React.ComponentType<React.PropsWithChildren<{hmRef: string}>>
 }) {
+  const {textUnit} = usePublicationContentContext()
   const embedData = useMemo(() => {
     const selectedBlock =
       props.blockRef && pub?.document?.children
@@ -1351,7 +1352,7 @@ export function ContentEmbed({
         publication: pub,
         embedBlocks,
         blockRange:
-          props.blockRange && selectedBlock
+          props.blockRange && 'start' in props.blockRange && selectedBlock
             ? selectedBlock.block?.text.slice(
                 props.blockRange.start,
                 props.blockRange.end,
@@ -1365,7 +1366,15 @@ export function ContentEmbed({
   if (isLoading) {
     content = <Spinner />
   } else if (embedData.data.blockRange) {
-    content = <SizableText>{embedData.data.blockRange}</SizableText>
+    content = (
+      <SizableText
+        {...inlineContentSize(textUnit * 0.8)}
+        fontFamily="$editorBody"
+        fontStyle="italic"
+      >
+        {embedData.data.blockRange}
+      </SizableText>
+    )
   } else if (embedData.data.embedBlocks) {
     content = (
       <>
