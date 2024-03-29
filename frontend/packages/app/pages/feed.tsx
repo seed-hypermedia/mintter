@@ -18,13 +18,13 @@ import {
 import {
   Button,
   ButtonText,
-  FeedList,
-  FeedListHandle,
   Globe,
+  List,
   PageContainer,
   RadioButtons,
   SizableText,
   Spinner,
+  TextProps,
   Theme,
   UIAvatar,
   View,
@@ -33,7 +33,7 @@ import {
   toast,
 } from '@mintter/ui'
 import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
-import React, {PropsWithChildren, ReactNode, useRef} from 'react'
+import React, {PropsWithChildren, ReactNode} from 'react'
 import Footer from '../components/footer'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAccount} from '../models/accounts'
@@ -162,13 +162,15 @@ type CommentFeedItemProps = {
 function EntityLink({
   id,
   children,
-}: {
+  ...props
+}: TextProps & {
   id: UnpackedHypermediaId
   children: ReactNode
 }) {
   const navigate = useNavigate('push')
   return (
     <ButtonText
+      style={{whiteSpace: 'break-spaces'}}
       fontWeight={'bold'}
       onPress={(e) => {
         e.stopPropagation()
@@ -181,6 +183,7 @@ function EntityLink({
       }}
       numberOfLines={1}
       textOverflow="ellipsis" // not working. long titles don't look great
+      {...props}
     >
       {children}
     </ButtonText>
@@ -762,12 +765,10 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
-  const scrollRef = useRef<FeedListHandle>(null)
   if (route.key !== 'feed') throw new Error('invalid route')
   return (
     <YStack f={1} gap="$3">
-      <FeedList
-        ref={scrollRef}
+      <List
         header={
           <PageContainer marginVertical="$6">
             <XStack f={1} ai="center" gap="$3">
@@ -837,11 +838,9 @@ export const ResourceFeed = React.memo(function ResourceFeed({
   id: string
 }) {
   const feed = useResourceFeed(id)
-  const scrollRef = useRef<FeedListHandle>(null)
   return (
     <YStack f={1} gap="$3">
-      <FeedList
-        ref={scrollRef}
+      <List
         header={<View height="$2" />}
         footer={
           feed.data?.pages?.length && (

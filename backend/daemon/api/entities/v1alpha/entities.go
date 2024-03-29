@@ -401,17 +401,8 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 }
 
 var qGetEntityTitles = dqb.Str(`
-	SELECT sb.meta, resources.iri, public_keys.principal
-	FROM structural_blobs sb
-	JOIN public_keys ON public_keys.id = sb.author
-	JOIN resources ON resources.id = sb.resource
-	JOIN (
-		SELECT resource, MAX(ts) AS max_ts
-		FROM structural_blobs
-		WHERE type='Change' AND meta IS NOT NULL
-		GROUP BY resource
-	) AS latest_blobs ON sb.resource = latest_blobs.resource AND sb.ts = latest_blobs.max_ts;
-`)
+	SELECT meta, iri, principal
+	FROM meta_view;`)
 
 // ListEntityMentions implements listing mentions of an entity in other resources.
 func (api *Server) ListEntityMentions(ctx context.Context, in *entities.ListEntityMentionsRequest) (*entities.ListEntityMentionsResponse, error) {

@@ -105,6 +105,8 @@ function ErrorPage({}: {error: any}) {
 
 export default function ContactsPage() {
   const contacts = useAllAccounts(true)
+
+  console.log(`== ~ ContactsPage ~ contacts:`, contacts)
   const myAccount = useMyAccount()
   const allAccounts = contacts.data?.accounts || []
   const trustedAccounts = allAccounts.filter(
@@ -147,6 +149,7 @@ export default function ContactsPage() {
       <MainWrapperNoScroll>
         <List
           items={[...trustedAccounts, ...untrustedAccounts]}
+          fixedItemHeight={52}
           renderItem={({item}) => {
             return (
               <ContactItem
@@ -157,6 +160,9 @@ export default function ContactsPage() {
                 }}
               />
             )
+          }}
+          onEndReached={() => {
+            contacts.fetchNextPage()
           }}
         />
       </MainWrapperNoScroll>

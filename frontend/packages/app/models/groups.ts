@@ -13,8 +13,10 @@ import {
 } from '@mintter/shared'
 import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
+  UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
+  useInfiniteQuery,
   useMutation,
   useQueries,
   useQuery,
@@ -35,15 +37,23 @@ import {
 } from '@mintter/shared'
 import {queryKeys} from './query-keys'
 
-export function useAllGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
+export function useAllGroups(
+  opts?: UseInfiniteQueryOptions<ListGroupsResponse>,
+) {
   const grpcClient = useGRPCClient()
-  const groupsQuery = useQuery({
+  const groupsQuery = useInfiniteQuery({
     ...opts,
     queryKey: [queryKeys.GET_GROUPS],
-    queryFn: async () => {
-      return await grpcClient.groups.listGroups({})
+    queryFn: async (context) => {
+      return await grpcClient.groups.listGroups({
+        pageSize: 50,
+        pageToken: context.pageParam,
+      })
     },
+    getNextPageParam: (lastPage) => lastPage?.nextPageToken ?? undefined,
   })
+
+  const allGroups = groupsQuery.data?.pages.flatMap((page) => page.groups) || []
 
   return useMemo(() => {
     return {
@@ -51,7 +61,7 @@ export function useAllGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
       data: {
         ...groupsQuery.data,
         groups:
-          groupsQuery.data?.groups?.sort((a, b) =>
+          allGroups?.sort((a, b) =>
             sortDocuments(a.updateTime, b.updateTime),
           ) || [],
       },
