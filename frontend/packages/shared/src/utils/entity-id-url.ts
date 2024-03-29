@@ -191,7 +191,7 @@ export type UnpackedHypermediaId = {
   groupPathName: string | null
   version: string | null
   blockRef: string | null
-  blockRange: BlockRange | ExpandedBlockRange | null
+  blockRange?: BlockRange | ExpandedBlockRange | null
   hostname: string | null
   scheme: string | null
   variants?: PublicationVariant[] | null

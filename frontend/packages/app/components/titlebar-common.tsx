@@ -12,6 +12,7 @@ import {
   GroupVariant,
   createPublicWebHmUrl,
   hmId,
+  serializeBlockRange,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -370,9 +371,16 @@ export function useFullReferenceUrl(route: NavRoute): {
           url: sitePrettyUrl,
           label: 'Site Document',
           content: null,
-          onCopy: (blockId?: string | undefined) => {
+          onCopy: (
+            blockId?: string | undefined,
+            blockRange?: BlockRange | ExpandedBlockRange | null,
+          ) => {
             copyUrlToClipboardWithFeedback(
-              blockId ? `${sitePrettyUrl}#${blockId}` : sitePrettyUrl,
+              blockId
+                ? `${sitePrettyUrl}#${blockId}${serializeBlockRange(
+                    blockRange,
+                  )}`
+                : sitePrettyUrl,
               'Site Document',
             )
           },
@@ -424,12 +432,16 @@ export function useFullReferenceUrl(route: NavRoute): {
       }),
       label: hostname ? 'Site Version' : 'Doc Version',
       content: copyDialogContent,
-      onCopy: (blockId: string | undefined) => {
+      onCopy: (
+        blockId: string | undefined,
+        blockRange?: BlockRange | ExpandedBlockRange | null,
+      ) => {
         onCopyPublic({
           ...docId,
           hostname: hostname || null,
           version: pub.data?.publication?.version || null,
           blockRef: blockId || null,
+          blockRange,
           variants: pubRoute.variants,
         })
       },
