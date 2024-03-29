@@ -129,7 +129,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
           </SizableText>
         </XStack>
         <XStack ai="center">
-          <Text marginHorizontal="$4" color="$color10" verticalAlign="middle">
+          <Text marginHorizontal="$4" color="$color10">
             {formattedDateMedium(publication.document?.publishTime)}
           </Text>
         </XStack>

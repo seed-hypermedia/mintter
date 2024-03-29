@@ -7,6 +7,8 @@ import {
   HyperMediaEditorView,
 } from '@mintter/editor'
 import {
+  BlockRange,
+  ExpandedBlockRange,
   StateStream,
   blockStyles,
   createPublicWebHmUrl,
@@ -258,7 +260,10 @@ export default function DraftPage() {
         >
           <AppPublicationContentProvider
             disableEmbedClick
-            onCopyBlock={(blockId: string) => {
+            onCopyBlock={(
+              blockId: string,
+              blockRange: BlockRange | ExpandedBlockRange | undefined,
+            ) => {
               if (route.key != 'draft')
                 throw new Error('DraftPage must have draft route')
               if (!route.draftId)
@@ -269,6 +274,7 @@ export default function DraftPage() {
               copyUrlToClipboardWithFeedback(
                 createPublicWebHmUrl('d', id.eid, {
                   blockRef: blockId,
+                  blockRange,
                   hostname: gwUrl.data,
                 }),
                 'Block',

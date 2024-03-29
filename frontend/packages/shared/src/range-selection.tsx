@@ -1,9 +1,40 @@
 import {useMachine} from '@xstate/react'
-import {useEffect} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {assign, setup} from 'xstate'
 
 export function useRangeSelection() {
   const [state, send, actor] = useMachine(machine)
+  const wrapper = useRef<HTMLDivElement>(null)
+  const bubble = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState({
+    top: 0,
+    left: 0,
+  })
+
+  useEffect(() => {
+    if (
+      wrapper.current &&
+      bubble.current &&
+      state.matches({active: 'selected'}) &&
+      state.context.selection &&
+      state.context.selection.rangeCount > 0
+    ) {
+      const wrapperRect = wrapper.current.getBoundingClientRect()
+      const bubbleRect = bubble.current.getBoundingClientRect()
+
+      const range = state.context.selection.getRangeAt(0)
+      const rect = range.getBoundingClientRect()
+
+      setCoords({
+        top: rect.top - wrapperRect.top - (bubbleRect.height + 8),
+
+        left:
+          rect.left + rect.width / 2 - wrapperRect.left - bubbleRect.width / 2,
+      })
+    } else {
+      setCoords({top: -9999, left: -9999})
+    }
+  }, [wrapper.current, state])
 
   useEffect(function rangeSelectionEffect() {
     document.addEventListener('selectionchange', handleSelectionChange)
@@ -19,20 +50,27 @@ export function useRangeSelection() {
       document.removeEventListener('mouseup', handleMouseDown(false))
       document.removeEventListener('touchend', handleMouseDown(false))
     }
+
+    function handleSelectionChange(e: any) {
+      actor.send({type: 'SELECT'})
+    }
+
+    function handleMouseDown(mouseDown: boolean) {
+      return function handleMouseDown(e: any) {
+        console.log('== useRangeSelection handleMouseDown', mouseDown)
+        actor.send({type: mouseDown ? 'MOUSEDOWN' : 'MOUSEUP'})
+      }
+    }
   }, [])
 
-  function handleSelectionChange(e: any) {
-    actor.send({type: 'SELECT'})
+  return {
+    state,
+    send,
+    actor,
+    coords,
+    wrapper,
+    bubble,
   }
-
-  function handleMouseDown(mouseDown: boolean) {
-    return function handleMouseDown(e: any) {
-      console.log('== useRangeSelection handleMouseDown', mouseDown)
-      actor.send({type: mouseDown ? 'MOUSEDOWN' : 'MOUSEUP'})
-    }
-  }
-
-  return [state, send, actor]
 }
 
 const defaultContext = {
@@ -67,8 +105,11 @@ const machine = setup({
         mouseDown: event.type == 'MOUSEDOWN',
       }
     }),
+    // @ts-expect-error
     setRange: assign(() => {
       let sel = window.getSelection()
+
+      console.log(`== ~ setRange:assign ~ sel:`, sel)
       if (sel && sel.rangeCount > 0) {
         const {anchorNode, anchorOffset, focusNode, focusOffset} = sel
         const anchorBlockId = getParentElId(anchorNode)
@@ -76,26 +117,26 @@ const machine = setup({
         const anchorRangeOffset = getRangeOffset(anchorNode)
         const focusRangeOffset = getRangeOffset(focusNode)
         if (focusBlockId !== anchorBlockId) {
-          console.log(
-            '=== SELECTION === invalid selection, probably multiple blocks selected.',
-          )
+          // console.log(
+          //   '=== SELECTION === invalid selection, probably multiple blocks selected.',
+          // )
           return defaultContext
         }
         const blockId = focusBlockId
         const anchorRange = anchorRangeOffset + anchorOffset
         const focusRange = focusRangeOffset + focusOffset
         if (anchorRange === focusRange) {
-          console.log('=== SELECTION === empty range not supported')
+          // console.log('=== SELECTION === empty range not supported')
           return defaultContext
         }
         const rangeStart = Math.min(anchorRange, focusRange)
         const rangeEnd = Math.max(anchorRange, focusRange)
-        // const blockRef = `${blockId}[${rangeStart}:${rangeEnd}]`
-        console.log('=== SELECTION === ', {
-          blockId,
-          rangeStart,
-          rangeEnd,
-        })
+
+        // console.log('=== SELECTION === ', {
+        //   blockId,
+        //   rangeStart,
+        //   rangeEnd,
+        // })
         return {
           ...defaultContext,
           selection: sel,
@@ -107,27 +148,26 @@ const machine = setup({
     }),
     clearContext: assign(() => defaultContext),
   },
-  schemas: {
-    events: {
-      SELECT: {
-        type: 'object',
-        properties: {},
-      },
-      CREATE_COMMENT: {
-        type: 'object',
-        properties: {},
-      },
-      COMMENT_CANCEL: {
-        type: 'object',
-        properties: {},
-      },
-      COMMENT_SUBMIT: {
-        type: 'object',
-        properties: {},
-      },
-    },
-  },
-  guards: {},
+  // schemas: {
+  //   events: {
+  //     SELECT: {
+  //       type: 'object',
+  //       properties: {},
+  //     },
+  //     CREATE_COMMENT: {
+  //       type: 'object',
+  //       properties: {},
+  //     },
+  //     COMMENT_CANCEL: {
+  //       type: 'object',
+  //       properties: {},
+  //     },
+  //     COMMENT_SUBMIT: {
+  //       type: 'object',
+  //       properties: {},
+  //     },
+  //   },
+  // },
 }).createMachine({
   context: {
     selection: null,
@@ -153,12 +193,16 @@ const machine = setup({
           after: {
             '300': {
               target: 'selected',
+              guard: ({context}) => !context.mouseDown,
             },
           },
           on: {
             SELECT: {
               target: 'selecting',
               reenter: true,
+            },
+            MOUSEUP: {
+              target: 'selected',
             },
           },
         },

@@ -1,14 +1,17 @@
 import {Timestamp} from '@bufbuild/protobuf'
+import {CitationLink} from '@mintter/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
   BlockNode,
+  BlockRange,
+  ExpandedBlockRange,
   HMBlock,
   HMBlockChildrenType,
   HMBlockNode,
   HMInlineContent,
   HMPublication,
-  MttLink,
+  UnpackedHypermediaId,
   clipContentBlocks,
   formatBytes,
   formattedDate,
@@ -97,10 +100,13 @@ export type PublicationContentContextValue = {
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  citations?: Array<MttLink>
+  citations?: CitationLink['mentions']
+
   onCitationClick?: () => void
   disableEmbedClick?: boolean
-  onCopyBlock: null | ((blockId: string) => void)
+  onCopyBlock:
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   onReplyBlock?: null | ((blockId: string) => void)
   onBlockComment?: null | ((blockId: string) => void)
   layoutUnit: number
@@ -119,8 +125,7 @@ export type PublicationContentContextValue = {
 export const publicationContentContext =
   createContext<PublicationContentContextValue | null>(null)
 
-export type EntityComponentProps = BlockContentProps &
-  ReturnType<typeof unpackHmId>
+export type EntityComponentProps = BlockContentProps & UnpackedHypermediaId
 
 export type InlineEmbedComponentProps = ReturnType<typeof unpackHmId>
 
@@ -240,22 +245,6 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
     : {}
 }
 
-function getParentElId(el: Node | null) {
-  if (!el) return null
-  // @ts-expect-error - this is a HTMLElement but TS says Node
-  if (el.id) return el.id
-  if (!el.parentElement) return null
-  return getParentElId(el.parentElement)
-}
-
-function getRangeOffset(el: Node | null) {
-  if (!el) return 0
-  // @ts-expect-error - this is a HTMLElement but TS says Node
-  if (el.dataset?.rangeOffset != null) return Number(el.dataset?.rangeOffset)
-  if (!el.parentElement) return 0
-  return getRangeOffset(el.parentElement)
-}
-
 export function PublicationContent({
   publication,
   maxBlockCount,
@@ -266,39 +255,7 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
-  const [state] = useRangeSelection()
-  const pubWrapper = useRef<HTMLDivElement>(null)
-  const bubble = useRef<HTMLDivElement>(null)
-  const [coords, setCoords] = useState({
-    top: 0,
-    left: 0,
-  })
-
-  useEffect(() => {
-    if (
-      pubWrapper.current &&
-      bubble.current &&
-      state.matches({active: 'selected'}) &&
-      state.context.selection
-    ) {
-      console.log(`=== SELECTION === ~ state.context.selection:`, state)
-
-      const wrapperRect = pubWrapper.current.getBoundingClientRect()
-      const bubbleRect = bubble.current.getBoundingClientRect()
-
-      const range = state.context.selection.getRangeAt(0)
-      const rect = range.getBoundingClientRect()
-
-      setCoords({
-        top: rect.top - wrapperRect.top - (bubbleRect.height + 8),
-
-        left:
-          rect.left + rect.width / 2 - wrapperRect.left - bubbleRect.width / 2,
-      })
-    } else {
-      setCoords({top: -9999, left: -9999})
-    }
-  }, [pubWrapper.current, state])
+  const {wrapper, bubble, coords, state} = useRangeSelection()
 
   const {layoutUnit, onCopyBlock, onBlockComment} =
     usePublicationContentContext()
@@ -315,7 +272,7 @@ export function PublicationContent({
     : displayableBlocks
   return (
     <YStack
-      ref={pubWrapper}
+      ref={wrapper}
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
       marginVertical={marginVertical}
@@ -335,7 +292,14 @@ export function PublicationContent({
               icon={Link}
               onPress={() => {
                 onCopyBlock(
-                  `${state.context.blockId}[${state.context.rangeStart}:${state.context.rangeEnd}]`,
+                  state.context.blockId,
+                  typeof state.context.rangeStart == 'number' &&
+                    typeof state.context.rangeEnd == 'number'
+                    ? {
+                        start: state.context.rangeStart,
+                        end: state.context.rangeEnd,
+                      }
+                    : undefined,
                 )
               }}
             />
@@ -482,6 +446,7 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
+
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -556,12 +521,13 @@ export function BlockNodeContent({
         />
         {!props.embedDepth && !renderOnly ? (
           <XStack
-            position="absolute"
-            top={layoutUnit / 4}
-            right={layoutUnit / 4}
+            // position="absolute"
+            // top={layoutUnit / 4}
+            // right={layoutUnit / 4}
             backgroundColor={hover ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
+            gap="$2"
             $gtMd={
               {
                 // disabled because it intersects with the sidebar at narrow screen widths:
@@ -575,6 +541,32 @@ export function BlockNodeContent({
               props.embedDepth ? undefined : hoverProps.onHoverOut()
             }
           >
+            {citations?.length ? (
+              <Tooltip
+                content={`See ${citations.length} ${pluralS(
+                  citations.length,
+                  'document',
+                )} referencing this`}
+                delay={800}
+              >
+                <Button
+                  size="$2"
+                  chromeless
+                  opacity={hover ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  theme="blue"
+                  onPress={() => onCitationClick?.()}
+                >
+                  <XStack gap="$2" ai="center">
+                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
+                    <SizableText color="$blue11" size="$2">
+                      {String(citations.length)}
+                    </SizableText>
+                  </XStack>
+                </Button>
+              </Tooltip>
+            ) : null}
             {onCopyBlock ? (
               <Tooltip content="Copy block reference" delay={800}>
                 <Button
@@ -632,32 +624,6 @@ export function BlockNodeContent({
                     }
                   }}
                 />
-              </Tooltip>
-            ) : null}
-            {citations?.length ? (
-              <Tooltip
-                content={`See ${citations.length} ${pluralS(
-                  citations.length,
-                  'document',
-                )} referencing this`}
-                delay={800}
-              >
-                <Button
-                  size="$2"
-                  chromeless
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  theme="blue"
-                  onPress={() => onCitationClick?.()}
-                >
-                  <XStack gap="$2" ai="center">
-                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
-                    <SizableText color="$blue11" size="$2">
-                      {String(citations.length)}
-                    </SizableText>
-                  </XStack>
-                </Button>
               </Tooltip>
             ) : null}
           </XStack>
@@ -1047,7 +1013,7 @@ function getInlineContentOffset(inline: HMInlineContent): number {
   if (inline.type === 'link') {
     return inline.content.map(getInlineContentOffset).reduce((a, b) => a + b, 0)
   }
-  return inline.text.length
+  return inline.text?.length || 0
 }
 
 function InlineContentView({
@@ -1378,11 +1344,19 @@ export function ContentEmbed({
         ? [selectedBlock]
         : null
       : pub?.document?.children
+
     return {
       ...pub,
       data: {
         publication: pub,
         embedBlocks,
+        blockRange:
+          props.blockRange && selectedBlock
+            ? selectedBlock.block?.text.slice(
+                props.blockRange.start,
+                props.blockRange.end,
+              )
+            : null,
       },
     }
   }, [props.blockRef, pub])
@@ -1390,6 +1364,8 @@ export function ContentEmbed({
   let content = <BlockContentUnknown {...props} />
   if (isLoading) {
     content = <Spinner />
+  } else if (embedData.data.blockRange) {
+    content = <SizableText>{embedData.data.blockRange}</SizableText>
   } else if (embedData.data.embedBlocks) {
     content = (
       <>
@@ -1819,12 +1795,16 @@ function getSourceType(name?: string) {
 
 export function useBlockCitations(blockId?: string) {
   const context = usePublicationContentContext()
+
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
-    return context.citations.filter((link) => {
-      return link.target?.blockId == blockId
+    return context.citations.filter((c) => {
+      console.log(`== ~ returncontext.citations.filter ~ c:`, blockId, c)
+      return c.sourceContext == blockId
     })
   }, [blockId, context.citations])
+
+  console.log(`== ~ citations ~ citations:`, citations)
 
   return {
     citations,

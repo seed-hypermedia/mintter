@@ -7,6 +7,8 @@ import {
   useNavigationState,
 } from '@mintter/app/utils/navigation'
 import {
+  BlockRange,
+  ExpandedBlockRange,
   GroupVariant,
   createPublicWebHmUrl,
   hmId,
@@ -278,7 +280,10 @@ export function GroupOptionsButton() {
 export function useFullReferenceUrl(route: NavRoute): {
   label: string
   url: string
-  onCopy: (blockId?: string | undefined) => void
+  onCopy: (
+    blockId?: string | undefined,
+    blockRange?: BlockRange | ExpandedBlockRange,
+  ) => void
   content: ReactNode
 } | null {
   const pubRoute = route.key === 'publication' ? route : null

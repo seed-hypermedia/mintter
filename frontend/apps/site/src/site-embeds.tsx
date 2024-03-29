@@ -2,11 +2,13 @@ import {
   BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
+  BlockRange,
   ContentEmbed,
   EmbedContentAccount,
   EmbedContentGroup,
   EntityComponentProps,
   ErrorBlock,
+  ExpandedBlockRange,
   InlineEmbedComponentProps,
   PublicationCardView,
   PublicationContentProvider,
@@ -83,12 +85,16 @@ export function SitePublicationContentProvider({
         aElement.setAttribute('target', '_blank')
         aElement.click()
       }}
-      onCopyBlock={(blockId: string) => {
+      onCopyBlock={(
+        blockId: string,
+        blockRange: BlockRange | ExpandedBlockRange | undefined,
+      ) => {
         if (unpackedId) {
           copyUrlToClipboardWithFeedback(
             createPublicWebHmUrl('d', unpackedId.eid, {
               version: unpackedId.version,
               blockRef: blockId,
+              blockRange,
               hostname: window.location.origin,
             }),
             'Block',
