@@ -284,7 +284,7 @@ export default function PublicationPage() {
                       return replace({...route, accessory: null})
                     replace({...route, accessory: {key: 'citations'}})
                   }}
-                  onBlockComment={(blockId) => {
+                  onBlockComment={(blockId, blockRange) => {
                     replace({...route, accessory: {key: 'comments'}})
                     const version = publication.data?.publication?.version
                     if (!id) throw new Error('invalid doc id')
@@ -297,6 +297,7 @@ export default function PublicationPage() {
                       createHmId('d', id.eid, {
                         version,
                         blockRef: blockId,
+                        blockRange,
                       }),
                     )
                   }}

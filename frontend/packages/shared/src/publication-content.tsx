@@ -108,7 +108,9 @@ export type PublicationContentContextValue = {
     | null
     | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   onReplyBlock?: null | ((blockId: string) => void)
-  onBlockComment?: null | ((blockId: string) => void)
+  onBlockComment?:
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -255,7 +257,7 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
-  const {wrapper, bubble, coords, state} = useRangeSelection()
+  const {wrapper, bubble, coords, state, send} = useRangeSelection()
 
   const {layoutUnit, onCopyBlock, onBlockComment} =
     usePublicationContentContext()
@@ -310,9 +312,16 @@ export function PublicationContent({
             size="$2"
             icon={Comment}
             onPress={() => {
-              console.log('=== CREATE COMMENT FOR')
+              send({type: 'CREATE_COMMENT'})
               onBlockComment(
-                `${state.context.blockId}[${state.context.rangeStart}:${state.context.rangeEnd}]`,
+                state.context.blockId,
+                typeof state.context.rangeStart == 'number' &&
+                  typeof state.context.rangeEnd == 'number'
+                  ? {
+                      start: state.context.rangeStart,
+                      end: state.context.rangeEnd,
+                    }
+                  : undefined,
               )
             }}
           >

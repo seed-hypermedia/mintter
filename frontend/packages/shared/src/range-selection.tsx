@@ -146,7 +146,10 @@ const machine = setup({
         }
       }
     }),
-    clearContext: assign(() => defaultContext),
+    clearContext: assign(() => {
+      document.getSelection()?.empty()
+      return defaultContext
+    }),
   },
   // schemas: {
   //   events: {
@@ -214,7 +217,9 @@ const machine = setup({
               action: ['clearContext'],
             },
             CREATE_COMMENT: {
-              target: 'commenting',
+              // target: 'commenting',
+              target: '#Range Selection.idle',
+              actions: ['clearContext'],
             },
           },
         },
