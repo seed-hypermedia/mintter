@@ -57,10 +57,23 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
   /**
    * Optional. If we want events only from specific resource IDs
    *
-   *
    * @generated from field: repeated string filter_resource = 6;
    */
   filterResource: string[] = [];
+
+  /**
+   * Optional. If we want to include link events. These blobs (usually documents
+   * or comments), link (mention) to another resource (currently only account
+   * mentions supported). We can add these blobs to the feed result by providing a 
+   * list of resources iris we want links to aggregated as a logical OR. 
+   * These link events are also treated as ogical OR when grouped with other filters. 
+   * Unlike filters (users, event_types) that are grouped under a logic AND. 
+   * filter_users(u1 OR u2 ...) AND filter_event_type(et1 OR et2 ...) OR 
+   * add_linked_resource(lr1 OR lr2 ...)
+   *
+   * @generated from field: repeated string add_linked_resource = 7;
+   */
+  addLinkedResource: string[] = [];
 
   constructor(data?: PartialMessage<ListEventsRequest>) {
     super();
@@ -76,6 +89,7 @@ export class ListEventsRequest extends Message<ListEventsRequest> {
     { no: 4, name: "filter_users", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 5, name: "filter_event_type", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 6, name: "filter_resource", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "add_linked_resource", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListEventsRequest {
