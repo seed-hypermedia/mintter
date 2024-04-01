@@ -1362,7 +1362,7 @@ export function ContentEmbed({
         embedBlocks,
         blockRange:
           props.blockRange && 'start' in props.blockRange && selectedBlock
-            ? selectedBlock.block?.text.slice(
+            ? selectedBlock.block?.text?.slice(
                 props.blockRange.start,
                 props.blockRange.end,
               )
