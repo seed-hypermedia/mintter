@@ -62,7 +62,9 @@ export const BlockManipulationExtension = Extension.create({
               (node.type.name === 'image' &&
                 // @ts-ignore
                 event.target?.nodeName === 'IMG') ||
-              ['file', 'embed', 'video'].includes(node.type.name)
+              ['file', 'embed', 'video', 'web-embed', 'equation'].includes(
+                node.type.name,
+              )
             ) {
               let tr = view.state.tr
               const selection = NodeSelection.create(view.state.doc, nodePos)
@@ -111,9 +113,14 @@ export const BlockManipulationExtension = Extension.create({
                   }
                   if ($nextPos && nextNode) {
                     if (
-                      ['file', 'embed', 'image', 'video'].includes(
-                        nextNode.type.name,
-                      )
+                      [
+                        'file',
+                        'embed',
+                        'image',
+                        'video',
+                        'web-embed',
+                        'equation',
+                      ].includes(nextNode.type.name)
                     ) {
                       return false
                     }
@@ -142,6 +149,7 @@ export const BlockManipulationExtension = Extension.create({
                 }
               }
             } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+              console.log('here')
               const prevBlockInfo = findPreviousBlock(
                 view,
                 state.selection.from,
@@ -157,17 +165,27 @@ export const BlockManipulationExtension = Extension.create({
                   )!
                   if (
                     state.selection.$anchor.parentOffset !== 0 &&
-                    !['image', 'file', 'embed', 'video'].includes(
-                      blockInfo.contentType.name,
-                    )
+                    ![
+                      'image',
+                      'file',
+                      'embed',
+                      'video',
+                      'web-embed',
+                      'equation',
+                    ].includes(blockInfo.contentType.name)
                   ) {
                     return false
                   }
                 }
                 if (
-                  ['image', 'file', 'embed', 'video'].includes(
-                    prevNode.type.name,
-                  )
+                  [
+                    'image',
+                    'file',
+                    'embed',
+                    'video',
+                    'web-embed',
+                    'equation',
+                  ].includes(prevNode.type.name)
                 ) {
                   const selection = NodeSelection.create(state.doc, prevNodePos)
                   view.dispatch(state.tr.setSelection(selection))
@@ -192,17 +210,27 @@ export const BlockManipulationExtension = Extension.create({
                   if (
                     state.selection.$anchor.pos + 1 !==
                       blockInfo.startPos + blockInfo.contentNode.nodeSize &&
-                    !['image', 'file', 'embed', 'video'].includes(
-                      blockInfo.contentType.name,
-                    )
+                    ![
+                      'image',
+                      'file',
+                      'embed',
+                      'video',
+                      'web-embed',
+                      'equation',
+                    ].includes(blockInfo.contentType.name)
                   ) {
                     return false
                   }
                 }
                 if (
-                  ['image', 'file', 'embed', 'video'].includes(
-                    nextNode.type.name,
-                  )
+                  [
+                    'image',
+                    'file',
+                    'embed',
+                    'video',
+                    'web-embed',
+                    'equation',
+                  ].includes(nextNode.type.name)
                 ) {
                   const selection = NodeSelection.create(state.doc, nextNodePos)
                   view.dispatch(state.tr.setSelection(selection))

@@ -134,14 +134,14 @@ export const slashMenuItems = [
     },
   },
   {
-    name: 'Math',
+    name: 'Equation',
     aliases: ['math', 'mathematics', 'equation'],
     group: 'Media blocks',
     icon: <RiFunctions size={18} />,
-    hint: 'Insert a Math Block',
+    hint: 'Insert an Equation Block',
     execute: (editor) => {
       insertOrUpdateBlock(editor, {
-        type: 'math',
+        type: 'equation',
       } as PartialBlock<HMBlockSchema>)
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())

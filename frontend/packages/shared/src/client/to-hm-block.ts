@@ -2,10 +2,10 @@ import {
   HMBlock,
   HMBlockChildrenType,
   HMBlockCodeBlock,
+  HMBlockEquation,
   HMBlockFile,
   HMBlockHeading,
   HMBlockImage,
-  HMBlockMath,
   HMBlockNostr,
   HMBlockParagraph,
   HMBlockVideo,
@@ -260,18 +260,18 @@ export function toHMBlockHeading(
   return res
 }
 
-export function toHMBlockMath(
+export function toHMBlockEquation(
   serverBlock: BlockNode,
   opts?: ServerToEditorRecursiveOpts,
-): HMBlockMath {
+): HMBlockEquation {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
   let childrenType = extractChildrenType(block.attributes.childrenType)
 
-  let res: HMBlockMath = {
-    type: 'math',
+  let res: HMBlockEquation = {
+    type: 'equation',
     id: block.id,
     content: toHMInlineContent(block),
     children: toHMBlock(children, {
@@ -420,8 +420,8 @@ export function toHMBlock(
       res = toHMBlockHeading(serverBlock, childRecursiveOpts)
     }
 
-    if (serverBlock.block?.type === 'math') {
-      res = toHMBlockMath(serverBlock, childRecursiveOpts)
+    if (serverBlock.block?.type === 'equation') {
+      res = toHMBlockEquation(serverBlock, childRecursiveOpts)
     }
     // if (opts?.childrenType === 'numbers') {
     //   return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
