@@ -1,5 +1,5 @@
 import {useOpenUrl} from '@mintter/app/open-url'
-import {TwitterXIcon, YStack, useTheme} from '@mintter/ui'
+import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@mintter/ui'
 import {
   QuotedTweet,
   TweetBody,
@@ -7,8 +7,6 @@ import {
   TweetInReplyTo,
   TweetInfo,
   TweetMedia,
-  TweetNotFound,
-  TweetSkeleton,
   enrichTweet,
   useTweet,
 } from 'react-tweet'
@@ -98,36 +96,6 @@ const Render = (
   )
 }
 
-// const TweetEmbed = ({id, apiUrl, components, onError}: TweetProps) => {
-//   const {data, error, isLoading} = useTweet(id, apiUrl)
-
-//   if (isLoading)
-//     return (
-//       <YStack padding="$2" width={'100%'} height={'100%'}>
-//         <Skeleton width={'100%'} height={'100%'} />
-//       </YStack>
-//     )
-//   if (error || !data) {
-//     const NotFound = components?.TweetNotFound || TweetNotFound
-//     return <NotFound error={onError ? onError(error) : error} />
-//   }
-
-//   const tweet = enrichTweet(data)
-
-//   return (
-//     <YStack>
-//       <TweetHeader tweet={tweet} components={components} />
-//       {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
-//       <TweetBody tweet={tweet} />
-//       {tweet.mediaDetails?.length ? (
-//         <TweetMedia tweet={tweet} components={components} />
-//       ) : null}
-//       {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
-//       <TweetInfo tweet={tweet} />
-//     </YStack>
-//   )
-// }
-
 const display = ({
   editor,
   block,
@@ -136,21 +104,28 @@ const display = ({
   assign,
 }: DisplayComponentProps) => {
   const urlArray = block.props.url.split('/')
-  const tweetId = urlArray[urlArray.length - 1].split('?')[0]
-  const {data, error, isLoading} = useTweet(tweetId)
+  const xPostId = urlArray[urlArray.length - 1].split('?')[0]
+  const {data, error, isLoading} = useTweet(xPostId)
   const openUrl = useOpenUrl()
-  if (isLoading)
-    return (
-      <YStack padding="$2" width={'100%'} height={'100%'}>
-        <TweetSkeleton />
-      </YStack>
-    )
-  if (error || !data) {
-    const NotFound = TweetNotFound
-    return <NotFound error={error} />
-  }
 
-  const tweet = enrichTweet(data)
+  let xPostContent
+
+  if (isLoading) xPostContent = <XPostSkeleton />
+  else if (error || !data) {
+    xPostContent = <XPostNotFound error={error} />
+  } else {
+    const xPost = enrichTweet(data)
+    xPostContent = (
+      <>
+        <TweetHeader tweet={xPost} />
+        {xPost.in_reply_to_status_id_str && <TweetInReplyTo tweet={xPost} />}
+        <TweetBody tweet={xPost} />
+        {xPost.mediaDetails?.length ? <TweetMedia tweet={xPost} /> : null}
+        {xPost.quoted_tweet && <QuotedTweet tweet={xPost.quoted_tweet} />}
+        <TweetInfo tweet={xPost} />
+      </>
+    )
+  }
 
   return (
     <MediaContainer
@@ -169,14 +144,9 @@ const display = ({
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
         fontWeight: '400',
       }}
-      className="tweet-container"
+      className="x-post-container"
     >
-      <TweetHeader tweet={tweet} />
-      {tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
-      <TweetBody tweet={tweet} />
-      {tweet.mediaDetails?.length ? <TweetMedia tweet={tweet} /> : null}
-      {tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
-      <TweetInfo tweet={tweet} />
+      {xPostContent}
     </MediaContainer>
   )
 }

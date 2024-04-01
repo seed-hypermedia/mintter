@@ -119,7 +119,7 @@ ol > [data-node-type='block-outer']::marker {
   margin-left: 0;
 }
 
-.tweet-container {
+.x-post-container {
   width: 100%;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
@@ -161,14 +161,14 @@ ol > [data-node-type='block-outer']::marker {
   );
 }
 
-:where(.tweet-container) * {
+:where(.x-post-container) * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-:is([data-theme='light'], .light) :where(.tweet-container),
-:where(.tweet-container) {
+:is([data-theme='light'], .light) :where(.x-post-container),
+:where(.x-post-container) {
   --tweet-skeleton-gradient: linear-gradient(
     270deg,
     #fafafa,
@@ -197,7 +197,7 @@ ol > [data-node-type='block-outer']::marker {
   --tweet-verified-blue-color: var(--tweet-color-blue-primary);
 }
 
-:is([data-theme='dark'], .dark) :where(.tweet-container) {
+:is([data-theme='dark'], .dark) :where(.x-post-container) {
   --tweet-skeleton-gradient: linear-gradient(
     270deg,
     #15202b,
@@ -227,7 +227,7 @@ ol > [data-node-type='block-outer']::marker {
 }
 
 @media (prefers-color-scheme: dark) {
-  :where(.tweet-container) {
+  :where(.x-post-container) {
     --tweet-skeleton-gradient: linear-gradient(
       270deg,
       #15202b,
@@ -392,11 +392,11 @@ ol > [data-node-type='block-outer']::marker {
   color: var(--background);
 }
 
-.tweet-container:hover {
+.x-post-container:hover {
   background-color: var(--backgroundHover);
 }
 
-.tweet-container.article {
+.x-post-container.article {
   position: relative;
   box-sizing: inherit;
   padding: 0.75rem 1rem;
