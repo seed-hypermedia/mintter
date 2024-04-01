@@ -127,6 +127,23 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		}
 		filtersStr += ") AND "
 	}
+	var linksStr string
+	if len(req.AddLinkedResource) > 0 {
+		if len(req.FilterResource) > 0 || len(req.FilterEventType) > 0 {
+			linksStr += " OR "
+		}
+		linksStr += "(" + storage.StructuralBlobsID.String() + " in ('Change', 'Comment') AND " + storage.ResourcesIRI.String() + " IN ("
+		for i, resource := range req.AddLinkedResource {
+			if !resourcePattern.MatchString(resource) {
+				return nil, fmt.Errorf("Invalid link resource format [%s]", resource)
+			}
+			if i > 0 {
+				linksStr += ", "
+			}
+			linksStr += "'" + resource + "'"
+		}
+		linksStr += ")) AND "
+	}
 	var (
 		selectStr    = "SELECT " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
 		tableStr     = "FROM " + storage.T_StructuralBlobs
@@ -143,8 +160,8 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		%s
 		%s
 		%s
-		WHERE %s %s;
-	`, selectStr, tableStr, joinIDStr, joinpkStr, leftjoinStr, trustedStr, filtersStr, pageTokenStr)
+		WHERE %s %s %s;
+	`, selectStr, tableStr, joinIDStr, joinpkStr, leftjoinStr, trustedStr, filtersStr, linksStr, pageTokenStr)
 	var lastBlobID int64
 	err = sqlitex.Exec(conn, dqb.Str(getEventsStr)(), func(stmt *sqlite.Stmt) error {
 		lastBlobID = stmt.ColumnInt64(0)
