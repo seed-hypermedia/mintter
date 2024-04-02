@@ -293,6 +293,10 @@ export type ColorAnnotation = BaseAnnotation & {
   }
 }
 
+export type RangeAnnotation = BaseAnnotation & {
+  type: 'range'
+}
+
 export type TextAnnotation =
   | LinkAnnotation
   | StrongAnnotation
@@ -302,6 +306,7 @@ export type TextAnnotation =
   | StrikeAnnotation
   | ColorAnnotation
   | InlineEmbedAnnotation
+  | RangeAnnotation
 
 export type HMCommentDraft = {
   blocks: HMBlockNode[]

@@ -8,7 +8,7 @@
 }
 
 .block-paragraph .content-inline.is-comment,
-.block-paragraph .content-inline.is-comment * {
+.block-paragraph .content-inline.is-comment *:not(code) {
   font-family:
     'Inter',
     'SF Pro Display',
