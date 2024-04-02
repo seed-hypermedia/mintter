@@ -263,6 +263,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const variants = parseVariantsQuery(parsed.query.get('b'))
     if (!type) return null
     const qid = createHmId(type, eid)
+    // TODO: call `parseFragment` here instead of this two helpers
     const blockRef = extractBlockRefOfUrl(hypermediaId)
     const blockRange = extractBlockRangeOfUrl(hypermediaId)
     return {
