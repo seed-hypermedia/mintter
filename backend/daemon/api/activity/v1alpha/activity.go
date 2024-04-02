@@ -146,13 +146,14 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		linksStr += "))) AND "
 	}
 	var (
-		selectStr            = "SELECT " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
+		selectStr            = "SELECT distinct " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
 		tableStr             = "FROM " + storage.T_StructuralBlobs
 		joinIDStr            = "JOIN " + storage.Blobs.String() + " ON " + storage.BlobsID.String() + "=" + storage.StructuralBlobsID.String()
 		joinpkStr            = "JOIN " + storage.PublicKeys.String() + " ON " + storage.StructuralBlobsAuthor.String() + "=" + storage.PublicKeysID.String()
+		joinLinksStr         = "JOIN " + storage.ResourceLinks.String() + " ON " + storage.StructuralBlobsID.String() + "=" + storage.ResourceLinksSource.String()
 		leftjoinResourcesStr = "LEFT JOIN " + storage.Resources.String() + " ON " + storage.StructuralBlobsResource.String() + "=" + storage.ResourcesID.String()
-		leftjoinLinksStr     = "LEFT JOIN " + storage.ResourceLinks.String() + " ON " + storage.StructuralBlobsID.String() + "=" + storage.ResourceLinksSource.String()
-		pageTokenStr         = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) ORDER BY " + storage.BlobsID.String() + " desc limit :page_size"
+
+		pageTokenStr = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) ORDER BY " + storage.BlobsID.String() + " desc limit :page_size"
 	)
 
 	var getEventsStr = fmt.Sprintf(`
@@ -164,7 +165,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		%s
 		%s
 		WHERE %s %s %s;
-	`, selectStr, tableStr, joinIDStr, joinpkStr, leftjoinResourcesStr, leftjoinLinksStr, trustedStr, filtersStr, linksStr, pageTokenStr)
+	`, selectStr, tableStr, joinIDStr, joinpkStr, joinLinksStr, leftjoinResourcesStr, trustedStr, filtersStr, linksStr, pageTokenStr)
 	var lastBlobID int64
 	err = sqlitex.Exec(conn, dqb.Str(getEventsStr)(), func(stmt *sqlite.Stmt) error {
 		lastBlobID = stmt.ColumnInt64(0)
