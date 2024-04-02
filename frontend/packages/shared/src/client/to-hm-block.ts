@@ -67,26 +67,26 @@ function annotationStyle(a: Annotation): HMStyles {
 }
 
 export function toHMInlineContent(block: Block): Array<HMInlineContent> {
-  const linkAndEmbedAnnotations = block.annotations?.filter(
-    (a) => a.type == 'link' || a.type == 'inline-embed',
+  const linkEmbedAndRangeAnnotations = block.annotations?.filter(
+    (a) => a.type == 'link' || a.type == 'inline-embed' || a.type == 'range',
   )
-
-  if (!linkAndEmbedAnnotations?.length) {
+  if (!linkEmbedAndRangeAnnotations?.length) {
     return partialBlockToStyledText(block)
   }
 
   // link annotations
+  // link, embed, and range annotations
   if (
-    linkAndEmbedAnnotations.find((a) => {
+    linkEmbedAndRangeAnnotations.find((a) => {
       if (a.starts.length !== 1) return true
       if (a.ends.length !== 1) return true
     })
   ) {
     throw new Error(
-      'Invalid link annotations in this block. only one range per annotation',
+      'Invalid link, embed, or range annotations in this block. Only one range per annotation is allowed',
     )
   }
-  const sortedLinkAndEmbedAnnotations = linkAndEmbedAnnotations.sort(
+  const sortedAnnotations = linkEmbedAndRangeAnnotations.sort(
     (a, b) => a.starts[0] - b.starts[0],
   )
 
@@ -103,32 +103,32 @@ export function toHMInlineContent(block: Block): Array<HMInlineContent> {
     })
   }
 
-  let linkStart = sortedLinkAndEmbedAnnotations[0].starts[0]
+  let annotationStart = sortedAnnotations[0].starts[0]
   const inlines: Array<HMInlineContent> = []
-  inlines.push(...getSlicedContent(0, linkStart))
+  inlines.push(...getSlicedContent(0, annotationStart))
 
-  sortedLinkAndEmbedAnnotations.forEach((a, aIndex) => {
+  sortedAnnotations.forEach((a, aIndex) => {
     const length = a.ends[0] - a.starts[0]
-    const linkEnd = linkStart + length
+    const annotationEnd = annotationStart + length
 
-    if (a.type == 'link') {
+    if (a.type == 'link' || a.type == 'range') {
       inlines.push({
         type: a.type,
         href: a.ref,
-        content: getSlicedContent(linkStart, linkEnd),
+        content: getSlicedContent(annotationStart, annotationEnd),
       } as HMInlineContentLink)
-    } else {
+    } else if (a.type == 'inline-embed') {
       inlines.push({
         type: a.type,
         ref: a.ref,
       } as HMInlineContentEmbed)
     }
 
-    const nonLinkContentEnd =
-      sortedLinkAndEmbedAnnotations[aIndex + 1]?.starts[0] || block.text.length
-    inlines.push(...getSlicedContent(linkEnd, nonLinkContentEnd))
+    const nonAnnotationContentEnd =
+      sortedAnnotations[aIndex + 1]?.starts[0] || block.text.length
+    inlines.push(...getSlicedContent(annotationEnd, nonAnnotationContentEnd))
 
-    linkStart = nonLinkContentEnd
+    annotationStart = nonAnnotationContentEnd
   })
   return inlines
 }

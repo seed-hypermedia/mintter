@@ -1031,12 +1031,14 @@ function InlineContentView({
   linkType = null,
   fontSize,
   rangeOffset,
+  isRange = false,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
   linkType?: LinkType
   fontSize?: number
   rangeOffset?: number
+  isRange?: boolean
 }) {
   const {onLinkClick, textUnit, entityComponents} =
     usePublicationContentContext()
@@ -1046,6 +1048,7 @@ function InlineContentView({
   let contentOffset = rangeOffset || 0
 
   const fSize = fontSize || textUnit
+  const rangeColor = '$yellow6'
   return (
     <Text
       fontSize={fSize}
@@ -1125,7 +1128,7 @@ function InlineContentView({
           if (content.styles.code) {
             children = (
               <Text
-                backgroundColor="$color4"
+                backgroundColor={isRange ? rangeColor : '$color4'}
                 fontFamily="$mono"
                 tag="code"
                 borderRadius="$2"
@@ -1203,6 +1206,20 @@ function InlineContentView({
         if (content.type == 'inline-embed') {
           const unpackedRef = unpackHmId(content.ref)
           return <InlineEmbed key={content.ref} {...unpackedRef} />
+        }
+
+        if (content.type == 'range') {
+          return (
+            <Text backgroundColor={rangeColor}>
+              <InlineContentView
+                isRange
+                fontSize={fSize}
+                lineHeight={fSize * 1.5}
+                inline={content.content}
+                rangeOffset={inlineContentOffset}
+              />
+            </Text>
+          )
         }
         return null
       })}
@@ -1343,15 +1360,33 @@ export function ContentEmbed({
   renderOpenButton: () => React.ReactNode
   EmbedWrapper: React.ComponentType<React.PropsWithChildren<{hmRef: string}>>
 }) {
-  const {textUnit} = usePublicationContentContext()
   const embedData = useMemo(() => {
     const selectedBlock =
       props.blockRef && pub?.document?.children
         ? getBlockNodeById(pub?.document.children, props.blockRef)
         : null
+    const currentAnnotations = selectedBlock?.block?.annotations || []
     const embedBlocks = props.blockRef
       ? selectedBlock
-        ? [selectedBlock]
+        ? [
+            {
+              ...selectedBlock,
+              block: {
+                ...selectedBlock.block,
+                annotations:
+                  props.blockRange && 'start' in props.blockRange
+                    ? [
+                        ...currentAnnotations,
+                        {
+                          type: 'range',
+                          starts: [props.blockRange.start],
+                          ends: [props.blockRange.end],
+                        },
+                      ]
+                    : currentAnnotations,
+              },
+            },
+          ]
         : null
       : pub?.document?.children
 
@@ -1362,10 +1397,11 @@ export function ContentEmbed({
         embedBlocks,
         blockRange:
           props.blockRange && 'start' in props.blockRange && selectedBlock
-            ? selectedBlock.block?.text?.slice(
-                props.blockRange.start,
-                props.blockRange.end,
-              )
+            ? {
+                blockId: props.blockRef,
+                start: props.blockRange.start,
+                end: props.blockRange.end,
+              }
             : null,
       },
     }
@@ -1374,17 +1410,19 @@ export function ContentEmbed({
   let content = <BlockContentUnknown {...props} />
   if (isLoading) {
     content = <Spinner />
-  } else if (embedData.data.blockRange) {
-    content = (
-      <SizableText
-        {...inlineContentSize(textUnit * 0.8)}
-        fontFamily="$editorBody"
-        fontStyle="italic"
-      >
-        {embedData.data.blockRange}
-      </SizableText>
-    )
-  } else if (embedData.data.embedBlocks) {
+  }
+  //  else if (embedData.data.blockRange) {
+  //   content = (
+  //     <SizableText
+  //       {...inlineContentSize(textUnit * 0.8)}
+  //       fontFamily="$editorBody"
+  //       fontStyle="italic"
+  //     >
+  //       {embedData.data.blockRange}
+  //     </SizableText>
+  //   )
+  // }
+  else if (embedData.data.embedBlocks) {
     content = (
       <>
         {!props.blockRef && pub?.document?.title ? (
@@ -1822,8 +1860,6 @@ export function useBlockCitations(blockId?: string) {
       return c.sourceContext == blockId
     })
   }, [blockId, context.citations])
-
-  console.log(`== ~ citations ~ citations:`, citations)
 
   return {
     citations,
