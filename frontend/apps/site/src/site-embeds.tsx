@@ -123,6 +123,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
           backgroundColor: '$color5',
         }}
         margin={0}
+        mb="$2"
         marginHorizontal={(-1 * layoutUnit) / 2}
         width={`calc(100% + ${layoutUnit})`}
         padding={layoutUnit / 2}

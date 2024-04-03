@@ -141,6 +141,7 @@ export const MediaContainer = ({
     <YStack
       gap="$2"
       group="item"
+      maxWidth="100%"
       width={width}
       alignSelf="center"
       onPress={

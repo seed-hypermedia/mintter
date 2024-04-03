@@ -90,6 +90,7 @@ function EmbedWrapper({
             : '$color5',
       }}
       margin={0}
+      mb="$2"
       marginHorizontal={(-1 * layoutUnit) / 2}
       padding={layoutUnit / 2}
       overflow="hidden"

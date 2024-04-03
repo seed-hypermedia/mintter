@@ -275,8 +275,8 @@ export function PublicationContent({
   return (
     <YStack
       ref={wrapper}
-      paddingHorizontal={layoutUnit / 2}
-      $gtMd={{paddingHorizontal: layoutUnit}}
+      paddingHorizontal={layoutUnit / 3}
+      $gtMd={{paddingHorizontal: layoutUnit / 2}}
       marginVertical={marginVertical}
       {...props}
     >
@@ -530,19 +530,9 @@ export function BlockNodeContent({
         />
         {!props.embedDepth && !renderOnly ? (
           <XStack
-            // position="absolute"
-            // top={layoutUnit / 4}
-            // right={layoutUnit / 4}
-            backgroundColor={hover ? '$background' : 'transparent'}
+            pl="$2"
             borderRadius={layoutUnit / 4}
-            // flexDirection="row-reverse"
             gap="$2"
-            $gtMd={
-              {
-                // disabled because it intersects with the sidebar at narrow screen widths:
-                // right: isEmbed ? layoutUnit * -1.5 : layoutUnit * -1.5,
-              }
-            }
             onHoverIn={() =>
               props.embedDepth ? undefined : hoverProps.onHoverIn()
             }
@@ -791,15 +781,15 @@ export function PublicationHeading({
 
   return (
     <YStack
-      paddingHorizontal={layoutUnit / 2}
-      $gtMd={{paddingHorizontal: layoutUnit}}
+      paddingHorizontal={layoutUnit / 3}
+      $gtMd={{paddingHorizontal: layoutUnit / 2}}
       group="header"
     >
       <YStack
         padding={layoutUnit / 3}
-        marginBottom={layoutUnit}
+        // marginBottom={layoutUnit}
         paddingBottom={layoutUnit / 2}
-        {...headingMarginStyles}
+        // {...headingMarginStyles}
       >
         <XStack>
           <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
@@ -1577,7 +1567,7 @@ export function BlockContentFile({block, ...props}: BlockContentProps) {
       borderRadius={layoutUnit / 4}
       padding={layoutUnit / 2}
       overflow="hidden"
-      width="100%"
+      f={1}
       className="block-content block-file"
       hoverStyle={{
         backgroundColor: '$backgroundHover',

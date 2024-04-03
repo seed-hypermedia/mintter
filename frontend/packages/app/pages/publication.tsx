@@ -18,7 +18,6 @@ import {
   BlockQuote,
   Button,
   ButtonText,
-  Separator,
   SizableText,
   Text,
   XStack,
@@ -47,127 +46,6 @@ import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {getAccountName} from './account-page'
 import {AppPublicationContentProvider} from './publication-content-provider'
-
-function PublicationPageMeta({publication}: {publication: Publication}) {
-  const editors = useAccounts(publication.document?.editors || [])
-  const navigate = useNavigate()
-  const docGroups = useCurrentDocumentGroups(publication.document?.id)
-  const allSelectedGroups = docGroups.data?.filter((groupItem) => {
-    const groupItemId = unpackDocId(groupItem.rawUrl)
-    return !!groupItemId?.version && groupItemId.version === publication.version
-  })
-  const selectedGroups = allSelectedGroups?.filter(
-    (item, index) =>
-      index ===
-      allSelectedGroups.findIndex(
-        (findItem) => findItem.groupId === item.groupId,
-      ),
-  )
-  return (
-    <YStack
-      ai="flex-start"
-      paddingHorizontal="$3"
-      borderBottomColor="$color6"
-      borderBottomWidth={1}
-      paddingBottom="$4"
-      userSelect="none"
-    >
-      <XStack separator={<Separator vertical />} flexWrap="wrap">
-        <XStack marginHorizontal="$4" gap="$2" ai="center" paddingVertical="$2">
-          <XStack ai="center" marginLeft={8}>
-            {editors
-              .map((editor) => editor.data)
-              .filter(Boolean)
-              .map(
-                (editorAccount, idx) =>
-                  editorAccount?.id && (
-                    <XStack
-                      zIndex={idx + 1}
-                      key={editorAccount?.id}
-                      borderColor="$background"
-                      backgroundColor="$background"
-                      borderWidth={2}
-                      borderRadius={100}
-                      marginLeft={-8}
-                    >
-                      <BaseAccountLinkAvatar
-                        account={editorAccount}
-                        accountId={editorAccount?.id}
-                      />
-                    </XStack>
-                  ),
-              )}
-          </XStack>
-          <SizableText flexWrap="wrap">
-            {editors
-              .map((editor) => editor.data)
-              .filter(Boolean)
-              .map((account, index) => [
-                account ? (
-                  <ButtonText
-                    key={account.id}
-                    fontWeight={'bold'}
-                    onPress={() => {
-                      navigate({key: 'account', accountId: account.id})
-                    }}
-                    hoverStyle={{
-                      textDecorationLine: 'underline',
-                    }}
-                  >
-                    {getAccountName(account.profile)}
-                  </ButtonText>
-                ) : null,
-                index !== editors.length - 1 ? (
-                  index === editors.length - 2 ? (
-                    <Text fontWeight={'bold'}>{' & '}</Text>
-                  ) : (
-                    <Text fontWeight={'bold'}>{', '}</Text>
-                  )
-                ) : null,
-              ])
-              .filter(Boolean)}
-          </SizableText>
-        </XStack>
-        <XStack ai="center">
-          <Text marginHorizontal="$4" color="$color10">
-            {formattedDateMedium(publication.document?.publishTime)}
-          </Text>
-        </XStack>
-        {selectedGroups?.length ? (
-          <XStack gap="$2" marginHorizontal="$4" ai="center" flexWrap="wrap">
-            {selectedGroups.map((selectedGroup) => (
-              <PublicationGroup
-                key={selectedGroup.groupId}
-                groupId={selectedGroup.groupId}
-              />
-            ))}
-          </XStack>
-        ) : null}
-      </XStack>
-    </YStack>
-  )
-}
-
-function PublicationGroup({groupId}: {groupId: string}) {
-  const group = useGroup(groupId)
-  const navigate = useNavigate()
-  if (!group.data?.title) return null
-  return (
-    <Button
-      chromeless
-      borderColor="$color8"
-      size="$2"
-      onPress={() => {
-        navigate({
-          key: 'group',
-          groupId,
-        })
-      }}
-    >
-      {group.data.title}
-    </Button>
-  )
-}
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -271,10 +149,9 @@ export default function PublicationPage() {
           <AccessoryLayout accessory={accessory}>
             <MainWrapper>
               <YStack
-                paddingBottom={'$7'}
+                paddingVertical="$7"
                 width="100%"
                 maxWidth="90ch"
-                // paddingHorizontal="10vw"
                 alignSelf="center"
               >
                 <AppPublicationContentProvider
@@ -430,5 +307,126 @@ function PublicationVersionsFooterButton({
         replace({...route, accessory: {key: 'versions'}})
       }}
     />
+  )
+}
+
+function PublicationPageMeta({publication}: {publication: Publication}) {
+  const editors = useAccounts(publication.document?.editors || [])
+  const navigate = useNavigate()
+  const docGroups = useCurrentDocumentGroups(publication.document?.id)
+  const allSelectedGroups = docGroups.data?.filter((groupItem) => {
+    const groupItemId = unpackDocId(groupItem.rawUrl)
+    return !!groupItemId?.version && groupItemId.version === publication.version
+  })
+  const selectedGroups = allSelectedGroups?.filter(
+    (item, index) =>
+      index ===
+      allSelectedGroups.findIndex(
+        (findItem) => findItem.groupId === item.groupId,
+      ),
+  )
+  return (
+    <YStack
+      ai="flex-start"
+      paddingHorizontal="$2"
+      borderBottomColor="$color6"
+      borderBottomWidth={1}
+      paddingBottom="$2"
+      userSelect="none"
+    >
+      <XStack flexWrap="wrap">
+        <XStack marginHorizontal="$4" gap="$2" ai="center" paddingVertical="$2">
+          <XStack ai="center">
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map(
+                (editorAccount, idx) =>
+                  editorAccount?.id && (
+                    <XStack
+                      zIndex={idx + 1}
+                      key={editorAccount?.id}
+                      borderColor="$background"
+                      backgroundColor="$background"
+                      borderWidth={2}
+                      borderRadius={100}
+                      marginLeft={-8}
+                    >
+                      <BaseAccountLinkAvatar
+                        account={editorAccount}
+                        accountId={editorAccount?.id}
+                      />
+                    </XStack>
+                  ),
+              )}
+          </XStack>
+          <SizableText flexWrap="wrap">
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map((account, index) => [
+                account ? (
+                  <ButtonText
+                    key={account.id}
+                    fontWeight={'bold'}
+                    onPress={() => {
+                      navigate({key: 'account', accountId: account.id})
+                    }}
+                    hoverStyle={{
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    {getAccountName(account.profile)}
+                  </ButtonText>
+                ) : null,
+                index !== editors.length - 1 ? (
+                  index === editors.length - 2 ? (
+                    <Text fontWeight={'bold'}>{' & '}</Text>
+                  ) : (
+                    <Text fontWeight={'bold'}>{', '}</Text>
+                  )
+                ) : null,
+              ])
+              .filter(Boolean)}
+          </SizableText>
+        </XStack>
+        <XStack ai="center">
+          <Text marginHorizontal="$4" color="$color10">
+            {formattedDateMedium(publication.document?.publishTime)}
+          </Text>
+        </XStack>
+        {selectedGroups?.length ? (
+          <XStack gap="$2" marginHorizontal="$4" ai="center" flexWrap="wrap">
+            {selectedGroups.map((selectedGroup) => (
+              <PublicationGroup
+                key={selectedGroup.groupId}
+                groupId={selectedGroup.groupId}
+              />
+            ))}
+          </XStack>
+        ) : null}
+      </XStack>
+    </YStack>
+  )
+}
+
+function PublicationGroup({groupId}: {groupId: string}) {
+  const group = useGroup(groupId)
+  const navigate = useNavigate()
+  if (!group.data?.title) return null
+  return (
+    <Button
+      chromeless
+      borderColor="$color8"
+      size="$2"
+      onPress={() => {
+        navigate({
+          key: 'group',
+          groupId,
+        })
+      }}
+    >
+      {group.data.title}
+    </Button>
   )
 }
