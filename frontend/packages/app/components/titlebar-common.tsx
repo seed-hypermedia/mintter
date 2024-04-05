@@ -10,6 +10,7 @@ import {
   BlockRange,
   ExpandedBlockRange,
   GroupVariant,
+  createHmId,
   createPublicWebHmUrl,
   hmId,
   serializeBlockRange,
@@ -37,8 +38,6 @@ import {
   ExternalLink,
   Link,
   Pencil,
-  Pin,
-  PinOff,
   Plus,
   Send,
   UploadCloud,
@@ -54,7 +53,6 @@ import {
   useGroup,
   useInvertedGroupContent,
 } from '../models/groups'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {useOpenDraft} from '../utils/open-draft'
@@ -63,6 +61,7 @@ import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
 import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
+import {useFavoriteMenuItem} from './favoriting'
 import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
@@ -87,7 +86,6 @@ export function DocOptionsButton() {
     groupVariants?.length === 1 ? groupVariants[0] : undefined
   const gwHost = useGatewayHost()
   const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
-  const pin = usePinDocument(docId, route.variants || [])
   const push = usePushPublication()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
   const menuItems: MenuItemType[] = [
@@ -133,21 +131,14 @@ export function DocOptionsButton() {
     //     ]
     //   : []),
   ]
-  if (pin.isPinned) {
-    menuItems.push({
-      key: 'unpin',
-      label: 'Unpin from Sidebar',
-      icon: PinOff,
-      onPress: pin.unpin,
-    })
-  } else {
-    menuItems.push({
-      key: 'pin',
-      label: 'Pin to Sidebar',
-      icon: Pin,
-      onPress: pin.pin,
-    })
-  }
+  const id = unpackHmId(docId)
+  const docUrl = id
+    ? createHmId('d', id.eid, {
+        version: route.versionId,
+        variants: route.variants,
+      })
+    : null
+  menuItems.push(useFavoriteMenuItem(docUrl))
 
   return (
     <>
@@ -164,23 +155,9 @@ export function AccountOptionsButton() {
     throw new Error(
       'AccountOptionsButton can only be rendered on account route',
     )
-  const pin = usePinAccount(route.accountId)
   const menuItems: MenuItemType[] = []
-  if (pin.isPinned) {
-    menuItems.push({
-      key: 'unpin',
-      label: 'Unpin from Sidebar',
-      icon: PinOff,
-      onPress: pin.unpin,
-    })
-  } else {
-    menuItems.push({
-      key: 'pin',
-      label: 'Pin to Sidebar',
-      icon: Pin,
-      onPress: pin.pin,
-    })
-  }
+  const accountUrl = createHmId('a', route.accountId)
+  menuItems.push(useFavoriteMenuItem(accountUrl))
 
   return (
     <>
@@ -200,7 +177,6 @@ export function GroupOptionsButton() {
   const myAccount = useMyAccount()
   const group = useGroup(groupId)
   const editInfo = useEditGroupInfoDialog()
-  const pin = usePinGroup(groupId)
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
   const cloneGroup = useAppDialog(CloneGroupDialog)
@@ -231,21 +207,9 @@ export function GroupOptionsButton() {
       },
     },
   ]
-  if (pin.isPinned) {
-    menuItems.push({
-      key: 'unpin',
-      label: 'Unpin from Sidebar',
-      icon: PinOff,
-      onPress: pin.unpin,
-    })
-  } else {
-    menuItems.push({
-      key: 'pin',
-      label: 'Pin to Sidebar',
-      icon: Pin,
-      onPress: pin.pin,
-    })
-  }
+
+  menuItems.push(useFavoriteMenuItem(groupId))
+
   // if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
   if (isGroupOwner) {
     menuItems.push({

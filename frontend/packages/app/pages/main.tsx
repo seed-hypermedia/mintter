@@ -34,6 +34,7 @@ var Settings = lazy(() => import('@mintter/app/pages/settings'))
 var Comment = lazy(() => import('@mintter/app/pages/comment'))
 var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 var Explore = lazy(() => import('@mintter/app/pages/explore'))
+var Favorites = lazy(() => import('@mintter/app/pages/favorites'))
 
 export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
@@ -164,6 +165,11 @@ function getPageComponent(navRoute: NavRoute) {
     case 'comment-draft':
       return {
         PageComponent: CommentDraft,
+        Fallback: BaseLoading,
+      }
+    case 'favorites':
+      return {
+        PageComponent: Favorites,
         Fallback: BaseLoading,
       }
     default:

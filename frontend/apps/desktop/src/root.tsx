@@ -193,8 +193,8 @@ function MainApp({
         if (!value) return
         if (value[0] === 'trpc.experiments.get') {
           utils.experiments.get.invalidate()
-        } else if (value[0] === 'trpc.pins.get') {
-          utils.pins.get.invalidate()
+        } else if (value[0] === 'trpc.favorites.get') {
+          utils.favorites.get.invalidate()
         } else if (value[0] === 'trpc.comments.getCommentDrafts') {
           utils.comments.getCommentDrafts.invalidate()
         } else if (value[0] === 'trpc.gatewaySettings.getGatewayUrl') {

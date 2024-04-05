@@ -4,7 +4,6 @@ import {UIAvatar, XStack, YStack} from '@mintter/ui'
 import {SizableText} from 'tamagui'
 import {useAccount} from '../models/accounts'
 import {AccountTrustButton} from './account-trust'
-import {PinAccountButton} from './pin-entity'
 
 export function AccountCard({
   accountId,
@@ -51,7 +50,6 @@ export function AccountCard({
               />
               {accountId && !hideActions ? (
                 <XStack alignItems="flex-end" gap="$3">
-                  <PinAccountButton accountId={accountId} />
                   <AccountTrustButton
                     iconOnly
                     accountId={accountId}

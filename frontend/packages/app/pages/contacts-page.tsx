@@ -4,7 +4,7 @@ import {
   useAllAccounts,
 } from '@mintter/app/models/accounts'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Account, hmId} from '@mintter/shared'
+import {HMAccount, createHmId, hmId} from '@mintter/shared'
 import {
   ArrowUpRight,
   Container,
@@ -17,27 +17,28 @@ import {
 import {AccountTrustButton} from '../components/account-trust'
 import {Avatar} from '../components/avatar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {FavoriteButton} from '../components/favoriting'
 import {OnlineIndicator} from '../components/indicator'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
-import {PinAccountButton} from '../components/pin-entity'
 import {useMyAccount} from '../models/accounts'
+import {useFavorite} from '../models/favorites'
 import {useGatewayUrl} from '../models/gateway-settings'
-import {usePinAccount} from '../models/pins'
 import {getAvatarUrl} from '../utils/account-url'
 import {AccountRoute} from '../utils/routes'
 
-function ContactItem({
+export function ContactItem({
   account,
   onCopy,
 }: {
-  account: Account
+  account: HMAccount
   onCopy: () => void
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const isConnected = useAccountIsConnected(account)
-  const pin = usePinAccount(account.id)
+  const accountUrl = account.id ? createHmId('a', account.id) : undefined
+  const favorite = useFavorite(accountUrl)
   const alias = account.profile?.alias
   const gwUrl = useGatewayUrl()
   const openRoute: AccountRoute = {key: 'account', accountId: account.id}
@@ -57,12 +58,16 @@ function ContactItem({
       title={alias || account.id.slice(0, 5) + '...' + account.id.slice(-5)}
       accessory={
         <>
-          <XStack
-            opacity={pin.isPinned ? 1 : 0}
-            $group-item-hover={pin.isPinned ? undefined : {opacity: 1}}
-          >
-            <PinAccountButton accountId={account.id} />
-          </XStack>
+          {accountUrl && (
+            <XStack
+              opacity={favorite.isFavorited ? 1 : 0}
+              $group-item-hover={
+                favorite.isFavorited ? undefined : {opacity: 1}
+              }
+            >
+              <FavoriteButton url={accountUrl} />
+            </XStack>
+          )}
           <AccountTrustButton
             accountId={account.id}
             isTrusted={account.isTrusted}

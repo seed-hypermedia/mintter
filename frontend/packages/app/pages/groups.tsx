@@ -1,5 +1,5 @@
 import Footer from '@mintter/app/components/footer'
-import {Group, Role, unpackHmId} from '@mintter/shared'
+import {Group, HMGroup, Role, unpackHmId} from '@mintter/shared'
 import {
   ButtonText,
   Container,
@@ -10,10 +10,10 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {FavoriteButton} from '../components/favoriting'
 import {
   ListItem,
   TimeAccessory,
@@ -21,9 +21,9 @@ import {
 } from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useMyAccount} from '../models/accounts'
+import {useFavorite} from '../models/favorites'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useAccountGroups, useGroupMembers} from '../models/groups'
-import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
@@ -124,14 +124,14 @@ export function GroupListItem({
   group,
   onCopy,
 }: {
-  group: Group
+  group: HMGroup
   onCopy: () => void
 }) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)
+  const favorite = useFavorite(group.id)
   const groupRoute: GroupRoute = {key: 'group', groupId: group.id}
-  const {isPinned, togglePin} = usePinGroup(group.id)
   const goToItem = (e: any) => {
     navigate(groupRoute, e)
   }
@@ -142,6 +142,16 @@ export function GroupListItem({
       title={group.title}
       accessory={
         <XStack gap="$4" ai="center">
+          {group.id && (
+            <XStack
+              opacity={favorite.isFavorited ? 1 : 0}
+              $group-item-hover={
+                favorite.isFavorited ? undefined : {opacity: 1}
+              }
+            >
+              <FavoriteButton url={group.id} />
+            </XStack>
+          )}
           <SiteUrlButton group={group} />
           {groupMembers.data?.members ? (
             <MemberAvatarLinks
@@ -168,12 +178,6 @@ export function GroupListItem({
           onPress: () => {
             spawn(groupRoute)
           },
-        },
-        {
-          label: isPinned ? 'Unpin Group' : 'Pin Group',
-          key: 'pin',
-          icon: isPinned ? PinOff : Pin,
-          onPress: togglePin,
         },
       ]}
     />

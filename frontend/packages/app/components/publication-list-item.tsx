@@ -1,12 +1,14 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  Account,
   Document,
   GroupVariant,
+  HMAccount,
   HMPublication,
   PublicationVariant,
+  createHmId,
   getDocumentTitle,
+  unpackDocId,
 } from '@mintter/shared'
 import {
   ArrowUpRight,
@@ -16,9 +18,11 @@ import {
   copyTextToClipboard,
 } from '@mintter/ui'
 import React from 'react'
+import {useFavorite} from '../models/favorites'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
+import {FavoriteButton} from './favoriting'
 import {ListItem, TimeAccessory} from './list-item'
 import {MenuItemType} from './options-dropdown'
 
@@ -45,13 +49,25 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   onPointerEnter?: () => void
   openRoute: NavRoute
   onPathNamePress?: () => void
-  author: Account | string | undefined
-  editors: (string | Account | undefined)[]
+  author: HMAccount | string | undefined
+  editors: (string | HMAccount | undefined)[]
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const route = useNavRoute()
+  const docRoute = openRoute.key === 'publication' ? openRoute : null
+  const docHmId = docRoute?.documentId
+    ? unpackDocId(docRoute.documentId)
+    : undefined
+  const docUrl =
+    docHmId && docRoute
+      ? createHmId('d', docHmId.eid, {
+          version: docRoute.versionId,
+          variants: docRoute.variants,
+        })
+      : undefined
+  const favorite = useFavorite(docUrl)
 
   if (!docId) throw new Error('PublicationListItem requires id')
 
@@ -69,6 +85,16 @@ export const PublicationListItem = React.memo(function PublicationListItem({
       onPointerEnter={onPointerEnter}
       accessory={
         <XStack gap="$3" ai="center">
+          {docUrl && (
+            <XStack
+              opacity={favorite.isFavorited ? 1 : 0}
+              $group-item-hover={
+                favorite.isFavorited ? undefined : {opacity: 1}
+              }
+            >
+              <FavoriteButton url={docUrl} />
+            </XStack>
+          )}
           {hasDraft && (
             <Button
               theme="yellow"

@@ -1,28 +1,17 @@
-import {
-  AuthorVariant,
-  groupsVariantsMatch,
-  GroupVariant,
-  stringArrayMatch,
-} from '@mintter/shared'
-import {Home, Separator, toast, Tooltip, View, YGroup} from '@mintter/ui'
-import {Contact, FileText, Library, Sparkles} from '@tamagui/lucide-icons'
+import {AuthorVariant, GroupVariant} from '@mintter/shared'
+import {Home, Separator, Tooltip, View, YGroup} from '@mintter/ui'
+import {Contact, FileText, Library, Sparkles, Star} from '@tamagui/lucide-icons'
 import {useMyAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
-import {usePins} from '../models/pins'
-import {useHmIdToAppRouteResolver, useNavRoute} from '../utils/navigation'
+import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {CreateGroupButton} from './new-group'
 import {
   activeDocOutline,
   GenericSidebarContainer,
   getDocOutline,
-  getRouteAccountId,
-  getRouteGroupId,
   MyAccountItem,
   NewDocumentButton,
-  PinnedAccount,
-  SidebarDocument,
-  SidebarGroup,
   SidebarItem,
 } from './sidebar-base'
 
@@ -38,9 +27,6 @@ export function MainAppSidebar({
   const replace = useNavigate('replace')
   const account = useMyAccount()
 
-  const pins = usePins()
-
-  const resolveId = useHmIdToAppRouteResolver()
   const pubRoute = route.key === 'publication' ? route : null
   const pubAuthorVariants = pubRoute?.variants?.filter(
     (variant) => variant.key === 'author',
@@ -61,32 +47,7 @@ export function MainAppSidebar({
       'Combined author and group variants not currently supported',
     )
   }
-  const pubGroupVariant = pubGroupVariants?.[0]
-  const activeGroupRouteId = getRouteGroupId(route)
-  const pubAuthorVariantAuthors = pubAuthorVariants?.map(
-    (variant) => variant.author,
-  )
-  const unpinnedActiveGroupRouteId = pins.data?.groups.find(
-    (pinnedGroup) => pinnedGroup.groupId === activeGroupRouteId,
-  )
-    ? null
-    : activeGroupRouteId
-  const publicationRoute = route.key === 'publication' ? route : null
-  const activeDocId = publicationRoute?.documentId
-  const unpinnedActiveDocId = pins.data?.documents.find(
-    (pinned) => pinned.docId === activeDocId,
-  )
-    ? null
-    : activeDocId
   const myAccount = useMyAccount()
-  const activeAccountId = getRouteAccountId(route, myAccount.data)
-  const unpinnedActiveAccountId = pins.data?.accounts.find(
-    (pinned) => pinned === activeAccountId,
-  )
-    ? null
-    : myAccount.data?.id === activeAccountId
-    ? null
-    : activeAccountId
   const accountRoute = route.key === 'account' ? route : null
   const activeBlock = accountRoute?.blockId
   const myProfileDoc = usePublication(
@@ -173,57 +134,10 @@ export function MainAppSidebar({
             title="Documents"
             bold
             icon={FileText}
-            rightHover={[
-              <NewDocumentButton key="newDoc" />,
-              // <Button
-              //   theme="blue"
-              //   icon={Plus}
-              //   size="$2"
-              //   key="NewDoc"
-              //   onPress={() => {}}
-              // />,
-            ]}
+            rightHover={[<NewDocumentButton key="newDoc" />]}
           />
         </YGroup.Item>
-        {unpinnedActiveDocId && publicationRoute ? (
-          <SidebarDocument
-            docId={unpinnedActiveDocId}
-            isPinned={false}
-            onPress={() => {}}
-            pinVariants={publicationRoute.variants || []}
-          />
-        ) : null}
-        {pins.data?.documents.map((pin) => {
-          return (
-            <SidebarDocument
-              onPress={() => {
-                navigate({
-                  key: 'publication',
-                  documentId: pin.docId,
-                  variants: pin.authors.map((author) => ({
-                    key: 'author',
-                    author,
-                  })),
-                })
-              }}
-              isPinned={true}
-              authors={pin.authors}
-              active={
-                route.key === 'publication' &&
-                route.documentId === pin.docId &&
-                pubAuthorVariantAuthors &&
-                stringArrayMatch(pin.authors, pubAuthorVariantAuthors) &&
-                groupsVariantsMatch(pin.groups, pubGroupVariants || [])
-              }
-              pinVariants={pin.authors.map((author) => ({
-                key: 'author',
-                author,
-              }))}
-              docId={pin.docId}
-              key={`${pin.docId}.${pin.authors.join('.')}`}
-            />
-          )
-        })}
+
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'groups'}
@@ -243,70 +157,7 @@ export function MainAppSidebar({
             ]}
           />
         </YGroup.Item>
-        {unpinnedActiveGroupRouteId && (
-          <SidebarGroup
-            group={{groupId: unpinnedActiveGroupRouteId}}
-            isPinned={false}
-            onPress={() => {
-              onSelectGroupId?.(unpinnedActiveGroupRouteId)
-            }}
-          />
-        )}
-        {pins.data?.groups
-          .map((group) => {
-            return [
-              <SidebarGroup
-                group={group}
-                key={group.groupId}
-                isPinned={true}
-                onPress={() => {
-                  if (group.groupId === activeGroupRouteId && onSelectGroupId) {
-                    onSelectGroupId(group.groupId)
-                  } else {
-                    navigate({key: 'group', groupId: group.groupId})
-                  }
-                }}
-              />,
-              ...group.documents.map((pin) => {
-                if (!pin) return null
-                const {pathName, docId, docVersion} = pin
-                return (
-                  <SidebarDocument
-                    isPinned={true}
-                    variants={[
-                      {
-                        key: 'group',
-                        groupId: group.groupId,
-                        pathName: pathName || '/',
-                      },
-                    ]}
-                    onPress={async () => {
-                      const resolved = await resolveId(
-                        `${group.groupId}/${pathName}`,
-                      )
-                      if (resolved?.navRoute) {
-                        navigate(resolved.navRoute)
-                      } else {
-                        toast.error(
-                          `"${pathName}" not found in latest version of group`,
-                        )
-                      }
-                    }}
-                    active={
-                      route.key === 'publication' &&
-                      pubGroupVariant &&
-                      pubGroupVariant.groupId === group.groupId &&
-                      pubGroupVariant.pathName === pathName
-                    }
-                    docId={docId}
-                    docVersion={docVersion}
-                    key={pathName}
-                  />
-                )
-              }),
-            ]
-          })
-          .flat()}
+
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'explore'}
@@ -321,6 +172,19 @@ export function MainAppSidebar({
         </YGroup.Item>
         <YGroup.Item>
           <SidebarItem
+            active={route.key == 'favorites'}
+            onPress={() => {
+              navigate({key: 'favorites'})
+            }}
+            title="Favorites"
+            bold
+            icon={Star}
+            rightHover={[]}
+          />
+        </YGroup.Item>
+
+        <YGroup.Item>
+          <SidebarItem
             active={route.key == 'contacts'}
             onPress={() => {
               navigate({key: 'contacts'})
@@ -330,33 +194,6 @@ export function MainAppSidebar({
             bold
           />
         </YGroup.Item>
-        {unpinnedActiveAccountId ? (
-          <PinnedAccount
-            onPress={() => {
-              onSelectAccountId?.(unpinnedActiveAccountId)
-            }}
-            accountId={unpinnedActiveAccountId}
-            isPinned={false}
-            active={true}
-          />
-        ) : null}
-        {pins.data?.accounts.map((accountId) => {
-          return (
-            <PinnedAccount
-              onPress={() => {
-                if (accountId === activeAccountId && onSelectAccountId) {
-                  onSelectAccountId(accountId)
-                } else {
-                  navigate({key: 'account', accountId})
-                }
-              }}
-              active={accountId === activeAccountId}
-              isPinned={true}
-              accountId={accountId}
-              key={accountId}
-            />
-          )
-        })}
       </YGroup>
     </GenericSidebarContainer>
   )

@@ -35,9 +35,9 @@ import {EntityCitationsAccessory} from '../components/citations'
 import {EntityCommentsAccessory} from '../components/comments'
 import {PushToGatewayDialog} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
+import {FavoriteButton} from '../components/favoriting'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
-import {PinDocumentButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
@@ -309,10 +309,13 @@ export default function PublicationPage() {
                         // opacity={0}
                         // $group-header-hover={{opacity: 1}}
                       >
-                        <PinDocumentButton
-                          docId={route.documentId}
-                          variants={route.variants || []}
-                        />
+                        {id && (
+                          <FavoriteButton
+                            url={createHmId('d', id.eid, {
+                              variants: route.variants,
+                            })}
+                          />
+                        )}
                         <CopyReferenceButton />
                       </XStack>
                     }

@@ -83,12 +83,12 @@ import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
 import {EditDocButton} from '../components/edit-doc-button'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
+import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
-import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import appError from '../errors'
@@ -310,7 +310,14 @@ function GroupHome({
               </YStack>
             </YStack>
             <YStack paddingTop="$4">
-              <XStack gap="$3" alignItems="center">
+              <XStack
+                gap="$2"
+                // opacity={0}
+                // $group-header-hover={{
+                //   opacity: 1,
+                // }}
+              >
+                <FavoriteButton url={groupId} />
                 {!frontDocumentUrl && isMember && (
                   <Tooltip content={'Create Front Document'}>
                     <Button
@@ -331,27 +338,18 @@ function GroupHome({
                   </Tooltip>
                 )}
 
-                <XStack
-                  gap="$2"
-                  // opacity={0}
-                  // $group-header-hover={{
-                  //   opacity: 1,
-                  // }}
-                >
-                  <CopyReferenceButton />
-                  <PinGroupButton groupId={groupId} />
-                  {isMember && (
-                    <Tooltip content="Edit Group info">
-                      <Button
-                        icon={Pencil}
-                        size="$2"
-                        onPress={() => {
-                          editGroupInfo.open(groupId)
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </XStack>
+                <CopyReferenceButton />
+                {isMember && (
+                  <Tooltip content="Edit Group info">
+                    <Button
+                      icon={Pencil}
+                      size="$2"
+                      onPress={() => {
+                        editGroupInfo.open(groupId)
+                      }}
+                    />
+                  </Tooltip>
+                )}
               </XStack>
             </YStack>
           </XStack>

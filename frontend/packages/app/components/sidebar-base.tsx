@@ -23,7 +23,6 @@ import {
 } from '@mintter/ui'
 import {
   ArrowUpRight,
-  Book,
   FileText,
   Hash,
   Plus,
@@ -33,14 +32,12 @@ import {
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
-import {useAccount, useAccounts} from '../models/accounts'
+import {useAccounts} from '../models/accounts'
 import {
   EmbedsContent,
   usePublication,
   usePublicationEmbeds,
 } from '../models/documents'
-import {useGroup} from '../models/groups'
-import {usePinAccount, usePinGroup} from '../models/pins'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
@@ -51,7 +48,6 @@ import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {Avatar} from './avatar'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {PinAccountButton, PinDocumentButton, PinGroupButton} from './pin-entity'
 
 const HoverRegionWidth = 30
 
@@ -397,89 +393,6 @@ export function MyAccountItem({
   )
 }
 
-export function PinnedAccount({
-  accountId,
-  isPinned,
-  onPress,
-  active,
-}: {
-  accountId: string
-  isPinned: boolean
-  onPress: () => void
-  active: boolean
-}) {
-  const route = useNavRoute()
-  const account = useAccount(accountId)
-  const navigate = useNavigate()
-  let {togglePin} = usePinAccount(accountId)
-  if (!accountId) return null
-  return (
-    <YGroup.Item>
-      <SidebarItem
-        onPress={() => {
-          onPress()
-          // navigate({key: 'account', accountId})
-        }}
-        active={active}
-        color={isPinned ? undefined : '$color11'}
-        icon={
-          <Avatar
-            size={22}
-            label={account?.data?.profile?.alias}
-            id={accountId}
-            url={getAvatarUrl(account?.data?.profile?.avatar)}
-          />
-        }
-        title={account.data?.profile?.alias || accountId}
-        indented
-        rightHover={[<PinAccountButton key="pin" accountId={accountId} />]}
-      />
-    </YGroup.Item>
-  )
-}
-
-export function SidebarGroup(props: {
-  group: {groupId: string}
-  isPinned: boolean
-  onPress: () => void
-}) {
-  const route = useNavRoute()
-  const navigate = useNavigate()
-  const {groupId} = props.group
-  const group = useGroup(groupId)
-  const {togglePin} = usePinGroup(groupId)
-  if (!groupId) return null
-  return (
-    <YGroup.Item>
-      <SidebarItem
-        onPress={props.onPress}
-        active={
-          !props.isPinned || (route.key == 'group' && route.groupId == groupId)
-        }
-        icon={Book}
-        color={props.isPinned ? undefined : '$color11'}
-        title={group.data?.title}
-        rightHover={[
-          <PinGroupButton
-            groupId={groupId}
-            // chromeless
-            key="pin"
-            // onPress={(e) => {
-            //   e.stopPropagation()
-            //   togglePin()
-            // }}
-          />,
-          <NewDocumentButton
-            groupVariant={{key: 'group', groupId, pathName: null}}
-            label="Group Document"
-            key="newDoc"
-          />,
-        ]}
-      />
-    </YGroup.Item>
-  )
-}
-
 type DocOutlineSection = {
   title: string
   id: string
@@ -605,7 +518,6 @@ export function activeDocOutline(
           }
           title={item.title || 'Untitled Heading'}
           indented={2 + level}
-          // rightHover={[<PinDocumentButton docId={docId} variants={variants} />]}
         />
       </YGroup.Item>,
       ...(childrenOutline?.outlineContent || []),
@@ -704,11 +616,7 @@ export function SidebarDocument({
         }
         title={doc.data?.document?.title || <Spinner />}
         indented
-        rightHover={
-          pinVariants
-            ? [<PinDocumentButton docId={docId} variants={pinVariants} />]
-            : []
-        }
+        rightHover={[]}
       />
     </YGroup.Item>,
     ...outlineContent,

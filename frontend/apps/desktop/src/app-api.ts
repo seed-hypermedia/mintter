@@ -17,11 +17,11 @@ import z from 'zod'
 import {commentsApi} from './app-comments'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
+import {favoritesApi} from './app-favorites'
 import {gatewaySettingsApi} from './app-gateway-settings'
 import {grpcClient} from './app-grpc'
 import {invalidateQueries, queryInvalidation} from './app-invalidation'
 import {userDataPath} from './app-paths'
-import {pinsApi} from './app-pins'
 import {recentsApi} from './app-recents'
 import {appSettingsApi} from './app-settings'
 import {t} from './app-trpc'
@@ -141,7 +141,7 @@ export const router = t.router({
   diagnosis: diagnosisApi,
   welcoming: welcomingApi,
   webImporting: webImportingApi,
-  pins: pinsApi,
+  favorites: favoritesApi,
   comments: commentsApi,
   gatewaySettings: gatewaySettingsApi,
   recents: recentsApi,

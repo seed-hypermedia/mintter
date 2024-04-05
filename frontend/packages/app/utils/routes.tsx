@@ -59,6 +59,11 @@ export const accountFeedRouteSchema = z.object({
 })
 export type AccountFeedRoute = z.infer<typeof accountFeedRouteSchema>
 
+export const favoritesSchema = z.object({
+  key: z.literal('favorites'),
+})
+export type FavoritesRoute = z.infer<typeof favoritesSchema>
+
 export const accountContentRouteSchema = z.object({
   key: z.literal('account-content'),
   accountId: z.string(),
@@ -171,6 +176,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   commentRouteSchema,
   commentDraftRouteSchema,
   exploreRouteSchema,
+  favoritesSchema,
 ])
 export type NavRoute = z.infer<typeof navRouteSchema>
 

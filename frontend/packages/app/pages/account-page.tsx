@@ -40,10 +40,10 @@ import {useAppDialog} from '../components/dialog'
 import {MenuItem} from '../components/dropdown'
 import {EditDocButton} from '../components/edit-doc-button'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
-import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useMyAccount, useSetProfile} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
@@ -102,7 +102,6 @@ export default function AccountPage() {
   const replace = useNavigate('replace')
   const accountEntityId = createHmId('a', accountId)
   const mentions = useEntityMentions(accountEntityId)
-
   const [copyDialogContent, onCopy] = useCopyGatewayReference()
   let accessory: ReactNode = null
   if (accessoryKey === 'citations') {
@@ -150,6 +149,7 @@ function MainAccountPage() {
   const isConnected = !!connectedCount
   const isMe = myAccount.data?.id === accountId
   const editProfileDialog = useEditProfileDialog()
+  const accountEntityUrl = createHmId('a', accountId)
   return (
     <PageContainer marginVertical="$6">
       <XStack gap="$4" alignItems="center" justifyContent="space-between">
@@ -173,8 +173,8 @@ function MainAccountPage() {
         </XStack>
 
         <XStack space="$2">
+          {isMe ? null : <FavoriteButton url={accountEntityUrl} />}
           <CopyReferenceButton />
-          {isMe ? null : <PinAccountButton accountId={accountId} />}
           {isMe ? (
             <Button
               size="$2"
