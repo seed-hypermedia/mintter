@@ -30,7 +30,7 @@ import {
   toast,
 } from '@mintter/ui'
 import {PageContainer} from '@mintter/ui/src/container'
-import {ArrowUpRight, Pencil, X} from '@tamagui/lucide-icons'
+import {ArrowUpRight, Pencil} from '@tamagui/lucide-icons'
 import {ReactNode} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
@@ -334,20 +334,22 @@ function ProfileDoc({
           />
         </Tooltip>
         <OptionsDropdown
-          menuItems={[
-            ...(isMyAccount
-              ? [
-                  {
-                    key: 'remove',
-                    icon: X,
-                    label: 'Remove Profile Document',
-                    onPress: () => {
-                      removeProfileDoc.open({})
-                    },
-                  },
-                ]
-              : []),
-          ]}
+          menuItems={
+            [
+              // ...(isMyAccount
+              //   ? [
+              //       {
+              //         key: 'remove',
+              //         icon: X,
+              //         label: 'Remove Profile Document',
+              //         onPress: () => {
+              //           removeProfileDoc.open({})
+              //         },
+              //       },
+              //     ]
+              //   : []),
+            ]
+          }
         />
       </XStack>
       {removeProfileDoc.content}
