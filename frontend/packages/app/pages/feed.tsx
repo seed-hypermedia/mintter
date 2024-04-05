@@ -818,7 +818,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
             <Button
               size="$2"
               onPress={() => {
-                // scrollRef.current?.scrollTo({top: 0})
+                scrollRef.current?.scrollTo({top: 0})
                 feed.refetch()
               }}
               icon={ChevronUp}
