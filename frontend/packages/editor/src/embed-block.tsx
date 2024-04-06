@@ -17,8 +17,11 @@ import {
   Button,
   Check,
   ChevronDown,
+  Forward as ChevronRight,
   ExternalLink,
   ListItem,
+  MenuItem,
+  MoreHorizontal,
   Popover,
   Separator,
   Tooltip,
@@ -211,6 +214,7 @@ function EmbedControl({
   const popoverState = usePopoverState()
   const popoverViewState = usePopoverState()
   const popoverLatestState = usePopoverState()
+  const popoverToDocumentState = usePopoverState()
 
   let versionValue = block.props.url.includes('&l') ? 'latest' : 'exact'
   let isVersionLatest = versionValue == 'latest'
@@ -221,6 +225,16 @@ function EmbedControl({
       popoverViewState.onOpenChange(false)
     }
   }, [])
+
+  const expanded = useMemo(
+    () =>
+      hmId &&
+      hmId?.blockRef &&
+      hmId.blockRange &&
+      'expanded' in hmId.blockRange &&
+      hmId.blockRange?.expanded,
+    [block.props.url],
+  )
 
   const handleVersionSelect = useCallback(
     (versionMode: 'exact' | 'latest') => {
@@ -245,6 +259,20 @@ function EmbedControl({
     [block.props.url],
   )
 
+  const handleBlockToDocument = useCallback(() => {
+    let unpackedRef = unpackHmId(block.props.url)
+
+    if (unpackedRef) {
+      assign({
+        props: {
+          url: createHmDocLink(hmId!),
+
+          view: 'content',
+        },
+      })
+    }
+  }, [block.props.url])
+
   return (
     <XStack
       position="absolute"
@@ -268,6 +296,42 @@ function EmbedControl({
             openUrl(block.props.url, true)
           }}
         />
+      </Tooltip>
+      <Tooltip
+        content={
+          expanded
+            ? `Embed only the block's content`
+            : `Embed the block and its children`
+        }
+      >
+        <Button
+          size="$2"
+          icon={expanded ? Check : ChevronRight}
+          backgroundColor="$backgroundStrong"
+          onPress={(e) => {
+            e.stopPropagation()
+            let url = createHmDocLink({
+              documentId: hmId?.qid,
+              version: hmId?.version,
+              variants: hmId?.variants,
+              latest: !!hmId?.latest,
+              blockRef: hmId?.blockRef,
+              blockRange: {
+                expanded: !expanded,
+              },
+            })
+
+            console.log('--- URL', url)
+            assign({
+              props: {
+                url,
+                view: 'content',
+              },
+            })
+          }}
+        >
+          {expanded ? 'Collapse' : 'Expand'}
+        </Button>
       </Tooltip>
       {allowViewSwitcher && (
         <Popover
@@ -363,6 +427,48 @@ function EmbedControl({
           </Popover.Content>
         </Popover>
       )}
+      {hmId?.blockRef ? (
+        <Popover {...popoverToDocumentState} placement="bottom-start">
+          <Popover.Trigger asChild>
+            <Button
+              icon={MoreHorizontal}
+              size="$1"
+              onPress={(e) => e.stopPropagation()}
+              circular
+            />
+          </Popover.Trigger>
+          <Popover.Content
+            padding={0}
+            elevation="$2"
+            animation={[
+              'fast',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+            elevate={true}
+          >
+            <YGroup>
+              <YGroup.Item>
+                {hmId?.blockRef ? (
+                  <MenuItem
+                    onPress={(e) => {
+                      e.stopPropagation()
+                      handleBlockToDocument()
+                    }}
+                    title="Convert to Document Embed"
+                    // icon={item.icon}
+                  />
+                ) : null}
+              </YGroup.Item>
+            </YGroup>
+          </Popover.Content>
+        </Popover>
+      ) : null}
     </XStack>
   )
 }

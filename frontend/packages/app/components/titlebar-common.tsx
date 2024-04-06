@@ -339,6 +339,7 @@ export function useFullReferenceUrl(route: NavRoute): {
             blockId?: string | undefined,
             blockRange?: BlockRange | ExpandedBlockRange | null,
           ) => {
+            console.log('=== COPY BLOCK', blockId)
             copyUrlToClipboardWithFeedback(
               blockId
                 ? `${sitePrettyUrl}#${blockId}${serializeBlockRange(

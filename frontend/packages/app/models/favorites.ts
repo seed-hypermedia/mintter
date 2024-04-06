@@ -133,6 +133,7 @@ export function useFavorites() {
       })
     }
   })
+
   return favoriteItems
 }
 

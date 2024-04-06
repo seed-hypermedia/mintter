@@ -1,5 +1,6 @@
 import {
   Button,
+  MenuItem,
   MoreHorizontal,
   Popover,
   Separator,
@@ -8,7 +9,6 @@ import {
 } from '@mintter/ui'
 import {FC} from 'react'
 import {usePopoverState} from '../use-popover-state'
-import {MenuItem} from './dropdown'
 
 export type MenuItemType = {
   key: string

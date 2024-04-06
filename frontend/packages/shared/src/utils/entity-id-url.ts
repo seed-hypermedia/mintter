@@ -264,8 +264,21 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     if (!type) return null
     const qid = createHmId(type, eid)
     // TODO: call `parseFragment` here instead of this two helpers
-    const blockRef = extractBlockRefOfUrl(hypermediaId)
-    const blockRange = extractBlockRangeOfUrl(hypermediaId)
+    const fragment = parseFragment(parsed.fragment)
+    let blockRange = null
+    if (fragment) {
+      if ('start' in fragment) {
+        blockRange = {
+          start: fragment.start,
+          end: fragment.end,
+        }
+      } else if ('expanded' in fragment) {
+        blockRange = {
+          expanded: fragment.expanded,
+        }
+      }
+    }
+
     return {
       id: hypermediaId,
       qid,
@@ -274,7 +287,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       groupPathName: parsed.path[2] || null,
       version,
       variants,
-      blockRef,
+      blockRef: fragment ? fragment.blockId : null,
       blockRange,
       hostname: null,
       latest,

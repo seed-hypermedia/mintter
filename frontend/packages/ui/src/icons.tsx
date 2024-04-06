@@ -15,6 +15,8 @@ export {
   Check,
   ChevronDown,
   ChevronUp,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Clock,
   X as Close,
   XSquare as CloseAll,

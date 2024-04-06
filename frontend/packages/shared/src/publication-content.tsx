@@ -31,6 +31,8 @@ import {
   Check as CheckIcon,
   Checkbox,
   CheckboxProps,
+  ChevronDown,
+  Forward as ChevronRight,
   ColorProp,
   Comment,
   File,
@@ -455,6 +457,7 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
+  const [expanded, setExpanded] = useState<boolean>(true)
 
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
@@ -490,11 +493,31 @@ export function BlockNodeContent({
     return routeParams?.blockRef == blockNode.block?.id && !comment
   }, [routeParams?.blockRef, comment, blockNode.block])
 
+  function handleBlockNodeToggle() {
+    setExpanded(!expanded)
+  }
+
   useEffect(() => {
     if (elm.current && isHighlight) {
       elm.current.scrollIntoView({behavior: 'smooth', block: 'start'})
     }
   }, [isHighlight])
+
+  const contentH = useMemo(() => {
+    // this calculates the position the collapse button should be at, based on the height of the content
+    // and the height of the heading
+    if (elm.current) {
+      const contentNode = elm.current.querySelector('.block-content')
+
+      if (contentNode) {
+        const rect = contentNode.getBoundingClientRect()
+
+        return rect.height / 2 - (layoutUnit * 0.75) / 2
+      } else {
+        return 4
+      }
+    }
+  }, [elm.current, blockNode.block])
 
   return (
     <YStack
@@ -516,7 +539,43 @@ export function BlockNodeContent({
         alignItems="baseline"
         {...headingStyles}
         {...debugStyles(debug, 'red')}
+        group="blocknode"
       >
+        {bnChildren ? (
+          <Tooltip
+            content={
+              expanded
+                ? 'You can collapse this block and hide its children'
+                : 'This block is collapsed. you can expand it and see its children'
+            }
+          >
+            <Button
+              size="$1"
+              x={layoutUnit * -1}
+              y={contentH}
+              chromeless
+              width={layoutUnit}
+              height={layoutUnit * 0.75}
+              icon={expanded ? ChevronDown : ChevronRight}
+              onPress={(e) => {
+                e.stopPropagation()
+                handleBlockNodeToggle()
+              }}
+              position="absolute"
+              zIndex="$5"
+              left={0}
+              bg="$backgroundTransparent"
+              opacity={expanded ? 0 : 1}
+              hoverStyle={{
+                opacity: 1,
+              }}
+              $group-blocknode-hover={{
+                opacity: 1,
+              }}
+            />
+          </Tooltip>
+        ) : null}
+
         <BlockNodeMarker
           block={blockNode.block!}
           childrenType={childrenType}
@@ -628,7 +687,21 @@ export function BlockNodeContent({
           </XStack>
         ) : null}
       </XStack>
-      {bnChildren ? (
+      {/* {bnChildren && !expanded ? (
+        <Tooltip content="Collapsed block. This block is collapsed and its children are not visible. Press ">
+          <Button
+            icon={MoreHorizontal}
+            size="$2"
+            alignSelf="flex-start"
+            height={10}
+            onPress={(e) => {
+              e.stopPropagation()
+              handleBlockNodeToggle()
+            }}
+          />
+        </Tooltip>
+      ) : null} */}
+      {bnChildren && expanded ? (
         <BlockNodeList
           paddingLeft={blockNode.block?.type != 'heading' ? layoutUnit : 0}
           childrenType={childrenType as HMBlockChildrenType}
@@ -1375,6 +1448,12 @@ export function ContentEmbed({
                       ]
                     : currentAnnotations,
               },
+              children:
+                props.blockRange &&
+                'expanded' in props.blockRange &&
+                props.blockRange.expanded
+                  ? [...selectedBlock.children]
+                  : [],
             },
           ]
         : null
@@ -1846,7 +1925,6 @@ export function useBlockCitations(blockId?: string) {
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
     return context.citations.filter((c) => {
-      console.log(`== ~ returncontext.citations.filter ~ c:`, blockId, c)
       return c.sourceContext == blockId
     })
   }, [blockId, context.citations])

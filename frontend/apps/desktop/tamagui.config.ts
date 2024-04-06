@@ -6,7 +6,7 @@ declare module 'tamagui' {
   interface TamaguiCustomConfig extends Conf {}
 
   interface TypeOverride {
-    groupNames(): 'header' | 'item'
+    groupNames(): 'header' | 'item' | 'blocknode'
   }
 }
 

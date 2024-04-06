@@ -87,10 +87,11 @@ function EmbedWrapper({
         backgroundColor:
           isHighlight && routeParams?.blockRef == unpackRef?.blockRef
             ? '$yellow4'
-            : '$color5',
+            : '$backgroundHover',
+        borderRadius: '$2',
+        borderLeftColor: '$color7',
       }}
       margin={0}
-      mb="$2"
       marginHorizontal={(-1 * layoutUnit) / 2}
       padding={layoutUnit / 2}
       overflow="hidden"

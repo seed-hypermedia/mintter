@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Heading,
   ListItem,
+  MenuItem,
   Popover,
   SizableText,
   Spinner,
@@ -37,7 +38,6 @@ import {AccountTrustButton} from '../components/account-trust'
 import {EntityCitationsAccessory} from '../components/citations'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
-import {MenuItem} from '../components/dropdown'
 import {EditDocButton} from '../components/edit-doc-button'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {FavoriteButton} from '../components/favoriting'
