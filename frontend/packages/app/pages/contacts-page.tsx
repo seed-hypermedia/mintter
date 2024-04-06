@@ -110,8 +110,6 @@ function ErrorPage({}: {error: any}) {
 
 export default function ContactsPage() {
   const contacts = useAllAccounts(true)
-
-  console.log(`== ~ ContactsPage ~ contacts:`, contacts)
   const myAccount = useMyAccount()
   const allAccounts = contacts.data?.accounts || []
   const trustedAccounts = allAccounts.filter(

@@ -2,6 +2,7 @@ import {
   Account,
   API_FILE_URL,
   getBlockNode,
+  getDocumentTitle,
   GroupVariant,
   HMBlockNode,
   PublicationVariant,
@@ -22,7 +23,9 @@ import {
   YStack,
 } from '@mintter/ui'
 import {
+  ArrowDownRight,
   ArrowUpRight,
+  Book,
   FileText,
   Hash,
   Plus,
@@ -32,12 +35,14 @@ import {
 import {ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
-import {useAccounts} from '../models/accounts'
+import {useAccount, useAccounts} from '../models/accounts'
 import {
   EmbedsContent,
   usePublication,
   usePublicationEmbeds,
 } from '../models/documents'
+import {useGroup} from '../models/groups'
+import {usePublicationVariant} from '../models/publication'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
@@ -51,50 +56,181 @@ import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
 const HoverRegionWidth = 30
 
-export function getRouteGroupId(route: NavRoute): string | null {
-  let activeGroupRouteId: string | null = null
-  if (route.key === 'group') {
-    activeGroupRouteId = route.groupId
-  } else if (route.key === 'group-feed') {
-    activeGroupRouteId = route.groupId
-  } else if (route.key === 'publication') {
-    if (route.variants) {
-      const groupVariants = route.variants.filter(
-        (variant) => variant.key === 'group',
-      ) as GroupVariant[] | undefined
-      if (groupVariants?.length === 1) {
-        activeGroupRouteId = groupVariants[0]?.groupId || null
-      }
-    }
-  } else if (
-    route.key === 'draft' &&
-    route.variant?.key === 'group' &&
-    route.variant.groupId
-  ) {
-    return route.variant.groupId
-  }
-  return activeGroupRouteId
+export type GroupFocusSidebar = {
+  type: 'group'
+  key: string
+  groupId: string
 }
 
-export function getRouteAccountId(
+export type AccountFocusSidebar = {
+  type: 'account'
+  key: string
+  accountId: string
+}
+
+export type DocumentFocusSidebar = {
+  type: 'document'
+  key: string
+  documentId: string
+  version?: string
+  variants?: PublicationVariant[]
+}
+
+type FocusSidebar =
+  | GroupFocusSidebar
+  | AccountFocusSidebar
+  | DocumentFocusSidebar
+
+export function getRouteSidebars(
   route: NavRoute,
   myAccount: Account | null | undefined,
-): string | null {
-  let activeAccountId: string | null = null
+): FocusSidebar[] | null {
+  if (route.key === 'group') {
+    return [{type: 'group', key: route.groupId, groupId: route.groupId}]
+  }
+  if (route.key === 'group-feed') {
+    return [{type: 'group', key: route.groupId, groupId: route.groupId}]
+  }
   if (route.key === 'account') {
     if (route.accountId === myAccount?.id) return null
-    activeAccountId = route.accountId
-  } else if (route.key === 'account-feed') {
-    if (route.accountId === myAccount?.id) return null
-    activeAccountId = route.accountId
-  } else if (route.key === 'account-content') {
-    if (route.accountId === myAccount?.id) return null
-    activeAccountId = route.accountId
-  } else if (route.key === 'draft' && route.isProfileDocument) {
-    return null
+    return [{type: 'account', key: route.accountId, accountId: route.accountId}]
   }
-  return activeAccountId
+  if (route.key === 'account-feed') {
+    if (route.accountId === myAccount?.id) return null
+    return [{type: 'account', key: route.accountId, accountId: route.accountId}]
+  }
+  if (route.key === 'account-content') {
+    if (route.accountId === myAccount?.id) return null
+    return [{type: 'account', key: route.accountId, accountId: route.accountId}]
+  }
+  if (route.key === 'publication') {
+    return [
+      {
+        type: 'document',
+        key: route.documentId,
+        documentId: route.documentId,
+        version: route.versionId,
+        variants: route.variants,
+      },
+    ]
+  }
+  return null
 }
+
+export function GroupContextButton({
+  focus,
+  onPress,
+}: {
+  focus: GroupFocusSidebar
+  onPress: () => void
+}) {
+  const group = useGroup(focus.groupId)
+  return (
+    <SidebarItem
+      minHeight={30}
+      paddingVertical="$2"
+      color="$color10"
+      title={group.data?.title || 'Untitled Group'}
+      onPress={onPress}
+      active={true}
+      icon={Book}
+      iconAfter={ArrowDownRight}
+    />
+  )
+}
+
+export function AccountContextButton({
+  focus,
+  onPress,
+}: {
+  focus: AccountFocusSidebar
+  onPress: () => void
+}) {
+  const account = useAccount(focus.accountId)
+  return (
+    <SidebarItem
+      minHeight={30}
+      paddingVertical="$2"
+      color="$color10"
+      title={account.data?.profile?.alias || 'Untitled Account'}
+      onPress={onPress}
+      active={true}
+      icon={Book}
+      iconAfter={ArrowDownRight}
+    />
+  )
+}
+
+export function DocumentContextButton({
+  focus,
+  onPress,
+}: {
+  focus: DocumentFocusSidebar
+  onPress: () => void
+}) {
+  const doc = usePublicationVariant({
+    documentId: focus.documentId,
+    versionId: focus.version,
+    variants: focus.variants,
+  })
+  return (
+    <SidebarItem
+      minHeight={30}
+      paddingVertical="$2"
+      color="$color10"
+      title={getDocumentTitle(doc.data?.publication?.document)}
+      onPress={onPress}
+      active={true}
+      icon={FileText}
+      iconAfter={ArrowDownRight}
+    />
+  )
+}
+
+// export function getRouteGroupId(route: NavRoute): string | null {
+//   let activeGroupRouteId: string | null = null
+//   if (route.key === 'group') {
+//     activeGroupRouteId = route.groupId
+//   } else if (route.key === 'group-feed') {
+//     activeGroupRouteId = route.groupId
+//   } else if (route.key === 'publication') {
+//     if (route.variants) {
+//       const groupVariants = route.variants.filter(
+//         (variant) => variant.key === 'group',
+//       ) as GroupVariant[] | undefined
+//       if (groupVariants?.length === 1) {
+//         activeGroupRouteId = groupVariants[0]?.groupId || null
+//       }
+//     }
+//   } else if (
+//     route.key === 'draft' &&
+//     route.variant?.key === 'group' &&
+//     route.variant.groupId
+//   ) {
+//     return route.variant.groupId
+//   }
+//   return activeGroupRouteId
+// }
+
+// export function getRouteAccountId(
+//   route: NavRoute,
+//   myAccount: Account | null | undefined,
+// ): string | null {
+//   let activeAccountId: string | null = null
+//   if (route.key === 'account') {
+//     if (route.accountId === myAccount?.id) return null
+//     activeAccountId = route.accountId
+//   } else if (route.key === 'account-feed') {
+//     if (route.accountId === myAccount?.id) return null
+//     activeAccountId = route.accountId
+//   } else if (route.key === 'account-content') {
+//     if (route.accountId === myAccount?.id) return null
+//     activeAccountId = route.accountId
+//   } else if (route.key === 'draft' && route.isProfileDocument) {
+//     return null
+//   }
+//   return activeAccountId
+// }
 
 export function GenericSidebarContainer({children}: {children: ReactNode}) {
   const ctx = useSidebarContext()
@@ -318,14 +454,16 @@ export function SidebarItem({
         }
         icon={icon}
         iconAfter={
-          <>
-            <XStack opacity={0} $group-item-hover={{opacity: 1}}>
-              {rightHover}
-            </XStack>
-            {menuItems ? (
-              <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
-            ) : null}
-          </>
+          iconAfter || (
+            <>
+              <XStack opacity={0} $group-item-hover={{opacity: 1}}>
+                {rightHover}
+              </XStack>
+              {menuItems ? (
+                <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
+              ) : null}
+            </>
+          )
         }
         {...props}
       >

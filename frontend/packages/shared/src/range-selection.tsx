@@ -57,7 +57,6 @@ export function useRangeSelection() {
 
     function handleMouseDown(mouseDown: boolean) {
       return function handleMouseDown(e: any) {
-        console.log('== useRangeSelection handleMouseDown', mouseDown)
         actor.send({type: mouseDown ? 'MOUSEDOWN' : 'MOUSEUP'})
       }
     }

@@ -1,55 +1,95 @@
-import {memo, useEffect, useState} from 'react'
+import {ArrowUpLeft} from '@tamagui/lucide-icons'
+import {ReactNode, memo, useEffect, useState} from 'react'
 import {useMyAccount} from '../models/accounts'
 import {useNavRoute} from '../utils/navigation'
 import {AccountSidebar} from './sidebar-account'
-import {getRouteAccountId, getRouteGroupId} from './sidebar-base'
+import {
+  AccountContextButton,
+  DocumentContextButton,
+  GroupContextButton,
+  SidebarItem,
+  getRouteSidebars,
+} from './sidebar-base'
+import {DocumentSidebar} from './sidebar-document'
 import {GroupSidebar} from './sidebar-group'
 import {MainAppSidebar} from './sidebar-main'
 
 export const AppSidebar = memo(FullAppSidebar)
 
 function FullAppSidebar() {
-  let [sidebarGroupId, setSidebarGroupId] = useState<string | null>(null)
-  let [sidebarAccountId, setSidebarAccountId] = useState<string | null>(null)
+  const [sidebarDepth, setSidebarDepth] = useState(-1)
   const route = useNavRoute()
-  const activeGroupRouteId = getRouteGroupId(route)
   const myAccount = useMyAccount()
-  const activeAccountRouteId = getRouteAccountId(route, myAccount.data)
-  useEffect(() => {
-    setSidebarGroupId(activeGroupRouteId)
-  }, [activeGroupRouteId])
-  useEffect(() => {
-    setSidebarAccountId(activeAccountRouteId)
-  }, [activeAccountRouteId])
-
-  if (sidebarGroupId) {
-    return (
-      <GroupSidebar
-        groupId={sidebarGroupId}
-        onBackToMain={() => {
-          setSidebarGroupId(null)
+  const sidebars = getRouteSidebars(route, myAccount.data)
+  const activeSidebar = sidebars?.[sidebarDepth]
+  const header: ReactNode[] = []
+  if (sidebarDepth > -1) {
+    header.push(
+      <SidebarItem
+        minHeight={30}
+        paddingVertical="$2"
+        color="$color10"
+        title="Home"
+        onPress={() => {
+          setSidebarDepth(-1)
         }}
-      />
+        icon={ArrowUpLeft}
+      />,
     )
   }
-  if (sidebarAccountId) {
+  useEffect(() => {
+    const depth = sidebars ? sidebars.length - 1 : -1
+    setSidebarDepth(depth)
+  }, [sidebars?.at(-1)?.key])
+  sidebars?.forEach((sidebar, index) => {
+    if (index === sidebarDepth) return
+    if (index < sidebarDepth) return
+    if (sidebar.type === 'group') {
+      header.push(
+        <GroupContextButton
+          focus={sidebar}
+          onPress={() => {
+            setSidebarDepth(index)
+          }}
+        />,
+      )
+    }
+    if (sidebar.type === 'account') {
+      header.push(
+        <AccountContextButton
+          focus={sidebar}
+          onPress={() => {
+            setSidebarDepth(index)
+          }}
+        />,
+      )
+    }
+    if (sidebar.type === 'document') {
+      header.push(
+        <DocumentContextButton
+          focus={sidebar}
+          onPress={() => {
+            setSidebarDepth(index)
+          }}
+        />,
+      )
+    }
+  })
+  if (activeSidebar?.type === 'group') {
+    return (
+      <GroupSidebar groupId={activeSidebar.groupId} sidebarHeader={header} />
+    )
+  }
+  if (activeSidebar?.type === 'account') {
     return (
       <AccountSidebar
-        accountId={sidebarAccountId}
-        onBackToMain={() => {
-          setSidebarAccountId(null)
-        }}
+        accountId={activeSidebar.accountId}
+        sidebarHeader={header}
       />
     )
   }
-  return (
-    <MainAppSidebar
-      onSelectGroupId={(groupId: string) => {
-        setSidebarGroupId(groupId)
-      }}
-      onSelectAccountId={(accountId: string) => {
-        setSidebarAccountId(accountId)
-      }}
-    />
-  )
+  if (activeSidebar?.type === 'document') {
+    return <DocumentSidebar focus={activeSidebar} sidebarHeader={header} />
+  }
+  return <MainAppSidebar sidebarHeader={header} />
 }

@@ -1,27 +1,22 @@
 import {AuthorVariant, GroupVariant} from '@mintter/shared'
 import {Home, Separator, Tooltip, View, YGroup} from '@mintter/ui'
 import {Contact, FileText, Library, Sparkles, Star} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
 import {useMyAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {CreateGroupButton} from './new-group'
 import {
-  activeDocOutline,
   GenericSidebarContainer,
-  getDocOutline,
   MyAccountItem,
   NewDocumentButton,
   SidebarItem,
+  activeDocOutline,
+  getDocOutline,
 } from './sidebar-base'
 
-export function MainAppSidebar({
-  onSelectGroupId,
-  onSelectAccountId,
-}: {
-  onSelectGroupId: null | ((groupId: string) => void)
-  onSelectAccountId: null | ((accountId: string) => void)
-}) {
+export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
   const route = useNavRoute()
   const navigate = useNavigate()
   const replace = useNavigate('replace')
@@ -99,6 +94,7 @@ export function MainAppSidebar({
         borderBottomWidth={1}
         borderColor="$borderColor"
       >
+        {sidebarHeader}
         {account.data && (
           <YGroup.Item>
             <MyAccountItem

@@ -1,6 +1,7 @@
 import {unpackHmId} from '@mintter/shared'
 import {YGroup, YStack} from '@mintter/ui'
-import {Book, FileText, Newspaper, Undo2} from '@tamagui/lucide-icons'
+import {Book, FileText, Newspaper} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
@@ -17,10 +18,10 @@ import {
 
 export function AccountSidebar({
   accountId,
-  onBackToMain,
+  sidebarHeader,
 }: {
   accountId: string
-  onBackToMain: () => void
+  sidebarHeader: ReactNode
 }) {
   const route = useNavRoute()
   const replace = useNavigate('replace')
@@ -70,17 +71,8 @@ export function AccountSidebar({
   )
   return (
     <GenericSidebarContainer>
-      <YStack paddingVertical="$2">
-        <SidebarItem
-          minHeight={30}
-          paddingVertical="$2"
-          color="$color10"
-          title="Home Navigation"
-          onPress={() => {
-            onBackToMain()
-          }}
-          icon={Undo2}
-        />
+      <YStack>
+        {sidebarHeader}
         <SidebarItem
           active={isAccountActive}
           onPress={() => {

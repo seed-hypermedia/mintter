@@ -12,8 +12,8 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {Book, List, Newspaper, Plus, Undo2} from '@tamagui/lucide-icons'
-import {PropsWithChildren, useEffect} from 'react'
+import {Book, List, Newspaper, Plus} from '@tamagui/lucide-icons'
+import {PropsWithChildren, ReactNode, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useMyAccount} from '../models/accounts'
@@ -41,10 +41,10 @@ import {
 
 export function GroupSidebar({
   groupId,
-  onBackToMain,
+  sidebarHeader,
 }: {
   groupId: string
-  onBackToMain: () => void
+  sidebarHeader: ReactNode
 }) {
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : null
@@ -106,17 +106,8 @@ export function GroupSidebar({
     !isBlockActive
   return (
     <GenericSidebarContainer>
-      <YStack paddingVertical="$2">
-        <SidebarItem
-          minHeight={30}
-          paddingVertical="$2"
-          color="$color10"
-          title="Home Navigation"
-          onPress={() => {
-            onBackToMain()
-          }}
-          icon={Undo2}
-        />
+      <YStack>
+        {sidebarHeader}
         <SidebarItem
           active={isHomeActive}
           onPress={() => {
@@ -384,7 +375,6 @@ function CreateGroupCategoryDialog({
   onClose: () => void
 }) {
   const group = useGroup(input)
-  console.log('HEllooooo', input, group.data)
   if (!group.data) return <Spinner />
   return <CreateGroupCategoryForm group={group.data} onClose={onClose} />
 }
