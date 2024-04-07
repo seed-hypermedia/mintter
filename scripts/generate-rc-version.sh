@@ -2,6 +2,8 @@
 
 BRANCH_NAME=$1
 
+git fetch --tags origin
+
 # Extract version number from the branch name
 VERSION=$(echo $BRANCH_NAME | grep -oP 'release\/\K\d+\.\d+\.\d+')
 

@@ -6,9 +6,9 @@ import {
   GRPCClient,
   HYPERMEDIA_ENTITY_TYPES,
   HYPERMEDIA_SCHEME,
-  extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
+  parseFragment,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -93,12 +93,11 @@ function useURLHandler() {
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
-      console.log('web result', result)
-      const blockRef = extractBlockRefOfUrl(httpSearch)
+      const fragment = parseFragment(httpSearch)
       const fullHmId = hmIdWithVersion(
         result?.hmId,
         result?.hmVersion,
-        blockRef,
+        fragment?.blockId,
       )
       console.log('fullHmId', fullHmId)
       if (!fullHmId) throw new Error('Failed to fetch web link')

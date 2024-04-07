@@ -5,12 +5,12 @@ import {useOpenUrl} from '@mintter/app/open-url'
 import {
   BlockContentEmbed,
   createHmDocLink,
-  extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
   isPublicGatewayLink,
-  normlizeHmId,
+  normalizeHmId,
   unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
@@ -79,7 +79,7 @@ const Render = (
     setLoading: any,
   ) => {
     if (isPublicGatewayLink(url, gwUrl) || isHypermediaScheme(url)) {
-      const hmLink = normlizeHmId(url, gwUrl)
+      const hmLink = normalizeHmId(url, gwUrl)
       const newUrl = hmLink ? hmLink : url
       assign({props: {url: newUrl}} as MediaType)
       const cursorPosition = editor.getTextCursorPosition()
@@ -106,7 +106,7 @@ const Render = (
           const fullHmId = hmIdWithVersion(
             res?.hmId,
             res?.hmVersion,
-            extractBlockRefOfUrl(url),
+            res?.blockRef,
           )
           if (fullHmId) {
             assign({props: {url: fullHmId}} as MediaType)
@@ -215,6 +215,7 @@ function EmbedControl({
   const popoverViewState = usePopoverState()
   const popoverLatestState = usePopoverState()
   const popoverToDocumentState = usePopoverState()
+  const expandButtonHover = useHover()
 
   let versionValue = block.props.url.includes('&l') ? 'latest' : 'exact'
   let isVersionLatest = versionValue == 'latest'
@@ -226,15 +227,15 @@ function EmbedControl({
     }
   }, [])
 
-  const expanded = useMemo(
-    () =>
+  const expanded = useMemo(() => {
+    let res =
       hmId &&
       hmId?.blockRef &&
       hmId.blockRange &&
       'expanded' in hmId.blockRange &&
-      hmId.blockRange?.expanded,
-    [block.props.url],
-  )
+      hmId.blockRange?.expanded
+    return res
+  }, [block.props.url])
 
   const handleVersionSelect = useCallback(
     (versionMode: 'exact' | 'latest') => {
@@ -265,8 +266,13 @@ function EmbedControl({
     if (unpackedRef) {
       assign({
         props: {
-          url: createHmDocLink(hmId!),
-
+          url: createHmDocLink({
+            documentId: unpackedRef?.qid,
+            version: unpackedRef?.version,
+            blockRef: unpackedRef?.blockRef,
+            variants: unpackedRef?.variants,
+            latest: unpackedRef?.latest || undefined,
+          }),
           view: 'content',
         },
       })
@@ -297,42 +303,59 @@ function EmbedControl({
           }}
         />
       </Tooltip>
-      <Tooltip
-        content={
-          expanded
-            ? `Embed only the block's content`
-            : `Embed the block and its children`
-        }
-      >
-        <Button
-          size="$2"
-          icon={expanded ? Check : ChevronRight}
-          backgroundColor="$backgroundStrong"
-          onPress={(e) => {
-            e.stopPropagation()
-            let url = createHmDocLink({
-              documentId: hmId?.qid,
-              version: hmId?.version,
-              variants: hmId?.variants,
-              latest: !!hmId?.latest,
-              blockRef: hmId?.blockRef,
-              blockRange: {
-                expanded: !expanded,
-              },
-            })
-
-            console.log('--- URL', url)
-            assign({
-              props: {
-                url,
-                view: 'content',
-              },
-            })
-          }}
+      {hmId?.blockRef ? (
+        <Tooltip
+          content={
+            expanded
+              ? `Embed only the block's content`
+              : `Embed the block and its children`
+          }
         >
-          {expanded ? 'Collapse' : 'Expand'}
-        </Button>
-      </Tooltip>
+          <Button
+            {...expandButtonHover}
+            size="$2"
+            icon={
+              expanded
+                ? expandButtonHover.hover
+                  ? ChevronRight
+                  : ChevronDown
+                : expandButtonHover.hover
+                ? ChevronDown
+                : ChevronRight
+            }
+            backgroundColor="$backgroundStrong"
+            onPress={(e) => {
+              e.stopPropagation()
+              let url = createHmDocLink({
+                documentId: hmId?.qid,
+                version: hmId?.version,
+                variants: hmId?.variants,
+                latest: !!hmId?.latest,
+                blockRef: hmId?.blockRef,
+                blockRange: {
+                  expanded: !expanded,
+                },
+              })
+
+              assign({
+                props: {
+                  url,
+                  view: 'content',
+                },
+              })
+            }}
+          >
+            {expanded
+              ? expandButtonHover.hover
+                ? 'Expand'
+                : 'Collapse'
+              : expandButtonHover.hover
+              ? 'Collapse'
+              : 'Expand'}
+          </Button>
+        </Tooltip>
+      ) : null}
+
       {allowViewSwitcher && (
         <Popover
           {...popoverViewState}

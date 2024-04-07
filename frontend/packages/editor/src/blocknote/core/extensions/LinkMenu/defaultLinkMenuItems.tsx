@@ -5,7 +5,7 @@ import {
   UnpackedHypermediaId,
   isHypermediaScheme,
   isPublicGatewayLink,
-  normlizeHmId,
+  normalizeHmId,
 } from '@mintter/shared'
 import {
   FileText,
@@ -86,7 +86,7 @@ export function getLinkMenuItems({
           icon: <SquareAsterisk size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
             if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-              const hmId = normlizeHmId(ref, gwUrl)
+              const hmId = normalizeHmId(ref, gwUrl)
               if (!hmId) return
               ref = hmId
             }
@@ -119,7 +119,7 @@ export function getLinkMenuItems({
           icon: <FileText size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
             if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-              const hmId = normlizeHmId(ref, gwUrl)
+              const hmId = normalizeHmId(ref, gwUrl)
               if (!hmId) return
               ref = hmId
             }
