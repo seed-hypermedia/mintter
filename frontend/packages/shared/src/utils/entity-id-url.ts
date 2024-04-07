@@ -143,14 +143,15 @@ export function parseCustomURL(url: string): ParsedURL | null {
   if (!url) return null
   const [scheme, rest] = url.split('://')
   if (!rest) return null
-  const [pathAndQuery, fragment] = rest.split('#')
+  const [pathAndQuery, fragment = null] = rest.split('#')
+
   const [path, queryString] = pathAndQuery.split('?')
   const query = new URLSearchParams(queryString)
   return {
     scheme,
     path: path.split('/'),
     query,
-    fragment: fragment || null,
+    fragment,
   }
 }
 
@@ -263,8 +264,8 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const variants = parseVariantsQuery(parsed.query.get('b'))
     if (!type) return null
     const qid = createHmId(type, eid)
-    // TODO: call `parseFragment` here instead of this two helpers
     const fragment = parseFragment(parsed.fragment)
+
     let blockRange = null
     if (fragment) {
       if ('start' in fragment) {
@@ -303,8 +304,21 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     let hostname = parsed.path[0]
     if (!type) return null
     const qid = createHmId(type, eid)
-    const blockRef = extractBlockRefOfUrl(hypermediaId)
-    const blockRange = extractBlockRangeOfUrl(hypermediaId)
+    const fragment = parseFragment(parsed.fragment)
+
+    let blockRange = null
+    if (fragment) {
+      if ('start' in fragment) {
+        blockRange = {
+          start: fragment.start,
+          end: fragment.end,
+        }
+      } else if ('expanded' in fragment) {
+        blockRange = {
+          expanded: fragment.expanded,
+        }
+      }
+    }
     return {
       id: hypermediaId,
       qid,
@@ -313,7 +327,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       groupPathName: parsed.path[3] || null,
       version,
       variants,
-      blockRef,
+      blockRef: fragment ? fragment.blockId : null,
       blockRange,
       hostname,
       latest,
@@ -374,7 +388,7 @@ export function idToUrl(
   })
 }
 
-export function normlizeHmId(
+export function normalizeHmId(
   urlMaybe: string,
   gwUrl: StateStream<string>,
 ): string | undefined {
@@ -382,8 +396,14 @@ export function normlizeHmId(
   if (isPublicGatewayLink(urlMaybe, gwUrl)) {
     const unpacked = unpackHmId(urlMaybe)
 
+    console.log(`== ~ unpacked:`, urlMaybe, unpacked)
+
     if (unpacked?.eid && unpacked.type) {
-      return createHmId(unpacked.type, unpacked.eid, unpacked)
+      return createHmId(unpacked.type, unpacked.eid, {
+        blockRange: unpacked.blockRange,
+        blockRef: unpacked.blockRef,
+        version: unpacked.version,
+      })
     }
     return undefined
   }
@@ -504,6 +524,7 @@ export function extractBlockRangeOfUrl(
 }
 
 export type ParsedFragment =
+  | {blockId: string}
   | (BlockRange & {blockId: string})
   | (ExpandedBlockRange & {blockId: string})
 
@@ -515,21 +536,36 @@ export type ExpandedBlockRange = {
   expanded: boolean
 }
 
-function parseFragment(input: string | null): ParsedFragment | null {
+export function parseFragment(input: string | null): ParsedFragment | null {
   if (!input) return null
   const regex =
     /^(?<blockId>\w+)((?<expanded>\+)|\[(?<rangeStart>\d+)\:(?<rangeEnd>\d+)\])?$/
   const match = input.match(regex)
 
   if (match && match.groups) {
-    return {
-      blockId: match.groups.blockId,
-      expanded: !!match.groups.expanded,
-      start: parseInt(match.groups.rangeStart || '0'),
-      end: parseInt(match.groups.rangeEnd || '0'),
+    if (match.groups.expanded == '+') {
+      return {
+        blockId: match.groups.blockId,
+        expanded: true,
+      }
+    } else if (
+      typeof match.groups.rangeStart != 'undefined' ||
+      typeof match.groups.rangeEnd != 'undefined'
+    ) {
+      return {
+        blockId: match.groups.blockId,
+        start: parseInt(match.groups.rangeStart || '0'),
+        end: parseInt(match.groups.rangeEnd || '0'),
+      }
+    } else {
+      return {
+        blockId: match.groups.blockId,
+      }
     }
   } else {
-    return null
+    return {
+      blockId: input,
+    }
   }
 }
 

@@ -68,6 +68,7 @@ export {
   // AsteriskSquare as SquareAsterisk,
   SquareAsterisk as SquareAsterisk,
   Star,
+  StarFull,
   Square as Statement,
   Strikethrough,
   Bold as Strong,

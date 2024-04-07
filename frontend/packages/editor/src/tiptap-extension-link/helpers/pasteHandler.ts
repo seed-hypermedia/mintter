@@ -12,7 +12,7 @@ import {
   hmIdWithVersion,
   isHypermediaScheme,
   isPublicGatewayLink,
-  normlizeHmId,
+  normalizeHmId,
   unpackHmId,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
@@ -100,7 +100,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         const nativeHyperLink =
           isHypermediaScheme(textContent) ||
           isPublicGatewayLink(textContent, options.gwUrl)
-            ? normlizeHmId(textContent, options.gwUrl)
+            ? normalizeHmId(textContent, options.gwUrl)
             : null
 
         const unpackedHmId =
@@ -151,12 +151,23 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
 
         if (selection.empty && unpackedHmId?.eid && unpackedHmId.type) {
           let tr = view.state.tr
+
           let pos = tr.selection.from
           const normalizedHmUrl = createHmId(
             unpackedHmId.type,
             unpackedHmId.eid,
-            unpackedHmId,
+            {
+              blockRef: unpackedHmId.blockRef,
+              blockRange: unpackedHmId.blockRange,
+              version: unpackedHmId.version,
+            },
           )
+
+          console.log(`== ~ pasteHandler ~ normalizedHmUrl:`, {
+            textContent,
+            normalizedHmUrl,
+            unpackedHmId,
+          })
           fetchEntityTitle(unpackedHmId, options.grpcClient)
             .then((title) => {
               if (title) {

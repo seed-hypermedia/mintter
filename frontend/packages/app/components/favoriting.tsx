@@ -1,8 +1,7 @@
 import {useHover} from '@mintter/shared'
-import {Button, Tooltip} from '@mintter/ui'
-import {Star} from '@tamagui/lucide-icons'
+import {Button, Star, StarFull, Tooltip} from '@mintter/ui'
+
 import {ComponentProps} from 'react'
-import {TiStarFullOutline, TiStarOutline} from 'react-icons/ti'
 import {useFavorite} from '../models/favorites'
 
 function RemoveFavoriteButton({
@@ -16,7 +15,7 @@ function RemoveFavoriteButton({
       <Button
         {...hover}
         size="$2"
-        icon={hover.hover ? TiStarOutline : TiStarFullOutline}
+        icon={hover.hover ? Star : StarFull}
         onPress={onPress}
         color={hover.hover ? undefined : '$yellow10'}
         theme={hover.hover ? 'red' : undefined}
@@ -42,7 +41,7 @@ export function FavoriteButton({url}: {url: string}) {
   return (
     <Tooltip content="Add To Favorites">
       <Button
-        icon={TiStarOutline}
+        icon={Star}
         size="$2"
         onPress={(e) => {
           e.stopPropagation()

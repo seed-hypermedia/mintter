@@ -429,6 +429,7 @@ export function BlockNodeContent({
   depth = 1,
   childrenType = 'group',
   isFirstChild = false,
+  expanded = true,
   ...props
 }: {
   isFirstChild: boolean
@@ -438,9 +439,11 @@ export function BlockNodeContent({
   start?: string | number
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
+  expanded?: boolean
 }) {
   const {
     layoutUnit,
+    textUnit,
     renderOnly,
     routeParams,
     onCitationClick,
@@ -457,7 +460,13 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
-  const [expanded, setExpanded] = useState<boolean>(true)
+  const [_expanded, setExpanded] = useState<boolean>(() => !!expanded || true)
+
+  useEffect(() => {
+    if (expanded !== _expanded) {
+      setExpanded(!!expanded)
+    }
+  }, [expanded])
 
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
@@ -494,7 +503,7 @@ export function BlockNodeContent({
   }, [routeParams?.blockRef, comment, blockNode.block])
 
   function handleBlockNodeToggle() {
-    setExpanded(!expanded)
+    setExpanded(!_expanded)
   }
 
   useEffect(() => {
@@ -544,19 +553,19 @@ export function BlockNodeContent({
         {bnChildren ? (
           <Tooltip
             content={
-              expanded
+              _expanded
                 ? 'You can collapse this block and hide its children'
                 : 'This block is collapsed. you can expand it and see its children'
             }
           >
             <Button
               size="$1"
-              x={layoutUnit * -1}
+              x={textUnit * -1}
               y={contentH}
               chromeless
               width={layoutUnit}
               height={layoutUnit * 0.75}
-              icon={expanded ? ChevronDown : ChevronRight}
+              icon={_expanded ? ChevronDown : ChevronRight}
               onPress={(e) => {
                 e.stopPropagation()
                 handleBlockNodeToggle()
@@ -565,7 +574,7 @@ export function BlockNodeContent({
               zIndex="$5"
               left={0}
               bg="$backgroundTransparent"
-              opacity={expanded ? 0 : 1}
+              opacity={_expanded ? 0 : 1}
               hoverStyle={{
                 opacity: 1,
               }}
@@ -687,21 +696,7 @@ export function BlockNodeContent({
           </XStack>
         ) : null}
       </XStack>
-      {/* {bnChildren && !expanded ? (
-        <Tooltip content="Collapsed block. This block is collapsed and its children are not visible. Press ">
-          <Button
-            icon={MoreHorizontal}
-            size="$2"
-            alignSelf="flex-start"
-            height={10}
-            onPress={(e) => {
-              e.stopPropagation()
-              handleBlockNodeToggle()
-            }}
-          />
-        </Tooltip>
-      ) : null} */}
-      {bnChildren && expanded ? (
+      {_expanded ? (
         <BlockNodeList
           paddingLeft={blockNode.block?.type != 'heading' ? layoutUnit : 0}
           childrenType={childrenType as HMBlockChildrenType}
@@ -1448,12 +1443,12 @@ export function ContentEmbed({
                       ]
                     : currentAnnotations,
               },
-              children:
-                props.blockRange &&
-                'expanded' in props.blockRange &&
-                props.blockRange.expanded
-                  ? [...selectedBlock.children]
-                  : [],
+              // children:
+              //   props.blockRange &&
+              //   'expanded' in props.blockRange &&
+              //   props.blockRange.expanded
+              //     ? [...selectedBlock.children]
+              //     : [],
             },
           ]
         : null
@@ -1474,7 +1469,7 @@ export function ContentEmbed({
             : null,
       },
     }
-  }, [props.blockRef, pub])
+  }, [props.blockRef, props.blockRange, pub])
 
   let content = <BlockContentUnknown {...props} />
   if (isLoading) {
@@ -1527,6 +1522,7 @@ export function ContentEmbed({
               key={bn.block?.id}
               isFirstChild={idx == 0}
               depth={1}
+              expanded={!!props.blockRange?.expanded || false}
               blockNode={bn}
               childrenType="group"
               index={idx}
