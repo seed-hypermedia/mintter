@@ -688,6 +688,60 @@ WHERE resources.iri = :entities_eid`
 	return err
 }
 
+type EntitiesInsertRemovedRecordResult struct {
+	ResourceEID string
+}
+
+func EntitiesInsertRemovedRecord(conn *sqlite.Conn, iri string, reason string, meta string) (EntitiesInsertRemovedRecordResult, error) {
+	const query = `INSERT OR IGNORE INTO deleted_resources (iri, reason, meta)
+VALUES (:iri, :reason, :meta)
+RETURNING deleted_resources.iri AS resource_eid`
+
+	var out EntitiesInsertRemovedRecordResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":iri", iri)
+		stmt.SetText(":reason", reason)
+		stmt.SetText(":meta", meta)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("EntitiesInsertRemovedRecord: more than one result return for a single-kind query")
+		}
+
+		out.ResourceEID = stmt.ColumnText(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesInsertRemovedRecord: %w", err)
+	}
+
+	return out, err
+}
+
+func EntitiesDeleteRemovedRecord(conn *sqlite.Conn, resource_eid string) error {
+	const query = `DELETE FROM deleted_resources
+WHERE deleted_resources.iri = :resource_eid`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":resource_eid", resource_eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesDeleteRemovedRecord: %w", err)
+	}
+
+	return err
+}
+
 type ChangesListFromChangeSetResult struct {
 	StructuralBlobsViewBlobID     int64
 	StructuralBlobsViewCodec      int64

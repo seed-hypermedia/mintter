@@ -182,6 +182,9 @@ message DeletePublicationRequest {
   // Document ID of the publication to be removed.
   // All versions will also be removed.
   string document_id = 1;
+
+  // Optional. Reason why the user wants to delete the publication.
+  string reason = 2;
 }
 
 // Request for getting a single publication.

@@ -231,6 +231,8 @@ func (bs *indexer) indexKeyDelegation(idx *indexingCtx, id int64, c cid.Cid, v K
 }
 
 func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) error {
+	// TODO(juligasa): check if the change is related to a deleted resource. In that case,
+	// do not index it.
 	// TODO(burdiyan): ensure there's only one change that brings an entity into life.
 
 	// Extracting author from the associated key delegation.
@@ -509,6 +511,8 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 }
 
 func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment) error {
+	// TODO(juligasa): check if the comment is related to a deleted resource. In that case
+	// do not index it.
 	if v.Target == "" {
 		return fmt.Errorf("comment must have a target")
 	}

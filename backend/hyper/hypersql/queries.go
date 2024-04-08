@@ -210,7 +210,23 @@ func generateQueries() error {
 			"DELETE FROM", s.Resources, '\n',
 			"WHERE", s.ResourcesIRI, "=", qb.Var("entities_eid", sgen.TypeText),
 		),
-
+		qb.MakeQuery(s.Schema, "EntitiesInsertRemovedRecord", sgen.QueryKindSingle,
+			"INSERT OR IGNORE INTO", s.DeletedResources, qb.ListColShort(
+				s.DeletedResourcesIRI,
+				s.DeletedResourcesReason,
+				s.DeletedResourcesMeta,
+			), '\n',
+			"VALUES", qb.List(
+				qb.Var("iri", sgen.TypeText),
+				qb.Var("reason", sgen.TypeText),
+				qb.Var("meta", sgen.TypeText),
+			), '\n',
+			"RETURNING", qb.Results(qb.ResultColAlias(s.DeletedResourcesIRI, "resource_eid")),
+		),
+		qb.MakeQuery(s.Schema, "EntitiesDeleteRemovedRecord", sgen.QueryKindExec,
+			"DELETE FROM", s.DeletedResources, '\n',
+			"WHERE", s.DeletedResourcesIRI, "=", qb.Var("resource_eid", sgen.TypeText),
+		),
 		qb.MakeQuery(s.Schema, "ChangesListFromChangeSet", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.StructuralBlobsViewBlobID,

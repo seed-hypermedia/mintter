@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math"
 	"mintter/backend/core"
@@ -632,14 +633,38 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 
 // DeletePublication implements the corresponding gRPC method.
 func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
+	var meta string
+	var qGetResourceMetadata = dqb.Str(`
+  	SELECT meta from meta_view
+	WHERE iri = :eid
+	`)
+
 	if in.DocumentId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
 	}
 
 	eid := hyper.EntityID(in.DocumentId)
-
-	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
 		return nil, err
+	}
+	defer cancel()
+
+	err = sqlitex.Exec(conn, qGetResourceMetadata(), func(stmt *sqlite.Stmt) error {
+		meta = stmt.ColumnText(0)
+		return nil
+	}, in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = api.blobs.DeleteEntity(ctx, eid, in.Reason, meta)
+	if err != nil {
+		if errors.Is(err, hyper.ErrEntityNotFound) {
+			return nil, err
+		}
+		return nil, status.Errorf(codes.Unimplemented, "Resource can't be deleted because it's referenced somewhere else")
+		// TODO(juligasa): Empty the data field, size -1 and manually remove links
 	}
 
 	return &emptypb.Empty{}, nil

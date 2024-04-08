@@ -666,6 +666,13 @@ export class DeletePublicationRequest extends Message<DeletePublicationRequest> 
    */
   documentId = "";
 
+  /**
+   * Optional. Reason why the user wants to delete the publication.
+   *
+   * @generated from field: string reason = 2;
+   */
+  reason = "";
+
   constructor(data?: PartialMessage<DeletePublicationRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -675,6 +682,7 @@ export class DeletePublicationRequest extends Message<DeletePublicationRequest> 
   static readonly typeName = "com.mintter.documents.v1alpha.DeletePublicationRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletePublicationRequest {

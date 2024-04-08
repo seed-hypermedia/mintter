@@ -58,6 +58,24 @@ const (
 	C_ChangeDepsParent = "change_deps.parent"
 )
 
+// Table deleted_resources.
+const (
+	DeletedResources           sqlitegen.Table  = "deleted_resources"
+	DeletedResourcesDeleteTime sqlitegen.Column = "deleted_resources.delete_time"
+	DeletedResourcesIRI        sqlitegen.Column = "deleted_resources.iri"
+	DeletedResourcesMeta       sqlitegen.Column = "deleted_resources.meta"
+	DeletedResourcesReason     sqlitegen.Column = "deleted_resources.reason"
+)
+
+// Table deleted_resources. Plain strings.
+const (
+	T_DeletedResources           = "deleted_resources"
+	C_DeletedResourcesDeleteTime = "deleted_resources.delete_time"
+	C_DeletedResourcesIRI        = "deleted_resources.iri"
+	C_DeletedResourcesMeta       = "deleted_resources.meta"
+	C_DeletedResourcesReason     = "deleted_resources.reason"
+)
+
 // Table drafts.
 const (
 	Drafts         sqlitegen.Table  = "drafts"
@@ -368,6 +386,10 @@ var Schema = sqlitegen.Schema{
 		BlobsSize:                       {Table: Blobs, SQLType: "INTEGER"},
 		ChangeDepsChild:                 {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangeDepsParent:                {Table: ChangeDeps, SQLType: "INTEGER"},
+		DeletedResourcesDeleteTime:      {Table: DeletedResources, SQLType: "INTEGER"},
+		DeletedResourcesIRI:             {Table: DeletedResources, SQLType: "TEXT"},
+		DeletedResourcesMeta:            {Table: DeletedResources, SQLType: "TEXT"},
+		DeletedResourcesReason:          {Table: DeletedResources, SQLType: "TEXT"},
 		DraftsBlob:                      {Table: Drafts, SQLType: "INTEGER"},
 		DraftsResource:                  {Table: Drafts, SQLType: "INTEGER"},
 		DraftsViewBlobID:                {Table: DraftsView, SQLType: "INTEGER"},

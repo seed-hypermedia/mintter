@@ -25,6 +25,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	// ErrEntityNotFound used when looking for an entity not present in the database.
+	ErrEntityNotFound = errors.New("entity not found")
+)
+
 // BlobType is a named type for Mintter Terra Blobs.
 type BlobType string
 
@@ -326,20 +331,21 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 	})
 }
 
-func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
+// DeleteEntity deletes an entity from the database.
+func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID, reason string, meta string) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func() error {
+	err = sqlitex.WithTx(conn, func() error {
 		edb, err := hypersql.EntitiesLookupID(conn, string(eid))
 		if err != nil {
-			return err
+			return fmt.Errorf("%w. problem with the query: %s", ErrEntityNotFound, err.Error())
 		}
 		if edb.ResourcesID == 0 {
-			return fmt.Errorf("no such entity: %s", eid)
+			return fmt.Errorf("%w: %s", ErrEntityNotFound, eid)
 		}
 
 		if err := hypersql.ChangesDeleteForEntity(conn, edb.ResourcesID); err != nil {
@@ -348,6 +354,21 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 
 		if err := hypersql.EntitiesDelete(conn, string(eid)); err != nil {
 			return err
+		}
+		//TODO(juligasa): remove comments and replays of that entity.
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return sqlitex.WithTx(conn, func() error {
+		res, err := hypersql.EntitiesInsertRemovedRecord(conn, eid.String(), reason, meta)
+		if err != nil {
+			return err
+		}
+		if res.ResourceEID != eid.String() {
+			return fmt.Errorf("%w: %s", ErrEntityNotFound, eid)
 		}
 
 		return nil

@@ -753,6 +753,8 @@ type DeletePublicationRequest struct {
 	// Document ID of the publication to be removed.
 	// All versions will also be removed.
 	DocumentId string `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	// Optional. Reason why the user wants to delete the publication.
+	Reason string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
 }
 
 func (x *DeletePublicationRequest) Reset() {
@@ -790,6 +792,13 @@ func (*DeletePublicationRequest) Descriptor() ([]byte, []int) {
 func (x *DeletePublicationRequest) GetDocumentId() string {
 	if x != nil {
 		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *DeletePublicationRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
 	}
 	return ""
 }
