@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 
 /**
  * Drafts service exposes the functionality
@@ -133,6 +133,17 @@ export const Publications = {
       name: "ListPublications",
       I: ListPublicationsRequest,
       O: ListPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists deleted publications. Th
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Publications.ListDeletedPublications
+     */
+    listDeletedPublications: {
+      name: "ListDeletedPublications",
+      I: ListDeletedPublicationsRequest,
+      O: ListDeletedPublicationsResponse,
       kind: MethodKind.Unary,
     },
     /**

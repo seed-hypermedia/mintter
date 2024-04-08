@@ -230,6 +230,7 @@ func generateQueries() error {
 		qb.MakeQuery(s.Schema, "EntitiesLookupRemovedRecord", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				s.DeletedResourcesIRI,
+				s.DeletedResourcesDeleteTime,
 				s.DeletedResourcesReason,
 				s.DeletedResourcesMeta,
 			), '\n',
@@ -240,6 +241,7 @@ func generateQueries() error {
 		qb.MakeQuery(s.Schema, "EntitiesListRemovedRecords", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.DeletedResourcesIRI,
+				s.DeletedResourcesDeleteTime,
 				s.DeletedResourcesReason,
 				s.DeletedResourcesMeta,
 			), '\n',

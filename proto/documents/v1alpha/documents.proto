@@ -157,6 +157,9 @@ service Publications {
   // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 
+  // Lists deleted publications. Th
+  rpc ListDeletedPublications(ListDeletedPublicationsRequest) returns (ListDeletedPublicationsResponse);
+
   // Push Local publication to the gateway.
   rpc PushPublication(PushPublicationRequest) returns (google.protobuf.Empty);
 
@@ -221,6 +224,26 @@ message ListPublicationsResponse {
   string next_page_token = 2;
 }
 
+// Request for listing deleted publications.
+message ListDeletedPublicationsRequest {
+  // Optional. Number of results per page. Default is defined by the server.
+  int32 page_size = 1;
+
+  // Optional. Value from next_page_token obtains from a previous response.
+  string page_token = 2;
+
+}
+
+// Response with list of publications.
+message ListDeletedPublicationsResponse {
+  // List of publications matching the request.
+  // Only most recent versions are returned.
+  // Content is omitted, only metadata is present.
+  repeated DeletedPublication deleted_publications = 1;
+
+  // Token for the next page if there're more results.
+  string next_page_token = 2;
+}
 // Request for listing publications owned by a given account.
 message ListAccountPublicationsRequest {
   // Optional. Number of results per page. Default is defined by the server.
@@ -251,6 +274,21 @@ message Publication {
 
   // Published document.
   Document document = 2;
+}
+
+// Publication that has been deleted
+message DeletedPublication { 
+  // EID of the deleted publication.
+  string eid = 1;
+
+  // When the publication was deleted.
+  google.protobuf.Timestamp deleted_time = 2;
+
+  // Reason why that publication was deleted.
+  string deleted_reason = 3;
+
+  // Further metadata about the deleted Publication, title, etc ...
+  string metadata = 4;
 }
 
 // Document represents metadata and content of a draft or publication.

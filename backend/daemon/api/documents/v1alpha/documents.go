@@ -934,6 +934,31 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	return resp, nil
 }
 
+// ListPublications implements the corresponding gRPC method.
+func (api *Server) ListDeletedPublications(ctx context.Context, in *documents.ListDeletedPublicationsRequest) (*documents.ListDeletedPublicationsResponse, error) {
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
+	}
+	defer cancel()
+	resp := &documents.ListDeletedPublicationsResponse{
+		DeletedPublications: make([]*documents.DeletedPublication, 0),
+	}
+	list, err := hypersql.EntitiesListRemovedRecords(conn)
+	if err != nil {
+		return nil, err
+	}
+	for _, entity := range list {
+		resp.DeletedPublications = append(resp.DeletedPublications, &documents.DeletedPublication{
+			Eid:           entity.DeletedResourcesIRI,
+			DeletedTime:   &timestamppb.Timestamp{Seconds: entity.DeletedResourcesDeleteTime},
+			DeletedReason: entity.DeletedResourcesReason,
+			Metadata:      entity.DeletedResourcesMeta,
+		})
+	}
+	return resp, nil
+}
+
 // ListAccountPublications implements the corresponding gRPC method.
 func (api *Server) ListAccountPublications(ctx context.Context, in *documents.ListAccountPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	if in.AccountId == "" {

@@ -743,13 +743,14 @@ WHERE deleted_resources.iri = :resource_eid`
 }
 
 type EntitiesLookupRemovedRecordResult struct {
-	DeletedResourcesIRI    string
-	DeletedResourcesReason string
-	DeletedResourcesMeta   string
+	DeletedResourcesIRI        string
+	DeletedResourcesDeleteTime int64
+	DeletedResourcesReason     string
+	DeletedResourcesMeta       string
 }
 
 func EntitiesLookupRemovedRecord(conn *sqlite.Conn, resource_eid string) (EntitiesLookupRemovedRecordResult, error) {
-	const query = `SELECT deleted_resources.iri, deleted_resources.reason, deleted_resources.meta
+	const query = `SELECT deleted_resources.iri, deleted_resources.delete_time, deleted_resources.reason, deleted_resources.meta
 FROM deleted_resources
 WHERE deleted_resources.iri = :resource_eid
 LIMIT 1`
@@ -766,8 +767,9 @@ LIMIT 1`
 		}
 
 		out.DeletedResourcesIRI = stmt.ColumnText(0)
-		out.DeletedResourcesReason = stmt.ColumnText(1)
-		out.DeletedResourcesMeta = stmt.ColumnText(2)
+		out.DeletedResourcesDeleteTime = stmt.ColumnInt64(1)
+		out.DeletedResourcesReason = stmt.ColumnText(2)
+		out.DeletedResourcesMeta = stmt.ColumnText(3)
 		return nil
 	}
 
@@ -780,13 +782,14 @@ LIMIT 1`
 }
 
 type EntitiesListRemovedRecordsResult struct {
-	DeletedResourcesIRI    string
-	DeletedResourcesReason string
-	DeletedResourcesMeta   string
+	DeletedResourcesIRI        string
+	DeletedResourcesDeleteTime int64
+	DeletedResourcesReason     string
+	DeletedResourcesMeta       string
 }
 
 func EntitiesListRemovedRecords(conn *sqlite.Conn) ([]EntitiesListRemovedRecordsResult, error) {
-	const query = `SELECT deleted_resources.iri, deleted_resources.reason, deleted_resources.meta
+	const query = `SELECT deleted_resources.iri, deleted_resources.delete_time, deleted_resources.reason, deleted_resources.meta
 FROM deleted_resources`
 
 	var out []EntitiesListRemovedRecordsResult
@@ -796,9 +799,10 @@ FROM deleted_resources`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, EntitiesListRemovedRecordsResult{
-			DeletedResourcesIRI:    stmt.ColumnText(0),
-			DeletedResourcesReason: stmt.ColumnText(1),
-			DeletedResourcesMeta:   stmt.ColumnText(2),
+			DeletedResourcesIRI:        stmt.ColumnText(0),
+			DeletedResourcesDeleteTime: stmt.ColumnInt64(1),
+			DeletedResourcesReason:     stmt.ColumnText(2),
+			DeletedResourcesMeta:       stmt.ColumnText(3),
 		})
 
 		return nil

@@ -862,6 +862,106 @@ export class ListPublicationsResponse extends Message<ListPublicationsResponse> 
 }
 
 /**
+ * Request for listing deleted publications.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListDeletedPublicationsRequest
+ */
+export class ListDeletedPublicationsRequest extends Message<ListDeletedPublicationsRequest> {
+  /**
+   * Optional. Number of results per page. Default is defined by the server.
+   *
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize = 0;
+
+  /**
+   * Optional. Value from next_page_token obtains from a previous response.
+   *
+   * @generated from field: string page_token = 2;
+   */
+  pageToken = "";
+
+  constructor(data?: PartialMessage<ListDeletedPublicationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListDeletedPublicationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDeletedPublicationsRequest {
+    return new ListDeletedPublicationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDeletedPublicationsRequest {
+    return new ListDeletedPublicationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDeletedPublicationsRequest {
+    return new ListDeletedPublicationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDeletedPublicationsRequest | PlainMessage<ListDeletedPublicationsRequest> | undefined, b: ListDeletedPublicationsRequest | PlainMessage<ListDeletedPublicationsRequest> | undefined): boolean {
+    return proto3.util.equals(ListDeletedPublicationsRequest, a, b);
+  }
+}
+
+/**
+ * Response with list of publications.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListDeletedPublicationsResponse
+ */
+export class ListDeletedPublicationsResponse extends Message<ListDeletedPublicationsResponse> {
+  /**
+   * List of publications matching the request.
+   * Only most recent versions are returned.
+   * Content is omitted, only metadata is present.
+   *
+   * @generated from field: repeated com.mintter.documents.v1alpha.DeletedPublication deleted_publications = 1;
+   */
+  deletedPublications: DeletedPublication[] = [];
+
+  /**
+   * Token for the next page if there're more results.
+   *
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken = "";
+
+  constructor(data?: PartialMessage<ListDeletedPublicationsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListDeletedPublicationsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "deleted_publications", kind: "message", T: DeletedPublication, repeated: true },
+    { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDeletedPublicationsResponse {
+    return new ListDeletedPublicationsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDeletedPublicationsResponse {
+    return new ListDeletedPublicationsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDeletedPublicationsResponse {
+    return new ListDeletedPublicationsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDeletedPublicationsResponse | PlainMessage<ListDeletedPublicationsResponse> | undefined, b: ListDeletedPublicationsResponse | PlainMessage<ListDeletedPublicationsResponse> | undefined): boolean {
+    return proto3.util.equals(ListDeletedPublicationsResponse, a, b);
+  }
+}
+
+/**
  * Request for listing publications owned by a given account.
  *
  * @generated from message com.mintter.documents.v1alpha.ListAccountPublicationsRequest
@@ -973,6 +1073,71 @@ export class Publication extends Message<Publication> {
 
   static equals(a: Publication | PlainMessage<Publication> | undefined, b: Publication | PlainMessage<Publication> | undefined): boolean {
     return proto3.util.equals(Publication, a, b);
+  }
+}
+
+/**
+ * Publication that has been deleted
+ *
+ * @generated from message com.mintter.documents.v1alpha.DeletedPublication
+ */
+export class DeletedPublication extends Message<DeletedPublication> {
+  /**
+   * EID of the deleted publication.
+   *
+   * @generated from field: string eid = 1;
+   */
+  eid = "";
+
+  /**
+   * When the publication was deleted.
+   *
+   * @generated from field: google.protobuf.Timestamp deleted_time = 2;
+   */
+  deletedTime?: Timestamp;
+
+  /**
+   * Reason why that publication was deleted.
+   *
+   * @generated from field: string deleted_reason = 3;
+   */
+  deletedReason = "";
+
+  /**
+   * Further metadata about the deleted Publication, title, etc ...
+   *
+   * @generated from field: string metadata = 4;
+   */
+  metadata = "";
+
+  constructor(data?: PartialMessage<DeletedPublication>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.DeletedPublication";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "eid", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "deleted_time", kind: "message", T: Timestamp },
+    { no: 3, name: "deleted_reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "metadata", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletedPublication {
+    return new DeletedPublication().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeletedPublication {
+    return new DeletedPublication().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeletedPublication {
+    return new DeletedPublication().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeletedPublication | PlainMessage<DeletedPublication> | undefined, b: DeletedPublication | PlainMessage<DeletedPublication> | undefined): boolean {
+    return proto3.util.equals(DeletedPublication, a, b);
   }
 }
 
