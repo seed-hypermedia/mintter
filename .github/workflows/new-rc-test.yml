@@ -1,0 +1,28 @@
+name: Version set test
+
+on:
+  push:
+    branches:
+      - "release/*"
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set Version
+        id: set_version
+        run: |
+          chmod +x ./scripts/generate-rc-version.sh
+          VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Display Version
+        run: |
+          echo "App Version: ${{ steps.set_version.outputs.version }}"
