@@ -128,17 +128,10 @@ function EmbedWrapper({
 }
 
 export function EmbedPublicationContent(props: EntityComponentProps) {
-  const docId =
-    props.type == 'd'
-      ? createHmId('d', props.eid, {
-          blockRange: props.blockRange,
-          blockRef: props.blockRef,
-          version: props.version,
-        })
-      : undefined
+  const documentId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
   const pub = usePublicationVariant({
-    documentId: props.qid,
+    documentId,
     versionId:
       showReferenced && props.version
         ? props.version
@@ -146,7 +139,7 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
         ? undefined
         : props.version || undefined,
     variants: props.variants || undefined,
-    enabled: !!docId,
+    enabled: !!documentId,
   })
   const spawn = useNavigate('spawn')
   return (
@@ -284,12 +277,7 @@ function AvatarComponent({accountId}: {accountId: string}) {
 }
 
 export function EmbedGroup(props: EntityComponentProps) {
-  const groupId =
-    props.type == 'g'
-      ? createHmId('g', props.eid, {
-          version: props.version,
-        })
-      : undefined
+  const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
 
   const group = hmGroup(groupQuery.data)
