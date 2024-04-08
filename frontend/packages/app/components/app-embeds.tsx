@@ -181,14 +181,8 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
 }
 
 export function EmbedPublicationCard(props: EntityComponentProps) {
-  const docId =
-    props.type == 'd'
-      ? createHmId('d', props.eid, {
-          blockRange: props.blockRange,
-          blockRef: props.blockRef,
-          version: props.version,
-        })
-      : undefined
+  // we can't pass anything else to `createHmId` because this is creating the string we need to pass to getPublication
+  const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = usePublicationVariant({
     documentId: docId,
     versionId: props.latest ? undefined : props.version || undefined,

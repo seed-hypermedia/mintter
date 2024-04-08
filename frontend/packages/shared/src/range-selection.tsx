@@ -107,8 +107,6 @@ const machine = setup({
     // @ts-expect-error
     setRange: assign(() => {
       let sel = window.getSelection()
-
-      console.log(`== ~ setRange:assign ~ sel:`, sel)
       if (sel && sel.rangeCount > 0) {
         const {anchorNode, anchorOffset, focusNode, focusOffset} = sel
         const anchorBlockId = getParentElId(anchorNode)
