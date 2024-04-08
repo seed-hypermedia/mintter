@@ -358,6 +358,12 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 			sb.Meta = title
 		}
 		blocks, ok := v.Patch["blocks"].(map[string]any)
+
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return nil
+		}
+
 		if ok {
 			for id, blk := range blocks {
 				v, ok := blk.(map[string]any)["#map"]
@@ -376,7 +382,6 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 				}
 				blk.Id = id
 				blk.Revision = c.String()
-
 				if err := indexURL(&sb, bs.log, blk.Id, "doc/"+blk.Type, blk.Ref); err != nil {
 					return err
 				}

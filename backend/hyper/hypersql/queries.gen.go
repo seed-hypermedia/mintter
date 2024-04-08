@@ -742,6 +742,76 @@ WHERE deleted_resources.iri = :resource_eid`
 	return err
 }
 
+type EntitiesLookupRemovedRecordResult struct {
+	DeletedResourcesIRI    string
+	DeletedResourcesReason string
+	DeletedResourcesMeta   string
+}
+
+func EntitiesLookupRemovedRecord(conn *sqlite.Conn, resource_eid string) (EntitiesLookupRemovedRecordResult, error) {
+	const query = `SELECT deleted_resources.iri, deleted_resources.reason, deleted_resources.meta
+FROM deleted_resources
+WHERE deleted_resources.iri = :resource_eid
+LIMIT 1`
+
+	var out EntitiesLookupRemovedRecordResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":resource_eid", resource_eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("EntitiesLookupRemovedRecord: more than one result return for a single-kind query")
+		}
+
+		out.DeletedResourcesIRI = stmt.ColumnText(0)
+		out.DeletedResourcesReason = stmt.ColumnText(1)
+		out.DeletedResourcesMeta = stmt.ColumnText(2)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesLookupRemovedRecord: %w", err)
+	}
+
+	return out, err
+}
+
+type EntitiesListRemovedRecordsResult struct {
+	DeletedResourcesIRI    string
+	DeletedResourcesReason string
+	DeletedResourcesMeta   string
+}
+
+func EntitiesListRemovedRecords(conn *sqlite.Conn) ([]EntitiesListRemovedRecordsResult, error) {
+	const query = `SELECT deleted_resources.iri, deleted_resources.reason, deleted_resources.meta
+FROM deleted_resources`
+
+	var out []EntitiesListRemovedRecordsResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, EntitiesListRemovedRecordsResult{
+			DeletedResourcesIRI:    stmt.ColumnText(0),
+			DeletedResourcesReason: stmt.ColumnText(1),
+			DeletedResourcesMeta:   stmt.ColumnText(2),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesListRemovedRecords: %w", err)
+	}
+
+	return out, err
+}
+
 type ChangesListFromChangeSetResult struct {
 	StructuralBlobsViewBlobID     int64
 	StructuralBlobsViewCodec      int64
