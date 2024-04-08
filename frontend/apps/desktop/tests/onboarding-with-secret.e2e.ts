@@ -7,9 +7,11 @@ test('Onboarding With recovery phrase', async ({onboardingPage}) => {
 
   await test.step('Welcome Screen', async () => {
     // await appWindow.pause()
-    let startBtn = await appWindow.locator('#btn-new-account')
-
-    await startBtn.click()
+    await appWindow
+      .getByRole('button', {
+        name: 'Create a new Account',
+      })
+      .click({force: true})
   })
 
   await test.step('Secret Recovery phrase', async () => {

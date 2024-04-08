@@ -12,7 +12,12 @@ export class HomePage {
   }
 
   async goto() {
-    await this.appData.appWindow.locator('#btn-new-account').click()
+    await this.appData.appWindow.waitForSelector('#btw-new-account')
+    await this.appData.appWindow
+      .getByRole('button', {
+        name: 'Create a new Account',
+      })
+      .click({force: true})
 
     await this.appData.appWindow.locator('#btn-tab-ownwords').click()
     await this.appData.appWindow

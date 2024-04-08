@@ -8,8 +8,12 @@ test('Onboarding by adding a new device to account', async ({
   let {appWindow} = onboardingPage.appData
 
   await test.step('Welcome Screen', async () => {
-    let startBtn = await appWindow.locator('#btn-new-device')
-    await startBtn.click()
+    // await appWindow.pause()
+    await appWindow
+      .getByRole('button', {
+        name: 'or add a new device to your',
+      })
+      .click({force: true})
   })
 
   await test.step('Add new Device with Secret Recovery phrase', async () => {

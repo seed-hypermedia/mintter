@@ -5,8 +5,12 @@ import {expect} from '@playwright/test'
 test('Onboarding from scratch', async ({onboardingPage}) => {
   let {appWindow} = onboardingPage.appData
   await test.step('Welcome Screen', async () => {
-    let startBtn = await appWindow.locator('#btn-new-account')
-    await startBtn.click()
+    // await appWindow.pause()
+    await appWindow
+      .getByRole('button', {
+        name: 'Create a new Account',
+      })
+      .click({force: true})
   })
 
   await test.step('Secret Recovery phrase', async () => {
