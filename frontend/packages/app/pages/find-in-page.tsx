@@ -36,14 +36,20 @@ export function FindInPage({ipc}: {ipc: AppIPC}) {
   }, [query])
 
   useEffect(() => {
+    if (queryInput.current) {
+      queryInput.current?.focus()
+      queryInput.current?.select()
+    }
     // @ts-expect-error
     return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
-      setTimeout(() => {
-        queryInput.current?.focus()
-        queryInput.current?.select()
-      }, 100)
+      if (event == 'find_in_page_focus') {
+        setTimeout(() => {
+          queryInput.current?.focus()
+          queryInput.current?.select()
+        }, 10)
+      }
     })
-  }, [])
+  }, [queryInput.current])
 
   function handleKeyPress(event: KeyboardEvent) {
     if (event.key === 'Escape') {

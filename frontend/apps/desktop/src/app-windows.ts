@@ -354,7 +354,7 @@ export function createAppWindow(input: {
               'appWindowEvent',
               'find_in_page_focus',
             )
-          }, 100)
+          }, 10)
         }
       }
     })
