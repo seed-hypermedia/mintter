@@ -151,15 +151,15 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
       pub={pub.data?.publication}
       EmbedWrapper={EmbedWrapper}
       renderOpenButton={() =>
-        docId && (
+        documentId && (
           <Button
             size="$2"
             icon={ArrowUpRightSquare}
             onPress={() => {
-              if (!docId) return
+              if (!documentId) return
               spawn({
                 key: 'publication',
-                documentId: docId,
+                documentId,
                 variants: props.variants || undefined,
                 versionId: props.version || undefined,
               })
