@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"mintter/backend/core"
@@ -27,6 +28,7 @@ import (
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -369,17 +371,13 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 	var owners []string
 	const limit = 30
 	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		err := sqlitex.Exec(conn, qGetEntityTitles(), func(stmt *sqlite.Stmt) error {
+		return sqlitex.Exec(conn, qGetEntityTitles(), func(stmt *sqlite.Stmt) error {
 			titles = append(titles, stmt.ColumnText(0))
 			iris = append(iris, stmt.ColumnText(1))
 			ownerID := core.Principal(stmt.ColumnBytes(2)).String()
 			owners = append(owners, ownerID)
 			return nil
 		})
-		if err != nil {
-			return err
-		}
-		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -398,6 +396,67 @@ func (api *Server) SearchEntities(ctx context.Context, in *entities.SearchEntiti
 			Owner: owners[rank.OriginalIndex]})
 	}
 	return &entities.SearchEntitiesResponse{Entities: matchingEntities}, nil
+}
+
+// DeleteEntity implements the corresponding gRPC method.
+func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRequest) (*emptypb.Empty, error) {
+	var meta string
+	var qGetResourceMetadata = dqb.Str(`
+  	SELECT meta from meta_view
+	WHERE iri = :eid
+	`)
+
+	if in.Id == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify entity ID to delete")
+	}
+
+	eid := hyper.EntityID(in.Id)
+
+	err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		return sqlitex.Exec(conn, qGetResourceMetadata(), func(stmt *sqlite.Stmt) error {
+			meta = stmt.ColumnText(0)
+			return nil
+		}, in.Id)
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = api.blobs.DeleteEntity(ctx, eid, in.Reason, meta)
+	if err != nil {
+		if errors.Is(err, hyper.ErrEntityNotFound) {
+			return nil, err
+		}
+		return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
+		// TODO(juligasa): Empty the data field, size -1 and manually remove links
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+// ListDeletedEntities implements the corresponding gRPC method.
+func (api *Server) ListDeletedEntities(ctx context.Context, in *entities.ListDeletedEntitiesRequest) (*entities.ListDeletedEntitiesResponse, error) {
+
+	resp := &entities.ListDeletedEntitiesResponse{
+		DeletedEntities: make([]*entities.DeletedEntity, 0),
+	}
+
+	err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		list, err := hypersql.EntitiesListRemovedRecords(conn)
+		if err != nil {
+			return err
+		}
+		for _, entity := range list {
+			resp.DeletedEntities = append(resp.DeletedEntities, &entities.DeletedEntity{
+				Id:            entity.DeletedResourcesIRI,
+				DeletedTime:   &timestamppb.Timestamp{Seconds: entity.DeletedResourcesDeleteTime},
+				DeletedReason: entity.DeletedResourcesReason,
+				Metadata:      entity.DeletedResourcesMeta,
+			})
+		}
+		return nil
+	})
+
+	return resp, err
 }
 
 var qGetEntityTitles = dqb.Str(`

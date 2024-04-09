@@ -990,124 +990,6 @@ func (x *ListPublicationsResponse) GetNextPageToken() string {
 	return ""
 }
 
-// Request for listing deleted publications.
-type ListDeletedPublicationsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Optional. Number of results per page. Default is defined by the server.
-	PageSize int32 `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	// Optional. Value from next_page_token obtains from a previous response.
-	PageToken string `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-}
-
-func (x *ListDeletedPublicationsRequest) Reset() {
-	*x = ListDeletedPublicationsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListDeletedPublicationsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListDeletedPublicationsRequest) ProtoMessage() {}
-
-func (x *ListDeletedPublicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListDeletedPublicationsRequest.ProtoReflect.Descriptor instead.
-func (*ListDeletedPublicationsRequest) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *ListDeletedPublicationsRequest) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-func (x *ListDeletedPublicationsRequest) GetPageToken() string {
-	if x != nil {
-		return x.PageToken
-	}
-	return ""
-}
-
-// Response with list of publications.
-type ListDeletedPublicationsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// List of publications matching the request.
-	// Only most recent versions are returned.
-	// Content is omitted, only metadata is present.
-	DeletedPublications []*DeletedPublication `protobuf:"bytes,1,rep,name=deleted_publications,json=deletedPublications,proto3" json:"deleted_publications,omitempty"`
-	// Token for the next page if there're more results.
-	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
-}
-
-func (x *ListDeletedPublicationsResponse) Reset() {
-	*x = ListDeletedPublicationsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListDeletedPublicationsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListDeletedPublicationsResponse) ProtoMessage() {}
-
-func (x *ListDeletedPublicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListDeletedPublicationsResponse.ProtoReflect.Descriptor instead.
-func (*ListDeletedPublicationsResponse) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *ListDeletedPublicationsResponse) GetDeletedPublications() []*DeletedPublication {
-	if x != nil {
-		return x.DeletedPublications
-	}
-	return nil
-}
-
-func (x *ListDeletedPublicationsResponse) GetNextPageToken() string {
-	if x != nil {
-		return x.NextPageToken
-	}
-	return ""
-}
-
 // Request for listing publications owned by a given account.
 type ListAccountPublicationsRequest struct {
 	state         protoimpl.MessageState
@@ -1125,7 +1007,7 @@ type ListAccountPublicationsRequest struct {
 func (x *ListAccountPublicationsRequest) Reset() {
 	*x = ListAccountPublicationsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[16]
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1138,7 +1020,7 @@ func (x *ListAccountPublicationsRequest) String() string {
 func (*ListAccountPublicationsRequest) ProtoMessage() {}
 
 func (x *ListAccountPublicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[16]
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1151,7 +1033,7 @@ func (x *ListAccountPublicationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccountPublicationsRequest.ProtoReflect.Descriptor instead.
 func (*ListAccountPublicationsRequest) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{16}
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListAccountPublicationsRequest) GetPageSize() int32 {
@@ -1199,7 +1081,7 @@ type Publication struct {
 func (x *Publication) Reset() {
 	*x = Publication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[17]
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1212,7 +1094,7 @@ func (x *Publication) String() string {
 func (*Publication) ProtoMessage() {}
 
 func (x *Publication) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[17]
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1225,7 +1107,7 @@ func (x *Publication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Publication.ProtoReflect.Descriptor instead.
 func (*Publication) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{17}
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *Publication) GetVersion() string {
@@ -1261,7 +1143,7 @@ type DeletedPublication struct {
 func (x *DeletedPublication) Reset() {
 	*x = DeletedPublication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[18]
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1274,7 +1156,7 @@ func (x *DeletedPublication) String() string {
 func (*DeletedPublication) ProtoMessage() {}
 
 func (x *DeletedPublication) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[18]
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1287,7 +1169,7 @@ func (x *DeletedPublication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletedPublication.ProtoReflect.Descriptor instead.
 func (*DeletedPublication) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{18}
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DeletedPublication) GetEid() string {
@@ -1845,24 +1727,11 @@ var file_documents_v1alpha_documents_proto_rawDesc = []byte{
 	0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
 	0x12, 0x1d, 0x0a, 0x0a, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x5f, 0x6f, 0x6e, 0x6c, 0x79, 0x18, 0x03,
 	0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x4f, 0x6e, 0x6c, 0x79, 0x22,
-	0x53, 0x0a, 0x18, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x64,
-	0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0a, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06,
-	0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65,
-	0x61, 0x73, 0x6f, 0x6e, 0x22, 0x4b, 0x0a, 0x16, 0x50, 0x75, 0x73, 0x68, 0x50, 0x75, 0x62, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f,
-	0x0a, 0x0b, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x12,
-	0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72,
-	0x6c, 0x22, 0x78, 0x0a, 0x17, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09,
-	0x70, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x08, 0x70, 0x61, 0x67, 0x65, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x61, 0x67,
-	0x65, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x70,
-	0x61, 0x67, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x72, 0x75, 0x73,
-	0x74, 0x65, 0x64, 0x5f, 0x6f, 0x6e, 0x6c, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b,
-	0x74, 0x72, 0x75, 0x73, 0x74, 0x65, 0x64, 0x4f, 0x6e, 0x6c, 0x79, 0x22, 0x92, 0x01, 0x0a, 0x18,
+	0x4b, 0x0a, 0x16, 0x50, 0x75, 0x73, 0x68, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x6f, 0x63,
+	0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a,
+	0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72,
+	0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x22, 0x78, 0x0a, 0x17,
 	0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4e, 0x0a, 0x0c, 0x70, 0x75, 0x62, 0x6c,
 	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a,
@@ -2337,7 +2206,7 @@ func file_documents_v1alpha_documents_proto_init() {
 				return nil
 			}
 		}
-		file_documents_v1alpha_documents_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_documents_v1alpha_documents_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Publication); i {
 			case 0:
 				return &v.state

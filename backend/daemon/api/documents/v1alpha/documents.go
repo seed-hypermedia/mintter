@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"math"
 	"mintter/backend/core"
@@ -631,45 +630,6 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 	}, nil
 }
 
-// DeletePublication implements the corresponding gRPC method.
-func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
-	var meta string
-	var qGetResourceMetadata = dqb.Str(`
-  	SELECT meta from meta_view
-	WHERE iri = :eid
-	`)
-
-	if in.DocumentId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
-	}
-
-	eid := hyper.EntityID(in.DocumentId)
-	conn, cancel, err := api.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer cancel()
-
-	err = sqlitex.Exec(conn, qGetResourceMetadata(), func(stmt *sqlite.Stmt) error {
-		meta = stmt.ColumnText(0)
-		return nil
-	}, in.DocumentId)
-	if err != nil {
-		return nil, err
-	}
-
-	err = api.blobs.DeleteEntity(ctx, eid, in.Reason, meta)
-	if err != nil {
-		if errors.Is(err, hyper.ErrEntityNotFound) {
-			return nil, err
-		}
-		return nil, status.Errorf(codes.Unimplemented, "Resource can't be deleted because it's referenced somewhere else")
-		// TODO(juligasa): Empty the data field, size -1 and manually remove links
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
 // PushPublication implements the corresponding gRPC method.
 func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublicationRequest) (*emptypb.Empty, error) {
 	if in.DocumentId == "" {
@@ -931,31 +891,6 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		return nil, err
 	}
 
-	return resp, nil
-}
-
-// ListPublications implements the corresponding gRPC method.
-func (api *Server) ListDeletedPublications(ctx context.Context, in *documents.ListDeletedPublicationsRequest) (*documents.ListDeletedPublicationsResponse, error) {
-	conn, cancel, err := api.db.Conn(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("Can't get a connection from the db: %w", err)
-	}
-	defer cancel()
-	resp := &documents.ListDeletedPublicationsResponse{
-		DeletedPublications: make([]*documents.DeletedPublication, 0),
-	}
-	list, err := hypersql.EntitiesListRemovedRecords(conn)
-	if err != nil {
-		return nil, err
-	}
-	for _, entity := range list {
-		resp.DeletedPublications = append(resp.DeletedPublications, &documents.DeletedPublication{
-			Eid:           entity.DeletedResourcesIRI,
-			DeletedTime:   &timestamppb.Timestamp{Seconds: entity.DeletedResourcesDeleteTime},
-			DeletedReason: entity.DeletedResourcesReason,
-			Metadata:      entity.DeletedResourcesMeta,
-		})
-	}
 	return resp, nil
 }
 

@@ -3,11 +3,16 @@ package entities
 import (
 	"context"
 	"fmt"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
+	documents "mintter/backend/daemon/api/documents/v1alpha"
 	"mintter/backend/daemon/storage"
+	documentsproto "mintter/backend/genproto/documents/v1alpha"
 	entities "mintter/backend/genproto/entities/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/logging"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"strings"
@@ -15,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -169,4 +175,75 @@ func TestEntityTimeline(t *testing.T) {
 	require.NoError(t, err)
 
 	testutil.ProtoEqual(t, want, timeline, "timeline must match")
+}
+
+func TestDeleteEntity(t *testing.T) {
+	db := storage.MakeTestDB(t)
+
+	docsapi := newTestDocsAPI(t, db, "alice")
+	ctx := context.Background()
+
+	blobs := hyper.NewStorage(db, zap.NewNop())
+	api := NewServer(blobs, nil)
+
+	doc, err := docsapi.CreateDraft(ctx, &documentsproto.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, docsapi, doc.Id, []*documentsproto.DocumentChange{
+		{Op: &documentsproto.DocumentChange_SetTitle{SetTitle: "My new document title"}}},
+	)
+
+	_, err = docsapi.PublishDraft(ctx, &documentsproto.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	list, err := docsapi.ListPublications(ctx, &documentsproto.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	deleted, err := api.DeleteEntity(ctx, &entities.DeleteEntityRequest{Id: doc.Id})
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
+
+	list, err = docsapi.ListPublications(ctx, &documentsproto.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
+	pub, err := docsapi.GetPublication(ctx, &documentsproto.GetPublicationRequest{DocumentId: doc.Id})
+	require.Error(t, err, "must fail to get deleted publication")
+	_ = pub
+
+	// TODO: fix status codes.
+	// s, ok := status.FromError(err)
+	// require.True(t, ok)
+	// require.Nil(t, pub)
+	// require.Equal(t, codes.NotFound, s.Code())
+}
+
+func newTestDocsAPI(t *testing.T, db *sqlitex.Pool, name string) *documents.Server {
+	u := coretest.NewTester("alice")
+
+	fut := future.New[core.Identity]()
+	require.NoError(t, fut.Resolve(u.Identity))
+
+	srv := documents.NewServer(fut.ReadOnly, db, nil, nil, "debug")
+	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
+	require.NoError(t, err)
+
+	// since we cannot do _, err = srv.me.Await(context.Background())
+	time.Sleep(10 * time.Millisecond)
+
+	return srv
+}
+
+func updateDraft(ctx context.Context, t *testing.T, docapi *documents.Server, id string, updates []*documentsproto.DocumentChange) *documentsproto.Document {
+	_, err := docapi.UpdateDraft(ctx, &documentsproto.UpdateDraftRequest{
+		DocumentId: id,
+		Changes:    updates,
+	})
+	require.NoError(t, err, "failed to update draft")
+
+	draft, err := docapi.GetDraft(ctx, &documentsproto.GetDraftRequest{DocumentId: id})
+	require.NoError(t, err, "failed to get draft after update")
+
+	return draft
 }

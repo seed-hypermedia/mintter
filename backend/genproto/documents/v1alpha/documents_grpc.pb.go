@@ -339,12 +339,8 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 type PublicationsClient interface {
 	// Gets a single publication.
 	GetPublication(ctx context.Context, in *GetPublicationRequest, opts ...grpc.CallOption) (*Publication, error)
-	// Deletes a publication from the local node. It removes all the patches corresponding to a document.
-	DeletePublication(ctx context.Context, in *DeletePublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists stored publications. Only the most recent versions show up.
 	ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
-	// Lists deleted publications. Th
-	ListDeletedPublications(ctx context.Context, in *ListDeletedPublicationsRequest, opts ...grpc.CallOption) (*ListDeletedPublicationsResponse, error)
 	// Push Local publication to the gateway.
 	PushPublication(ctx context.Context, in *PushPublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists publications owned by a given account.
@@ -368,27 +364,9 @@ func (c *publicationsClient) GetPublication(ctx context.Context, in *GetPublicat
 	return out, nil
 }
 
-func (c *publicationsClient) DeletePublication(ctx context.Context, in *DeletePublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Publications/DeletePublication", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *publicationsClient) ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
 	out := new(ListPublicationsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Publications/ListPublications", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *publicationsClient) ListDeletedPublications(ctx context.Context, in *ListDeletedPublicationsRequest, opts ...grpc.CallOption) (*ListDeletedPublicationsResponse, error) {
-	out := new(ListDeletedPublicationsResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Publications/ListDeletedPublications", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -419,12 +397,8 @@ func (c *publicationsClient) ListAccountPublications(ctx context.Context, in *Li
 type PublicationsServer interface {
 	// Gets a single publication.
 	GetPublication(context.Context, *GetPublicationRequest) (*Publication, error)
-	// Deletes a publication from the local node. It removes all the patches corresponding to a document.
-	DeletePublication(context.Context, *DeletePublicationRequest) (*emptypb.Empty, error)
 	// Lists stored publications. Only the most recent versions show up.
 	ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error)
-	// Lists deleted publications. Th
-	ListDeletedPublications(context.Context, *ListDeletedPublicationsRequest) (*ListDeletedPublicationsResponse, error)
 	// Push Local publication to the gateway.
 	PushPublication(context.Context, *PushPublicationRequest) (*emptypb.Empty, error)
 	// Lists publications owned by a given account.
@@ -438,14 +412,8 @@ type UnimplementedPublicationsServer struct {
 func (UnimplementedPublicationsServer) GetPublication(context.Context, *GetPublicationRequest) (*Publication, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublication not implemented")
 }
-func (UnimplementedPublicationsServer) DeletePublication(context.Context, *DeletePublicationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeletePublication not implemented")
-}
 func (UnimplementedPublicationsServer) ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPublications not implemented")
-}
-func (UnimplementedPublicationsServer) ListDeletedPublications(context.Context, *ListDeletedPublicationsRequest) (*ListDeletedPublicationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListDeletedPublications not implemented")
 }
 func (UnimplementedPublicationsServer) PushPublication(context.Context, *PushPublicationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PushPublication not implemented")
@@ -483,24 +451,6 @@ func _Publications_GetPublication_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Publications_DeletePublication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeletePublicationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PublicationsServer).DeletePublication(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.documents.v1alpha.Publications/DeletePublication",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).DeletePublication(ctx, req.(*DeletePublicationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Publications_ListPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPublicationsRequest)
 	if err := dec(in); err != nil {
@@ -515,24 +465,6 @@ func _Publications_ListPublications_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PublicationsServer).ListPublications(ctx, req.(*ListPublicationsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Publications_ListDeletedPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListDeletedPublicationsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PublicationsServer).ListDeletedPublications(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.documents.v1alpha.Publications/ListDeletedPublications",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).ListDeletedPublications(ctx, req.(*ListDeletedPublicationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -585,16 +517,8 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Publications_GetPublication_Handler,
 		},
 		{
-			MethodName: "DeletePublication",
-			Handler:    _Publications_DeletePublication_Handler,
-		},
-		{
 			MethodName: "ListPublications",
 			Handler:    _Publications_ListPublications_Handler,
-		},
-		{
-			MethodName: "ListDeletedPublications",
-			Handler:    _Publications_ListDeletedPublications_Handler,
 		},
 		{
 			MethodName: "PushPublication",

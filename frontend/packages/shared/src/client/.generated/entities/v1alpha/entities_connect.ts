@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
-import { MethodKind } from "@bufbuild/protobuf";
+import { Change, DeleteEntityRequest, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListDeletedEntitiesRequest, ListDeletedEntitiesResponse, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Provides functionality to query information about Hypermedia Entities.
@@ -58,6 +58,28 @@ export const Entities = {
       name: "SearchEntities",
       I: SearchEntitiesRequest,
       O: SearchEntitiesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Deletes an entity from the local node. It removes all the patches corresponding to it, including comments.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.DeleteEntity
+     */
+    deleteEntity: {
+      name: "DeleteEntity",
+      I: DeleteEntityRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists deleted entities.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.ListDeletedEntities
+     */
+    listDeletedEntities: {
+      name: "ListDeletedEntities",
+      I: ListDeletedEntitiesRequest,
+      O: ListDeletedEntitiesResponse,
       kind: MethodKind.Unary,
     },
     /**
