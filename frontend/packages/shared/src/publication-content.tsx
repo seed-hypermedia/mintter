@@ -38,6 +38,7 @@ import {
   File,
   Label,
   Link,
+  MoreHorizontal,
   MoveLeft,
   RadioGroup,
   SizableText,
@@ -460,11 +461,11 @@ export function BlockNodeContent({
   )
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
-  const [_expanded, setExpanded] = useState<boolean>(() => !!expanded || true)
+  const [_expanded, setExpanded] = useState<boolean>(expanded)
 
   useEffect(() => {
     if (expanded !== _expanded) {
-      setExpanded(!!expanded)
+      setExpanded(expanded)
     }
   }, [expanded])
 
@@ -705,7 +706,21 @@ export function BlockNodeContent({
         >
           {bnChildren}
         </BlockNodeList>
-      ) : null}
+      ) : (
+        <Tooltip content="This block is collapsed. you can expand it and see its children">
+          <Button
+            marginHorizontal={layoutUnit / 4}
+            size="$1"
+            alignSelf="flex-start"
+            icon={MoreHorizontal}
+            height={12}
+            onPress={(e) => {
+              e.stopPropagation()
+              handleBlockNodeToggle()
+            }}
+          />
+        </Tooltip>
+      )}
     </YStack>
   )
 }
