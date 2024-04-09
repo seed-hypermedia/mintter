@@ -127,12 +127,32 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		}
 		filtersStr += ") AND "
 	}
+	var linksStr string
+	if len(req.AddLinkedResource) > 0 {
+		if len(req.FilterResource) > 0 || len(req.FilterEventType) > 0 {
+			linksStr += " OR "
+		}
+		linksStr += "(" + storage.StructuralBlobsType.String() + " in ('Change', 'Comment') AND " + storage.ResourceLinksTarget.String() + " IN (" +
+			"select " + storage.ResourcesID.String() + " FROM " + storage.T_Resources + " where " + storage.ResourcesIRI.String() + " in ("
+		for i, resource := range req.AddLinkedResource {
+			if !resourcePattern.MatchString(resource) {
+				return nil, fmt.Errorf("Invalid link resource format [%s]", resource)
+			}
+			if i > 0 {
+				linksStr += ", "
+			}
+			linksStr += "'" + resource + "'"
+		}
+		linksStr += "))) AND "
+	}
 	var (
-		selectStr    = "SELECT " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
-		tableStr     = "FROM " + storage.T_StructuralBlobs
-		joinIDStr    = "JOIN " + storage.Blobs.String() + " ON " + storage.BlobsID.String() + "=" + storage.StructuralBlobsID.String()
-		joinpkStr    = "JOIN " + storage.PublicKeys.String() + " ON " + storage.StructuralBlobsAuthor.String() + "=" + storage.PublicKeysID.String()
-		leftjoinStr  = "LEFT JOIN " + storage.Resources.String() + " ON " + storage.StructuralBlobsResource.String() + "=" + storage.ResourcesID.String()
+		selectStr            = "SELECT distinct " + storage.BlobsID + ", " + storage.StructuralBlobsType + ", " + storage.PublicKeysPrincipal + ", " + storage.ResourcesIRI + ", " + storage.StructuralBlobsTs + ", " + storage.BlobsInsertTime + ", " + storage.BlobsMultihash + ", " + storage.BlobsCodec
+		tableStr             = "FROM " + storage.T_StructuralBlobs
+		joinIDStr            = "JOIN " + storage.Blobs.String() + " ON " + storage.BlobsID.String() + "=" + storage.StructuralBlobsID.String()
+		joinpkStr            = "JOIN " + storage.PublicKeys.String() + " ON " + storage.StructuralBlobsAuthor.String() + "=" + storage.PublicKeysID.String()
+		joinLinksStr         = "JOIN " + storage.ResourceLinks.String() + " ON " + storage.StructuralBlobsID.String() + "=" + storage.ResourceLinksSource.String()
+		leftjoinResourcesStr = "LEFT JOIN " + storage.Resources.String() + " ON " + storage.StructuralBlobsResource.String() + "=" + storage.ResourcesID.String()
+
 		pageTokenStr = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) ORDER BY " + storage.BlobsID.String() + " desc limit :page_size"
 	)
 
@@ -143,8 +163,9 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		%s
 		%s
 		%s
-		WHERE %s %s;
-	`, selectStr, tableStr, joinIDStr, joinpkStr, leftjoinStr, trustedStr, filtersStr, pageTokenStr)
+		%s
+		WHERE %s %s %s;
+	`, selectStr, tableStr, joinIDStr, joinpkStr, joinLinksStr, leftjoinResourcesStr, trustedStr, filtersStr, linksStr, pageTokenStr)
 	var lastBlobID int64
 	err = sqlitex.Exec(conn, dqb.Str(getEventsStr)(), func(stmt *sqlite.Stmt) error {
 		lastBlobID = stmt.ColumnInt64(0)
