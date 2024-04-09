@@ -697,7 +697,7 @@ export function BlockNodeContent({
           </XStack>
         ) : null}
       </XStack>
-      {_expanded ? (
+      {bnChildren && _expanded ? (
         <BlockNodeList
           paddingLeft={blockNode.block?.type != 'heading' ? layoutUnit : 0}
           childrenType={childrenType as HMBlockChildrenType}
@@ -706,7 +706,7 @@ export function BlockNodeContent({
         >
           {bnChildren}
         </BlockNodeList>
-      ) : (
+      ) : bnChildren ? (
         <Tooltip content="This block is collapsed. you can expand it and see its children">
           <Button
             marginHorizontal={layoutUnit / 4}
@@ -720,7 +720,7 @@ export function BlockNodeContent({
             }}
           />
         </Tooltip>
-      )}
+      ) : null}
     </YStack>
   )
 }
