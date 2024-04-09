@@ -102,6 +102,7 @@ export function DocCitationsAccessory({docId}: {docId?: string}) {
 
 export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
   const mentions = useEntityMentions(entityId)
+
   if (!entityId) return null
   const count = mentions?.data?.mentions?.length || 0
 
@@ -113,6 +114,11 @@ export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
     }
     return false
   })
+
+  console.log(
+    `== ~ EntityCitationsAccessory ~ mentions:`,
+    mentions?.data?.mentions,
+  )
 
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
