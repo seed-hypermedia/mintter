@@ -30,6 +30,10 @@ service Entities {
   // Lists deleted entities.
   rpc ListDeletedEntities(ListDeletedEntitiesRequest) returns (ListDeletedEntitiesResponse);
 
+  // Try to bring back the deleted entity in next syncync round. It may fail if there is no
+  // provider for that entity, even though it once was when the entity was created.
+  rpc RestoreEntity(RestoreEntityRequest) returns (google.protobuf.Empty);
+
   // List mentions of a given Entity across the locally-available content.
   rpc ListEntityMentions(ListEntityMentionsRequest) returns (ListEntityMentionsResponse);
 }
@@ -198,6 +202,13 @@ message ListDeletedEntitiesResponse {
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
+}
+
+// Request for restoring an entity.
+message RestoreEntityRequest {
+  // Entity ID of the entity to be restored.
+  // All versions will also be restored.
+  string id = 1;
 }
 
 // Request to list mentions of an entity.

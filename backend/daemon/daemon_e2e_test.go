@@ -178,6 +178,91 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	testutil.ProtoEqual(t, pub, remotePub, "remote publication doesn't match")
 }
 
+func TestAPIDeleteAndRestoreEntity(t *testing.T) {
+	t.Parallel()
+
+	aliceCfg := makeTestConfig(t)
+	bobCfg := makeTestConfig(t)
+
+	aliceCfg.Syncing.WarmupDuration = 1 * time.Millisecond
+	bobCfg.Syncing.WarmupDuration = 1 * time.Millisecond
+
+	aliceCfg.Syncing.Interval = 150 * time.Millisecond
+	bobCfg.Syncing.Interval = 150 * time.Millisecond
+
+	aliceCfg.Syncing.RefreshInterval = 50 * time.Millisecond
+	bobCfg.Syncing.RefreshInterval = 50 * time.Millisecond
+
+	alice := makeTestApp(t, "alice", aliceCfg, true)
+	bob := makeTestApp(t, "bob", bobCfg, true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+
+	pub := publishDocument(t, ctx, alice)
+
+	time.Sleep(200 * time.Millisecond)
+
+	doc, err := alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should find her own document")
+	require.Equal(t, pub.Version, doc.Version, "alice should find her own document version")
+	const reason = "I don't want it anymore"
+	_, err = alice.RPC.Entities.DeleteEntity(ctx, &entities.DeleteEntityRequest{
+		Id:     doc.Document.Id,
+		Reason: reason,
+	})
+	require.NoError(t, err)
+	lst, err := alice.RPC.Entities.ListDeletedEntities(ctx, &entities.ListDeletedEntitiesRequest{})
+	require.NoError(t, err)
+	require.Len(t, lst.DeletedEntities, 1)
+	require.Equal(t, doc.Document.Id, lst.DeletedEntities[0].Id)
+	require.Equal(t, reason, lst.DeletedEntities[0].DeletedReason)
+
+	// Even if we sync we shouldn't get the document back
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	//time.Sleep(200 * time.Millisecond)
+
+	_, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.Error(t, err)
+
+	// Only after restoring the document we should get it back.
+	_, err = alice.RPC.Entities.RestoreEntity(ctx, &entities.RestoreEntityRequest{
+		Id: doc.Document.Id,
+	})
+
+	require.NoError(t, err)
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+
+	lst, err = alice.RPC.Entities.ListDeletedEntities(ctx, &entities.ListDeletedEntitiesRequest{})
+	require.NoError(t, err)
+	require.Len(t, lst.DeletedEntities, 0)
+
+	time.Sleep(200 * time.Millisecond)
+
+	doc, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should have her document back")
+
+}
+
 func TestBug_SyncHangs(t *testing.T) {
 	// See: https://github.com/mintterteam/mintter/issues/712.
 	t.Parallel()

@@ -178,6 +178,7 @@ func TestEntityTimeline(t *testing.T) {
 }
 
 func TestDeleteEntity(t *testing.T) {
+	//TODO(juligasa): this unit test is not really unitary since it depends on documents API.
 	db := storage.MakeTestDB(t)
 
 	docsapi := newTestDocsAPI(t, db, "alice")

@@ -433,6 +433,19 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 	return &emptypb.Empty{}, nil
 }
 
+// RestoreEntity implements the corresponding gRPC method.
+func (api *Server) RestoreEntity(ctx context.Context, in *entities.RestoreEntityRequest) (*emptypb.Empty, error) {
+	if in.Id == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify entity ID to restore")
+	}
+
+	eid := hyper.EntityID(in.Id)
+
+	return &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		return hypersql.EntitiesDeleteRemovedRecord(conn, eid.String())
+	})
+}
+
 // ListDeletedEntities implements the corresponding gRPC method.
 func (api *Server) ListDeletedEntities(ctx context.Context, in *entities.ListDeletedEntitiesRequest) (*entities.ListDeletedEntitiesResponse, error) {
 

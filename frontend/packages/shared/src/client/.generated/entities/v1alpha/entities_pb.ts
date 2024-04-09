@@ -778,6 +778,48 @@ export class ListDeletedEntitiesResponse extends Message<ListDeletedEntitiesResp
 }
 
 /**
+ * Request for restoring an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.RestoreEntityRequest
+ */
+export class RestoreEntityRequest extends Message<RestoreEntityRequest> {
+  /**
+   * Entity ID of the entity to be restored.
+   * All versions will also be restored.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<RestoreEntityRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.RestoreEntityRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RestoreEntityRequest {
+    return new RestoreEntityRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RestoreEntityRequest {
+    return new RestoreEntityRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RestoreEntityRequest {
+    return new RestoreEntityRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: RestoreEntityRequest | PlainMessage<RestoreEntityRequest> | undefined, b: RestoreEntityRequest | PlainMessage<RestoreEntityRequest> | undefined): boolean {
+    return proto3.util.equals(RestoreEntityRequest, a, b);
+  }
+}
+
+/**
  * Request to list mentions of an entity.
  *
  * @generated from message com.mintter.entities.v1alpha.ListEntityMentionsRequest
