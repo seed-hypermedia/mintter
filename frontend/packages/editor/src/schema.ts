@@ -6,6 +6,7 @@ import {
   defaultProps,
 } from './blocknote'
 import {EmbedBlock} from './embed-block'
+import {EquationBlock} from './equation'
 import {FileBlock} from './file'
 import {HMHeadingBlockContent} from './heading-component-plugin'
 import {ImageBlock} from './image'
@@ -48,6 +49,7 @@ export const hmBlockSchema: BlockSchema = {
   file: FileBlock,
   nostr: NostrBlock,
   ['web-embed']: WebEmbed,
+  equation: EquationBlock,
 }
 
 export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>
