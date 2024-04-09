@@ -311,25 +311,25 @@ export function PublicationContent({
           </Tooltip>
         ) : null}
         {onBlockComment ? (
-          <Button
-            size="$2"
-            icon={Comment}
-            onPress={() => {
-              send({type: 'CREATE_COMMENT'})
-              onBlockComment(
-                state.context.blockId,
-                typeof state.context.rangeStart == 'number' &&
-                  typeof state.context.rangeEnd == 'number'
-                  ? {
-                      start: state.context.rangeStart,
-                      end: state.context.rangeEnd,
-                    }
-                  : undefined,
-              )
-            }}
-          >
-            Add a Comment
-          </Button>
+          <Tooltip content="Add a Comment">
+            <Button
+              size="$2"
+              icon={Comment}
+              onPress={() => {
+                send({type: 'CREATE_COMMENT'})
+                onBlockComment(
+                  state.context.blockId,
+                  typeof state.context.rangeStart == 'number' &&
+                    typeof state.context.rangeEnd == 'number'
+                    ? {
+                        start: state.context.rangeStart,
+                        end: state.context.rangeEnd,
+                      }
+                    : undefined,
+                )
+              }}
+            />
+          </Tooltip>
         ) : null}
       </XStack>
       <BlocksContent blocks={displayBlocks} />
