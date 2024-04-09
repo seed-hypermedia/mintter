@@ -85,7 +85,7 @@ def main():
         if testnet_var not in os.environ:
             os.environ[testnet_var] = "dev"
 
-        return run("yarn desktop", args=args)
+        return run("VITE_DESKTOP_APPDATA=Mintter.dev yarn desktop", args=args)
 
     @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):

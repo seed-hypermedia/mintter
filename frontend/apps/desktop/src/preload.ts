@@ -80,7 +80,6 @@ ipcRenderer.addListener('appWindowEvent', (info, event) => {
 })
 
 ipcRenderer.addListener('find_in_page', (info, event) => {
-  console.log('== FIND IN PAGE INSIDE PRELOAD')
   dispatchAppWindow(event)
 })
 
