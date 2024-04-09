@@ -152,6 +152,10 @@ export type HMBlockHeading = HMBlockBase & {
   attributes: HMBlockBase['attributes'] & {}
 }
 
+export type HMBlockEquation = HMBlockBase & {
+  type: 'equation'
+}
+
 export type HMBlockImage = HMBlockBase & {
   type: 'image'
   ref: string
@@ -205,6 +209,7 @@ export type HMBlockNostr = HMBlockBase & {
 export type HMBlock =
   | HMBlockParagraph
   | HMBlockHeading
+  | HMBlockEquation
   | HMBlockImage
   | HMBlockFile
   | HMBlockVideo
