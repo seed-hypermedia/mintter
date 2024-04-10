@@ -16,7 +16,7 @@ import {useMyAccount, useSetProfile} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 import {AvatarForm} from './avatar-form'
 import {useAppDialog} from './dialog'
-import {FormError, FormInput, FormTextArea} from './form-input'
+import {FormError, FormInput} from './form-input'
 
 export function useEditProfileDialog() {
   // for some reason the dialog doesn't work if the input is falsy
@@ -41,7 +41,6 @@ function EditProfileDialog({onClose}: {onClose: () => void}) {
 
 const profileSchema = z.object({
   alias: z.string().min(1, {message: 'Profile alias is required'}),
-  bio: z.string().optional(),
   avatar: z.string().optional(),
 })
 type ProfileFields = z.infer<typeof profileSchema>
@@ -95,15 +94,6 @@ function ProfileForm({
           <Label htmlFor="alias">Alias</Label>
           <FormError name="alias" errors={errors} />
           <FormInput id="alias" name="alias" control={control} />
-          <Label htmlFor="bio">Bio</Label>
-          <FormError name="bio" errors={errors} />
-          <FormTextArea
-            id="bio"
-            name="bio"
-            control={control}
-            placeholder="A little bit about yourself..."
-          />
-
           <XStack gap="$4" alignItems="center" paddingTop="$3">
             <Form.Trigger asChild>
               <Button theme="green" disabled={setProfile.isLoading}>

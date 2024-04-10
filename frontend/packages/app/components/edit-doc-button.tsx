@@ -3,12 +3,14 @@ import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {NavMode} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {GroupVariant, PublicationVariant} from '@mintter/shared'
+import {GroupVariant, HMBlock, PublicationVariant} from '@mintter/shared'
 import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import {useQueryInvalidator} from '../app-context'
 import appError from '../errors'
+import {useMyAccount} from '../models/accounts'
 import {queryKeys} from '../models/query-keys'
+import {generateBlockId} from '../utils/media-drag'
 import {
   AccountRoute,
   DocumentsRoute,
@@ -17,26 +19,28 @@ import {
 } from '../utils/routes'
 
 export function useEditDraft(
-  docId: string,
+  docId: string | undefined,
   {
     version,
     navMode,
     contextRoute,
     variants,
+    isProfileDocument,
   }: {
     version: string | undefined
     navMode?: NavMode
     contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
     variants?: PublicationVariant[]
+    isProfileDocument?: boolean
   },
 ) {
   const draftList = useDraftList()
+  const myAccount = useMyAccount()
   const navigate = useNavigate(navMode)
   const invalidate = useQueryInvalidator()
 
-  const hasExistingDraft = draftList.data?.documents.some(
-    (draft) => draft.id == docId,
-  )
+  const hasExistingDraft =
+    !!docId && draftList.data?.documents.some((draft) => draft.id == docId)
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
@@ -62,12 +66,47 @@ export function useEditDraft(
         existingDocumentId: docId,
         version,
       })
-
+      if (isProfileDocument && !docId) {
+        const newBlock: HMBlock = {
+          id: generateBlockId(),
+          type: 'paragraph',
+          text: myAccount.data?.profile?.bio || '',
+          annotations: [],
+        }
+        await grpcClient.drafts.updateDraft({
+          documentId: draft.id,
+          changes: [
+            {
+              op: {
+                case: 'setTitle',
+                value: myAccount.data?.profile?.alias || '',
+              },
+            },
+            {
+              op: {
+                case: 'moveBlock',
+                value: {
+                  blockId: newBlock.id,
+                  parent: '',
+                  leftSibling: '',
+                },
+              },
+            },
+            {
+              op: {
+                case: 'replaceBlock',
+                value: newBlock,
+              },
+            },
+          ],
+        })
+      }
       navigate({
         key: 'draft',
         draftId: draft.id,
         contextRoute,
         variant: singleGroupVariant,
+        isProfileDocument,
       })
       invalidate([queryKeys.GET_DRAFT_LIST])
     } catch (error: any) {
@@ -97,12 +136,14 @@ export function EditDocButton({
   navMode = 'push',
   variants,
   baseVersion,
+  isProfileDocument,
 }: {
-  docId: string
+  docId: string | undefined
   navMode?: NavMode
   contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
   variants?: PublicationVariant[]
   baseVersion?: string
+  isProfileDocument?: boolean
 }) {
   const pub = usePublicationVariant({
     documentId: docId,
@@ -116,6 +157,7 @@ export function EditDocButton({
     variants,
     navMode,
     contextRoute,
+    isProfileDocument,
   })
 
   return (

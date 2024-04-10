@@ -586,9 +586,9 @@ function Profile(props: OnboardingStepProps) {
     onSuccess: () => props.send('NEXT'),
   })
 
-  const submitValue = useRef({alias: '', bio: ''} as ProfileType)
+  const submitValue = useRef({alias: ''} as ProfileType)
   function onSubmit() {
-    if (submitValue.current.alias == '' && submitValue.current.bio == '') {
+    if (submitValue.current.alias == '') {
       props.send('NEXT')
     } else {
       setProfile.mutate(submitValue.current)
@@ -624,27 +624,6 @@ function Profile(props: OnboardingStepProps) {
                     id="alias"
                     onChangeText={(val) => (submitValue.current.alias = val)}
                     placeholder="Readable alias or username. Doesn't have to be unique."
-                  />
-                </Fieldset>
-                <Fieldset
-                  paddingHorizontal={0}
-                  margin={0}
-                  borderColor="transparent"
-                  borderWidth={0}
-                >
-                  <Label size="$2" htmlFor="bio" role="complementary">
-                    Bio
-                  </Label>
-                  <TextArea
-                    autoFocus
-                    id="bio"
-                    multiline
-                    minHeight={100}
-                    numberOfLines={4}
-                    onChangeText={(val: string) =>
-                      (submitValue.current.bio = val)
-                    }
-                    placeholder="A little bit about yourself..."
                   />
                 </Fieldset>
               </YStack>

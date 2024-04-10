@@ -34,6 +34,7 @@ import {
 import {
   ArrowLeftFromLine,
   ArrowRightFromLine,
+  ArrowUpRight,
   Copy,
   ExternalLink,
   Link,
@@ -42,6 +43,7 @@ import {
   Send,
   Trash,
   UploadCloud,
+  X,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
@@ -55,15 +57,19 @@ import {
   useGroup,
   useInvertedGroupContent,
 } from '../models/groups'
+import {RemoveProfileDocDialog} from '../pages/account-page'
 import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
+import {useNavigate} from '../utils/useNavigate'
 import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
 import {useDeleteDialog} from './delete-dialog'
 import {useAppDialog} from './dialog'
+import {EditDocButton} from './edit-doc-button'
 import {useEditGroupInfoDialog} from './edit-group-info'
+import {useEditProfileDialog} from './edit-profile-dialog'
 import {useFavoriteMenuItem} from './favoriting'
 import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
@@ -187,6 +193,52 @@ export function AccountOptionsButton() {
   const account = useAccount(route.accountId)
   const dispatch = useNavigationDispatch()
   const deleteEntity = useDeleteDialog()
+  const myAccount = useMyAccount()
+  const spawn = useNavigate('spawn')
+  const editProfileDialog = useEditProfileDialog()
+  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, {isAlert: true})
+  const isMyAccount = myAccount.data?.id === route.accountId
+  if (isMyAccount) {
+    menuItems.push({
+      key: 'edit-account',
+      label: 'Edit Account Info',
+      icon: Pencil,
+      onPress: () => {
+        editProfileDialog.open(true)
+      },
+    })
+  }
+  const accountId = account.data?.id
+  const rootDocument = account.data?.profile?.rootDocument
+  if (isMyAccount && rootDocument) {
+    menuItems.push({
+      key: 'rm-profile',
+      label: 'Remove Profile Document',
+      icon: X,
+      onPress: () => {
+        removeProfileDoc.open({})
+      },
+    })
+  }
+  if (accountId && rootDocument) {
+    menuItems.push({
+      key: 'profile-new-window',
+      label: 'Open Profile in New Window',
+      icon: ArrowUpRight,
+      onPress: () => {
+        spawn({
+          key: 'publication',
+          documentId: rootDocument,
+          variants: [
+            {
+              key: 'author',
+              author: accountId,
+            },
+          ],
+        })
+      },
+    })
+  }
   menuItems.push({
     key: 'delete',
     label: 'Delete Account',
@@ -204,9 +256,33 @@ export function AccountOptionsButton() {
   })
   return (
     <>
-      {deleteEntity.content}
       <OptionsDropdown menuItems={menuItems} />
+      {deleteEntity.content}
+      {editProfileDialog.content}
+      {removeProfileDoc.content}
     </>
+  )
+}
+
+function EditAccountButton() {
+  const route = useNavRoute()
+  if (route.key !== 'account')
+    throw new Error(
+      'AccountOptionsButton can only be rendered on account route',
+    )
+  const myAccount = useMyAccount()
+  if (myAccount.data?.id !== route.accountId) {
+    return null
+  }
+
+  return (
+    <EditDocButton
+      docId={myAccount.data?.profile?.rootDocument || undefined}
+      isProfileDocument
+      baseVersion={undefined}
+      navMode="push"
+      contextRoute={route}
+    />
   )
 }
 
@@ -654,7 +730,10 @@ export function PageActionButtons(props: TitleBarProps) {
       <DocOptionsButton key="options" />,
     ]
   } else if (route.key === 'account') {
-    buttonGroup = [<AccountOptionsButton key="accountOptions" />]
+    buttonGroup = [
+      <EditAccountButton key="editAccount" />,
+      <AccountOptionsButton key="accountOptions" />,
+    ]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }

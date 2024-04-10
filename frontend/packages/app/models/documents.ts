@@ -426,6 +426,7 @@ export function usePublishDraft(
   const draftRoute = route.key === 'draft' ? route : undefined
   const groupVariant = draftRoute?.variant
   const myAccount = useMyAccount()
+  console.log({draftRoute})
   const isProfileDocument =
     draftRoute?.isProfileDocument ||
     myAccount.data?.profile?.rootDocument === draftRoute?.draftId
@@ -513,6 +514,8 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_DRAFT_LIST])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
+      invalidate([queryKeys.GET_ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
+      invalidate([queryKeys.GET_ACCOUNT, myAccount.data?.id])
       invalidate([queryKeys.ENTITY_CITATIONS])
       if (groupVariant) {
         invalidate([queryKeys.GET_GROUP, groupVariant.groupId])

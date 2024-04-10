@@ -23,7 +23,6 @@ import {
   Popover,
   SizableText,
   Spinner,
-  Tooltip,
   XStack,
   YGroup,
   YStack,
@@ -31,25 +30,19 @@ import {
   toast,
 } from '@mintter/ui'
 import {PageContainer} from '@mintter/ui/src/container'
-import {ArrowUpRight, Pencil, X} from '@tamagui/lucide-icons'
 import {ReactNode} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
 import {EntityCitationsAccessory} from '../components/citations'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {useAppDialog} from '../components/dialog'
-import {EditDocButton} from '../components/edit-doc-button'
-import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {MainWrapper} from '../components/main-wrapper'
-import {OptionsDropdown} from '../components/options-dropdown'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useMyAccount, useSetProfile} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {usePublication} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
-import {useOpenDraft} from '../utils/open-draft'
 import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
@@ -148,138 +141,114 @@ function MainAccountPage() {
     .length
   const isConnected = !!connectedCount
   const isMe = myAccount.data?.id === accountId
-  const editProfileDialog = useEditProfileDialog()
   const accountEntityUrl = createHmId('a', accountId)
   return (
-    <PageContainer marginVertical="$6">
-      <XStack gap="$4" alignItems="center" justifyContent="space-between">
-        <XStack gap="$4" alignItems="center">
-          <Avatar
-            id={accountId}
-            size={60}
-            label={account.profile?.alias}
-            url={getAvatarUrl(account.profile?.avatar)}
-          />
+    <>
+      <PageContainer marginTop="$6">
+        <Section>
+          <XStack gap="$4" alignItems="center" justifyContent="space-between">
+            <XStack gap="$4" alignItems="center">
+              <Avatar
+                id={accountId}
+                size={60}
+                label={account.profile?.alias}
+                url={getAvatarUrl(account.profile?.avatar)}
+              />
 
-          <SizableText
-            whiteSpace="nowrap"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            size="$5"
-            fontWeight="700"
-          >
-            {getAccountName(account.profile)}
-          </SizableText>
-        </XStack>
-
-        <XStack space="$2">
-          {isMe ? null : <FavoriteButton url={accountEntityUrl} />}
-          <CopyReferenceButton />
-          {isMe ? (
-            <Button
-              size="$2"
-              icon={Pencil}
-              onPress={() => {
-                editProfileDialog.open(true)
-              }}
-            >
-              Edit Profile
-            </Button>
-          ) : null}
-          <Popover placement="bottom-end">
-            <Popover.Trigger asChild>
-              <Button
-                icon={isMe ? null : <OnlineIndicator online={isConnected} />}
-                iconAfter={ChevronDown}
-                size="$2"
+              <SizableText
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+                size="$5"
+                fontWeight="700"
               >
-                {isMe ? 'My Devices' : isConnected ? 'Connected' : 'Offline'}
-              </Button>
-            </Popover.Trigger>
-            <Popover.Content
-              padding={0}
-              elevation="$2"
-              enterStyle={{y: -10, opacity: 0}}
-              exitStyle={{y: -10, opacity: 0}}
-              elevate
-              animation={[
-                'fast',
-                {
-                  opacity: {
-                    overshootClamping: true,
-                  },
-                },
-              ]}
-            >
-              <YGroup>
-                <YGroup.Item>
-                  <XStack paddingHorizontal="$4">
-                    <MenuItem
-                      disabled
-                      title={pluralizer(account.devices.length, 'Device')}
-                      size="$1"
-                      fontWeight="700"
-                    />
-                  </XStack>
-                </YGroup.Item>
-                {account.devices.map((device) => {
-                  if (!device) return null
-                  return (
-                    <DeviceRow
-                      key={device.deviceId}
-                      isOnline={device.isConnected}
-                      deviceId={device.deviceId}
-                    />
-                  )
-                })}
-              </YGroup>
-            </Popover.Content>
-          </Popover>
+                {getAccountName(account.profile)}
+              </SizableText>
+            </XStack>
 
-          {isMe ? null : (
-            <AccountTrustButton
-              accountId={accountId}
-              isTrusted={account.isTrusted}
-            />
-          )}
-        </XStack>
-      </XStack>
-      <Section>
-        <SizableText size="$4">{account.profile?.bio}</SizableText>
-      </Section>
-      <YStack gap="$4" marginVertical="$4">
-        {account.profile?.rootDocument ? (
-          <ProfileDoc
-            docId={account.profile.rootDocument}
-            profileAlias={account.profile?.alias}
-            accountId={accountId}
-          />
-        ) : (
-          <CreateProfileDocument accountId={accountId} />
-        )}
-      </YStack>
-      {editProfileDialog.content}
-    </PageContainer>
-  )
-}
+            <XStack space="$2">
+              {isMe ? null : <FavoriteButton url={accountEntityUrl} />}
+              <CopyReferenceButton />
+              <Popover placement="bottom-end">
+                <Popover.Trigger asChild>
+                  <Button
+                    icon={
+                      isMe ? null : <OnlineIndicator online={isConnected} />
+                    }
+                    iconAfter={ChevronDown}
+                    size="$2"
+                  >
+                    {isMe
+                      ? 'My Devices'
+                      : isConnected
+                      ? 'Connected'
+                      : 'Offline'}
+                  </Button>
+                </Popover.Trigger>
+                <Popover.Content
+                  padding={0}
+                  elevation="$2"
+                  enterStyle={{y: -10, opacity: 0}}
+                  exitStyle={{y: -10, opacity: 0}}
+                  elevate
+                  animation={[
+                    'fast',
+                    {
+                      opacity: {
+                        overshootClamping: true,
+                      },
+                    },
+                  ]}
+                >
+                  <YGroup>
+                    <YGroup.Item>
+                      <XStack paddingHorizontal="$4">
+                        <MenuItem
+                          disabled
+                          title={pluralizer(account.devices.length, 'Device')}
+                          size="$1"
+                          fontWeight="700"
+                        />
+                      </XStack>
+                    </YGroup.Item>
+                    {account.devices.map((device) => {
+                      if (!device) return null
+                      return (
+                        <DeviceRow
+                          key={device.deviceId}
+                          isOnline={device.isConnected}
+                          deviceId={device.deviceId}
+                        />
+                      )
+                    })}
+                  </YGroup>
+                </Popover.Content>
+              </Popover>
 
-function CreateProfileDocument({accountId}: {accountId: string}) {
-  const myAccount = useMyAccount()
-  const isMyAccount = myAccount.data?.id === accountId
-  const openDraft = useOpenDraft('push')
-  if (!isMyAccount) return null
-  return (
-    <XStack gap="$4">
-      <Button
-        size="$2"
-        icon={Pencil}
-        onPress={() => {
-          openDraft(undefined, {isProfileDocument: true})
-        }}
-      >
-        Create Profile Document
-      </Button>
-    </XStack>
+              {isMe ? null : (
+                <AccountTrustButton
+                  accountId={accountId}
+                  isTrusted={account.isTrusted}
+                />
+              )}
+            </XStack>
+          </XStack>
+        </Section>
+      </PageContainer>
+      {account.profile?.rootDocument ? (
+        <ProfileDoc
+          docId={account.profile.rootDocument}
+          profileAlias={account.profile?.alias}
+          accountId={accountId}
+        />
+      ) : (
+        <PageContainer marginTop="$6">
+          <SizableText size="$4" fontFamily="$editorBody" marginTop="$5">
+            {account.profile?.bio}
+          </SizableText>
+        </PageContainer>
+      )}
+    </>
   )
 }
 
@@ -300,57 +269,8 @@ function ProfileDoc({
   const pub = usePublication({
     id: docId,
   })
-  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, {isAlert: true})
   return pub.status == 'success' && pub.data ? (
-    <YStack
-      width="100%"
-      maxWidth="calc(90ch + 20vw)"
-      paddingHorizontal="$5"
-      alignSelf="center"
-    >
-      <XStack gap="$2" jc="flex-end" ai="center">
-        <EditDocButton
-          docId={docId}
-          baseVersion={undefined}
-          navMode="push"
-          contextRoute={accountRoute}
-        />
-        <Tooltip content="Open in New Window">
-          <Button
-            icon={ArrowUpRight}
-            size="$2"
-            onPress={() => {
-              spawn({
-                key: 'publication',
-                documentId: docId,
-                variants: [
-                  {
-                    key: 'author',
-                    author: accountId,
-                  },
-                ],
-              })
-            }}
-          />
-        </Tooltip>
-        <OptionsDropdown
-          menuItems={[
-            ...(isMyAccount
-              ? [
-                  {
-                    key: 'remove',
-                    icon: X,
-                    label: 'Remove Profile Document',
-                    onPress: () => {
-                      removeProfileDoc.open({})
-                    },
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </XStack>
-      {removeProfileDoc.content}
+    <PageContainer>
       {pub.data?.document?.title &&
       profileAlias !== pub.data?.document?.title ? (
         <Heading
@@ -369,11 +289,11 @@ function ProfileDoc({
       >
         <PublicationContent publication={pub.data} />
       </AppPublicationContentProvider>
-    </YStack>
+    </PageContainer>
   ) : null
 }
 
-function RemoveProfileDocDialog({
+export function RemoveProfileDocDialog({
   onClose,
   input,
 }: {
