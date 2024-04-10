@@ -92,12 +92,11 @@ import './publication-content.css'
 import {useRangeSelection} from './range-selection'
 
 export type EntityComponentsRecord = {
-  AccountCard: React.FC<EntityComponentProps>
-  GroupCard: React.FC<EntityComponentProps>
-  PublicationCard: React.FC<EntityComponentProps>
-  PublicationContent: React.FC<EntityComponentProps>
-  CommentCard: React.FC<EntityComponentProps>
-  InlineEmbed: React.FC<InlineEmbedComponentProps>
+  Account: React.FC<EntityComponentProps>
+  Group: React.FC<EntityComponentProps>
+  Publication: React.FC<EntityComponentProps>
+  Comment: React.FC<EntityComponentProps>
+  Inline: React.FC<InlineEmbedComponentProps>
 }
 
 export type PublicationContentContextValue = {
@@ -1122,7 +1121,7 @@ function InlineContentView({
   const {onLinkClick, textUnit, entityComponents} =
     usePublicationContentContext()
 
-  const InlineEmbed = entityComponents.InlineEmbed
+  const InlineEmbed = entityComponents.Inline
 
   let contentOffset = rangeOffset || 0
 
@@ -1312,26 +1311,22 @@ export function BlockContentEmbed(props: BlockContentProps) {
     throw new Error('BlockContentEmbed requires an embed block type')
   const id = unpackHmId(props.block.ref)
   if (id?.type == 'a') {
-    return <EmbedTypes.AccountCard {...props} {...id} />
+    return <EmbedTypes.Account {...props} {...id} />
   }
   if (id?.type == 'g') {
-    return <EmbedTypes.GroupCard {...props} {...id} />
+    return <EmbedTypes.Group {...props} {...id} />
   }
+
   if (id?.type == 'd') {
-    switch (props.block.attributes?.view || 'content') {
-      case 'card':
-        return <EmbedTypes.PublicationCard {...props} {...id} />
-      default:
-        return <EmbedTypes.PublicationContent {...props} {...id} />
-    }
+    return <EmbedTypes.Publication {...props} {...id} />
   }
   if (id?.type == 'c') {
-    return <EmbedTypes.CommentCard {...props} {...id} />
+    return <EmbedTypes.Comment {...props} {...id} />
   }
   return <BlockContentUnknown {...props} />
 }
 
-export function EmbedContentGroup({group}: {group: HMGroup}) {
+export function EmbedGroupCardContent({group}: {group: HMGroup}) {
   return (
     <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -1352,7 +1347,7 @@ export function EmbedContentGroup({group}: {group: HMGroup}) {
   )
 }
 
-export function EmbedContentAccount({account}: {account: HMAccount}) {
+export function EmbedAccountContent({account}: {account: HMAccount}) {
   const {ipfsBlobPrefix} = usePublicationContentContext()
   return (
     <XStack gap="$3" padding="$4" alignItems="flex-start">

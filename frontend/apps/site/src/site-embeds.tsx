@@ -4,8 +4,8 @@ import {
   BlockNodeList,
   BlockRange,
   ContentEmbed,
-  EmbedContentAccount,
-  EmbedContentGroup,
+  EmbedAccountContent,
+  EmbedGroupCardContent,
   EntityComponentProps,
   ErrorBlock,
   ExpandedBlockRange,
@@ -54,12 +54,11 @@ export function SitePublicationContentProvider({
       textUnit={contentTextUnit}
       debug={false}
       entityComponents={{
-        AccountCard: EmbedAccount,
-        GroupCard: EmbedGroup,
-        PublicationContent: EmbedPublicationContent,
-        PublicationCard: EmbedPublicationCard,
-        CommentCard: EmbedComment,
-        InlineEmbed: SiteInlineEmbed,
+        Account: EmbedAccount,
+        Group: EmbedGroup,
+        Publication: EmbedPublication,
+        Comment: EmbedComment,
+        Inline: SiteInlineEmbed,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -136,7 +135,17 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   )
 }
 
-export function EmbedPublicationContent(props: EntityComponentProps) {
+export function EmbedPublication(props: EntityComponentProps) {
+  if (props.block?.attributes?.view == 'card') {
+    return <EmbedPublicationCard {...props} />
+  } else if (props.block?.attributes?.view == 'content') {
+    return <EmbedPublicationContent {...props} />
+  }
+
+  return <ErrorBlock message="EmbedPublication view error" />
+}
+
+function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
   const pub = trpc.publication.getVariant.useQuery(
@@ -164,7 +173,7 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
   )
 }
 
-export function EmbedPublicationCard(props: EntityComponentProps) {
+function EmbedPublicationCard(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = trpc.publication.getVariant.useQuery(
     {
@@ -287,18 +296,62 @@ export function EmbedComment(props: EntityComponentProps) {
 
 export function EmbedGroup(props: EntityComponentProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
-  const groupQuery = trpc.group.get.useQuery({groupId, version: ''})
+  if (props.block?.attributes?.view == 'content') {
+    return <EmbedGroupContent groupId={groupId} {...props} />
+  } else if (props.block?.attributes?.view == 'card') {
+    return <EmbedGroupCard groupId={groupId} {...props} />
+  }
+
+  return (
+    <ErrorBlock
+      message={`EmbedGroup view error: ${JSON.stringify(props.block)}`}
+    />
+  )
+}
+
+function EmbedGroupCard(props: EntityComponentProps & {groupId?: string}) {
+  const groupQuery = trpc.group.get.useQuery({
+    groupId,
+    version: props.version || undefined,
+  })
 
   if (groupQuery.isLoading) return <Spinner />
   if (groupQuery.error) return <ErrorBlock message={groupQuery.error.message} />
   const group = groupQuery.data?.group
   return group ? (
     <EmbedWrapper hmRef={props.id}>
-      <EmbedContentGroup group={group} />
+      <EmbedGroupCardContent group={group} />
     </EmbedWrapper>
   ) : (
     <ErrorBlock message="Failed to load group embed" />
   )
+}
+
+function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
+  const groupFrontPage = useGroupFrontpage(
+    props.groupId!,
+    props.version || undefined,
+  )
+  if (groupFrontPage) {
+    return <EmbedPublicationContent {...props} {...groupFrontPage} />
+  }
+
+  return null
+}
+
+function useGroupFrontpage(groupId: string, version?: string) {
+  const groupQuery = trpc.group.listContent.useQuery({
+    groupId,
+    version: version,
+  })
+
+  return useMemo(() => {
+    const frontpage = groupQuery.data?.find((c) => c?.pathName == '/')
+    if (frontpage) {
+      return frontpage.docId
+    }
+    return null
+  }, [groupQuery.data, groupQuery.status])
 }
 
 export function EmbedAccount(props: EntityComponentProps) {
@@ -308,13 +361,22 @@ export function EmbedAccount(props: EntityComponentProps) {
   if (accountQuery.isLoading) return <Spinner />
   if (accountQuery.error)
     return <ErrorBlock message={accountQuery.error.message} />
-  return account ? (
-    <EmbedWrapper hmRef={props.id}>
-      <EmbedContentAccount account={account} />
-    </EmbedWrapper>
-  ) : (
-    <ErrorBlock message="Failed to account embed" />
-  )
+  if (account) {
+    if (
+      props.block?.attributes?.view == 'content' &&
+      account.profile?.rootDocument
+    ) {
+      const unpackedRef = unpackHmId(account.profile?.rootDocument)
+      return <EmbedPublicationContent {...props} {...unpackedRef} />
+    } else if (props.block?.attributes?.view == 'card') {
+      return (
+        <EmbedWrapper hmRef={props.id}>
+          <EmbedAccountContent account={account} />
+        </EmbedWrapper>
+      )
+    }
+  }
+  return null
 }
 
 function stripHMLinkPrefix(link: string) {

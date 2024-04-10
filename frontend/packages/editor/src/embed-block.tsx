@@ -208,8 +208,9 @@ function EmbedControl({
     }
     return null
   }, [block.props.url])
-  const allowViewSwitcher = hmId?.type === 'd' && !hmId.blockRef
-  const allowVersionSwitcher = hmId?.type === 'd'
+  const allowViewSwitcher = hmId?.type != 'c' && !hmId.blockRef
+  const allowVersionSwitcher =
+    hmId?.type == 'd' || (hmId?.type == 'g' && block.props.view == 'content')
   const openUrl = useOpenUrl()
   const popoverState = usePopoverState()
   const popoverViewState = usePopoverState()

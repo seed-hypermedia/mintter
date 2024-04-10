@@ -163,13 +163,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             },
           )
 
-          console.log(`== ~ pasteHandler ~ normalizedHmUrl:`, {
-            textContent,
-            normalizedHmUrl,
-            unpackedHmId,
-          })
           fetchEntityTitle(unpackedHmId, options.grpcClient)
-            .then((title) => {
+            .then(({title, frontPage}) => {
               if (title) {
                 view.dispatch(
                   tr.insertText(title, pos).addMark(
@@ -514,18 +509,28 @@ async function fetchEntityTitle(
       documentId: hmId.qid,
       version: hmId.version ? hmId.version : undefined,
     })
-    return pub?.document?.title || null
+    return {
+      title: pub?.document?.title || null,
+    }
   } else if (hmId.type == 'a') {
     const account = await grpcClient.accounts.getAccount({
       id: hmId.eid,
     })
-    return account?.profile?.alias || null
+    return {
+      title: account?.profile?.alias || null,
+    }
   } else if (hmId.type == 'g') {
     const group = await grpcClient.groups.getGroup({
       id: hmId.qid,
       version: hmId.version ? hmId.version : undefined,
     })
-    return group?.title || null
+    const content = await grpcClient.groups.listContent({
+      id: hmId.qid,
+    })
+    return {
+      title: group?.title || null,
+      frontPage: content.content ? content.content['/'] : null,
+    }
   } else if (hmId.type == 'c') {
     try {
       const comment = await grpcClient.comments.getComment({
@@ -537,17 +542,21 @@ async function fetchEntityTitle(
           id: comment.author,
         })
 
-        return `Comment from ${
-          account?.profile?.alias ||
-          `${account.id.slice(0, 5)}...${account.id.slice(-5)}`
-        }`
+        return {
+          title: `Comment from ${
+            account?.profile?.alias ||
+            `${account.id.slice(0, 5)}...${account.id.slice(-5)}`
+          }`,
+        }
       } else {
-        return null
+        return {
+          title: null,
+        }
       }
     } catch (error) {
       console.error(`fetchEntityTitle error: ${JSON.stringify(error)}`)
-      return null
+      return {title: null}
     }
   }
-  return null
+  return {title: null}
 }

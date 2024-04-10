@@ -42,6 +42,7 @@ export type HMProfile = {
   alias?: string
   bio?: string
   avatar?: string
+  rootDocument?: string
 }
 
 export type ServerAccount = Account

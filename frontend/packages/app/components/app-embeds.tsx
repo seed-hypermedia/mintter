@@ -4,9 +4,10 @@ import {
   BlockNodeContent,
   BlockNodeList,
   ContentEmbed,
-  EmbedContentAccount,
-  EmbedContentGroup,
+  EmbedAccountContent,
+  EmbedGroupCardContent,
   EntityComponentProps,
+  ErrorBlock,
   InlineEmbedComponentProps,
   PublicationCardView,
   blockStyles,
@@ -30,7 +31,7 @@ import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
 import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
 import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'
-import {useGroup} from '../models/groups'
+import {useGroup, useGroupFrontpage} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
@@ -127,6 +128,14 @@ function EmbedWrapper({
   )
 }
 
+export function EmbedPublication(props: EntityComponentProps) {
+  if (props.block.attributes?.view == 'card') {
+    return <EmbedPublicationCard {...props} />
+  } else {
+    return <EmbedPublicationContent {...props} />
+  }
+}
+
 export function EmbedPublicationContent(props: EntityComponentProps) {
   const documentId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
@@ -205,6 +214,29 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   )
 }
 
+export function EmbedAccount(props: EntityComponentProps) {
+  const accountId = props.type == 'a' ? props.eid : undefined
+  const accountQuery = useAccount(accountId)
+
+  if (accountQuery.status == 'success') {
+    if (
+      props.block?.attributes?.view == 'content' &&
+      accountQuery.data?.profile?.rootDocument
+    ) {
+      const unpackedRef = unpackHmId(accountQuery.data?.profile?.rootDocument)
+      return <EmbedPublicationContent {...props} {...unpackedRef} />
+    } else if (props.block?.attributes?.view == 'card') {
+      return (
+        <EmbedWrapper hmRef={props.id}>
+          <EmbedAccountContent account={accountQuery.data!} />
+        </EmbedWrapper>
+      )
+    }
+
+    return null
+  }
+}
+
 export function EmbedComment(props: EntityComponentProps) {
   if (props?.type !== 'c')
     throw new Error('Invalid props as ref for EmbedComment')
@@ -278,49 +310,52 @@ function AvatarComponent({accountId}: {accountId: string}) {
 
 export function EmbedGroup(props: EntityComponentProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
-  const groupQuery = useGroup(groupId, props.version || undefined)
+  if (props.block?.attributes?.view == 'content') {
+    return <EmbedGroupContent groupId={groupId} {...props} />
+  } else if (props.block?.attributes?.view == 'card') {
+    return <EmbedGroupCard groupId={groupId} {...props} />
+  }
+
+  return (
+    <ErrorBlock
+      message={`EmbedGroup view error: ${JSON.stringify(props.block)}`}
+    />
+  )
+}
+
+export function EmbedGroupCard(
+  props: EntityComponentProps & {groupId?: string},
+) {
+  const groupQuery = useGroup(props.groupId, props.version || undefined)
 
   const group = hmGroup(groupQuery.data)
+
   return group && groupQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
-      <EmbedContentGroup group={group} />
+      <EmbedGroupCardContent group={group} />
     </EmbedWrapper>
   ) : null
 }
 
-export function EmbedAccount(props: EntityComponentProps) {
-  const accountId = props.type == 'a' ? props.eid : undefined
-  const accountQuery = useAccount(accountId)
+function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
+  const groupFrontPage = useGroupFrontpage(
+    props.groupId,
+    props.version || undefined,
+  )
 
-  return accountQuery.status == 'success' ? (
-    <EmbedWrapper hmRef={props.id}>
-      <EmbedContentAccount account={accountQuery.data!} />
-    </EmbedWrapper>
-  ) : null
+  if (groupFrontPage) {
+    return <EmbedPublicationContent {...props} {...groupFrontPage} />
+  }
+
+  return null
 }
 
-export function AppInlineEmbed(props: InlineEmbedComponentProps) {
+export function EmbedInline(props: InlineEmbedComponentProps) {
   const accountId = props?.type == 'a' ? props.eid : undefined
   if (!accountId) throw new Error('Invalid props at AppInlineEmbed (accountId)')
   const accountQuery = useAccount(accountId)
   const navigate = useNavigate()
   return (
-    // pill style
-    // <Button
-    //   size="$2"
-    //   m={2}
-    //   p={2}
-    //   chromeless
-    //   theme="mint"
-    //   onPress={() => navigate({key: 'account', accountId})}
-    //   style={{display: 'inline-block', lineHeight: 1}}
-    // >
-    //   {(accountId &&
-    //     accountQuery.status == 'success' &&
-    //     `@${accountQuery.data?.profile?.alias}`) ||
-    //     `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
-    // </Button>
-
     <Button
       bg="$backgroundTransparent"
       hoverStyle={{

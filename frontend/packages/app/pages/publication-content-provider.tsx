@@ -11,12 +11,11 @@ import {
 import 'allotment/dist/style.css'
 import {useAppContext} from '../app-context'
 import {
-  AppInlineEmbed,
   EmbedAccount,
   EmbedComment,
   EmbedGroup,
-  EmbedPublicationCard,
-  EmbedPublicationContent,
+  EmbedInline,
+  EmbedPublication,
 } from '../components/app-embeds'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {useExperiments} from '../models/experiments'
@@ -39,12 +38,11 @@ export function AppPublicationContentProvider({
         textUnit={contentTextUnit}
         debug={false}
         entityComponents={{
-          AccountCard: EmbedAccount,
-          GroupCard: EmbedGroup,
-          PublicationCard: EmbedPublicationCard,
-          PublicationContent: EmbedPublicationContent,
-          CommentCard: EmbedComment,
-          InlineEmbed: AppInlineEmbed,
+          Account: EmbedAccount,
+          Group: EmbedGroup,
+          Publication: EmbedPublication,
+          Comment: EmbedComment,
+          Inline: EmbedInline,
         }}
         onLinkClick={(href, e) => {
           e.preventDefault()

@@ -1064,3 +1064,15 @@ export function useAddToCategory() {
     },
   })
 }
+
+export function useGroupFrontpage(groupId?: string, version?: string) {
+  const content = useGroupContent(groupId, version)
+
+  return useMemo(() => {
+    const frontpage = content.data?.content['/']
+    if (frontpage) {
+      return unpackHmId(frontpage)
+    }
+    return null
+  }, [content.data])
+}

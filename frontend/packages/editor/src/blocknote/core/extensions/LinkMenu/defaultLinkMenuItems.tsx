@@ -105,11 +105,7 @@ export function getLinkMenuItems({
           },
         })
       }
-      if (
-        hmId.type === 'd' ||
-        hmId.type === 'c' ||
-        (hmId.type === 'g' && hmId.groupPathName)
-      ) {
+      if (hmId.type == 'd' || hmId.type == 'c') {
         // embeds must be documents or comments. groups and accounts may be cards
         linkMenuItems.unshift({
           name: `Embed ${
@@ -129,6 +125,35 @@ export function getLinkMenuItems({
             const node = schema.nodes.embed.create(
               {
                 url: ref,
+              },
+              schema.text(' '),
+            )
+
+            insertNode(editor, sourceUrl || ref, node)
+          },
+        })
+      }
+
+      if (hmId.type == 'g' || hmId.type == 'a') {
+        linkMenuItems.unshift({
+          name: `Embed ${
+            docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
+          }`,
+          disabled: false,
+          icon: <SquareAsterisk size={18} />,
+          execute: (editor: BlockNoteEditor, ref: string) => {
+            if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
+              const hmId = normalizeHmId(ref, gwUrl)
+              if (!hmId) return
+              ref = hmId
+            }
+            const {state, schema} = editor._tiptapEditor
+            const {selection} = state
+            if (!selection.empty) return
+            const node = schema.nodes.embed.create(
+              {
+                url: ref,
+                view: 'content',
               },
               schema.text(' '),
             )
