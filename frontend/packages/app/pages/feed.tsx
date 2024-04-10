@@ -22,6 +22,7 @@ import {
   List,
   PageContainer,
   RadioButtons,
+  Section,
   SizableText,
   Spinner,
   TextProps,
@@ -774,16 +775,18 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
         ref={scrollRef}
         header={
           <PageContainer marginVertical="$6">
-            <XStack f={1} ai="center" gap="$3">
-              <RadioButtons
-                value={route.tab}
-                options={feedTabsOptions}
-                onValue={(tab) => {
-                  replace({...route, tab})
-                }}
-              />
-              {feed.isFetching ? <Spinner /> : null}
-            </XStack>
+            <Section paddingVertical={0}>
+              <XStack f={1} ai="center" gap="$3">
+                <RadioButtons
+                  value={route.tab}
+                  options={feedTabsOptions}
+                  onValue={(tab) => {
+                    replace({...route, tab})
+                  }}
+                />
+                {feed.isFetching ? <Spinner /> : null}
+              </XStack>
+            </Section>
           </PageContainer>
         }
         footer={

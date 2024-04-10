@@ -1,5 +1,5 @@
 import {ComponentProps} from 'react'
-import {Button, Theme, XGroup} from 'tamagui'
+import {Button, XGroup} from 'tamagui'
 
 export function RadioButtons<
   Options extends ReadonlyArray<{
@@ -17,23 +17,22 @@ export function RadioButtons<
   onValue: (value: Options[number]['key']) => void
 }) {
   return (
-    <Theme name="blue">
-      <XGroup borderColor="$color4" borderWidth={1}>
-        {options.map((option) => (
-          <RadioButton
-            key={option.key}
-            label={option.label}
-            icon={option.icon}
-            active={value === option.key}
-            onPress={() => {
-              onValue(option.key)
-            }}
-          />
-        ))}
-      </XGroup>
-    </Theme>
+    <XGroup borderRadius={0} borderColor="$color4" borderWidth={0}>
+      {options.map((option) => (
+        <RadioButton
+          key={option.key}
+          label={option.label}
+          icon={option.icon}
+          active={value === option.key}
+          onPress={() => {
+            onValue(option.key)
+          }}
+        />
+      ))}
+    </XGroup>
   )
 }
+
 function RadioButton({
   label,
   icon,
@@ -50,8 +49,17 @@ function RadioButton({
       <Button
         disabled={active}
         icon={icon}
-        backgroundColor={active ? '$backgroundFocus' : '$backgroundStrong'}
+        chromeless
+        backgroundColor="$colorTransparent"
+        fontWeight={'bold'}
+        color={active ? '$color12' : '$color10'}
+        hoverStyle={{
+          color: active ? '$color12' : '$color11',
+        }}
+        borderBottomWidth={2}
+        borderBottomColor={active ? '$color12' : '$colorTransparent'}
         onPress={onPress}
+        borderRadius={0}
       >
         {label}
       </Button>

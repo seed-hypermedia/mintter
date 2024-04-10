@@ -2,7 +2,6 @@ import {Avatar} from '@mintter/app/components/avatar'
 import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
-import {useAccountGroups} from '@mintter/app/models/groups'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
   Profile,
@@ -21,6 +20,8 @@ import {
   ListItem,
   MenuItem,
   Popover,
+  RadioButtons,
+  Section,
   SizableText,
   Spinner,
   XStack,
@@ -39,11 +40,12 @@ import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {MainWrapper} from '../components/main-wrapper'
 import {CopyReferenceButton} from '../components/titlebar-common'
-import {useMyAccount, useSetProfile} from '../models/accounts'
+import {useAccount, useMyAccount, useSetProfile} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {usePublication} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
+import {AccountGroups, AccountPublications} from './account-content-page'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 function DeviceRow({
@@ -65,20 +67,6 @@ function DeviceRow({
         {abbreviateCid(deviceId)}
       </ListItem>
     </YGroup.Item>
-  )
-}
-
-function Section({children}: {children: ReactNode}) {
-  return (
-    <YStack
-      borderBottomWidth={1}
-      borderBottomColor="black"
-      borderColor="$gray6"
-      paddingVertical="$4"
-      space
-    >
-      {children}
-    </YStack>
   )
 }
 
@@ -131,21 +119,26 @@ export default function AccountPage() {
 
 function MainAccountPage() {
   const route = useNavRoute()
-  const nav = useNavigate('push')
+  const replace = useNavigate('replace')
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
-  const {data: groups} = useAccountGroups(accountId)
   const myAccount = useMyAccount()
   const connectedCount = account.devices?.filter((device) => device.isConnected)
     .length
   const isConnected = !!connectedCount
   const isMe = myAccount.data?.id === accountId
   const accountEntityUrl = createHmId('a', accountId)
+  let content: ReactNode = <ProfileDoc />
+  if (route.tab === 'groups') {
+    content = <AccountGroups accountId={accountId} />
+  } else if (route.tab === 'documents') {
+    content = <AccountPublications accountId={accountId} />
+  }
   return (
     <>
       <PageContainer marginTop="$6">
-        <Section>
+        <Section paddingVertical={0} gap="$2">
           <XStack gap="$4" alignItems="center" justifyContent="space-between">
             <XStack gap="$4" alignItems="center">
               <Avatar
@@ -233,46 +226,48 @@ function MainAccountPage() {
               )}
             </XStack>
           </XStack>
+          <XStack>
+            <RadioButtons
+              key={route.tab}
+              value={route.tab || 'profile'}
+              options={[
+                {key: 'profile', label: 'Profile'},
+                {key: 'groups', label: 'Groups'},
+                {key: 'documents', label: 'Documents'},
+                {key: 'activity', label: 'Activity'},
+              ]}
+              onValue={(tab) => {
+                replace({...route, tab})
+              }}
+            />
+          </XStack>
         </Section>
       </PageContainer>
-      {account.profile?.rootDocument ? (
-        <ProfileDoc
-          docId={account.profile.rootDocument}
-          profileAlias={account.profile?.alias}
-          accountId={accountId}
-        />
-      ) : (
-        <PageContainer marginTop="$6">
-          <SizableText size="$4" fontFamily="$editorBody" marginTop="$5">
-            {account.profile?.bio}
-          </SizableText>
-        </PageContainer>
-      )}
+      {content}
     </>
   )
 }
 
-function ProfileDoc({
-  docId,
-  profileAlias,
-  accountId,
-}: {
-  docId: string
-  profileAlias: string
-  accountId: string
-}) {
+function ProfileDoc({}: {}) {
   const route = useNavRoute()
-  const myAccount = useMyAccount()
-  const isMyAccount = myAccount.data?.id === accountId
-  const spawn = useNavigate('spawn')
   const accountRoute = route.key === 'account' ? route : undefined
+  if (!accountRoute) throw new Error('Invalid route, no account id')
+  const account = useAccount(accountRoute.accountId)
   const pub = usePublication({
-    id: docId,
+    id: account.data?.profile?.rootDocument,
   })
+  if (!account.data?.profile?.rootDocument)
+    return (
+      <PageContainer marginTop="$6">
+        <SizableText size="$4" fontFamily="$editorBody" marginTop="$5">
+          {account.data?.profile?.bio}
+        </SizableText>
+      </PageContainer>
+    )
   return pub.status == 'success' && pub.data ? (
     <PageContainer>
       {pub.data?.document?.title &&
-      profileAlias !== pub.data?.document?.title ? (
+      account.data?.profile?.alias !== pub.data?.document?.title ? (
         <Heading
           size="$1"
           fontSize={'$2'}

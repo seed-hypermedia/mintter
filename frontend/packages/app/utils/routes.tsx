@@ -46,6 +46,7 @@ export const accountRouteSchema = z.object({
   key: z.literal('account'),
   accountId: z.string(),
   blockId: z.string().optional(),
+  tab: z.enum(['profile', 'documents', 'groups', 'activity']).optional(), // profile is the default
   accessory: z
     .discriminatedUnion('key', [entityCitationsAccessorySchema])
     .nullable()
@@ -63,13 +64,6 @@ export const favoritesSchema = z.object({
   key: z.literal('favorites'),
 })
 export type FavoritesRoute = z.infer<typeof favoritesSchema>
-
-export const accountContentRouteSchema = z.object({
-  key: z.literal('account-content'),
-  accountId: z.string(),
-  type: z.union([z.literal('documents'), z.literal('groups')]),
-})
-export type AccountContentRoute = z.infer<typeof accountContentRouteSchema>
 
 export const publicationCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
@@ -130,7 +124,7 @@ export const groupRouteSchema = z.object({
   groupId: z.string(),
   version: z.string().optional(),
   blockId: z.string().optional(),
-  listCategory: z.string().optional(),
+  tab: z.enum(['front', 'documents', 'activity']).optional(), // front is the default
   accessory: z
     .discriminatedUnion('key', [entityVersionsAccessorySchema])
     .nullable()
@@ -165,7 +159,6 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   contactsRouteSchema,
   accountRouteSchema,
   accountFeedRouteSchema,
-  accountContentRouteSchema,
   settingsRouteSchema,
   groupsRouteSchema,
   groupRouteSchema,

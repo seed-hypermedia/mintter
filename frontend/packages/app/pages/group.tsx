@@ -43,6 +43,8 @@ import {
   Heading,
   Label,
   ListItem,
+  RadioButtons,
+  Section,
   Separator,
   SizableText,
   Tooltip,
@@ -135,14 +137,12 @@ export default function GroupPage() {
     Role.ROLE_UNSPECIFIED
 
   let content: ReactNode = null
-  if (groupRoute.listCategory === '_all') {
+  if (groupRoute.tab === 'documents') {
     content = (
-      <Container>
-        <GroupAllContent groupRoute={groupRoute} myMemberRole={myMemberRole} />
-      </Container>
+      <GroupDocuments groupRoute={groupRoute} myMemberRole={myMemberRole} />
     )
   } else {
-    content = <GroupHome groupRoute={groupRoute} myMemberRole={myMemberRole} />
+    content = <GroupFront groupRoute={groupRoute} myMemberRole={myMemberRole} />
   }
 
   return (
@@ -151,7 +151,7 @@ export default function GroupPage() {
       route={groupRoute}
       groupVersion={group.data?.version}
     >
-      <MainWrapper maxHeight={'100%'}>{content}</MainWrapper>
+      {content}
     </GroupPageFooterAccessory>
   )
 }
@@ -188,7 +188,7 @@ function GroupPageFooterAccessory({
   )
 }
 
-function GroupHome({
+function GroupHeader({
   groupRoute,
   myMemberRole,
 }: {
@@ -207,6 +207,7 @@ function GroupHome({
   // const isOwner = myAccount.data?.id === group.data?.ownerAccountId
   // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
   const spawn = useNavigate('spawn')
+  const replace = useNavigate('replace')
   const ownerAccount = useAccount(group.data?.ownerAccountId)
   const inviteMember = useAppDialog(InviteMemberDialog)
   const openDraft = useOpenDraft()
@@ -214,7 +215,6 @@ function GroupHome({
   const frontDocumentUrl = groupContent.data?.content
     ? groupContent.data?.content['/']
     : undefined
-  const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
   const siteBaseUrl = group.data?.siteInfo?.baseUrl
   const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
@@ -233,127 +233,77 @@ function GroupHome({
         : GroupStatus.UnsyncedConnected
       : GroupStatus.Disconnected
   const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
-  const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
-  const frontDocMenuItems = [
-    frontDocumentUrl && isMember
-      ? {
-          label: 'Remove Front Document',
-          key: 'remove-front-doc',
-          icon: Trash,
-          onPress: () => {
-            removeDoc
-              .mutateAsync({groupId, pathName: '/'})
-              .then(() => {
-                toast.success('Removed front document')
-              })
-              .catch((error) => {
-                appError(`Failed to remove front document: ${error?.message}`, {
-                  error,
-                })
-              })
-          },
-        }
-      : null,
-  ].filter(Boolean)
+
   const openUrl = useOpenUrl()
   return (
-    <>
-      <Container>
-        <YStack group="header">
-          <XStack gap="$2" padding="$4" paddingHorizontal={0}>
-            <YStack gap="$3" flex={1}>
-              <YStack gap="$3">
-                <H1 fontWeight="bold">{group.data?.title}</H1>
-                {siteBaseUrl && (
-                  <XStack alignItems="center" gap="$2">
-                    <Tooltip
-                      content={
-                        group.data
-                          ? `Open group in the web (${syncStatus?.message(
-                              group.data,
-                            )})`
-                          : ''
-                      }
-                    >
-                      <Button
-                        size="$2"
-                        fontFamily={'$mono'}
-                        fontSize="$4"
-                        // hoverStyle={{textDecorationLine: 'underline'}}
-                        onPress={() => {
-                          openUrl(siteBaseUrl)
-                        }}
-                        color="$blue10"
-                        icon={
-                          syncStatus &&
-                          group.data && (
-                            <View
-                              style={{
-                                borderRadius: 5,
-                                width: 10,
-                                height: 10,
-                                backgroundColor: syncStatus.color,
-                              }}
-                            />
-                          )
-                        }
-                      >
-                        {hostnameStripProtocol(siteBaseUrl)}
-                      </Button>
-                    </Tooltip>
-                  </XStack>
-                )}
-                <XStack>
-                  <SizableText size="$5">{group.data?.description}</SizableText>
-                </XStack>
-              </YStack>
-            </YStack>
-            <YStack paddingTop="$4">
-              <XStack
-                gap="$2"
-                // opacity={0}
-                // $group-header-hover={{
-                //   opacity: 1,
-                // }}
+    <Container paddingBottom={0}>
+      <Section group="header" paddingVertical={0}>
+        <XStack gap="$2">
+          <H1 fontWeight="bold" f={1}>
+            {group.data?.title}
+          </H1>
+          <YStack paddingTop="$4">
+            <XStack alignItems="center" gap="$2">
+              <Tooltip
+                content={
+                  group.data
+                    ? `Open group in the web (${syncStatus?.message(
+                        group.data,
+                      )})`
+                    : ''
+                }
               >
-                <FavoriteButton url={groupId} />
-                {!frontDocumentUrl && isMember && (
-                  <Tooltip content={'Create Front Document'}>
-                    <Button
-                      icon={Store}
-                      size="$2"
-                      onPress={() => {
-                        openDraft(
-                          {groupId, pathName: '/', key: 'group'},
-                          {
-                            pathName: '/',
-                            initialTitle: group?.data?.title,
-                          },
-                        )
-                      }}
-                    >
-                      Add a Frontpage
-                    </Button>
-                  </Tooltip>
-                )}
-
-                <CopyReferenceButton />
-                {isMember && (
-                  <Tooltip content="Edit Group info">
-                    <Button
-                      icon={Pencil}
-                      size="$2"
-                      onPress={() => {
-                        editGroupInfo.open(groupId)
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </XStack>
-            </YStack>
-          </XStack>
-        </YStack>
+                <Button
+                  size="$2"
+                  fontFamily={'$mono'}
+                  fontSize="$4"
+                  // hoverStyle={{textDecorationLine: 'underline'}}
+                  onPress={() => {
+                    openUrl(siteBaseUrl)
+                  }}
+                  color="$blue10"
+                  icon={
+                    syncStatus &&
+                    group.data && (
+                      <View
+                        style={{
+                          borderRadius: 5,
+                          width: 10,
+                          height: 10,
+                          backgroundColor: syncStatus.color,
+                        }}
+                      />
+                    )
+                  }
+                >
+                  {hostnameStripProtocol(siteBaseUrl)}
+                </Button>
+              </Tooltip>
+              <FavoriteButton url={groupId} />
+              {!frontDocumentUrl && isMember && (
+                <Tooltip content={'Create Front Document'}>
+                  <Button
+                    icon={Store}
+                    size="$2"
+                    onPress={() => {
+                      openDraft(
+                        {groupId, pathName: '/', key: 'group'},
+                        {
+                          pathName: '/',
+                          initialTitle: group?.data?.title,
+                        },
+                      )
+                    }}
+                  >
+                    Add a Frontpage
+                  </Button>
+                </Tooltip>
+              )}
+              <CopyReferenceButton />
+            </XStack>
+          </YStack>
+        </XStack>
         <YStack>
           <XStack paddingVertical="$4" alignItems="center" gap="$3">
             <XStack gap="$3" flex={1} alignItems="flex-end">
@@ -416,9 +366,108 @@ function GroupHome({
             ) : null}
           </XStack>
         </YStack>
+        <XStack>
+          <RadioButtons
+            key={groupRoute.tab}
+            value={groupRoute.tab || 'front'}
+            options={[
+              {key: 'front', label: 'Home'},
+              {key: 'documents', label: 'Documents'},
+              {key: 'activity', label: 'Activity'},
+            ]}
+            onValue={(tab) => {
+              replace({
+                ...groupRoute,
+                tab,
+              })
+            }}
+          />
+        </XStack>
+      </Section>
+    </Container>
+  )
+}
+
+function GroupFront({
+  groupRoute,
+  myMemberRole,
+}: {
+  groupRoute: GroupRoute
+  myMemberRole: Role
+}) {
+  const accessory = groupRoute?.accessory
+  const {groupId, version} = groupRoute
+  const group = useGroup(groupId, version, {
+    // refetchInterval: 5_000,
+  })
+  const groupContent = useFullGroupContent(groupId, version)
+  // const groupMembers = useGroupMembers(groupId, version)
+  const groupMembers = useGroupMembers(groupId)
+  const isMember = myMemberRole !== Role.ROLE_UNSPECIFIED
+  // const isOwner = myAccount.data?.id === group.data?.ownerAccountId
+  // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
+  const spawn = useNavigate('spawn')
+  const replace = useNavigate('replace')
+  const ownerAccount = useAccount(group.data?.ownerAccountId)
+  const inviteMember = useAppDialog(InviteMemberDialog)
+  const openDraft = useOpenDraft()
+  const ownerAccountId = group.data?.ownerAccountId
+  const frontDocumentUrl = groupContent.data?.content
+    ? groupContent.data?.content['/']
+    : undefined
+  const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
+  const memberCount = Object.keys(groupMembers.data?.members || {}).length
+  const siteBaseUrl = group.data?.siteInfo?.baseUrl
+  const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
+  const now = useRoughTime()
+  const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
+  const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+  const isRecentlyOkSynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+  const siteVersionMatches = true
+  //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
+  // const siteVersionMatches =
+  //   group.data?.version === group.data?.siteInfo?.version
+  const siteSyncStatus =
+    isRecentlySynced && isRecentlyOkSynced
+      ? siteVersionMatches
+        ? GroupStatus.SyncedConnected
+        : GroupStatus.UnsyncedConnected
+      : GroupStatus.Disconnected
+  const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
+  const editGroupInfo = useEditGroupInfoDialog()
+  const removeDoc = useRemoveDocFromGroup()
+  const frontDocMenuItems = [
+    frontDocumentUrl && isMember
+      ? {
+          label: 'Remove Front Document',
+          key: 'remove-front-doc',
+          icon: Trash,
+          onPress: () => {
+            removeDoc
+              .mutateAsync({groupId, pathName: '/'})
+              .then(() => {
+                toast.success('Removed front document')
+              })
+              .catch((error) => {
+                appError(`Failed to remove front document: ${error?.message}`, {
+                  error,
+                })
+              })
+          },
+        }
+      : null,
+  ].filter(Boolean)
+  const openUrl = useOpenUrl()
+  return (
+    <MainWrapper maxHeight={'100%'}>
+      <GroupHeader groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      <Container>
         {frontPageId && frontDocumentUrl && (
           <>
-            <Separator />
+            <FrontPublicationDisplay
+              urlWithVersion={frontDocumentUrl}
+              groupTitle={group.data?.title || ''}
+            />
             <XStack
               gap="$2"
               paddingVertical="$4"
@@ -426,11 +475,6 @@ function GroupHome({
               minHeight="$6"
               group="item"
             >
-              <FrontPublicationDisplay
-                urlWithVersion={frontDocumentUrl}
-                groupTitle={group.data?.title || ''}
-              />
-
               <XStack
                 gap="$2"
                 position="absolute"
@@ -488,11 +532,11 @@ function GroupHome({
 
       {inviteMember.content}
       {editGroupInfo.content}
-    </>
+    </MainWrapper>
   )
 }
 
-export function GroupAllContent({
+export function GroupDocuments({
   groupRoute,
   myMemberRole,
 }: {
@@ -509,8 +553,9 @@ export function GroupAllContent({
   })
 
   return (
-    <>
-      <YStack>
+    <MainWrapper maxHeight={'100%'}>
+      <GroupHeader groupRoute={groupRoute} myMemberRole={myMemberRole} />
+      <Container>
         {//Object.entries(groupContent.data?.content || {})
         groupContent.data?.items.map(({key, pub, author, editors, id}) => {
           if (key === '/') return null
@@ -542,9 +587,9 @@ export function GroupAllContent({
             />
           )
         })}
-      </YStack>
+      </Container>
       {copyDialogContent}
-    </>
+    </MainWrapper>
   )
 }
 

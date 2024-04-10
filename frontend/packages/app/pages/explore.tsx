@@ -5,6 +5,7 @@ import {
   List,
   PageContainer,
   RadioButtons,
+  Section,
   Spinner,
   Text,
   XStack,
@@ -30,15 +31,17 @@ function ExploreTabs() {
   const replace = useNavigate('replace')
   return (
     <PageContainer marginVertical="$6">
-      <XStack>
-        <RadioButtons
-          value={route.tab}
-          options={documentTabsOptions}
-          onValue={(tab) => {
-            replace({...route, tab})
-          }}
-        />
-      </XStack>
+      <Section paddingVertical={0}>
+        <XStack>
+          <RadioButtons
+            value={route.tab}
+            options={documentTabsOptions}
+            onValue={(tab) => {
+              replace({...route, tab})
+            }}
+          />
+        </XStack>
+      </Section>
     </PageContainer>
   )
 }

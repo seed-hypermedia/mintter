@@ -1,22 +1,19 @@
 import {AuthorVariant, GroupVariant} from '@mintter/shared'
-import {Home, Separator, Tooltip, View, YGroup} from '@mintter/ui'
-import {Contact, FileText, Library, Sparkles, Star} from '@tamagui/lucide-icons'
-import {ReactNode} from 'react'
+import {Home, Separator, YGroup} from '@mintter/ui'
+import {Contact, Sparkles, Star} from '@tamagui/lucide-icons'
 import {useMyAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {CreateGroupButton} from './new-group'
 import {
   GenericSidebarContainer,
   MyAccountItem,
-  NewDocumentButton,
   SidebarItem,
   activeDocOutline,
   getDocOutline,
 } from './sidebar-base'
 
-export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
+export function MainAppSidebar() {
   const route = useNavRoute()
   const navigate = useNavigate()
   const replace = useNavigate('replace')
@@ -94,21 +91,6 @@ export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
         borderBottomWidth={1}
         borderColor="$borderColor"
       >
-        {sidebarHeader}
-        {account.data && (
-          <YGroup.Item>
-            <MyAccountItem
-              active={
-                route.key == 'account' &&
-                route.accountId == myAccount.data?.id &&
-                !isBlockActive
-              }
-              account={account.data}
-              onRoute={navigate}
-            />
-          </YGroup.Item>
-        )}
-        <YGroup borderRadius={0}>{outlineContent}</YGroup>
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'feed'}
@@ -120,40 +102,6 @@ export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
             icon={Home}
           />
         </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'documents'}
-            data-testid="menu-item-global"
-            onPress={() => {
-              navigate({key: 'documents', tab: 'mine'})
-            }}
-            title="Documents"
-            bold
-            icon={FileText}
-            rightHover={[<NewDocumentButton key="newDoc" />]}
-          />
-        </YGroup.Item>
-
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'groups'}
-            onPress={() => {
-              navigate({key: 'groups'})
-            }}
-            title="Groups"
-            bold
-            icon={Library}
-            rightHover={[
-              <Tooltip content="New Group" key="newGroup">
-                {/* Tooltip broken without this extra child View */}
-                <View>
-                  <CreateGroupButton chromeless />
-                </View>
-              </Tooltip>,
-            ]}
-          />
-        </YGroup.Item>
-
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'explore'}
@@ -178,7 +126,6 @@ export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
             rightHover={[]}
           />
         </YGroup.Item>
-
         <YGroup.Item>
           <SidebarItem
             active={route.key == 'contacts'}
@@ -190,7 +137,21 @@ export function MainAppSidebar({sidebarHeader}: {sidebarHeader: ReactNode}) {
             bold
           />
         </YGroup.Item>
+        {account.data && (
+          <YGroup.Item>
+            <MyAccountItem
+              active={
+                route.key == 'account' &&
+                route.accountId == myAccount.data?.id &&
+                !isBlockActive
+              }
+              account={account.data}
+              onRoute={navigate}
+            />
+          </YGroup.Item>
+        )}
       </YGroup>
+      <YGroup borderRadius={0}>{outlineContent}</YGroup>
     </GenericSidebarContainer>
   )
 }

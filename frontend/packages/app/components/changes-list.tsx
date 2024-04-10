@@ -168,7 +168,6 @@ function ChangeItem({
       groupId: entityId,
       version: change.id,
       accessory: {key: 'versions'},
-      listCategory: navRoute.listCategory,
     }
   } else if (navRoute.key === 'publication') {
     destRoute = {
