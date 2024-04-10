@@ -1,5 +1,6 @@
-import {Account} from '@mintter/shared'
-import {Button, ButtonProps} from '@mintter/ui'
+import {Entity} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+
+import {ButtonProps, SizableText, XStack} from '@mintter/ui'
 import {Fragment, NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'
@@ -92,7 +93,7 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
             return {active: false}
           }
 
-          const queryText = text.slice(1) // Remove the leading "#" (triggerCharacter)
+          const queryText = text.slice(1) // Remove the leading "@" (triggerCharacter)
           const newState: AutocompleteTokenPluginState<T> = {
             ...state,
             range: {from, to},
@@ -182,11 +183,11 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
           )
 
           const onCreate = (
-            value: string,
+            value: Entity,
             range: {from: number; to: number},
           ) => {
             const node = view.state.schema.nodes[nodeName].create({
-              ref: `hm://a/${value.id}`,
+              ref: value.id,
             })
             view.dispatch(
               view.state.tr.replaceWith(
@@ -258,8 +259,9 @@ function AutocompletePopupInner(
   const misses = useRef(0)
 
   const suggestions = useMemo(() => {
-    const list = getSuggestions(editor.mentionOptions || [], text)
-
+    console.log(`== ~ suggestions ~ editor:`, editor)
+    editor.options.onMentionsQuery(text)
+    const list = editor.mentionOptions || []
     if (list.length === 0) {
       misses.current++
     } else {
@@ -335,12 +337,19 @@ function AutocompletePopupInner(
       >
         {/* <div>Query: "{text}"</div> */}
         {suggestions.length === 0 && <div>No Results</div>}
-        {suggestions.map((suggestion, i) => {
+        {suggestions.map((suggestion: Entity, i) => {
           return (
             <SuggestionItem
               selected={i === index}
-              name={suggestion.profile.alias}
+              name={suggestion.title}
               key={suggestion.id}
+              type={
+                suggestion.id.startsWith('hm://a')
+                  ? 'Account'
+                  : suggestion.id.startsWith('hm://d')
+                  ? 'Document'
+                  : 'Group'
+              }
               onMouseEnter={() => {
                 // setIndex(i)
               }}
@@ -360,15 +369,6 @@ function strangle(n: number, minMax: [number, number]) {
   return Math.max(Math.min(n, minMax[1]), minMax[0])
 }
 
-function getSuggestions(options: Array<any>, queryText: string) {
-  let result = options.filter((acc) => {
-    let alias = acc.profile.alias
-    return alias.toLowerCase().includes(queryText.toLowerCase())
-  })
-
-  return result
-}
-
 export type AutocompleteTokenPluginState<T> =
   | {active: false}
   | AutocompleteTokenPluginActiveState<T>
@@ -384,7 +384,7 @@ export type AutocompleteTokenPluginActiveState<T> = {
 }
 
 export type AutocompleteTokenPluginActions = {
-  onCreate: (nodeAttr: string, range: {from: number; to: number}) => void
+  onCreate: (nodeAttr: Entity, range: {from: number; to: number}) => void
   onClose: () => void
 }
 
@@ -393,7 +393,7 @@ export type AutocompleteTokenPluginAction =
   | {type: 'close'}
 
 const SuggestionItem = React.memo(function SuggestionItem(props: {
-  embedRef?: Account
+  embedRef?: Entity
   name?: string
   selected: boolean
   onPress: ButtonProps['onPress']
@@ -412,24 +412,35 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
   }
 
   return (
-    <Button
+    <XStack
+      paddingHorizontal="$4"
+      paddingVertical="$2"
+      gap="$2"
       ref={elm}
       onPress={props.onPress}
-      fontWeight="600"
-      size="$2"
       jc="flex-start"
       borderRadius={0}
+      size="$2"
       bg={props.selected ? '$mint11' : '$backgroundFocus'}
-      color={props.selected ? 'white' : '$color'}
       hoverStyle={{
         bg: '$mint11',
         borderColor: '$colorTransparent',
         color: 'white',
       }}
       onMouseEnter={props.onMouseEnter}
-      // icon={<Avatar size={18} url={props.embedRef?.profile?.avatar} />} avatars make everything slooow
     >
-      {props.name}
-    </Button>
+      <SizableText
+        size="$2"
+        p={0}
+        fontWeight="600"
+        f={1}
+        color={props.selected ? 'white' : '$color'}
+      >
+        {props.name}
+      </SizableText>
+      <SizableText p={0} size="$1" color={props.selected ? 'white' : '$color'}>
+        {props.type}
+      </SizableText>
+    </XStack>
   )
 })

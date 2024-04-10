@@ -66,6 +66,7 @@ export const queryKeys = {
 
   // search
   SEARCH: 'SEARCH', //, query: string
+  SEARCH_MENTIONS: 'SEARCH_MENTIONS', //, query: string
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {

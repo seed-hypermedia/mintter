@@ -375,7 +375,6 @@ export function Launcher() {
     contentProps: {
       backgroundColor: '$colorTransparent',
       padding: 0,
-      // @ts-expect-error tamagui confused about boxShadow I guess
       boxShadow: 'none',
       height: '75%',
     },
