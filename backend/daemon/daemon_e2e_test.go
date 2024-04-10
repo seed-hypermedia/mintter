@@ -206,7 +206,9 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
 
 	pub := publishDocument(t, ctx, alice)
-
+	time.Sleep(200 * time.Millisecond)
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
 	time.Sleep(200 * time.Millisecond)
 
 	doc, err := alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
@@ -216,6 +218,14 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should find her own document")
 	require.Equal(t, pub.Version, doc.Version, "alice should find her own document version")
+
+	doc, err = bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "bob should have synced the document")
+
 	const reason = "I don't want it anymore"
 	_, err = alice.RPC.Entities.DeleteEntity(ctx, &entities.DeleteEntityRequest{
 		Id:     doc.Document.Id,
@@ -231,8 +241,17 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	// Even if we sync we shouldn't get the document back
 	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
-	//time.Sleep(200 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
+	// check if bob still has it
+	doc, err = bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "bob should still have the doc")
+
+	// and finally alice should have it back
 	_, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: pub.Document.Id,
 		LocalOnly:  true,
@@ -243,15 +262,14 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	_, err = alice.RPC.Entities.RestoreEntity(ctx, &entities.RestoreEntityRequest{
 		Id: doc.Document.Id,
 	})
-
-	require.NoError(t, err)
-	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
 
 	lst, err = alice.RPC.Entities.ListDeletedEntities(ctx, &entities.ListDeletedEntitiesRequest{})
 	require.NoError(t, err)
 	require.Len(t, lst.DeletedEntities, 0)
 
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
 	time.Sleep(200 * time.Millisecond)
 
 	doc, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
