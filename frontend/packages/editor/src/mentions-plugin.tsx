@@ -1,7 +1,5 @@
 import {useAccount} from '@mintter/app/models/accounts'
-import {usePublication} from '@mintter/app/models/documents'
-import {useGroup} from '@mintter/app/models/groups'
-import {UnpackedHypermediaId, unpackHmId} from '@mintter/shared'
+import {unpackHmId} from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
 import {Node} from '@tiptap/core'
 import {NodeViewWrapper, ReactNodeViewRenderer} from '@tiptap/react'
@@ -22,7 +20,6 @@ document.body.append(inlineEmbedPopupElement)
 var popupRoot = ReactDOM.createRoot(inlineEmbedPopupElement)
 
 export function createInlineEmbedNode(bnEditor: any) {
-  console.log(`== ~ createInlineEmbedNode ~ bnEditor:`, bnEditor)
   let {nodes, plugins} = createAutoCompletePlugin({
     nodeName: 'inline-embed',
     triggerCharacter: '@',
@@ -86,70 +83,8 @@ function InlineEmbedNodeComponent(props: any) {
 
 export function MentionToken(props: {embedRef: string; selected?: boolean}) {
   const unpackedRef = unpackHmId(props.embedRef)
+  const account = useAccount(unpackedRef?.eid)
 
-  if (unpackedRef?.type == 'a') {
-    return <AccountMention unpackedRef={unpackedRef} {...props} />
-  } else if (unpackedRef?.type == 'g') {
-    return <GroupMention unpackedRef={unpackedRef} {...props} />
-  } else if (unpackedRef.type == 'd') {
-    return <DocumentMention unpackedRef={unpackedRef} {...props} />
-  } else {
-    return <MentionText>ERROR</MentionText>
-  }
-}
-
-function AccountMention({
-  unpackedRef,
-  selected,
-}: {
-  unpackedRef: UnpackedHypermediaId
-  selected?: boolean
-}) {
-  const account = useAccount(unpackedRef.eid)
-
-  return (
-    <MentionText selected={selected}>
-      @{account.data?.profile?.alias || unpackedRef.eid}
-    </MentionText>
-  )
-}
-
-function GroupMention(props: {
-  unpackedRef: UnpackedHypermediaId
-  selected?: boolean
-}) {
-  const group = useGroup(props.unpackedRef.id)
-  return (
-    <MentionText selected={props.selected}>
-      #{group.data?.title || 'group'}
-    </MentionText>
-  )
-}
-
-function DocumentMention({
-  unpackedRef,
-  selected,
-}: {
-  unpackedRef: UnpackedHypermediaId
-  selected?: boolean
-}) {
-  const pub = usePublication({
-    id: unpackedRef.id,
-    version: unpackedRef.version || undefined,
-  })
-
-  if (pub.status == 'loading') {
-    return <MentionText>...</MentionText>
-  }
-
-  return (
-    <MentionText selected={selected}>
-      [[{pub.data?.document?.title || unpackedRef.id}]]
-    </MentionText>
-  )
-}
-
-function MentionText(props) {
   return (
     <SizableText
       fontSize="1em"
@@ -161,7 +96,8 @@ function MentionText(props) {
       color="$mint11"
       outlineColor="$mint11"
     >
-      {props.children}
+      @{account.data?.profile?.alias || props.embedRef}
     </SizableText>
   )
 }
+1

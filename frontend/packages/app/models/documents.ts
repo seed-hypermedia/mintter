@@ -48,7 +48,7 @@ import {Extension, findParentNode} from '@tiptap/core'
 import {NodeSelection} from '@tiptap/pm/state'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
@@ -61,7 +61,6 @@ import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useGroupContent, useGroups} from './groups'
 import {queryKeys} from './query-keys'
-import {useSearchMentions} from './search'
 
 export function usePublicationList(
   opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
@@ -655,8 +654,14 @@ export function useDraftEditor({
   const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
+  const accounts = useAllAccounts(true)
   const gotEdited = useRef(false)
 
+  useEffect(() => {
+    if (accounts.data?.accounts.length) {
+      editor?.setInlineEmbedOptions(accounts.data.accounts)
+    }
+  }, [accounts.data])
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
@@ -847,9 +852,6 @@ export function useDraftEditor({
 
   const gwUrl = useGatewayUrlStream()
 
-  const [queryMentions, setQueryMentions] = useState('')
-  const queryMentionsResults = useSearchMentions(queryMentions, {})
-
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
@@ -893,9 +895,6 @@ export function useDraftEditor({
       gwUrl,
       openUrl,
     },
-    onMentionsQuery: (query: string) => {
-      setQueryMentions(query)
-    },
 
     // onEditorReady: (e) => {
     //   readyThings.current[0] = e
@@ -918,12 +917,6 @@ export function useDraftEditor({
       ],
     },
   })
-
-  useEffect(() => {
-    if (queryMentionsResults.length) {
-      editor.setInlineEmbedOptions(queryMentionsResults)
-    }
-  }, [queryMentionsResults])
 
   useEffect(() => {
     if (state.matches('fetching')) {
