@@ -42,7 +42,7 @@ import {useAccount} from '../models/accounts'
 import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
-import {useFeedWithLatest, useResourceFeed} from '../models/feed'
+import {useFeedWithLatest, useResourceFeedWithLatest} from '../models/feed'
 import {useGroup} from '../models/groups'
 import {appRouteOfId, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
@@ -734,7 +734,11 @@ function ErrorFeedItem({message}: {message: string}) {
   )
 }
 
-const FeedItem = React.memo(function FeedItem({event}: {event: ActivityEvent}) {
+export const FeedItem = React.memo(function FeedItem({
+  event,
+}: {
+  event: ActivityEvent
+}) {
   const {data, eventTime} = event
   if (data.case === 'newBlob') {
     const {cid, author, resource, blobType} = data.value
@@ -763,6 +767,26 @@ const FeedItem = React.memo(function FeedItem({event}: {event: ActivityEvent}) {
   return <ErrorFeedItem message={`Unknown event type: ${event.data.case}`} />
 })
 
+export function NewUpdatesButton({onPress}: {onPress: () => void}) {
+  return (
+    <XStack
+      position="absolute"
+      top={0}
+      right={0}
+      left={0}
+      padding="$4"
+      jc="center"
+      pointerEvents="box-none"
+    >
+      <Theme inverse>
+        <Button size="$2" onPress={onPress} icon={ChevronUp}>
+          New Updates
+        </Button>
+      </Theme>
+    </XStack>
+  )
+}
+
 const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
@@ -789,21 +813,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
             </Section>
           </PageContainer>
         }
-        footer={
-          feed.data?.pages?.length && (
-            <XStack jc="center" gap="$3" paddingVertical="$6">
-              {feed.isFetchingNextPage || feed.isLoading ? (
-                <Spinner />
-              ) : feed.hasNextPage ? (
-                <Button size="$2" onPress={() => feed.fetchNextPage()}>
-                  Load More Items
-                </Button>
-              ) : (
-                <ButtonText>No more items in feed</ButtonText>
-              )}
-            </XStack>
-          )
-        }
+        footer={<FeedPageFooter feedQuery={feed} />}
         items={feed.data || []}
         renderItem={({item}) => <FeedItem event={item} />}
         onEndReached={() => {
@@ -811,64 +821,68 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
         }}
       />
       {feed.hasNewItems && (
-        <XStack
-          position="absolute"
-          top={0}
-          right={0}
-          left={0}
-          padding="$4"
-          jc="center"
-          pointerEvents="box-none"
-        >
-          <Theme inverse>
-            <Button
-              size="$2"
-              onPress={() => {
-                scrollRef.current?.scrollTo({top: 0})
-                feed.refetch()
-              }}
-              icon={ChevronUp}
-            >
-              New Updates
-            </Button>
-          </Theme>
-        </XStack>
+        <NewUpdatesButton
+          onPress={() => {
+            scrollRef.current?.scrollTo({top: 0})
+            feed.refetch()
+          }}
+        />
       )}
     </YStack>
   )
 })
+
+export function FeedPageFooter({
+  feedQuery,
+}: {
+  feedQuery:
+    | ReturnType<typeof useFeedWithLatest>
+    | ReturnType<typeof useResourceFeedWithLatest>
+}) {
+  return (
+    feedQuery.data?.length && (
+      <XStack jc="center" gap="$3" paddingVertical="$6">
+        {feedQuery.isFetchingNextPage || feedQuery.isLoading ? (
+          <Spinner />
+        ) : feedQuery.hasNextPage ? (
+          <Button size="$2" onPress={() => feedQuery.fetchNextPage()}>
+            Load More Items
+          </Button>
+        ) : (
+          <ButtonText>End of Feed.</ButtonText>
+        )}
+      </XStack>
+    )
+  )
+}
 
 export const ResourceFeed = React.memo(function ResourceFeed({
   id,
 }: {
   id: string
 }) {
-  const feed = useResourceFeed(id)
+  const scrollRef = React.useRef<VirtuosoHandle>(null)
+  const feed = useResourceFeedWithLatest(id)
   return (
     <YStack f={1} gap="$3">
       <List
+        ref={scrollRef}
         header={<View height="$2" />}
-        footer={
-          feed.data?.pages?.length && (
-            <XStack jc="center" gap="$3" paddingVertical="$6">
-              {feed.isFetchingNextPage || feed.isLoading ? (
-                <Spinner />
-              ) : feed.hasNextPage ? (
-                <Button size="$2" onPress={() => feed.fetchNextPage()}>
-                  Load More Items
-                </Button>
-              ) : (
-                <ButtonText>End of Feed.</ButtonText>
-              )}
-            </XStack>
-          )
-        }
-        items={feed.data?.events || []}
+        footer={<FeedPageFooter feedQuery={feed} />}
+        items={feed.data || []}
         renderItem={({item}) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
         }}
       />
+      {feed.hasNewItems && (
+        <NewUpdatesButton
+          onPress={() => {
+            scrollRef.current?.scrollTo({top: 0})
+            feed.refetch()
+          }}
+        />
+      )}
     </YStack>
   )
 })

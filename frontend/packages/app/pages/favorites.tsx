@@ -1,6 +1,8 @@
 import {HMAccount, UnpackedHypermediaId} from '@mintter/shared'
 import {List} from '@mintter/ui'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import Footer from '../components/footer'
+import {GroupListItem} from '../components/groups-list'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
@@ -8,11 +10,12 @@ import {useAllAccounts} from '../models/accounts'
 import {FavoriteItem, useFavorites} from '../models/favorites'
 import {usePublicationVariant} from '../models/publication'
 import {ContactItem} from './contacts-page'
-import {GroupListItem} from './groups'
 
 export default function FavoritesPage() {
   const favorites = useFavorites()
   const allAccounts = useAllAccounts()
+  const [copyContent, onCopy, host] = useCopyGatewayReference()
+
   return (
     <>
       <MainWrapperNoScroll>
@@ -28,12 +31,15 @@ export default function FavoritesPage() {
               <FavoriteListItem
                 key={item.url}
                 item={item}
-                onCopy={() => {}}
+                onCopy={() => {
+                  onCopy(item.id)
+                }}
                 allAccounts={allAccounts.data?.accounts}
               />
             )
           }}
         />
+        {copyContent}
       </MainWrapperNoScroll>
       <Footer />
     </>
@@ -52,7 +58,6 @@ function DocumentFavoriteItem({
   allAccounts?: HMAccount[]
 }) {
   if (id.type !== 'd') throw new Error('Not a document')
-  console.log('docFavoriteItem', id.qid)
   const doc = usePublicationVariant({
     documentId: id.qid,
     versionId: id.version || undefined,
@@ -94,10 +99,10 @@ function FavoriteListItem({
   allAccounts?: HMAccount[]
 }) {
   if (item.key === 'group') {
-    return <GroupListItem group={item.group} onCopy={() => {}} />
+    return <GroupListItem group={item.group} onCopy={onCopy} />
   }
   if (item.key === 'account') {
-    return <ContactItem account={item.account} onCopy={() => {}} />
+    return <ContactItem account={item.account} onCopy={onCopy} />
   }
   if (item.key === 'document') {
     return (
@@ -105,7 +110,7 @@ function FavoriteListItem({
         url={item.url}
         id={item.id}
         allAccounts={allAccounts}
-        onCopy={() => {}}
+        onCopy={onCopy}
       />
     )
   }

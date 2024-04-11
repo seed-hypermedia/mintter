@@ -15,6 +15,7 @@ import {useGroups} from './groups'
 export type FavoriteItem =
   | {
       key: 'group'
+      id: UnpackedHypermediaId
       url: string
       groupId: string
       version?: string | null
@@ -27,6 +28,7 @@ export type FavoriteItem =
     }
   | {
       key: 'account'
+      id: UnpackedHypermediaId
       url: string
       accountId: string
       account: HMAccount
@@ -104,6 +106,7 @@ export function useFavorites() {
       if (group) {
         favoriteItems.push({
           key: 'group',
+          id,
           url,
           groupId: id.qid,
           version: id.version,
@@ -119,6 +122,7 @@ export function useFavorites() {
       if (account) {
         favoriteItems.push({
           key: 'account',
+          id,
           url,
           accountId: id.qid,
           account,

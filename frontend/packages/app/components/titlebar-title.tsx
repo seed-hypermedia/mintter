@@ -6,10 +6,8 @@ import {
   Book,
   Contact,
   ErrorIcon,
-  FileText,
   FontSizeTokens,
   Home,
-  Library,
   SizableText,
   Spinner,
   TitleText,
@@ -20,8 +18,6 @@ import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
 import {
-  AccountContentRoute,
-  AccountFeedRoute,
   AccountRoute,
   DraftRoute,
   GroupFeedRoute,
@@ -35,9 +31,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
 
   useEffect(() => {
     async function getTitleOfRoute(route: NavRoute): Promise<string> {
-      if (route.key === 'documents') return 'Documents'
       if (route.key === 'contacts') return 'Contacts'
-      if (route.key === 'groups') return 'Groups'
       return ''
     }
     getTitleOfRoute(route).then((title) => {
@@ -65,26 +59,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-
-  if (route.key === 'documents') {
-    let subtitle: string | null = null
-    if (route.tab === 'drafts') {
-      subtitle = '- Drafts'
-    } else if (route.tab === 'all') {
-      subtitle = '- All Publications'
-    } else {
-      subtitle = '- Trusted Publications'
-    }
-    return (
-      <>
-        <FileText size={12} />
-        <TitleText size={size} fontWeight="bold" data-testid="titlebar-title">
-          Documents
-        </TitleText>
-        <SizableText>{subtitle}</SizableText>
-      </>
-    )
-  }
   if (route.key === 'contacts') {
     return (
       <>
@@ -92,14 +66,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
         <TitleText data-testid="titlebar-title" size={size}>
           Contacts
         </TitleText>
-      </>
-    )
-  }
-  if (route.key === 'groups') {
-    return (
-      <>
-        <Library size={12} />
-        <TitleText size={size}>Groups</TitleText>
       </>
     )
   }
@@ -121,7 +87,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-
   if (route.key === 'group' || route.key === 'group-feed') {
     return (
       <>
@@ -130,11 +95,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (
-    route.key === 'account' ||
-    route.key === 'account-content' ||
-    route.key === 'account-feed'
-  ) {
+  if (route.key === 'account') {
     return (
       <>
         <AccountProfileTitle route={route} size={size} />
@@ -167,19 +128,18 @@ function AccountProfileTitle({
   route,
   size,
 }: {
-  route: AccountRoute | AccountFeedRoute | AccountContentRoute
+  route: AccountRoute
   size?: FontSizeTokens
 }) {
   const account = useAccount(route.accountId)
   let windowLabel = 'Profile'
-  if (route.key === 'account-content' && route.type === 'documents') {
+  if (route.tab === 'documents') {
     windowLabel = 'Documents'
-  } else if (route.key === 'account-content' && route.type === 'groups') {
+  } else if (route.tab === 'groups') {
     windowLabel = 'Groups'
-  } else if (route.key === 'account-feed') {
-    windowLabel = 'Feed'
+  } else if (route.tab === 'activity') {
+    windowLabel = 'Activity'
   }
-
   const title = account.data?.profile?.alias
     ? `Account ${windowLabel}: ${account.data.profile.alias}`
     : `Account ${windowLabel}`

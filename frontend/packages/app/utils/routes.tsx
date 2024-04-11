@@ -13,12 +13,6 @@ export const feedRouteSchema = z.object({
 })
 export type FeedRoute = z.infer<typeof feedRouteSchema>
 
-export const documentsRouteSchema = z.object({
-  key: z.literal('documents'),
-  tab: z.enum(['mine', 'all', 'trusted', 'drafts']),
-})
-export type DocumentsRoute = z.infer<typeof documentsRouteSchema>
-
 export const exploreRouteSchema = z.object({
   key: z.literal('explore'),
   tab: z.enum(['docs', 'groups']),
@@ -53,12 +47,6 @@ export const accountRouteSchema = z.object({
     .optional(),
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
-
-export const accountFeedRouteSchema = z.object({
-  key: z.literal('account-feed'),
-  accountId: z.string(),
-})
-export type AccountFeedRoute = z.infer<typeof accountFeedRouteSchema>
 
 export const favoritesSchema = z.object({
   key: z.literal('favorites'),
@@ -116,9 +104,6 @@ export type PublicationRoute = z.infer<typeof publicationRouteSchema>
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
-export const groupsRouteSchema = z.object({key: z.literal('groups')})
-export type GroupsRoute = z.infer<typeof groupsRouteSchema>
-
 export const groupRouteSchema = z.object({
   key: z.literal('group'),
   groupId: z.string(),
@@ -145,7 +130,6 @@ export const draftRouteSchema = z.object({
   isProfileDocument: z.boolean().optional(),
   contextRoute: z
     .discriminatedUnion('key', [
-      documentsRouteSchema,
       publicationRouteSchema,
       groupRouteSchema,
       accountRouteSchema,
@@ -158,14 +142,11 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   feedRouteSchema,
   contactsRouteSchema,
   accountRouteSchema,
-  accountFeedRouteSchema,
   settingsRouteSchema,
-  groupsRouteSchema,
   groupRouteSchema,
   groupFeedRouteSchema,
   publicationRouteSchema,
   draftRouteSchema,
-  documentsRouteSchema,
   commentRouteSchema,
   commentDraftRouteSchema,
   exploreRouteSchema,

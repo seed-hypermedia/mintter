@@ -18,13 +18,11 @@ import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
 var Feed = lazy(() => import('@mintter/app/pages/feed'))
-var Documents = lazy(() => import('@mintter/app/pages/documents'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var AccountFeed = lazy(() => import('@mintter/app/pages/account-feed'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
 var Group = lazy(() => import('@mintter/app/pages/group'))
 var GroupFeed = lazy(() => import('@mintter/app/pages/group-feed'))
-var Groups = lazy(() => import('@mintter/app/pages/groups'))
 var Publication = lazy(() => import('@mintter/app/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/pages/draft'))
 var Settings = lazy(() => import('@mintter/app/pages/settings'))
@@ -94,19 +92,9 @@ function getPageComponent(navRoute: NavRoute) {
         PageComponent: Feed,
         Fallback: BaseLoading,
       }
-    case 'documents':
-      return {
-        PageComponent: Documents,
-        Fallback: BaseLoading,
-      }
     case 'explore':
       return {
         PageComponent: Explore,
-        Fallback: BaseLoading,
-      }
-    case 'groups':
-      return {
-        PageComponent: Groups,
         Fallback: BaseLoading,
       }
     case 'group':
@@ -127,11 +115,6 @@ function getPageComponent(navRoute: NavRoute) {
     case 'account':
       return {
         PageComponent: Account,
-        Fallback: BaseLoading,
-      }
-    case 'account-feed':
-      return {
-        PageComponent: AccountFeed,
         Fallback: BaseLoading,
       }
     case 'publication':

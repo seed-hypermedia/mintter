@@ -23,6 +23,7 @@ import {FavoriteButton} from '../components/favoriting'
 import {OnlineIndicator} from '../components/indicator'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
+import {MenuItemType} from '../components/options-dropdown'
 import {useMyAccount} from '../models/accounts'
 import {useFavorite} from '../models/favorites'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -36,7 +37,7 @@ export function ContactItem({
 }: {
   account: HMAccount
   onCopy: () => void
-  onDelete: (input: {id: string; title?: string}) => void
+  onDelete?: (input: {id: string; title?: string}) => void
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -48,6 +49,33 @@ export function ContactItem({
   const accountId = account.id
   if (!accountId) throw new Error('Account ID is required')
   const openRoute: AccountRoute = {key: 'account', accountId}
+  const menuItems: (MenuItemType | null)[] = [
+    {
+      key: 'spawn',
+      label: 'Open in New Window',
+      icon: ArrowUpRight,
+      onPress: () => {
+        spawn(openRoute)
+      },
+    },
+    copyLinkMenuItem(
+      onCopy,
+      account.profile?.alias ? `${account.profile.alias}'s Profile` : `Profile`,
+    ),
+  ]
+  if (onDelete) {
+    menuItems.push({
+      key: 'delete',
+      label: 'Delete Account',
+      icon: Trash,
+      onPress: () => {
+        onDelete({
+          id: createHmId('a', accountId),
+          title: account.profile?.alias,
+        })
+      },
+    })
+  }
   return (
     <ListItem
       icon={
@@ -81,33 +109,7 @@ export function ContactItem({
           <OnlineIndicator online={isConnected} />
         </>
       }
-      menuItems={() => [
-        {
-          key: 'spawn',
-          label: 'Open in New Window',
-          icon: ArrowUpRight,
-          onPress: () => {
-            spawn(openRoute)
-          },
-        },
-        copyLinkMenuItem(
-          onCopy,
-          account.profile?.alias
-            ? `${account.profile.alias}'s Profile`
-            : `Profile`,
-        ),
-        {
-          key: 'delete',
-          label: 'Delete Account',
-          icon: Trash,
-          onPress: () => {
-            onDelete({
-              id: createHmId('a', accountId),
-              title: account.profile?.alias,
-            })
-          },
-        },
-      ]}
+      menuItems={menuItems}
     />
   )
 }

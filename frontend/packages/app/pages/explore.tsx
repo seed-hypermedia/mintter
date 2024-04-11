@@ -13,14 +13,15 @@ import {
 } from '@mintter/ui'
 import {Book, FileText} from '@tamagui/lucide-icons'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useDeleteDialog} from '../components/delete-dialog'
+import {GroupListItem} from '../components/groups-list'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAllGroups} from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {GroupListItem} from './groups'
 import {PublicationsList} from './publication-list-page'
 
-const documentTabsOptions = [
+const exploreTabsOptions = [
   {key: 'docs', label: 'Documents', icon: FileText},
   {key: 'groups', label: 'Groups', icon: Book},
 ] as const
@@ -35,7 +36,7 @@ function ExploreTabs() {
         <XStack>
           <RadioButtons
             value={route.tab}
-            options={documentTabsOptions}
+            options={exploreTabsOptions}
             onValue={(tab) => {
               replace({...route, tab})
             }}
@@ -68,6 +69,7 @@ export function ExploreGroupsPage() {
   const groupQuery = useAllGroups()
   const groups = groupQuery.data?.groups || []
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  const deleteDialog = useDeleteDialog()
   let content = groupQuery.isLoading ? (
     <Container>
       <Spinner />
@@ -83,6 +85,9 @@ export function ExploreGroupsPage() {
             const groupId = unpackHmId(item.id)
             if (!groupId) return
             onCopyId(groupId)
+          }}
+          onDelete={() => {
+            deleteDialog.open({id: item.id, title: item.title})
           }}
         />
       )}
@@ -100,6 +105,7 @@ export function ExploreGroupsPage() {
     <>
       <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
       {copyDialogContent}
+      {deleteDialog.content}
       <Footer />
     </>
   )

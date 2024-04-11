@@ -1,5 +1,5 @@
-import {Timestamp} from '@bufbuild/protobuf'
-import {Event} from '@mintter/shared'
+import {PartialMessage, Timestamp} from '@bufbuild/protobuf'
+import {Event, ListEventsRequest} from '@mintter/shared'
 import {useInfiniteQuery, useQuery} from '@tanstack/react-query'
 import {unpackHmId} from '../../shared/src'
 import {useGRPCClient} from '../app-context'
@@ -40,22 +40,55 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
       feed.firstEventId !== latestQuery.data,
   }
 }
-
-export function useResourceFeed(id: string) {
+function feedFilterFromId(id?: string): PartialMessage<ListEventsRequest> {
+  const hmId = id ? unpackHmId(id) : null
+  return {
+    filterResource: !id || hmId?.type === 'a' ? undefined : [id],
+    filterUsers: hmId?.type === 'a' ? [hmId.eid] : undefined,
+  }
+}
+export function useResourceFeedWithLatest(id?: string) {
   const grpcClient = useGRPCClient()
-  const hmId = unpackHmId(id)
+  const latestQuery = useQuery({
+    queryKey: [queryKeys.RESOURCE_FEED_LATEST_EVENT, id],
+    queryFn: async (context) => {
+      const result = await grpcClient.activityFeed.listEvents({
+        pageSize: 1,
+        ...feedFilterFromId(id),
+      })
+      const event: Event | undefined = result.events[0]
+      return feedEventId(event)
+    },
+    refetchInterval: 30_000,
+  })
+  const feed = useResourceFeed(id)
+  return {
+    ...feed,
+    refetch: () => {
+      feed.refetch()
+      latestQuery.refetch()
+    },
+    hasNewItems:
+      feed.firstEventId !== 'empty' &&
+      !!latestQuery.data &&
+      feed.firstEventId !== latestQuery.data,
+  }
+}
+
+export function useResourceFeed(id?: string) {
+  const grpcClient = useGRPCClient()
   const feedQuery = useInfiniteQuery({
     queryKey: [queryKeys.RESOURCE_FEED, id],
     queryFn: async (context) => {
       const feed = await grpcClient.activityFeed.listEvents({
         pageSize: 4,
         pageToken: context.pageParam,
-        filterResource: hmId?.type === 'a' ? undefined : [id],
-        filterUsers: hmId?.type === 'a' ? [hmId.eid] : undefined,
+        ...feedFilterFromId(id),
       })
 
       return feed
     },
+    enabled: !!id,
     getNextPageParam: (lastPage) => {
       return lastPage.nextPageToken || undefined
     },
@@ -63,15 +96,13 @@ export function useResourceFeed(id: string) {
   const allEvents = feedQuery.data?.pages.flatMap((page) => page.events) || []
   return {
     ...feedQuery,
-    data: {
-      ...feedQuery.data,
-      events: allEvents.filter((event) => {
-        if (event.data.case === 'newBlob') {
-          if (event.data.value.blobType === 'KeyDelegation') return false
-        }
-        return true
-      }),
-    },
+    firstEventId: feedEventId(allEvents[0]),
+    data: allEvents.filter((event) => {
+      if (event.data.case === 'newBlob') {
+        if (event.data.value.blobType === 'KeyDelegation') return false
+      }
+      return true
+    }),
   }
 }
 

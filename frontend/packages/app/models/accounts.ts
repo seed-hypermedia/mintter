@@ -85,6 +85,7 @@ export function useSetTrusted(
     },
     onSuccess: (result, input, ctx) => {
       invalidate([queryKeys.FEED_LATEST_EVENT, true])
+      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_ACCOUNT, input.accountId])
       invalidate([queryKeys.GET_ALL_ACCOUNTS])
       invalidate([queryKeys.GET_PUBLICATION_LIST, 'trusted'])
@@ -120,6 +121,7 @@ export function useSetProfile(
     ...opts, // careful to put this above onSuccess so that it overrides opts.onSuccess
     onSuccess: (accountId, ...rest) => {
       invalidate([queryKeys.FEED_LATEST_EVENT])
+      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_ACCOUNT, accountId])
       invalidate([queryKeys.GET_ALL_ACCOUNTS])
       opts?.onSuccess?.(accountId, ...rest)

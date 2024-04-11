@@ -1,32 +1,18 @@
-import Footer from '@mintter/app/components/footer'
-import {Group, HMGroup, Role, unpackHmId} from '@mintter/shared'
-import {
-  ButtonText,
-  Container,
-  ExternalLink,
-  List,
-  Spinner,
-  Text,
-  XStack,
-  YStack,
-} from '@mintter/ui'
+import {Group, HMGroup, Role} from '@mintter/shared'
+import {ButtonText, ExternalLink, Text, XStack} from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
-import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {useDeleteDialog} from '../components/delete-dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {
   ListItem,
   TimeAccessory,
   copyLinkMenuItem,
 } from '../components/list-item'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {MenuItemType} from '../components/options-dropdown'
-import {useMyAccount} from '../models/accounts'
 import {useFavorite} from '../models/favorites'
 import {useGatewayUrl} from '../models/gateway-settings'
-import {useAccountGroups, useGroupMembers} from '../models/groups'
+import {useGroupMembers} from '../models/groups'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
@@ -198,54 +184,5 @@ export function GroupListItem({
       onPress={goToItem}
       menuItems={menuItems}
     />
-  )
-}
-
-export default function GroupsPage() {
-  const myAccount = useMyAccount()
-  const myGroups = useAccountGroups(myAccount.data?.id)
-  const groups = myGroups.data?.items || []
-  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const deleteDialog = useDeleteDialog()
-  let content = myGroups.isLoading ? (
-    <Container>
-      <Spinner />
-    </Container>
-  ) : groups.length > 0 ? (
-    <List
-      fixedItemHeight={52}
-      items={groups}
-      renderItem={({item}) => {
-        if (!item.group) return null
-        return (
-          <GroupListItem
-            group={item.group}
-            onCopy={() => {
-              if (!item.group) return null
-              const groupId = unpackHmId(item.group.id)
-              if (!groupId) return
-              onCopyId(groupId)
-            }}
-            onDelete={deleteDialog.open}
-          />
-        )
-      }}
-    />
-  ) : (
-    <Container>
-      <YStack gap="$5" paddingVertical="$8">
-        <Text fontFamily="$body" fontSize="$3">
-          You have no Groups yet.
-        </Text>
-      </YStack>
-    </Container>
-  )
-  return (
-    <>
-      <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
-      {copyDialogContent}
-      {deleteDialog.content}
-      <Footer />
-    </>
   )
 }
