@@ -34,6 +34,7 @@ import {
 } from '@mintter/ui'
 import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
 import React, {PropsWithChildren, ReactNode} from 'react'
+import {VirtuosoHandle} from 'react-virtuoso'
 import Footer from '../components/footer'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAccount} from '../models/accounts'
@@ -765,10 +766,12 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
+  const scrollRef = React.useRef<VirtuosoHandle>(null)
   if (route.key !== 'feed') throw new Error('invalid route')
   return (
     <YStack f={1} gap="$3">
       <List
+        ref={scrollRef}
         header={
           <PageContainer marginVertical="$6">
             <XStack f={1} ai="center" gap="$3">

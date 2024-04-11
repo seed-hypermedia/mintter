@@ -30,6 +30,10 @@ export function useFeedWithLatest(trustedOnly: boolean = false) {
   const feed = useFeed(trustedOnly)
   return {
     ...feed,
+    refetch: () => {
+      feed.refetch()
+      latestQuery.refetch()
+    },
     hasNewItems:
       feed.firstEventId !== 'empty' &&
       !!latestQuery.data &&
