@@ -82,13 +82,8 @@ export function usePublicationList(
         pageSize: 50,
         pageToken: context.pageParam,
       })
-      let publications =
-        result.publications.sort((a, b) =>
-          sortDocuments(a.document?.updateTime, b.document?.updateTime),
-        ) || []
-      // publications = publications.filter((pub) => {
-      //   return pub.document?.title !== '(HIDDEN) Group Navigation'
-      // })
+      const publications = result.publications || []
+
       return {
         ...result,
         publications,

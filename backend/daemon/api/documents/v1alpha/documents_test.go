@@ -502,7 +502,6 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
-	published.Document.Children = []*documents.BlockNode{}
 	updated.PublishTime = published.Document.PublishTime // Drafts don't have publish time.
 	updated.Children = published.Document.Children
 	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter())
@@ -531,9 +530,7 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 		require.Error(t, err, "must fail to get published draft")
 	}
 
-	// Must get publication after publishing.
 	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	got.Document.Children = []*documents.BlockNode{}
 	require.NoError(t, err, "must get document after publishing")
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 
@@ -542,6 +539,8 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 		list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 		require.NoError(t, err)
 		require.Len(t, list.Publications, 1, "must have 1 publication")
+		published.Document.Children = nil
+		published.Version = ""
 		testutil.ProtoEqual(t, published, list.Publications[0], "publication in the list must match")
 	}
 }
@@ -701,7 +700,6 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	})
 
 	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
-	pub2.Document.Children = []*documents.BlockNode{}
 	require.NoError(t, err)
 	require.NotNil(t, pub2)
 
@@ -712,6 +710,9 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, pubs.Publications, 1)
+
+	pub2.Document.Children = nil
+	pub2.Version = ""
 	testutil.ProtoEqual(t, pub2, pubs.Publications[0], "publication in the list must be the same as published")
 }
 
