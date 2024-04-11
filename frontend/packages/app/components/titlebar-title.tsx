@@ -87,11 +87,10 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'group' || route.key === 'group-feed') {
+  if (route.key === 'group') {
     return (
       <>
         <GroupTitle route={route} />
-        {/* <VersionContext route={route} /> */}
       </>
     )
   }

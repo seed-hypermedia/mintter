@@ -1,39 +1,23 @@
 import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import {CSS} from '@dnd-kit/utilities'
 import Footer from '@mintter/app/components/footer'
 import {
   API_FILE_URL,
   Account,
   Document,
+  Event,
   Group,
   HMPublication,
   Profile,
   PublicationContent,
   Role,
+  UnpackedHypermediaId,
   formattedDate,
-  getBlockNode,
   pluralS,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
-  AlertDialog,
   Button,
   Container,
   DialogDescription,
@@ -42,6 +26,7 @@ import {
   H1,
   Heading,
   Label,
+  List,
   ListItem,
   RadioButtons,
   Section,
@@ -66,7 +51,6 @@ import {
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'
 import {
-  ComponentProps,
   ReactNode,
   forwardRef,
   useDeferredValue,
@@ -76,6 +60,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import {VirtuosoHandle} from 'react-virtuoso'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
@@ -84,33 +69,27 @@ import {EntityVersionsAccessory} from '../components/changes-list'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
 import {EditDocButton} from '../components/edit-doc-button'
-import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
 import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper} from '../components/main-wrapper'
+import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
 import {PublicationListItem} from '../components/publication-list-item'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
-import {
-  useDraftList,
-  usePublication,
-  usePublications,
-} from '../models/documents'
+import {useDraftList, usePublication} from '../models/documents'
 import {useExperiments} from '../models/experiments'
+import {useResourceFeedWithLatest} from '../models/feed'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
   useAddGroupMember,
-  useDeleteCategoryItem,
   useFullGroupContent,
   useGroup,
   useGroupContent,
   useGroupMembers,
-  useMoveCategoryItem,
   useRemoveDocFromGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
@@ -121,6 +100,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
+import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
@@ -151,7 +131,11 @@ export default function GroupPage() {
       route={groupRoute}
       groupVersion={group.data?.version}
     >
-      {content}
+      <GroupPageMain
+        group={group.data}
+        groupRoute={groupRoute}
+        myMemberRole={myMemberRole}
+      />
     </GroupPageFooterAccessory>
   )
 }
@@ -238,7 +222,11 @@ function GroupHeader({
   const openUrl = useOpenUrl()
   return (
     <Container paddingBottom={0}>
-      <Section group="header" paddingVertical={0}>
+      <Section
+        group="header"
+        paddingVertical={0}
+        marginBottom={groupRoute.tab !== 'profile' ? '$4' : undefined}
+      >
         <XStack gap="$2">
           <H1 fontWeight="bold" f={1}>
             {group.data?.title}
@@ -388,53 +376,152 @@ function GroupHeader({
   )
 }
 
-function GroupFront({
+function GroupPageMain({
+  group,
   groupRoute,
   myMemberRole,
 }: {
+  group: Group | null
   groupRoute: GroupRoute
   myMemberRole: Role
 }) {
-  const accessory = groupRoute?.accessory
-  const {groupId, version} = groupRoute
-  const group = useGroup(groupId, version, {
-    // refetchInterval: 5_000,
+  const scrollRef = useRef<VirtuosoHandle>(null)
+  const groupContent = useFullGroupContent(
+    groupRoute.tab === 'documents' ? groupRoute.groupId : undefined,
+    groupRoute.version,
+  )
+  const latestGroupContent = useGroupContent(
+    groupRoute.tab === 'documents' ? groupRoute.groupId : undefined,
+  )
+  const drafts = useDraftList({
+    enabled: groupRoute.tab === 'documents',
   })
+  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  const feed = useResourceFeedWithLatest(
+    groupRoute.tab === 'activity' ? groupRoute.groupId : undefined,
+  )
+  let items: Array<
+    | 'front'
+    | Event
+    | {
+        type: 'doc'
+        key: string
+        latestEntry?: string
+        pub: HMPublication | undefined
+        author: string | Account | undefined
+        editors: (string | Account | undefined)[]
+        id: UnpackedHypermediaId
+      }
+  > = []
+  if (groupRoute.tab === 'front') {
+    items = ['front']
+  } else if (groupRoute.tab === 'documents') {
+    items = groupContent.data?.items.map((item) => {
+      const {key, pub, author, editors, id} = item
+      const latestEntry = latestGroupContent.data?.content?.[key]
+
+      return {...item, latestEntry, type: 'doc'}
+    })
+  } else if (groupRoute.tab === 'activity') {
+    items = feed.data || []
+  }
+  return (
+    <MainWrapperNoScroll>
+      <List
+        ref={scrollRef}
+        items={items}
+        footer={
+          groupRoute.tab === 'activity' ? (
+            <FeedPageFooter feedQuery={feed} />
+          ) : null
+        }
+        onEndReached={() => {
+          if (groupRoute.tab === 'activity') feed.fetchNextPage()
+        }}
+        renderItem={({item}) => {
+          if (item === 'front') {
+            if (!group) return null
+            return (
+              <GroupFront
+                group={group}
+                groupRoute={groupRoute}
+                myMemberRole={myMemberRole}
+              />
+            )
+          } else if (item.type === 'doc') {
+            const {key, pub, author, editors, id, latestEntry} = item
+            if (key === '/') return null
+            const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
+
+            return (
+              <GroupContentItem
+                key={key}
+                id={key}
+                docId={id.qid}
+                groupId={groupRoute.groupId}
+                version={id?.version || undefined}
+                latestVersion={latestDocId?.version || undefined}
+                hasDraft={drafts.data?.documents.find((d) => d.id == id.qid)}
+                onCopyUrl={() => {
+                  onCopyId({
+                    ...id,
+                    version: id.version || null,
+                    variants: [
+                      {
+                        key: 'group',
+                        groupId: groupRoute.groupId,
+                        pathName: key,
+                      },
+                    ],
+                    hostname: group?.siteInfo?.baseUrl || null,
+                  })
+                }}
+                pub={pub}
+                userRole={myMemberRole}
+                editors={editors}
+                author={author}
+                pathName={key}
+              />
+            )
+          } else if (item instanceof Event) {
+            return <FeedItem event={item} />
+          }
+          return null
+        }}
+        header={
+          <GroupHeader groupRoute={groupRoute} myMemberRole={myMemberRole} />
+        }
+      />
+      {copyDialogContent}
+      {groupRoute.tab === 'activity' && feed.hasNewItems && (
+        <NewUpdatesButton
+          onPress={() => {
+            scrollRef.current?.scrollTo({top: 0})
+            feed.refetch()
+          }}
+        />
+      )}
+    </MainWrapperNoScroll>
+  )
+}
+
+function GroupFront({
+  group,
+  groupRoute,
+  myMemberRole,
+}: {
+  group: Group
+  groupRoute: GroupRoute
+  myMemberRole: Role
+}) {
+  const {groupId, version} = groupRoute
   const groupContent = useFullGroupContent(groupId, version)
-  // const groupMembers = useGroupMembers(groupId, version)
-  const groupMembers = useGroupMembers(groupId)
   const isMember = myMemberRole !== Role.ROLE_UNSPECIFIED
-  // const isOwner = myAccount.data?.id === group.data?.ownerAccountId
-  // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
   const spawn = useNavigate('spawn')
-  const replace = useNavigate('replace')
-  const ownerAccount = useAccount(group.data?.ownerAccountId)
-  const inviteMember = useAppDialog(InviteMemberDialog)
-  const openDraft = useOpenDraft()
-  const ownerAccountId = group.data?.ownerAccountId
   const frontDocumentUrl = groupContent.data?.content
     ? groupContent.data?.content['/']
     : undefined
   const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
-  const memberCount = Object.keys(groupMembers.data?.members || {}).length
-  const siteBaseUrl = group.data?.siteInfo?.baseUrl
-  const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
-  const now = useRoughTime()
-  const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
-  const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
-  const isRecentlyOkSynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
-  const siteVersionMatches = true
-  //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
-  // const siteVersionMatches =
-  //   group.data?.version === group.data?.siteInfo?.version
-  const siteSyncStatus =
-    isRecentlySynced && isRecentlyOkSynced
-      ? siteVersionMatches
-        ? GroupStatus.SyncedConnected
-        : GroupStatus.UnsyncedConnected
-      : GroupStatus.Disconnected
-  const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
-  const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
   const frontDocMenuItems = [
     frontDocumentUrl && isMember
@@ -457,82 +544,72 @@ function GroupFront({
         }
       : null,
   ].filter(Boolean)
-  const openUrl = useOpenUrl()
+  if (!frontPageId?.docId || !frontDocumentUrl) return null
   return (
-    <MainWrapper maxHeight={'100%'}>
-      <GroupHeader groupRoute={groupRoute} myMemberRole={myMemberRole} />
-      <Container>
-        {frontPageId && frontDocumentUrl && (
-          <>
-            <FrontPublicationDisplay
-              urlWithVersion={frontDocumentUrl}
-              groupTitle={group.data?.title || ''}
+    <YStack>
+      <XStack
+        gap="$2"
+        paddingVertical="$4"
+        paddingHorizontal={0}
+        minHeight="$6"
+        group="item"
+      >
+        <XStack
+          gap="$2"
+          position="absolute"
+          right={0}
+          top="$4"
+          alignItems="center"
+        >
+          {frontDocMenuItems.length ? (
+            <OptionsDropdown
+              hiddenUntilItemHover
+              menuItems={frontDocMenuItems}
             />
-            <XStack
-              gap="$2"
-              paddingVertical="$4"
-              paddingHorizontal={0}
-              minHeight="$6"
-              group="item"
-            >
-              <XStack
-                gap="$2"
-                position="absolute"
-                right={0}
-                top="$4"
-                alignItems="center"
-              >
-                {frontDocMenuItems.length ? (
-                  <OptionsDropdown
-                    hiddenUntilItemHover
-                    menuItems={frontDocMenuItems}
-                  />
-                ) : null}
-                <XGroup>
-                  {isMember && (
-                    <EditDocButton
-                      contextRoute={groupRoute}
-                      variants={[
-                        {
-                          key: 'group',
-                          groupId,
-                          pathName: '/',
-                        },
-                      ]}
-                      docId={frontPageId?.docId}
-                      baseVersion={frontPageId?.version || undefined}
-                      navMode="push"
-                    />
-                  )}
-                </XGroup>
-                <Tooltip content="Open in New Window">
-                  <Button
-                    icon={ArrowUpRight}
-                    size="$2"
-                    onPress={() => {
-                      spawn({
-                        key: 'publication',
-                        documentId: frontPageId?.docId,
-                        variants: [
-                          {
-                            key: 'group',
-                            groupId,
-                            pathName: '/',
-                          },
-                        ],
-                      })
-                    }}
-                  />
-                </Tooltip>
-              </XStack>
-            </XStack>
-          </>
-        )}
-      </Container>
-
-      {inviteMember.content}
-      {editGroupInfo.content}
-    </MainWrapper>
+          ) : null}
+          <XGroup>
+            {isMember && (
+              <EditDocButton
+                contextRoute={groupRoute}
+                variants={[
+                  {
+                    key: 'group',
+                    groupId,
+                    pathName: '/',
+                  },
+                ]}
+                docId={frontPageId?.docId}
+                baseVersion={frontPageId?.version || undefined}
+                navMode="push"
+              />
+            )}
+          </XGroup>
+          <Tooltip content="Open in New Window">
+            <Button
+              icon={ArrowUpRight}
+              size="$2"
+              onPress={() => {
+                spawn({
+                  key: 'publication',
+                  documentId: frontPageId.docId,
+                  variants: [
+                    {
+                      key: 'group',
+                      groupId,
+                      pathName: '/',
+                    },
+                  ],
+                })
+              }}
+            />
+          </Tooltip>
+        </XStack>
+      </XStack>
+      <FrontPublicationDisplay
+        urlWithVersion={frontDocumentUrl}
+        groupTitle={group.title || ''}
+      />
+    </YStack>
   )
 }
 
@@ -590,231 +667,6 @@ export function GroupDocuments({
       </Container>
       {copyDialogContent}
     </MainWrapper>
-  )
-}
-
-export function GroupCategoryContent({
-  groupRoute,
-  myMemberRole,
-  category,
-}: {
-  groupRoute: GroupRoute
-  myMemberRole: Role
-  category: string
-}) {
-  const {groupId, version} = groupRoute
-  const latestGroupContent = useGroupContent(groupId)
-  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const categoryContent = getBlockNode(
-    navPub.data?.document?.children,
-    category,
-  )
-
-  const groupContent = useFullGroupContent(groupId, version)
-  const drafts = useDraftList()
-  const group = useGroup(groupId, version, {
-    // refetchInterval: 5_000,
-  })
-  const contentItems =
-    categoryContent?.children
-      ?.map((node) => {
-        const {block} = node
-        const ref = block?.ref
-        const id = ref ? unpackHmId(ref) : null
-        if (!id) return null
-        return {ref: id, id: id.qid, version: id.version || undefined}
-      })
-      .filter(Boolean) || []
-  const publications = usePublications(contentItems)
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  )
-  const items =
-    categoryContent?.children?.map((blockNode) => {
-      return {id: blockNode.block.id, ref: blockNode.block.ref}
-    }) || []
-  const moveItem = useMoveCategoryItem(groupId, category)
-  const [temporaryItems, setTemporaryItems] = useState<
-    null | {id: string; ref: string | undefined}[]
-  >(null)
-  function handleDragEnd({active, over}) {
-    const oldIndex = items.findIndex((item) => item.id === active.id)
-    const toIndex = items.findIndex((item) => item.id === over.id)
-    const referenceIndices = items.map((item) => item.id)
-    let leftSibling = referenceIndices[toIndex - 1]
-    if (leftSibling === active.id) leftSibling = referenceIndices[toIndex]
-    if (active.id === over.id) return
-    setTemporaryItems(arrayMove(items, oldIndex, toIndex))
-    setTimeout(() => {
-      setTemporaryItems(null)
-    }, 200)
-    moveItem.mutate({itemId: active.id, leftSibling})
-  }
-  const displayItems = temporaryItems || items
-
-  const deleteItemDialog = useAppDialog(DeleteCategoryItemDialog, {
-    isAlert: true,
-  })
-
-  return (
-    <>
-      <Container>
-        {items.length === 0 ? (
-          <SizableText fontSize="$4" color="$color10" margin="$4">
-            No documents in this category yet.
-          </SizableText>
-        ) : null}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <YStack>
-            <SortableContext
-              items={displayItems}
-              disabled={myMemberRole === Role.ROLE_UNSPECIFIED}
-              strategy={verticalListSortingStrategy}
-            >
-              {displayItems.map(({ref, id}) => {
-                const hmId = ref ? unpackHmId(ref) : null
-                if (!hmId) return null
-                const {variants} = hmId
-                const groupVariant = variants?.find((v) => v.key === 'group')
-                if (
-                  !groupVariant ||
-                  groupVariant.key !== 'group' ||
-                  groupVariant.groupId !== groupId
-                )
-                  return null
-                const {pathName} = groupVariant
-                if (!pathName) return null
-                const latestEntry = latestGroupContent.data?.content?.[pathName]
-                const latestDocId = latestEntry
-                  ? unpackDocId(latestEntry)
-                  : null
-                const pub = groupContent.data.items.find((p) => {
-                  return p.id.qid === hmId.qid
-                })
-
-                const groupEntry = groupContent.data?.content?.[pathName]
-                const groupEntryId = groupEntry ? unpackDocId(groupEntry) : null
-                if (!groupEntryId) return null
-                return (
-                  <SortableGroupContentItem
-                    key={id}
-                    id={id}
-                    docId={hmId.qid}
-                    groupId={groupId}
-                    version={groupEntryId?.version || undefined}
-                    latestVersion={latestDocId?.version || undefined}
-                    hasDraft={drafts.data?.documents.find(
-                      (d) => d.id == hmId.qid,
-                    )}
-                    groupVariantCategory={category}
-                    onRemoveFromCategory={
-                      myMemberRole === Role.ROLE_UNSPECIFIED
-                        ? undefined
-                        : () => {
-                            deleteItemDialog.open({
-                              groupId,
-                              itemId: id,
-                              categoryLabel: categoryContent?.block.text || '?',
-                            })
-                          }
-                    }
-                    onCopyUrl={() => {
-                      onCopyId({
-                        ...hmId,
-                        version: version || null,
-                        variants: [{key: 'group', groupId, pathName}],
-                        hostname: group.data?.siteInfo?.baseUrl || null,
-                      })
-                    }}
-                    pub={pub?.pub}
-                    userRole={myMemberRole}
-                    editors={pub?.editors || []}
-                    author={pub?.author}
-                    pathName={pathName}
-                  />
-                )
-              })}
-            </SortableContext>
-          </YStack>
-        </DndContext>
-      </Container>
-      {deleteItemDialog.content}
-      {copyDialogContent}
-    </>
-  )
-}
-
-function DeleteCategoryItemDialog({
-  onClose,
-  input,
-}: {
-  onClose: () => void
-  input: {groupId: string; itemId: string; categoryLabel: string}
-}) {
-  const deleteItem = useDeleteCategoryItem(input.groupId, {
-    onSuccess: onClose,
-  })
-  return (
-    <YStack gap="$4" padding="$4" borderRadius="$3">
-      <AlertDialog.Title>Remove Item from Category</AlertDialog.Title>
-      <AlertDialog.Description>
-        Remove this item from the "{input.categoryLabel}" category?
-      </AlertDialog.Description>
-
-      <XStack gap="$3" justifyContent="flex-end">
-        <AlertDialog.Cancel asChild>
-          <Button
-            onPress={() => {
-              onClose()
-            }}
-            chromeless
-          >
-            Cancel
-          </Button>
-        </AlertDialog.Cancel>
-        <AlertDialog.Action asChild>
-          <Button
-            theme="red"
-            onPress={() => {
-              deleteItem.mutate(input)
-              onClose()
-            }}
-          >
-            Delete from Category
-          </Button>
-        </AlertDialog.Action>
-      </XStack>
-    </YStack>
-  )
-}
-
-function SortableGroupContentItem({
-  id,
-  ...props
-}: ComponentProps<typeof GroupContentItem> & {id: string}) {
-  const {attributes, listeners, setNodeRef, transform, transition} =
-    useSortable({id})
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <GroupContentItem {...props} id={id} />
-    </div>
   )
 }
 
@@ -1163,24 +1015,6 @@ function ChangesFooterItem({route}: {route: GroupRoute}) {
     />
   )
 }
-
-// export function EntityChangesAccessory({
-//   id,
-//   accessory,
-// }: {
-//   id: UnpackedHypermediaId | null
-//   accessory: EntityVersionsAccessory | undefined | null
-// }) {
-//   const timeline = useEntityTimeline(
-//     (id && createHmId(id.type, id.eid)) || undefined,
-//   )
-//   if (accessory?.key !== 'versions') return null
-//   return (
-//     <AccessoryContainer title="Changes">
-//       <Text>Changes of {JSON.stringify(timeline.data)}</Text>
-//     </AccessoryContainer>
-//   )
-// }
 
 export interface TagInputProps extends Omit<Ariakit.ComboboxProps, 'onChange'> {
   label: string

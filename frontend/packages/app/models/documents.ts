@@ -130,7 +130,7 @@ export function usePublicationFullList(
   return {...pubList, data}
 }
 
-export function useDraftList() {
+export function useDraftList(opts: UseQueryOptions = {}) {
   const grpcClient = useGRPCClient()
   const draftListQuery = useInfiniteQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
@@ -152,6 +152,7 @@ export function useDraftList() {
     getNextPageParam: (lastPage) => {
       return lastPage.nextPageToken || undefined
     },
+    ...opts,
   })
 
   const allDrafts =
