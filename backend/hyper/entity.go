@@ -33,7 +33,7 @@ import (
 // EntityID is a type for IDs of mutable entities.
 type EntityID string
 
-// EntityIDFromCID converts a previously CID-encoded Entity ID bas into the initial form.
+// EntityIDFromCID converts a previously CID-encoded Entity ID back into the initial form.
 func EntityIDFromCID(c cid.Cid) (EntityID, error) {
 	codec, hash := ipfs.DecodeCID(c)
 

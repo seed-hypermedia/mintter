@@ -184,14 +184,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	aliceCfg := makeTestConfig(t)
 	bobCfg := makeTestConfig(t)
 
-	aliceCfg.Syncing.WarmupDuration = 1 * time.Millisecond
-	bobCfg.Syncing.WarmupDuration = 1 * time.Millisecond
-
-	aliceCfg.Syncing.Interval = 150 * time.Millisecond
-	bobCfg.Syncing.Interval = 150 * time.Millisecond
-
-	aliceCfg.Syncing.RefreshInterval = 50 * time.Millisecond
-	bobCfg.Syncing.RefreshInterval = 50 * time.Millisecond
+	aliceCfg.Syncing.WarmupDuration = 100 * time.Millisecond
+	bobCfg.Syncing.WarmupDuration = 100 * time.Millisecond
 
 	alice := makeTestApp(t, "alice", aliceCfg, true)
 	bob := makeTestApp(t, "bob", bobCfg, true)
@@ -207,7 +201,7 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 
 	pub := publishDocument(t, ctx, alice)
 	time.Sleep(200 * time.Millisecond)
-	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
 	time.Sleep(200 * time.Millisecond)
 
