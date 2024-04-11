@@ -33,6 +33,8 @@ type DraftsClient interface {
 	UpdateDraft(ctx context.Context, in *UpdateDraftRequest, opts ...grpc.CallOption) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
+	// Lists drafts for a given document.
+	ListDocumentDrafts(ctx context.Context, in *ListDocumentDraftsRequest, opts ...grpc.CallOption) (*ListDocumentDraftsResponse, error)
 	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
 	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error)
 }
@@ -90,6 +92,15 @@ func (c *draftsClient) ListDrafts(ctx context.Context, in *ListDraftsRequest, op
 	return out, nil
 }
 
+func (c *draftsClient) ListDocumentDrafts(ctx context.Context, in *ListDocumentDraftsRequest, opts ...grpc.CallOption) (*ListDocumentDraftsResponse, error) {
+	out := new(ListDocumentDraftsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Drafts/ListDocumentDrafts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error) {
 	out := new(Publication)
 	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Drafts/PublishDraft", in, out, opts...)
@@ -113,6 +124,8 @@ type DraftsServer interface {
 	UpdateDraft(context.Context, *UpdateDraftRequest) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
+	// Lists drafts for a given document.
+	ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error)
 	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
 	PublishDraft(context.Context, *PublishDraftRequest) (*Publication, error)
 }
@@ -135,6 +148,9 @@ func (UnimplementedDraftsServer) UpdateDraft(context.Context, *UpdateDraftReques
 }
 func (UnimplementedDraftsServer) ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDrafts not implemented")
+}
+func (UnimplementedDraftsServer) ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDocumentDrafts not implemented")
 }
 func (UnimplementedDraftsServer) PublishDraft(context.Context, *PublishDraftRequest) (*Publication, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishDraft not implemented")
@@ -241,6 +257,24 @@ func _Drafts_ListDrafts_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Drafts_ListDocumentDrafts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDocumentDraftsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).ListDocumentDrafts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Drafts/ListDocumentDrafts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).ListDocumentDrafts(ctx, req.(*ListDocumentDraftsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Drafts_PublishDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PublishDraftRequest)
 	if err := dec(in); err != nil {
@@ -285,6 +319,10 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListDrafts",
 			Handler:    _Drafts_ListDrafts_Handler,
+		},
+		{
+			MethodName: "ListDocumentDrafts",
+			Handler:    _Drafts_ListDocumentDrafts_Handler,
 		},
 		{
 			MethodName: "PublishDraft",
