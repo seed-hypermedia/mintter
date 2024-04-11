@@ -114,35 +114,39 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
           flex={1}
           // @ts-expect-error
           overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
+          paddingVertical="$2"
         >
           {children}
         </YStack>
-        <YGroup
-          separator={<Separator />}
-          borderRadius={0}
+        <XStack
+          padding="$2"
+          jc="space-between"
           borderTopWidth={1}
           borderColor="$borderColor"
         >
-          <YGroup.Item>
-            <SidebarItem
+          <Tooltip content="Search / Open">
+            <Button
+              size="$3"
+              backgroundColor={'$colorTransparent'}
+              chromeless
               onPress={() => {
                 triggerFocusedWindow('openLauncher')
               }}
-              title="Search / Open"
               icon={Search}
             />
-          </YGroup.Item>
-          <YGroup.Item>
-            <SidebarItem
+          </Tooltip>
+          <Tooltip content="App Settings">
+            <Button
+              size="$3"
+              backgroundColor={'$colorTransparent'}
+              chromeless
               onPress={() => {
                 navigate({key: 'settings'})
               }}
-              cursor="pointer"
               icon={Settings}
-              title="Settings"
             />
-          </YGroup.Item>
-        </YGroup>
+          </Tooltip>
+        </XStack>
       </YStack>
     </>
   )
@@ -245,8 +249,8 @@ export function SidebarItem({
         hoverTheme
         pressTheme
         focusTheme
-        minHeight={minHeight}
-        paddingVertical={paddingVertical || '$2'}
+        minHeight={minHeight || 35}
+        paddingVertical={paddingVertical || '$1'}
         paddingHorizontal="$4"
         paddingLeft={indent * 10 + 18}
         textAlign="left"
@@ -313,7 +317,7 @@ export function MyAccountItem({
       outlineColor="transparent"
       space="$2"
       userSelect="none"
-      backgroundColor={active ? '$blue4' : undefined}
+      backgroundColor={active ? '$blue4' : '$colorTransparent'}
       hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
       cursor={active ? undefined : 'pointer'}
       title={
@@ -458,29 +462,31 @@ export function activeDocOutline(
       isBlockActive = true
     }
     return [
-      <YGroup.Item key={item.id}>
-        <SidebarItem
-          onPress={() => {
-            if (item.linkRoute) {
-              onNavigate(item.linkRoute)
-            } else {
-              onBlockSelect(item.id)
-            }
-          }}
-          active={item.id === activeBlock}
-          icon={
-            <View width={16}>
-              {item.linkRoute ? <ArrowUpRight size={16} /> : <Hash size={16} />}
-            </View>
+      <SidebarItem
+        onPress={() => {
+          if (item.linkRoute) {
+            onNavigate(item.linkRoute)
+          } else {
+            onBlockSelect(item.id)
           }
-          title={item.title || 'Untitled Heading'}
-          indented={2 + level}
-        />
-      </YGroup.Item>,
+        }}
+        active={item.id === activeBlock}
+        icon={
+          <View width={16}>
+            {item.linkRoute ? <ArrowUpRight size={16} /> : <Hash size={16} />}
+          </View>
+        }
+        title={item.title || 'Untitled Heading'}
+        indented={2 + level}
+      />,
       ...(childrenOutline?.outlineContent || []),
     ]
   })
   return {outlineContent, isBlockActive}
+}
+
+export function SidebarDivider() {
+  return <Separator marginVertical="$2" />
 }
 
 export function SidebarDocument({

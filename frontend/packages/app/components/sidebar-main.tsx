@@ -1,5 +1,5 @@
 import {AuthorVariant, GroupVariant} from '@mintter/shared'
-import {Home, Separator, YGroup} from '@mintter/ui'
+import {Home} from '@mintter/ui'
 import {Contact, Sparkles, Star} from '@tamagui/lucide-icons'
 import {useMyAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
@@ -8,6 +8,7 @@ import {useNavigate} from '../utils/useNavigate'
 import {
   GenericSidebarContainer,
   MyAccountItem,
+  SidebarDivider,
   SidebarItem,
   activeDocOutline,
   getDocOutline,
@@ -85,73 +86,57 @@ export function MainAppSidebar() {
   )
   return (
     <GenericSidebarContainer>
-      <YGroup
-        separator={<Separator />}
-        borderRadius={0}
-        borderBottomWidth={1}
-        borderColor="$borderColor"
-      >
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'feed'}
-            onPress={() => {
-              navigate({key: 'feed', tab: 'trusted'})
-            }}
-            title="Home Feed"
-            bold
-            icon={Home}
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'explore'}
-            onPress={() => {
-              navigate({key: 'explore', tab: 'docs'})
-            }}
-            title="Explore Content"
-            bold
-            icon={Sparkles}
-            rightHover={[]}
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'favorites'}
-            onPress={() => {
-              navigate({key: 'favorites'})
-            }}
-            title="Favorites"
-            bold
-            icon={Star}
-            rightHover={[]}
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'contacts'}
-            onPress={() => {
-              navigate({key: 'contacts'})
-            }}
-            icon={Contact}
-            title="Contacts"
-            bold
-          />
-        </YGroup.Item>
-        {account.data && (
-          <YGroup.Item>
-            <MyAccountItem
-              active={
-                route.key == 'account' &&
-                route.accountId == myAccount.data?.id &&
-                !isBlockActive
-              }
-              account={account.data}
-              onRoute={navigate}
-            />
-          </YGroup.Item>
-        )}
-      </YGroup>
-      <YGroup borderRadius={0}>{outlineContent}</YGroup>
+      <SidebarItem
+        active={route.key == 'feed'}
+        onPress={() => {
+          navigate({key: 'feed', tab: 'trusted'})
+        }}
+        title="Home Feed"
+        bold
+        icon={Home}
+      />
+      <SidebarItem
+        active={route.key == 'explore'}
+        onPress={() => {
+          navigate({key: 'explore', tab: 'docs'})
+        }}
+        title="Explore Content"
+        bold
+        icon={Sparkles}
+        rightHover={[]}
+      />
+      <SidebarItem
+        active={route.key == 'favorites'}
+        onPress={() => {
+          navigate({key: 'favorites'})
+        }}
+        title="Favorites"
+        bold
+        icon={Star}
+        rightHover={[]}
+      />
+      <SidebarItem
+        active={route.key == 'contacts'}
+        onPress={() => {
+          navigate({key: 'contacts'})
+        }}
+        icon={Contact}
+        title="Contacts"
+        bold
+      />
+      <SidebarDivider />
+      {account.data && (
+        <MyAccountItem
+          active={
+            route.key == 'account' &&
+            route.accountId == myAccount.data?.id &&
+            !isBlockActive
+          }
+          account={account.data}
+          onRoute={navigate}
+        />
+      )}
+      {outlineContent}
     </GenericSidebarContainer>
   )
 }
