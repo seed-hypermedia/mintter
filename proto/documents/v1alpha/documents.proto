@@ -26,6 +26,9 @@ service Drafts {
   // List currently stored drafts.
   rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
 
+  // Lists drafts for a given document.
+  rpc ListDocumentDrafts(ListDocumentDraftsRequest) returns (ListDocumentDraftsResponse);
+
   // Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
   rpc PublishDraft(PublishDraftRequest) returns (Publication);
 }
@@ -122,6 +125,19 @@ message ListDraftsResponse {
   string next_page_token = 2;
 }
 
+// Request to list document drafts.
+message ListDocumentDraftsRequest {
+  // ID of the document to list drafts for.
+  string document_id = 1;
+}
+
+// Response with the list of drafts for a given document ID.
+message ListDocumentDraftsResponse {
+  // Drafts come without content, only metadata,
+  // similar to the rest of list responses.
+  repeated Document drafts = 1;
+}
+
 // Request to publish a draft.
 message PublishDraftRequest {
   // ID of the document which current draft needs to be published.
@@ -167,7 +183,6 @@ message DeletePublicationRequest {
   // All versions will also be removed.
   string document_id = 1;
 }
-
 
 // Request for getting a single publication.
 message PushPublicationRequest {

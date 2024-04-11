@@ -471,6 +471,89 @@ export class ListDraftsResponse extends Message<ListDraftsResponse> {
 }
 
 /**
+ * Request to list document drafts.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListDocumentDraftsRequest
+ */
+export class ListDocumentDraftsRequest extends Message<ListDocumentDraftsRequest> {
+  /**
+   * ID of the document to list drafts for.
+   *
+   * @generated from field: string document_id = 1;
+   */
+  documentId = "";
+
+  constructor(data?: PartialMessage<ListDocumentDraftsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListDocumentDraftsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDocumentDraftsRequest {
+    return new ListDocumentDraftsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDocumentDraftsRequest {
+    return new ListDocumentDraftsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDocumentDraftsRequest {
+    return new ListDocumentDraftsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDocumentDraftsRequest | PlainMessage<ListDocumentDraftsRequest> | undefined, b: ListDocumentDraftsRequest | PlainMessage<ListDocumentDraftsRequest> | undefined): boolean {
+    return proto3.util.equals(ListDocumentDraftsRequest, a, b);
+  }
+}
+
+/**
+ * Response with the list of drafts for a given document ID.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListDocumentDraftsResponse
+ */
+export class ListDocumentDraftsResponse extends Message<ListDocumentDraftsResponse> {
+  /**
+   * Drafts come without content, only metadata,
+   * similar to the rest of list responses.
+   *
+   * @generated from field: repeated com.mintter.documents.v1alpha.Document drafts = 1;
+   */
+  drafts: Document[] = [];
+
+  constructor(data?: PartialMessage<ListDocumentDraftsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListDocumentDraftsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "drafts", kind: "message", T: Document, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDocumentDraftsResponse {
+    return new ListDocumentDraftsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDocumentDraftsResponse {
+    return new ListDocumentDraftsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDocumentDraftsResponse {
+    return new ListDocumentDraftsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDocumentDraftsResponse | PlainMessage<ListDocumentDraftsResponse> | undefined, b: ListDocumentDraftsResponse | PlainMessage<ListDocumentDraftsResponse> | undefined): boolean {
+    return proto3.util.equals(ListDocumentDraftsResponse, a, b);
+  }
+}
+
+/**
  * Request to publish a draft.
  *
  * @generated from message com.mintter.documents.v1alpha.PublishDraftRequest

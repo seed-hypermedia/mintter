@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -67,6 +67,17 @@ export const Drafts = {
       name: "ListDrafts",
       I: ListDraftsRequest,
       O: ListDraftsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists drafts for a given document.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Drafts.ListDocumentDrafts
+     */
+    listDocumentDrafts: {
+      name: "ListDocumentDrafts",
+      I: ListDocumentDraftsRequest,
+      O: ListDocumentDraftsResponse,
       kind: MethodKind.Unary,
     },
     /**
