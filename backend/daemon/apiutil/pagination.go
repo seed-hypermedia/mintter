@@ -5,6 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Key is an interface for an encryption key.
@@ -48,6 +51,22 @@ func DecodePageToken(token string, value any, key Key) error {
 
 	if err := json.Unmarshal(data, value); err != nil {
 		return fmt.Errorf("failed to unmarshal page token value: %w", err)
+	}
+
+	return nil
+}
+
+// ValidatePageSize validates the provided page size.
+// The argument is a pointer because it sets the default value if the provided one is zero.
+func ValidatePageSize(pageSize *int32) error {
+	const defaultSize = 30
+
+	if *pageSize < 0 {
+		return status.Errorf(codes.InvalidArgument, "bad page size %d: must be a positive number", pageSize)
+	}
+
+	if *pageSize == 0 {
+		*pageSize = defaultSize
 	}
 
 	return nil

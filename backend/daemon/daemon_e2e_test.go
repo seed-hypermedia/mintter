@@ -18,6 +18,7 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -255,9 +256,12 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 	want := []*documents.Publication{}
 	for i := 1; i <= 4; i++ {
 		doc := publish(ctx, t, "Doc-"+strconv.Itoa(i), "This is a doc-"+strconv.Itoa(i))
-		doc.Document.Children = []*documents.BlockNode{}
+		doc.Document.Children = nil
+		doc.Version = ""
 		want = append(want, doc)
 	}
+	slices.Reverse(want) // Most recently updated docs are returned first.
+
 	var g errgroup.Group
 
 	// Trying this more than once and expecting it to return the same result. This is what bug was mostly about.
