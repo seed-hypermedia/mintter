@@ -41,8 +41,7 @@
     "react": "18.2.0",
     "react-native-reanimated": "^3.7.0",
     "react-virtuoso": "4.6.2",
-    "tamagui": "1.90.2",
-    "react": "18.2.0"
+    "tamagui": "1.90.2"
   },
   "devDependencies": {
     "@mintter/prettier": "*",
