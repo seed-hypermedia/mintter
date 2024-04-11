@@ -16,10 +16,10 @@ import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useDeleteDialog} from '../components/delete-dialog'
 import {GroupListItem} from '../components/groups-list'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
+import {PublicationsList} from '../components/publication-list'
 import {useAllGroups} from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {PublicationsList} from './publication-list-page'
 
 const exploreTabsOptions = [
   {key: 'docs', label: 'Documents', icon: FileText},
