@@ -258,8 +258,9 @@ function AutocompletePopupInner(
   const misses = useRef(0)
 
   const suggestions = useMemo(() => {
-    const list = getSuggestions(editor.mentionOptions || [], text)
-
+    console.log('=== SUGGESTIONS!', text, editor.mentionOptions)
+    editor.options.onMentionsQuery(text)
+    const list = editor.mentionOptions || []
     if (list.length === 0) {
       misses.current++
     } else {

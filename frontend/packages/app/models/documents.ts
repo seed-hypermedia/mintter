@@ -61,6 +61,7 @@ import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useGroupContent, useGroups} from './groups'
 import {queryKeys} from './query-keys'
+import {useInlineMentions} from './search'
 
 export function usePublicationList(
   opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
@@ -651,12 +652,7 @@ export function useDraftEditor({
   const diagnosis = useDraftDiagnosis()
   const accounts = useAllAccounts(true)
   const gotEdited = useRef(false)
-
-  useEffect(() => {
-    if (accounts.data?.accounts.length) {
-      editor?.setInlineEmbedOptions(accounts.data.accounts)
-    }
-  }, [accounts.data])
+  const {inlineMentionsData, inlineMentionsQuery} = useInlineMentions()
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
@@ -890,6 +886,9 @@ export function useDraftEditor({
       gwUrl,
       openUrl,
     },
+    onMentionsQuery: (query: string) => {
+      inlineMentionsQuery(query)
+    },
 
     // onEditorReady: (e) => {
     //   readyThings.current[0] = e
@@ -937,6 +936,12 @@ export function useDraftEditor({
     }
     /* eslint-disable */
   }, [backendDraft.status])
+
+  useEffect(() => {
+    if (inlineMentionsData) {
+      editor?.setInlineEmbedOptions(inlineMentionsData)
+    }
+  }, [inlineMentionsData])
 
   async function updateDraft({editor, blocksMap, draft, title}) {
     let currentEditorBlocks = [...editor.topLevelBlocks]
