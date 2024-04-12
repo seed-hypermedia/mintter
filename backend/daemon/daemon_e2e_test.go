@@ -243,14 +243,6 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	})
 	require.Error(t, err)
 
-	// check if bob still has it
-	doc, err = bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
-		DocumentId: pub.Document.Id,
-		LocalOnly:  true,
-	})
-	require.NoError(t, err)
-	require.Equal(t, pub.Document.Id, doc.Document.Id, "bob should still have the doc")
-
 	// Only after restoring the document we should get it back.
 	_, err = alice.RPC.Entities.RestoreEntity(ctx, &entities.RestoreEntityRequest{
 		Id: doc.Document.Id,

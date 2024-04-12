@@ -359,7 +359,7 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 
 		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
 		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
-			return nil
+			return fmt.Errorf("Change belongs to a deleted entity [%s]", res.DeletedResourcesIRI)
 		}
 
 		if ok {
