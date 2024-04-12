@@ -34,11 +34,47 @@ import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useGroup, useGroupFrontpage} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
-import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
+import {BaseEntityRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
+
+function useOpenInContext() {
+  const route = useNavRoute()
+  const navigate = useNavigate()
+  const contextRoute = getThisRouteContext(route)
+  const context: BaseEntityRoute[] = [
+    ...(getRouteContext(route) || []),
+    ...(contextRoute ? [contextRoute] : []),
+  ]
+  return (hmUrl) => {
+    const id = unpackHmId(hmUrl)
+    if (!id) return
+    if (id.type == 'd') {
+      navigate({
+        key: 'publication',
+        documentId: id.qid,
+        variants: id.variants || undefined,
+        versionId: id.version || undefined,
+        context,
+      })
+    } else if (id.type == 'g') {
+      navigate({
+        key: 'group',
+        groupId: id.qid,
+        version: id.version || undefined,
+        context,
+      })
+    } else if (id.type == 'a') {
+      navigate({
+        key: 'account',
+        accountId: id.eid,
+        context,
+      })
+    }
+  }
+}
 
 function EmbedWrapper({
   hmRef,
@@ -52,7 +88,7 @@ function EmbedWrapper({
     routeParams,
   } = usePublicationContentContext()
   const route = useNavRoute()
-  const open = useOpenUrl()
+  const open = useOpenInContext()
   const navigate = useNavigate('replace')
   const unpackRef = unpackHmId(hmRef)
 
@@ -117,7 +153,7 @@ function EmbedWrapper({
                   })
                 }
               } else {
-                open(hmRef, true)
+                open(hmRef)
               }
             }
           : undefined
@@ -137,6 +173,40 @@ export function EmbedPublication(props: EntityComponentProps) {
   }
 }
 
+function getRouteContext(route: NavRoute) {
+  if (route.key == 'publication') {
+    return route.context
+  }
+  if (route.key == 'group') {
+    return route.context
+  }
+  if (route.key == 'account') {
+    return route.context
+  }
+  return undefined
+}
+
+function getThisRouteContext(route: NavRoute): BaseEntityRoute | undefined {
+  if (route.key == 'publication') {
+    const pubRoute = {...route}
+    delete pubRoute.context
+    return pubRoute
+  }
+  if (route.key == 'group') {
+    const groupRoute = {...route}
+    delete groupRoute.context
+    delete groupRoute.tab
+    return groupRoute
+  }
+  if (route.key == 'account') {
+    const accountRoute = {...route}
+    delete accountRoute.context
+    delete accountRoute.tab
+    return accountRoute
+  }
+  return undefined
+}
+
 export function EmbedPublicationContent(props: EntityComponentProps) {
   const documentId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
@@ -151,7 +221,10 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
     variants: props.variants || undefined,
     enabled: !!documentId,
   })
-  const spawn = useNavigate('spawn')
+  const route = useNavRoute()
+  // const spawn = useNavigate('spawn')
+  const navigate = useNavigate()
+  const contextRoute = getThisRouteContext(route)
   return (
     <ContentEmbed
       props={props}
@@ -167,11 +240,15 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
             icon={ArrowUpRightSquare}
             onPress={() => {
               if (!documentId) return
-              spawn({
+              navigate({
                 key: 'publication',
                 documentId,
                 variants: props.variants || undefined,
                 versionId: props.version || undefined,
+                context: [
+                  ...(getRouteContext(route) || []),
+                  ...(contextRoute ? [contextRoute] : []),
+                ],
               })
             }}
           >

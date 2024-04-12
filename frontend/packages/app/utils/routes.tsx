@@ -36,15 +36,70 @@ export type PublicationCitationsAccessory = z.infer<
   typeof entityCitationsAccessorySchema
 >
 
-export const accountRouteSchema = z.object({
+export const publicationCommentsAccessorySchema = z.object({
+  key: z.literal('comments'),
+})
+export type PublicationCommentsAccessory = z.infer<
+  typeof publicationCommentsAccessorySchema
+>
+
+export const basePublicationRouteSchema = z.object({
+  key: z.literal('publication'),
+  documentId: z.string(),
+  versionId: z.string().optional(),
+  variants: z.array(publicationVariantSchema).optional(),
+  blockId: z.string().optional(),
+  blockRange: z
+    .object({
+      start: z.number().optional(),
+      end: z.number().optional(),
+      expanded: z.boolean().optional(),
+    })
+    .optional(),
+  groupVariantCategory: z.string().optional(),
+  showFirstPublicationMessage: z.boolean().optional(),
+  immediatelyPromptPush: z.boolean().optional(),
+  accessory: z
+    .discriminatedUnion('key', [
+      entityVersionsAccessorySchema,
+      entityCitationsAccessorySchema,
+      publicationCommentsAccessorySchema,
+    ])
+    .nullable()
+    .optional(),
+})
+
+export const baseGroupRouteSchema = z.object({
+  key: z.literal('group'),
+  groupId: z.string(),
+  version: z.string().optional(),
+  blockId: z.string().optional(),
+  accessory: z
+    .discriminatedUnion('key', [entityVersionsAccessorySchema])
+    .nullable()
+    .optional(),
+})
+
+export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
   accountId: z.string(),
   blockId: z.string().optional(),
-  tab: z.enum(['profile', 'documents', 'groups', 'activity']).optional(), // profile is the default
   accessory: z
     .discriminatedUnion('key', [entityCitationsAccessorySchema])
     .nullable()
     .optional(),
+})
+
+export const baseEntityRouteSchema = z.discriminatedUnion('key', [
+  basePublicationRouteSchema,
+  baseGroupRouteSchema,
+  baseAccountRouteSchema,
+])
+export type BaseEntityRoute = z.infer<typeof baseEntityRouteSchema>
+
+export const accountRouteSchema = baseAccountRouteSchema.extend({
+  context: z.array(baseEntityRouteSchema).optional(),
+  tab: z.enum(['profile', 'documents', 'groups', 'activity']).optional(), // profile is the default
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
 
@@ -52,13 +107,6 @@ export const favoritesSchema = z.object({
   key: z.literal('favorites'),
 })
 export type FavoritesRoute = z.infer<typeof favoritesSchema>
-
-export const publicationCommentsAccessorySchema = z.object({
-  key: z.literal('comments'),
-})
-export type PublicationCommentsAccessory = z.infer<
-  typeof publicationCommentsAccessorySchema
->
 
 export const commentRouteSchema = z.object({
   key: z.literal('comment'),
@@ -74,46 +122,17 @@ export const commentDraftRouteSchema = z.object({
 })
 export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 
-export const publicationRouteSchema = z.object({
-  key: z.literal('publication'),
-  documentId: z.string(),
-  versionId: z.string().optional(),
-  variants: z.array(publicationVariantSchema).optional(),
-  blockId: z.string().optional(),
-  blockRange: z
-    .object({
-      start: z.number().optional(),
-      end: z.number().optional(),
-      expanded: z.boolean().optional(),
-    })
-    .optional(),
-  groupVariantCategory: z.string().optional(),
-  accessory: z
-    .discriminatedUnion('key', [
-      entityVersionsAccessorySchema,
-      entityCitationsAccessorySchema,
-      publicationCommentsAccessorySchema,
-    ])
-    .nullable()
-    .optional(),
-  showFirstPublicationMessage: z.boolean().optional(),
-  immediatelyPromptPush: z.boolean().optional(),
+export const publicationRouteSchema = basePublicationRouteSchema.extend({
+  context: z.array(baseEntityRouteSchema).optional(),
 })
 export type PublicationRoute = z.infer<typeof publicationRouteSchema>
 
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
-export const groupRouteSchema = z.object({
-  key: z.literal('group'),
-  groupId: z.string(),
-  version: z.string().optional(),
-  blockId: z.string().optional(),
+export const groupRouteSchema = baseGroupRouteSchema.extend({
+  context: z.array(baseEntityRouteSchema).optional(),
   tab: z.enum(['front', 'documents', 'activity']).optional(), // front is the default
-  accessory: z
-    .discriminatedUnion('key', [entityVersionsAccessorySchema])
-    .nullable()
-    .optional(),
 })
 export type GroupRoute = z.infer<typeof groupRouteSchema>
 
