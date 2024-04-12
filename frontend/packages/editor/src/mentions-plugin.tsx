@@ -1,5 +1,7 @@
 import {useAccount} from '@mintter/app/models/accounts'
-import {unpackHmId} from '@mintter/shared'
+import {usePublication} from '@mintter/app/models/documents'
+import {useGroup} from '@mintter/app/models/groups'
+import {UnpackedHypermediaId, unpackHmId} from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
 import {Node} from '@tiptap/core'
 import {NodeViewWrapper, ReactNodeViewRenderer} from '@tiptap/react'
@@ -76,15 +78,78 @@ function InlineEmbedNodeComponent(props: any) {
       className={`inline-embed-token${props.selected ? ' selected' : ''}`}
       data-inline-embed-ref={props.node.attrs.ref}
     >
-      <MentionToken embedRef={props.node.attrs.ref} selected={props.selected} />
+      <MentionToken value={props.node.attrs.ref} selected={props.selected} />
     </NodeViewWrapper>
   )
 }
 
-export function MentionToken(props: {embedRef: string; selected?: boolean}) {
-  const unpackedRef = unpackHmId(props.embedRef)
-  const account = useAccount(unpackedRef?.eid)
+export function MentionToken(props: {value: string; selected?: boolean}) {
+  const unpackedRef = unpackHmId(props.value)
 
+  if (unpackedRef?.type == 'a') {
+    return <AccountMention unpackedRef={unpackedRef} {...props} />
+  } else if (unpackedRef?.type == 'g') {
+    return <GroupMention unpackedRef={unpackedRef} {...props} />
+  } else if (unpackedRef?.type == 'd') {
+    return <DocumentMention unpackedRef={unpackedRef} {...props} />
+  } else {
+    console.log('=== MENTION ERROR', props)
+    return <MentionText>ERROR</MentionText>
+  }
+}
+
+function AccountMention({
+  unpackedRef,
+  selected,
+}: {
+  unpackedRef: UnpackedHypermediaId
+  selected?: boolean
+}) {
+  const account = useAccount(unpackedRef.eid)
+
+  return (
+    <MentionText selected={selected}>
+      @{account.data?.profile?.alias || unpackedRef.eid}
+    </MentionText>
+  )
+}
+
+function GroupMention(props: {
+  unpackedRef: UnpackedHypermediaId
+  selected?: boolean
+}) {
+  const group = useGroup(props.unpackedRef.id)
+  return (
+    <MentionText selected={props.selected}>
+      {group.data?.title || 'group'}
+    </MentionText>
+  )
+}
+
+function DocumentMention({
+  unpackedRef,
+  selected,
+}: {
+  unpackedRef: UnpackedHypermediaId
+  selected?: boolean
+}) {
+  const pub = usePublication({
+    id: unpackedRef.id,
+    version: unpackedRef.version || undefined,
+  })
+
+  if (pub.status == 'loading') {
+    return <MentionText>...</MentionText>
+  }
+
+  return (
+    <MentionText selected={selected}>
+      {pub.data?.document?.title || unpackedRef.id}
+    </MentionText>
+  )
+}
+
+function MentionText(props) {
   return (
     <SizableText
       fontSize="1em"
@@ -96,8 +161,7 @@ export function MentionToken(props: {embedRef: string; selected?: boolean}) {
       color="$mint11"
       outlineColor="$mint11"
     >
-      @{account.data?.profile?.alias || props.embedRef}
+      {props.children}
     </SizableText>
   )
 }
-1

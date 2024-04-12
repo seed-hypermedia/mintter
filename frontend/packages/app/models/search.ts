@@ -1,4 +1,9 @@
-import {Entity} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {
+  Entity,
+  HYPERMEDIA_ENTITY_TYPES,
+  SearchEntitiesResponse,
+  unpackHmId,
+} from '@mintter/shared'
 import {UseQueryOptions, useQuery} from '@tanstack/react-query'
 import {useCallback, useMemo, useState} from 'react'
 import {useGRPCClient} from '../app-context'
@@ -29,10 +34,10 @@ export function useInlineMentions() {
   const grpcClient = useGRPCClient()
   const [queryResult, setQueryResult] = useState<any>(null)
   let emptyRespose = {
-    accounts: [],
-    groups: [],
-    documents: [],
-    recents: recents.data,
+    Accounts: [],
+    Groups: [],
+    Documents: [],
+    Recents: recents.data,
   }
   const inlineMentionsQuery = useCallback(
     async function searchQuery(query: string) {
@@ -46,15 +51,26 @@ export function useInlineMentions() {
   )
 
   const result = useMemo(() => {
-    console.log(`== ~ result ~ queryResult:`, queryResult)
     if (!queryResult?.length) return emptyRespose
     return queryResult.reduce((acc: GroupResults, entity) => {
       if (entity.id.startsWith('hm://a/')) {
-        acc.accounts.push(entity)
+        acc.Accounts.push({
+          title: entity.title,
+          value: entity.id,
+          subtitle: 'Account',
+        })
       } else if (entity.id.startsWith('hm://g/')) {
-        acc.groups.push(entity)
+        acc.Groups.push({
+          title: entity.title,
+          subtitle: 'Group',
+          value: entity.id,
+        })
       } else if (entity.id.startsWith('hm://d/')) {
-        acc.documents.push(entity)
+        acc.Documents.push({
+          title: entity.title,
+          subtitle: 'Document',
+          value: entity.id,
+        })
       }
       return acc
     }, emptyRespose)
@@ -63,16 +79,22 @@ export function useInlineMentions() {
   return {
     inlineMentionsData: {
       ...result,
-      recents: recents.data,
+      Recents: recents.data,
     },
     inlineMentionsQuery,
   }
 }
 
+type InlineMentionsResult = {
+  title: string
+  subtitle: string
+  value: string
+}
+
 type GroupResults = {
-  accounts: Array<Entity>
-  groups: Array<Entity>
-  documents: Array<Entity>
+  Accounts: Array<InlineMentionsResult>
+  Groups: Array<InlineMentionsResult>
+  Documents: Array<InlineMentionsResult>
 }
 
 export function _useSearchMentions(
@@ -103,4 +125,30 @@ export function _useSearchMentions(
     })
     return sorted
   }, [searchQuery.data, searchQuery.status])
+}
+
+interface SearchItem {
+  title: string
+  subtitle: string
+  value: string
+}
+
+export function transformResultsToItems(
+  results: Array<Entity>,
+): Array<SearchItem> {
+  // @ts-expect-error
+  return (
+    results
+      .map((entity) => {
+        const id = unpackHmId(entity.id)
+        if (!id) return null
+
+        return {
+          title: entity.title,
+          subtitle: HYPERMEDIA_ENTITY_TYPES[id.type],
+          value: entity.id,
+        } as SearchItem
+      })
+      .filter(Boolean) || []
+  )
 }
