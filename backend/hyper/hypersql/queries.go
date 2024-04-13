@@ -221,7 +221,7 @@ func generateQueries() error {
 				s.StructuralBlobsViewMultihash,
 				s.StructuralBlobsViewSize,
 			), '\n',
-			"FROM", qb.Concat(s.StructuralBlobsView, ", ", "json_each(", qb.Var("cset", sgen.TypeBytes), ") AS cset"), '\n',
+			"FROM", qb.Concat(s.StructuralBlobsView, ", ", "json_each(", qb.Var("cset", sgen.TypeText), ") AS cset"), '\n',
 			"WHERE", s.StructuralBlobsViewResource, "=", qb.VarColType(s.StructuralBlobsViewResource, sgen.TypeText), '\n',
 			"AND", s.StructuralBlobsViewBlobID, "= cset.value", '\n',
 			"ORDER BY", s.StructuralBlobsViewTs,
@@ -245,14 +245,14 @@ func generateQueries() error {
 		qb.MakeQuery(s.Schema, "ChangesResolveHeads", sgen.QueryKindSingle,
 			"WITH RECURSIVE changeset (change) AS", qb.SubQuery(
 				"SELECT value",
-				"FROM", qb.Concat("json_each(", qb.Var("heads", sgen.TypeBytes), ")"),
+				"FROM", qb.Concat("json_each(", qb.Var("heads", sgen.TypeText), ")"),
 				"UNION",
 				"SELECT", storage.ChangeDepsParent,
 				"FROM", storage.ChangeDeps,
 				"JOIN changeset ON changeset.change", "=", storage.ChangeDepsChild,
 			), '\n',
 			"SELECT", qb.Results(
-				qb.ResultRaw("json_group_array(change) AS resolved_json", "resolved_json", sgen.TypeBytes),
+				qb.ResultRaw("json_group_array(change) AS resolved_json", "resolved_json", sgen.TypeText),
 			), '\n',
 			"FROM changeset", '\n',
 			"LIMIT 1",
@@ -264,7 +264,7 @@ func generateQueries() error {
 				{Name: "entity", Type: sgen.TypeInt},
 			},
 			Outputs: []sgen.GoSymbol{
-				{Name: "Heads", Type: sgen.TypeBytes},
+				{Name: "Heads", Type: sgen.TypeText},
 			},
 			SQL: `WITH
 non_drafts (blob) AS (

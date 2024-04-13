@@ -13,6 +13,7 @@ import (
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/dqb"
+	"mintter/backend/pkg/strbytes"
 	"sort"
 	"strings"
 
@@ -682,7 +683,7 @@ func (bs *Storage) LoadEntityFromHeads(ctx context.Context, eid EntityID, heads 
 
 	defer sqlitex.Save(conn)(&err)
 
-	localHeads := make([]int64, 0, len(heads))
+	dbheads := make([]int64, 0, len(heads))
 	for _, c := range heads {
 		res, err := hypersql.BlobsGetSize(conn, c.Hash())
 		if err != nil {
@@ -691,26 +692,30 @@ func (bs *Storage) LoadEntityFromHeads(ctx context.Context, eid EntityID, heads 
 		if res.BlobsID == 0 || res.BlobsSize < 0 {
 			return nil, status.Errorf(codes.NotFound, "no such head %s for entity %s", c, eid)
 		}
-		localHeads = append(localHeads, res.BlobsID)
+		dbheads = append(dbheads, res.BlobsID)
 	}
 
-	if len(localHeads) != len(heads) {
+	if len(dbheads) != len(heads) {
 		return nil, fmt.Errorf("couldn't resolve all the heads %v for entity %s", heads, eid)
 	}
 
-	jsonheads, err := json.Marshal(localHeads)
+	jsonheads, err := json.Marshal(dbheads)
 	if err != nil {
 		return nil, err
 	}
 
-	return bs.loadFromHeads(conn, eid, jsonheads)
+	return bs.loadFromHeads(conn, eid, localHeads(strbytes.String(jsonheads)))
 }
 
 // localHeads is a JSON-encoded array of integers corresponding to heads.
-type localHeads []byte
+type localHeads string
 
 func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHeads) (e *Entity, err error) {
-	cset, err := hypersql.ChangesResolveHeads(conn, heads)
+	if heads == "" || heads == "null" {
+		heads = "[]"
+	}
+
+	cset, err := hypersql.ChangesResolveHeads(conn, string(heads))
 	if err != nil {
 		return nil, err
 	}
