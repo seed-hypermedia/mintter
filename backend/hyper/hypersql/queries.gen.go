@@ -698,7 +698,7 @@ type ChangesListFromChangeSetResult struct {
 	StructuralBlobsViewSize       int64
 }
 
-func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, structuralBlobsViewResource string) ([]ChangesListFromChangeSetResult, error) {
+func ChangesListFromChangeSet(conn *sqlite.Conn, cset string, structuralBlobsViewResource string) ([]ChangesListFromChangeSetResult, error) {
 	const query = `SELECT structural_blobs_view.blob_id, structural_blobs_view.codec, structural_blobs_view.data, structural_blobs_view.resource_id, structural_blobs_view.ts, structural_blobs_view.multihash, structural_blobs_view.size
 FROM structural_blobs_view, json_each(:cset) AS cset
 WHERE structural_blobs_view.resource = :structuralBlobsViewResource
@@ -708,7 +708,7 @@ ORDER BY structural_blobs_view.ts`
 	var out []ChangesListFromChangeSetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":cset", cset)
+		stmt.SetText(":cset", cset)
 		stmt.SetText(":structuralBlobsViewResource", structuralBlobsViewResource)
 	}
 
@@ -781,10 +781,10 @@ ORDER BY structural_blobs.ts`
 }
 
 type ChangesResolveHeadsResult struct {
-	ResolvedJSON []byte
+	ResolvedJSON string
 }
 
-func ChangesResolveHeads(conn *sqlite.Conn, heads []byte) (ChangesResolveHeadsResult, error) {
+func ChangesResolveHeads(conn *sqlite.Conn, heads string) (ChangesResolveHeadsResult, error) {
 	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT change_deps.parent FROM change_deps JOIN changeset ON changeset.change = change_deps.child)
 SELECT json_group_array(change) AS resolved_json
 FROM changeset
@@ -793,7 +793,7 @@ LIMIT 1`
 	var out ChangesResolveHeadsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":heads", heads)
+		stmt.SetText(":heads", heads)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -801,7 +801,7 @@ LIMIT 1`
 			return errors.New("ChangesResolveHeads: more than one result return for a single-kind query")
 		}
 
-		out.ResolvedJSON = stmt.ColumnBytes(0)
+		out.ResolvedJSON = stmt.ColumnText(0)
 		return nil
 	}
 
@@ -814,7 +814,7 @@ LIMIT 1`
 }
 
 type ChangesGetPublicHeadsJSONResult struct {
-	Heads []byte
+	Heads string
 }
 
 func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetPublicHeadsJSONResult, error) {
@@ -847,7 +847,7 @@ WHERE blob NOT IN deps`
 			return errors.New("ChangesGetPublicHeadsJSON: more than one result return for a single-kind query")
 		}
 
-		out.Heads = stmt.ColumnBytes(0)
+		out.Heads = stmt.ColumnText(0)
 		return nil
 	}
 
