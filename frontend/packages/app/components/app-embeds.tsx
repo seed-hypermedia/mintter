@@ -78,9 +78,12 @@ function useOpenInContext() {
 
 function EmbedWrapper({
   hmRef,
+  parentBlockId,
   children,
   ...props
-}: PropsWithChildren<{hmRef: string} & ComponentProps<typeof YStack>>) {
+}: PropsWithChildren<
+  {hmRef: string; parentBlockId: string | null} & ComponentProps<typeof YStack>
+>) {
   const {
     disableEmbedClick = false,
     layoutUnit,
@@ -233,6 +236,7 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
       onShowReferenced={setShowReferenced}
       pub={pub.data?.publication}
       EmbedWrapper={EmbedWrapper}
+      parentBlockId={props.parentBlockId}
       renderOpenButton={() =>
         documentId && (
           <Button
@@ -280,7 +284,7 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   }, [pub.data])
 
   return (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
       <PublicationCardView
         title={pub.data?.publication?.document?.title}
         textContent={textContent}
@@ -292,7 +296,10 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   )
 }
 
-export function EmbedAccount(props: EntityComponentProps) {
+export function EmbedAccount(
+  props: EntityComponentProps,
+  parentBlockId: string | null,
+) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = useAccount(accountId)
 
@@ -305,7 +312,7 @@ export function EmbedAccount(props: EntityComponentProps) {
       return <EmbedPublicationContent {...props} {...unpackedRef} />
     } else if (props.block?.attributes?.view == 'card') {
       return (
-        <EmbedWrapper hmRef={props.id}>
+        <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
           <EmbedAccountContent account={accountQuery.data!} />
         </EmbedWrapper>
       )
@@ -334,7 +341,7 @@ export function EmbedComment(props: EntityComponentProps) {
   const account = useAccount(comment.data?.author)
   if (comment.isLoading) return <Spinner />
   return (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
       <XStack flexWrap="wrap" jc="space-between">
         <XStack gap="$2">
           <UIAvatar
@@ -365,6 +372,7 @@ export function EmbedComment(props: EntityComponentProps) {
               childrenType="group"
               index={idx}
               embedDepth={1}
+              parentBlockId={props.id}
             />
           ))}
         </BlockNodeList>
@@ -409,7 +417,7 @@ export function EmbedGroupCard(
   const group = hmGroup(groupQuery.data)
 
   return group && groupQuery.status == 'success' ? (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
       <EmbedGroupCardContent group={group} />
     </EmbedWrapper>
   ) : null

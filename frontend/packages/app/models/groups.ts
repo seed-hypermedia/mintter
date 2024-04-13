@@ -447,6 +447,21 @@ export function useGroupContent(
   return useQuery(getGroupContentQuery(grpcClient, groupId, version))
 }
 
+export function useGroupFrontPub(
+  groupId?: string | undefined,
+  version?: string,
+) {
+  const content = useGroupContent(groupId, version)
+  const frontPubContentId = content.data?.content?.['/']
+  const frontPubId =
+    frontPubContentId == null ? null : unpackHmId(frontPubContentId)
+  const frontPub = usePublication({
+    id: frontPubId?.qid,
+    version: frontPubId?.version || undefined,
+  })
+  return frontPub
+}
+
 /**
  *
  * @param groupIds

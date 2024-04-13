@@ -267,6 +267,7 @@ function FeedItemCommentContent({comment}: {comment: HMComment}) {
       >
         <BlocksContent
           blocks={clipContentBlocks(comment.content, FEED_MAX_BLOCK_COUNT)}
+          parentBlockId={null}
         />
       </YStack>
     </AppPublicationContentProvider>

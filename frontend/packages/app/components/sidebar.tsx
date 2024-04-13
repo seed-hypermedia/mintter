@@ -4,7 +4,7 @@ import {Book, Contact, FileText, Sparkles, Star} from '@tamagui/lucide-icons'
 import {memo} from 'react'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {usePublication, usePublicationEmbeds} from '../models/documents'
-import {useGroup} from '../models/groups'
+import {useGroup, useGroupFrontPub} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useNavRoute} from '../utils/navigation'
 import {
@@ -168,7 +168,6 @@ function RouteOutline({
     return (
       <>
         <SidebarDivider />
-
         <AccountRouteOutline route={route} />
       </>
     )
@@ -204,14 +203,6 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   )
 }
 
-type JSONType =
-  | null
-  | number
-  | string
-  | boolean
-  | Record<string, JSONType>
-  | JSONType[]
-
 function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   const pub = usePublicationVariant({
     documentId: route.documentId,
@@ -230,12 +221,52 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
 
 function GroupRouteOutline({route}: {route: GroupRoute}) {
   const group = useGroup(route.groupId, route.version)
+  const frontPub = useGroupFrontPub(route.groupId, route.version)
+  const navigate = useNavigate()
+  const frontPubEmbeds = usePublicationEmbeds(frontPub.data, !!frontPub.data, {
+    skipCards: true,
+  })
+  const frontDocOutline = getDocOutline(
+    frontPub?.data?.document?.children || [],
+    frontPubEmbeds,
+  )
+  const {outlineContent: frontPubOutlineContent, isBlockActive} =
+    activeDocOutline(
+      frontDocOutline,
+      null,
+      frontPubEmbeds,
+      (blockId) => {
+        console.log('activate block', blockId)
+        // const myAccountId = myAccount.data?.id
+        // if (!myAccountId) return
+        // const accountRoute =
+        //   route.key == 'account' && myAccountId === route.accountId
+        //     ? route
+        //     : null
+        // if (!accountRoute) {
+        //   navigate({
+        //     key: 'account',
+        //     accountId: myAccountId,
+        //     blockId,
+        //   })
+        // } else {
+        //   replace({
+        //     ...accountRoute,
+        //     blockId,
+        //   })
+        // }
+      },
+      navigate,
+    )
   return (
-    <SidebarItem
-      active={true}
-      onPress={() => {}}
-      title={group.data?.title}
-      icon={Book}
-    />
+    <>
+      <SidebarItem
+        active={!isBlockActive}
+        onPress={() => {}}
+        title={group.data?.title}
+        icon={Book}
+      />
+      {frontPubOutlineContent}
+    </>
   )
 }

@@ -293,7 +293,7 @@ export function CommentPresentation({
             copyUrlToClipboardWithFeedback(url, 'Comment Block')
           }}
         >
-          <BlocksContent blocks={comment.content} />
+          <BlocksContent blocks={comment.content} parentBlockId={null} />
         </AppPublicationContentProvider>
       </YStack>
     </YStack>

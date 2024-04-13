@@ -413,17 +413,16 @@ function GroupPageMain({
         id: UnpackedHypermediaId
       }
   > = []
-  if (groupRoute.tab === 'front') {
-    items = ['front']
-  } else if (groupRoute.tab === 'documents') {
+  if (groupRoute.tab === 'documents') {
     items = groupContent.data?.items.map((item) => {
       const {key, pub, author, editors, id} = item
       const latestEntry = latestGroupContent.data?.content?.[key]
-
       return {...item, latestEntry, type: 'doc'}
     })
   } else if (groupRoute.tab === 'activity') {
     items = feed.data || []
+  } else {
+    items = ['front']
   }
   return (
     <MainWrapperNoScroll>
@@ -443,6 +442,7 @@ function GroupPageMain({
             if (!group) return null
             return (
               <GroupFront
+                key="front"
                 group={group}
                 groupRoute={groupRoute}
                 myMemberRole={myMemberRole}
@@ -450,9 +450,8 @@ function GroupPageMain({
             )
           } else if (item.type === 'doc') {
             const {key, pub, author, editors, id, latestEntry} = item
-            if (key === '/') return null
+            if (key === '/') return <View height={1} /> // list will break if there is an item with 0 height :(
             const latestDocId = latestEntry ? unpackDocId(latestEntry) : null
-
             return (
               <GroupContentItem
                 key={key}

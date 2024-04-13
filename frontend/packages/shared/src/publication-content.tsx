@@ -333,18 +333,25 @@ export function PublicationContent({
           </Tooltip>
         ) : null}
       </XStack>
-      <BlocksContent blocks={displayBlocks} />
+      <BlocksContent blocks={displayBlocks} parentBlockId={null} />
     </YStack>
   )
 }
 
-export function BlocksContent({blocks}: {blocks?: HMBlockNode[] | null}) {
+export function BlocksContent({
+  blocks,
+  parentBlockId,
+}: {
+  blocks?: HMBlockNode[] | null
+  parentBlockId: string | null
+}) {
   if (!blocks) return null
   return (
     <BlockNodeList childrenType={'group'}>
       {blocks?.length &&
         blocks?.map((bn, idx) => (
           <BlockNodeContent
+            parentBlockId={parentBlockId}
             isFirstChild={idx == 0}
             key={bn.block?.id}
             blockNode={bn}
@@ -432,6 +439,7 @@ export function BlockNodeContent({
   childrenType = 'group',
   isFirstChild = false,
   expanded = true,
+  parentBlockId,
   ...props
 }: {
   isFirstChild: boolean
@@ -442,6 +450,7 @@ export function BlockNodeContent({
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
   expanded?: boolean
+  parentBlockId: string | null
 }) {
   const {
     layoutUnit,
@@ -481,6 +490,7 @@ export function BlockNodeContent({
           childrenType={blockNode.block!.attributes?.childrenType}
           start={blockNode.block?.attributes?.start}
           index={index}
+          parentBlockId={blockNode.block?.id || null}
           embedDepth={
             props.embedDepth ? props.embedDepth + 1 : props.embedDepth
           }
@@ -596,6 +606,7 @@ export function BlockNodeContent({
         <BlockContent
           block={blockNode.block!}
           depth={depth}
+          parentBlockId={parentBlockId}
           {...interactiveProps}
         />
         {!props.embedDepth && !renderOnly ? (
@@ -747,6 +758,7 @@ function inlineContentSize(unit: number): TextProps {
 
 export type BlockContentProps = {
   block: Block | HMBlock
+  parentBlockId: string | null
   depth: number
   onHoverIn?: () => void
   onHoverOut?: () => void
@@ -1425,6 +1437,7 @@ export function ContentEmbed({
   onShowReferenced,
   renderOpenButton,
   EmbedWrapper,
+  parentBlockId = null,
 }: {
   isLoading: boolean
   props: EntityComponentProps
@@ -1432,7 +1445,10 @@ export function ContentEmbed({
   showReferenced: boolean
   onShowReferenced: (showReference: boolean) => void
   renderOpenButton: () => React.ReactNode
-  EmbedWrapper: React.ComponentType<React.PropsWithChildren<{hmRef: string}>>
+  EmbedWrapper: React.ComponentType<
+    React.PropsWithChildren<{hmRef: string; parentBlockId: string}>
+  >
+  parentBlockId: string | null
 }) {
   const embedData = useMemo(() => {
     const selectedBlock =
@@ -1588,7 +1604,11 @@ export function ContentEmbed({
       </BlockNotFoundError>
     )
   }
-  return <EmbedWrapper hmRef={props.id}>{content}</EmbedWrapper>
+  return (
+    <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
+      {content}
+    </EmbedWrapper>
+  )
 }
 
 export function BlockNotFoundError({
