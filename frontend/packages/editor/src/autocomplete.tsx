@@ -1,5 +1,5 @@
-import {Account} from '@mintter/shared'
-import {Button, ButtonProps} from '@mintter/ui'
+import {Entity} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {Button, ButtonProps, SizableText, XStack, YStack} from '@mintter/ui'
 import {Fragment, NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'
@@ -181,12 +181,10 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
             view.state,
           )
 
-          const onCreate = (
-            value: string,
-            range: {from: number; to: number},
-          ) => {
+          const onCreate = (ref: string, range: {from: number; to: number}) => {
+            console.log('=== ONCREATE', ref)
             const node = view.state.schema.nodes[nodeName].create({
-              ref: `hm://a/${value.id}`,
+              ref,
             })
             view.dispatch(
               view.state.tr.replaceWith(
@@ -256,32 +254,90 @@ function AutocompletePopupInner(
   const {rect, text, onClose, range, onCreate, editor} = props
 
   const misses = useRef(0)
+  const [index, setIndex] = useState<[string, number]>(['Recents', 0])
 
   const suggestions = useMemo(() => {
-    const list = getSuggestions(editor.mentionOptions || [], text)
+    editor.options.onMentionsQuery(text)
+    const results = {
+      ...editor.mentionOptions,
+      Recents: getSuggestions(editor.mentionOptions.Recents || [], text),
+    }
 
-    if (list.length === 0) {
+    if (isOptionsEmpty(results)) {
       misses.current++
     } else {
       misses.current = 0
+      setIndex(['Recents', 0])
     }
-    return list
+    return results
   }, [text])
 
-  const [index, setIndex] = useState(0)
+  const groupsOrder = ['Recents', 'Accounts', 'Documents', 'Groups']
+  const groups = useMemo(() => {
+    return groupsOrder.filter(
+      (g) => suggestions.hasOwnProperty(g) && suggestions[g].length,
+    )
+  }, [suggestions])
 
   useKeyboard({
     ArrowUp: () => {
-      setIndex(strangle(index - 1, [0, suggestions.length - 1]))
+      let [group, idx] = index
+      if (idx == 0) {
+        if (groups.indexOf(group) == 0) {
+          // need to go to the end of the list
+          setIndex([
+            groups[groups.length - 1],
+            groups[groups.length - 1].length - 1,
+          ])
+        } else {
+          let groupIdx = strangle(groups.indexOf(group) - 1, [
+            0,
+            groupsOrder.length - 1,
+          ])
+          setIndex([groups[groupIdx], suggestions[groups[groupIdx]].length - 1])
+        }
+      } else {
+        setIndex([group, idx - 1])
+      }
       return true
+      // }
     },
     ArrowDown: () => {
-      setIndex(strangle(index + 1, [0, suggestions.length - 1]))
+      let [group, idx] = index
+      if (
+        groups.indexOf(group) == groups.length - 1 &&
+        idx == suggestions[group].length - 1
+      ) {
+        setIndex([groups[0], 0])
+      } else if (idx < suggestions[group].length - 1) {
+        setIndex([group, idx + 1])
+      } else {
+        let groupIdx = strangle(groups.indexOf(group) + 1, [
+          0,
+          groups.length - 1,
+        ])
+
+        setIndex([groups[groupIdx], 0])
+      }
       return true
     },
     Enter: () => {
-      if (index < suggestions.length) {
-        onCreate(suggestions[index], range)
+      let [group, idx] = index
+      console.log(
+        'enter',
+        group,
+        idx,
+        groups.indexOf(group) > groups.length &&
+          idx > suggestions[group].length,
+      )
+      if (
+        groups.indexOf(group) < groups.length &&
+        idx < suggestions[group].length
+      ) {
+        let item = suggestions[group][idx]
+
+        console.log(`== ~ item:`, item)
+        onCreate(item.value, range)
         onClose()
       }
       return true
@@ -334,22 +390,70 @@ function AutocompletePopupInner(
         }}
       >
         {/* <div>Query: "{text}"</div> */}
-        {suggestions.length === 0 && <div>No Results</div>}
-        {suggestions.map((suggestion, i) => {
-          return (
-            <SuggestionItem
-              selected={i === index}
-              name={suggestion.profile.alias}
-              key={suggestion.id}
-              onMouseEnter={() => {
-                // setIndex(i)
-              }}
-              onPress={() => {
-                onCreate(suggestion, range)
-                onClose()
-              }}
-            />
-          )
+        {isOptionsEmpty(suggestions) && (
+          <XStack
+            bg="$backgroundStrong"
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            gap="$2"
+          >
+            <SizableText size="$2" f={1}>
+              No Results
+            </SizableText>
+          </XStack>
+        )}
+        {groups.map((group) => {
+          if (suggestions[group] && suggestions[group].length) {
+            return (
+              <YStack
+                key={group}
+                bg="$backgroundFocus"
+                borderWidth={1}
+                borderColor="$borderColor"
+                elevate
+              >
+                <XStack
+                  bg="$backgroundStrong"
+                  paddingHorizontal="$4"
+                  paddingVertical="$2"
+                  gap="$2"
+                >
+                  <SizableText size="$2" f={1}>
+                    {group}
+                  </SizableText>
+                  {suggestions[group].length >= 1 ? (
+                    <SizableText size="$1">
+                      {suggestions[group].length == 1
+                        ? '1 item'
+                        : suggestions[group].length > 1
+                        ? `${suggestions[group].length} items`
+                        : ''}
+                    </SizableText>
+                  ) : null}
+                </XStack>
+                {suggestions[group].map((item, i) => {
+                  let [currentGroup, idx] = index
+                  return (
+                    <SuggestionItem
+                      selected={currentGroup == group && idx == i}
+                      value={item.value}
+                      key={item.value}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      onMouseEnter={() => {
+                        // setIndex(i)
+                      }}
+                      onPress={() => {
+                        onCreate(item.value, range)
+                        onClose()
+                      }}
+                    />
+                  )
+                })}
+              </YStack>
+            )
+          }
+          return null
         })}
       </div>
     </div>
@@ -357,16 +461,18 @@ function AutocompletePopupInner(
 }
 
 function strangle(n: number, minMax: [number, number]) {
-  return Math.max(Math.min(n, minMax[1]), minMax[0])
-}
+  // The function strangle takes a number 'n' and an array 'minMax' containing two numbers.
+  // It returns the number 'n' if it is within the range specified by 'minMax'.
+  // If 'n' is less than the first number in 'minMax', it returns the first number.
+  // If 'n' is greater than the second number in 'minMax', it returns the second number.
+  // Essentially, it "strangles" the number 'n' to ensure it stays within the specified range.
+  const lowerBound = minMax[0] // The minimum value 'n' can be
+  const upperBound = minMax[1] // The maximum value 'n' can be
 
-function getSuggestions(options: Array<any>, queryText: string) {
-  let result = options.filter((acc) => {
-    let alias = acc.profile.alias
-    return alias.toLowerCase().includes(queryText.toLowerCase())
-  })
-
-  return result
+  // If 'n' is less than the lowerBound, return lowerBound.
+  // If 'n' is greater than the upperBound, return upperBound.
+  // Otherwise, return 'n' as it is within the range.
+  return Math.max(lowerBound, Math.min(n, upperBound))
 }
 
 export type AutocompleteTokenPluginState<T> =
@@ -393,8 +499,9 @@ export type AutocompleteTokenPluginAction =
   | {type: 'close'}
 
 const SuggestionItem = React.memo(function SuggestionItem(props: {
-  embedRef?: Account
-  name?: string
+  value?: Entity
+  title: string
+  subtitle: string
   selected: boolean
   onPress: ButtonProps['onPress']
   onMouseEnter: ButtonProps['onMouseEnter']
@@ -407,7 +514,7 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
     }
   }, [props.selected])
 
-  if (!props.embedRef && !props.name) {
+  if (!props.value && !props.title) {
     return null
   }
 
@@ -429,7 +536,44 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
       onMouseEnter={props.onMouseEnter}
       // icon={<Avatar size={18} url={props.embedRef?.profile?.avatar} />} avatars make everything slooow
     >
-      {props.name}
+      <SizableText
+        size="$2"
+        p={0}
+        fontWeight="600"
+        f={1}
+        color={props.selected ? 'white' : '$color'}
+        hoverStyle={{
+          color: 'white',
+        }}
+      >
+        {props.title}
+      </SizableText>
+      <SizableText p={0} size="$1" color={props.selected ? 'white' : '$color'}>
+        {props.subtitle}
+      </SizableText>
     </Button>
   )
 })
+
+function getSuggestions(options: Array<any>, queryText: string) {
+  let result = options
+    .filter((item) => {
+      return item.title.toLowerCase().includes(queryText.toLowerCase())
+    })
+    .map((item) => ({
+      title: item.title,
+      subtitle: 'Recent',
+      value: item.url,
+    }))
+
+  return result
+}
+
+function isOptionsEmpty(obj) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key) && obj[key].length !== 0) {
+      return false // If any property is not empty, return false
+    }
+  }
+  return true // If all properties are empty, return true
+}

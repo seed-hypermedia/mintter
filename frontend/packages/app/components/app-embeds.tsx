@@ -31,6 +31,7 @@ import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
 import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
 import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'
+import {usePublication} from '../models/documents'
 import {useGroup, useGroupFrontpage} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
@@ -351,18 +352,90 @@ function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
 }
 
 export function EmbedInline(props: InlineEmbedComponentProps) {
+  if (props?.type == 'a') {
+    return <AccountInlineEmbed {...props} />
+  } else if (props?.type == 'g') {
+    return <GroupInlineEmbed {...props} />
+  } else if (props?.type == 'd') {
+    return <PublicationInlineEmbed {...props} />
+  } else {
+    console.error('Inline Embed Error', JSON.stringify(props))
+    return <InlineEmbedButton>??</InlineEmbedButton>
+  }
+}
+
+function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   const accountId = props?.type == 'a' ? props.eid : undefined
-  if (!accountId) throw new Error('Invalid props at AppInlineEmbed (accountId)')
+  if (!accountId)
+    throw new Error('Invalid props at AccountInlineEmbed (accountId)')
   const accountQuery = useAccount(accountId)
   const navigate = useNavigate()
   return (
+    <InlineEmbedButton onPress={() => navigate({key: 'account', accountId})}>
+      {(accountId &&
+        accountQuery.status == 'success' &&
+        `@${accountQuery.data?.profile?.alias}`) ||
+        `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+    </InlineEmbedButton>
+  )
+}
+
+function GroupInlineEmbed(props: InlineEmbedComponentProps) {
+  const groupId = props?.type == 'g' ? props.qid : undefined
+  if (!groupId) throw new Error('Invalid props at GroupInlineEmbed (groupId)')
+  const groupQuery = useGroup(groupId)
+  const navigate = useNavigate()
+  return (
+    <InlineEmbedButton onPress={() => navigate({key: 'group', groupId})}>
+      {(groupQuery &&
+        groupQuery.status == 'success' &&
+        groupQuery.data?.title) ||
+        `${groupId?.slice(0, 5) + '...' + groupId?.slice(-5)}`}
+    </InlineEmbedButton>
+  )
+}
+
+function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
+  const pubId = props?.type == 'd' ? props.qid : undefined
+  if (!pubId) throw new Error('Invalid props at PublicationInlineEmbed (pubId)')
+  const pubQuery = usePublication({
+    id: pubId,
+    version: props?.version || undefined,
+  })
+  const navigate = useNavigate()
+  return (
+    <InlineEmbedButton
+      onPress={() =>
+        navigate({
+          key: 'publication',
+          documentId: pubId,
+          versionId: props?.version || undefined,
+        })
+      }
+    >
+      {(pubQuery &&
+        pubQuery.status == 'success' &&
+        pubQuery.data?.document?.title) ||
+        `${pubId?.slice(0, 5) + '...' + pubId?.slice(-5)}`}
+    </InlineEmbedButton>
+  )
+}
+
+function InlineEmbedButton({
+  children,
+  onPress,
+}: {
+  children: string
+  onPress?: () => void
+}) {
+  return (
     <Button
+      onPress={onPress}
       bg="$backgroundTransparent"
       hoverStyle={{
         bg: '$backgroundTransparent',
       }}
       unstyled
-      onPress={() => navigate({key: 'account', accountId})}
       style={{
         display: 'inline-block',
         lineHeight: 1,
@@ -375,10 +448,7 @@ export function EmbedInline(props: InlineEmbedComponentProps) {
         className="hm-link"
         fontSize="$5"
       >
-        {(accountId &&
-          accountQuery.status == 'success' &&
-          `@${accountQuery.data?.profile?.alias}`) ||
-          `@${accountId?.slice(0, 5) + '...' + accountId?.slice(-5)}`}
+        {children}
       </ButtonText>
     </Button>
   )

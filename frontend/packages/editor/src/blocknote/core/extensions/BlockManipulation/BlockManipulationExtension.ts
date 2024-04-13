@@ -149,7 +149,6 @@ export const BlockManipulationExtension = Extension.create({
                 }
               }
             } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-              console.log('here')
               const prevBlockInfo = findPreviousBlock(
                 view,
                 state.selection.from,

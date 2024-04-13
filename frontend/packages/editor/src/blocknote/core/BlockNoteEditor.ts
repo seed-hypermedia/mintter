@@ -163,6 +163,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
       // TODO: add proper types to this
       linkExtensionOptions?: any
       inlineEmbedOptions?: any
+      onMentionsQuery?: (query: string) => void
     } = {
       defaultStyles: true,
       // TODO: There's a lot of annoying typing stuff to deal with here. If
@@ -184,7 +185,6 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
     )
     this.hyperlinkToolbar = new HyperlinkToolbarProsemirrorPlugin(this)
     this.linkMenu = new LinkMenuProsemirrorPlugin(this)
-    this.inlineEmbedOptions = newOptions.inlineEmbedOptions
 
     const extensions = getBlockNoteExtensions<BSchema>({
       editor: this,

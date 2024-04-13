@@ -7,14 +7,7 @@ import {
   isPublicGatewayLink,
   normalizeHmId,
 } from '@mintter/shared'
-import {
-  FileText,
-  Globe,
-  Link,
-  Spinner,
-  SquareAsterisk,
-  TwitterXIcon,
-} from '@mintter/ui'
+import {Globe, Link, Spinner, SquareAsterisk, TwitterXIcon} from '@mintter/ui'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
@@ -79,9 +72,9 @@ export function getLinkMenuItems({
         // comments are not supported for card embeds yet
 
         linkMenuItems.unshift({
-          name: `Insert ${
+          name: `Insert Card of ${
             docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
-          } as Card`,
+          }`,
           disabled: false,
           icon: <SquareAsterisk size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
@@ -105,38 +98,10 @@ export function getLinkMenuItems({
           },
         })
       }
-      if (hmId.type == 'd' || hmId.type == 'c') {
-        // embeds must be documents or comments. groups and accounts may be cards
-        linkMenuItems.unshift({
-          name: `Embed ${
-            docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
-          }`,
-          disabled: false,
-          icon: <FileText size={18} />,
-          execute: (editor: BlockNoteEditor, ref: string) => {
-            if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-              const hmId = normalizeHmId(ref, gwUrl)
-              if (!hmId) return
-              ref = hmId
-            }
-            const {state, schema} = editor._tiptapEditor
-            const {selection} = state
-            if (!selection.empty) return
-            const node = schema.nodes.embed.create(
-              {
-                url: ref,
-              },
-              schema.text(' '),
-            )
 
-            insertNode(editor, sourceUrl || ref, node)
-          },
-        })
-      }
-
-      if (hmId.type == 'g' || hmId.type == 'a') {
+      if (hmId.type) {
         linkMenuItems.unshift({
-          name: `Embed ${
+          name: `Embed ${HYPERMEDIA_ENTITY_TYPES[hmId.type]} ${
             docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
           }`,
           disabled: false,
@@ -164,6 +129,14 @@ export function getLinkMenuItems({
       }
 
       if (docTitle && docTitle !== sourceUrl) {
+        // linkMenuItems.unshift({
+        //   name: `Mention as "${docTitle}"`,
+        //   disabled: false,
+        //   icon: <SquareAsterisk size={18} />,
+        //   execute: (editor: BlockNoteEditor, ref: string) => {
+        //     // this is the default behavior of HM links and is already applied by this time
+        //   },
+        // })
         linkMenuItems.unshift({
           name: `Link as "${docTitle}"`,
           disabled: false,
