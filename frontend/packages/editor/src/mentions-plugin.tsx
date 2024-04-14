@@ -118,7 +118,7 @@ function GroupMention(props: {
   unpackedRef: UnpackedHypermediaId
   selected?: boolean
 }) {
-  const group = useGroup(props.unpackedRef.id)
+  const group = useGroup(props.unpackedRef.qid)
   return (
     <MentionText selected={props.selected}>
       {group.data?.title || 'group'}
@@ -134,7 +134,7 @@ function DocumentMention({
   selected?: boolean
 }) {
   const pub = usePublication({
-    id: unpackedRef.id,
+    id: unpackedRef.qid,
     version: unpackedRef.version || undefined,
   })
 

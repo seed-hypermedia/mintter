@@ -182,7 +182,6 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
           )
 
           const onCreate = (ref: string, range: {from: number; to: number}) => {
-            console.log('=== ONCREATE', ref)
             const node = view.state.schema.nodes[nodeName].create({
               ref,
             })
