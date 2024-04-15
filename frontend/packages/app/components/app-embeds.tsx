@@ -301,7 +301,8 @@ export function EmbedAccount(props: EntityComponentProps) {
 
 export function AppInlineEmbed(props: InlineEmbedComponentProps) {
   const accountId = props?.type == 'a' ? props.eid : undefined
-  if (!accountId) throw new Error('Invalid props at AppInlineEmbed (accountId)')
+  // if (!accountId) throw new Error('Invalid props at AppInlineEmbed (accountId)')
+  if (!accountId) return null
   const accountQuery = useAccount(accountId)
   const navigate = useNavigate()
   return (
