@@ -154,18 +154,18 @@ function setup() {
   // })
 }
 
-fetch(
-  `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/2023.11.4`,
-)
-  .then((res) => {
-    console.log('== AUTOUPDATE THEN', res.body)
-  })
-  .catch((res) => {
-    console.log('== AUTOUPDATE CATCH', res)
-  })
-  .finally(() => {
-    // console.log('== AUTOUPDATE FINALLY')
-  })
+// fetch(
+//   `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/2023.11.4`,
+// )
+//   .then((res) => {
+//     console.log('== AUTOUPDATE THEN', res.body)
+//   })
+//   .catch((res) => {
+//     console.log('== AUTOUPDATE CATCH', res)
+//   })
+//   .finally(() => {
+//     // console.log('== AUTOUPDATE FINALLY')
+//   })
 
 function shouldCheckForUpdate() {
   // Convert date strings to Date objects
