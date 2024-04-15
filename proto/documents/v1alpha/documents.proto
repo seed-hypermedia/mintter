@@ -174,16 +174,6 @@ message GetPublicationRequest {
   bool local_only = 3;
 }
 
-// Request for deleting a publication.
-message DeletePublicationRequest {
-  // Document ID of the publication to be removed.
-  // All versions will also be removed.
-  string document_id = 1;
-
-  // Optional. Reason why the user wants to delete the publication.
-  string reason = 2;
-}
-
 // Request for getting a single publication.
 message PushPublicationRequest {
   // Required. ID of the published document to be pushed.
