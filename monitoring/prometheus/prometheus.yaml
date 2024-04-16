@@ -31,10 +31,6 @@ scrape_configs:
       - targets: ["host.docker.internal:55001"] # Release app.
       - targets: ["host.docker.internal:56001"] # Dev app.
       - targets: ["minttersite:56001"]
-  - job_name: "node"
-    metrics_path: "/metrics"
-    static_configs:
-      - targets: ["node_exporter:9100"]
   - job_name: electron
     metrics_path: /debug/metrics
     static_configs:

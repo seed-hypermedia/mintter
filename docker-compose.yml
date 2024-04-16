@@ -77,19 +77,6 @@ services:
       - prometheus-data:/prometheus
       - ${MTT_SITE_MONITORING_WORKDIR:-./monitoring}/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
 
-  node_exporter:
-    image: quay.io/prometheus/node-exporter:latest
-    restart: unless-stopped
-    container_name: node_exporter
-    profiles:
-      - metrics
-    command:
-      - '--path.rootfs=/host'
-    networks:
-      - internal_network
-    volumes:
-      - '/:/host:ro,rslave'
-
   grafana:
     image: grafana/grafana:main
     restart: unless-stopped

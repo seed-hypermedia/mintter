@@ -10,15 +10,6 @@ services:
       - prometheus-data:/prometheus
       - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
 
-  node_exporter:
-    image: quay.io/prometheus/node-exporter:latest
-    command:
-      - '--path.rootfs=/host'
-    ports:
-      - "9100:9100"
-    volumes:
-      - '/:/host:ro,rslave'
-
   grafana:
     image: grafana/grafana:main
     ports:
