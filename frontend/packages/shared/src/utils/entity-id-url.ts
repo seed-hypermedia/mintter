@@ -539,9 +539,8 @@ export type ExpandedBlockRange = {
 export function parseFragment(input: string | null): ParsedFragment | null {
   if (!input) return null
   const regex =
-    /^(?<blockId>\w+)((?<expanded>\+)|\[(?<rangeStart>\d+)\:(?<rangeEnd>\d+)\])?$/
+    /^(?<blockId>\S{8})((?<expanded>\+)|\[(?<rangeStart>\d+)\:(?<rangeEnd>\d+)\])?$/
   const match = input.match(regex)
-
   if (match && match.groups) {
     if (match.groups.expanded == '+') {
       return {
