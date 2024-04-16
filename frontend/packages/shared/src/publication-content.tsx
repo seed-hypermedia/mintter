@@ -1543,7 +1543,7 @@ export function ContentEmbed({
               key={bn.block?.id}
               isFirstChild={idx == 0}
               depth={1}
-              expanded={!!props.blockRange?.expanded || false}
+              expanded={!!props.blockRange?.expanded || true}
               blockNode={bn}
               childrenType="group"
               index={idx}
