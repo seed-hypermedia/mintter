@@ -793,8 +793,8 @@ function BlockContent(props: BlockContentProps) {
     return <BlockContentCode {...props} {...dataProps} />
   }
 
-  if (props.block.type == 'equation') {
-    return <BlockContentEquation {...props} block={props.block} />
+  if (['equation', 'math'].includes(props.block.type)) {
+    return <BlockContentMath {...props} block={props.block} />
   }
 
   return <BlockContentUnknown {...props} />
@@ -1925,7 +1925,7 @@ export function BlockContentCode({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentEquation({block, ...props}: BlockContentProps) {
+export function BlockContentMath({block, ...props}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
 
   const tex = katex.renderToString(block.text ? block.text : '', {
