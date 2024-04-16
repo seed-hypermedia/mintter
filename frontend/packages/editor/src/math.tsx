@@ -1,4 +1,4 @@
-import {Button, Input, Popover, SizableText, XStack, YStack} from '@mintter/ui'
+import {Separator, SizableText, TextArea, XStack, YStack} from '@mintter/ui'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import {useEffect, useRef, useState} from 'react'
@@ -7,6 +7,7 @@ import {
   BlockNoteEditor,
   createReactBlockSpec,
   defaultProps,
+  getBlockInfoFromPos,
 } from './blocknote'
 import {HMBlockSchema} from './schema'
 
@@ -15,7 +16,6 @@ export const MathBlock = createReactBlockSpec({
   propSchema: {
     ...defaultProps,
   },
-  // content: 'inline',
   containsInlineContent: true,
   // @ts-ignore
   render: ({
@@ -31,143 +31,141 @@ const Render = (
   block: Block<HMBlockSchema>,
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
-  const [hovered, setHovered] = useState(false)
-  const mathRef = useRef(null)
-  const renderMath = (content) => {
-    try {
-      return katex.renderToString(content, {
-        throwOnError: false,
-      })
-    } catch (e) {
-      return content // or handle the error in a more sophisticated way
+  const [selected, setSelected] = useState(false)
+  const [opened, setOpened] = useState(false)
+  const mathRef = useRef<HTMLSpanElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
+
+  useEffect(() => {
+    const selectedNode = getBlockInfoFromPos(
+      tiptapEditor.state.doc,
+      tiptapEditor.state.selection.from,
+    )
+    if (selectedNode && selectedNode.id) {
+      if (
+        selectedNode.id === block.id &&
+        selectedNode.startPos === selection.$anchor.pos
+      ) {
+        setSelected(true)
+        setOpened(true)
+      } else if (selectedNode.id !== block.id) {
+        setSelected(false)
+        setOpened(false)
+      }
     }
-  }
+  }, [selection, block.id])
 
   useEffect(() => {
     if (mathRef.current) {
-      console.log(block.content)
       if (block.content[0]) {
-        katex.render(block.content[0].text, mathRef.current, {
+        try {
+          mathRef.current.style.color = ''
+          katex.render(block.content[0].text, mathRef.current, {
+            throwOnError: true,
+            displayMode: true,
+          })
+        } catch (e) {
+          if (e instanceof katex.ParseError) {
+            mathRef.current.innerText =
+              "Error in LaTeX '" +
+              block.content[0].text +
+              "':\n" +
+              e.message.split(':')[1]
+            mathRef.current.style.color = 'red'
+          } else {
+            throw e
+          }
+        }
+      } else {
+        katex.render('\\color{gray} TeX math', mathRef.current, {
           throwOnError: false,
+          displayMode: true,
         })
       }
     }
   }, [block.content])
 
+  useEffect(() => {
+    if (opened && inputRef.current) {
+      // @ts-ignore
+      inputRef.current.focus()
+      const length = inputRef.current.value.length
+      inputRef.current.setSelectionRange(length, length)
+    }
+  }, [opened])
+
   return (
-    // <MediaContainer
-    //   editor={editor}
-    //   block={block}
-    //   mediaType="math"
-    //   selected={false}
-    //   setSelected={() => {}}
-    //   assign={() => {}}
-    //   styleProps={{
-    //     height: '500px',
-    //   }}
-    // >
-    // {/* {renderMath(`$${block.content}$`)} */}
-    // {/* {renderMath('c = \\pm\\sqrt{a^2 + b^2}')} */}
-    // <span ref={mathRef} />
-    // </MediaContainer>
-    // background-color: var(--color4);
-    // border-radius: 6px;
-    // padding: 10px 16px;
-    // overflow: auto;
-    // position: 'relative';
     <YStack
+      backgroundColor={selected ? '$color3' : '$color4'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$2"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color3',
+      }}
+      // @ts-ignore
       contentEditable={false}
-      alignContent="center"
-      alignItems="center"
-      backgroundColor="$color4"
-      borderRadius="6px"
-      paddingVertical="10px"
-      paddingHorizontal="16px"
-      position="relative"
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      className={block.type}
+      group="item"
+      outlineWidth="$0"
     >
-      {hovered && (
-        <XStack
-          position="absolute"
-          top={-8}
-          right={-12}
-          width={150}
-          zIndex={100}
-          ai="center"
-          jc="flex-end"
-          opacity={hovered ? 1 : 0}
-          padding="$1"
-          gap="$4"
-          $group-item-hover={{opacity: 1}}
-        >
-          <Popover
-            placement="bottom-end"
-            size="$5"
-            // defaultOpen={boolRegex.test(block.props.defaultOpen)}
-            stayInFrame
+      <YStack
+        minHeight="$7"
+        ai="center"
+        justifyContent="center"
+        paddingVertical="10px"
+        paddingHorizontal="16px"
+        position="relative"
+        hoverStyle={{cursor: `${!opened ? 'pointer' : ''}`}}
+      >
+        <SizableText ref={mathRef} />
+      </YStack>
+      {opened && (
+        <YStack>
+          <Separator backgroundColor="$color12" />
+          <XStack
+            minHeight="$7"
+            paddingVertical="10px"
+            paddingHorizontal="16px"
+            position="relative"
+            ai="center"
           >
-            <Popover.Trigger asChild>
-              <Button
-                // icon={icon}
-                borderRadius={0}
-                size="$1"
-                justifyContent="flex-start"
-                backgroundColor="$color3"
-                hoverStyle={{
-                  backgroundColor: '$color4',
-                }}
-              >
-                Update Equation
-              </Button>
-            </Popover.Trigger>
-            <Popover.Content
-              padding={0}
-              elevation="$3"
-              size="$5"
-              borderRadius="$5"
-              shadowColor="$shadowColor"
-              opacity={1}
-              enterStyle={{x: 0, y: -10, opacity: 0}}
-              exitStyle={{x: 0, y: -10, opacity: 0}}
-              animation={[
-                'fast',
-                {
-                  opacity: {
-                    overshootClamping: true,
-                  },
-                },
-              ]}
-            >
-              <Input
-                value={block.content[0].text}
-                onChange={(e) => {
-                  // @ts-ignore
-                  editor.updateBlock(block, {
-                    ...block,
-                    content:
-                      e.nativeEvent.text.length > 0
-                        ? e.nativeEvent.text
-                        : undefined,
-                  })
-                }}
-              />
-            </Popover.Content>
-          </Popover>
-          {/* <Input
-            onChange={(e) => {
-              // @ts-ignore
-              editor.updateBlock(block, {
-                ...block,
-                content:
-                  e.nativeEvent.text.length > 0 ? e.nativeEvent.text : undefined,
-              })
-            }}
-          /> */}
-        </XStack>
+            <TextArea
+              ref={inputRef}
+              onBlur={() => setOpened(false)}
+              onKeyDown={(e) => {
+                console.log(e)
+                // Allow arrow key events to propagate and be handled elsewhere
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                  console.log('Arrow key pressed, handling elsewhere')
+                  // Do not preventDefault or stopPropagation
+                  return
+                }
+                // Handle other keys as needed
+              }}
+              width={'100%'}
+              placeholder="E = mc^2"
+              value={block.content[0] ? block.content[0].text : ''}
+              onChange={(e) => {
+                // @ts-ignore
+                editor.updateBlock(block, {
+                  ...block,
+                  content: [
+                    {
+                      type: 'text',
+                      text: e.nativeEvent.text,
+                      styles: {},
+                    },
+                  ],
+                })
+              }}
+            />
+          </XStack>
+        </YStack>
       )}
-      <SizableText ref={mathRef} />
-      {/* <InlineContent ref={mathRef} /> */}
     </YStack>
   )
 }

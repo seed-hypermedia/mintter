@@ -152,8 +152,8 @@ export type HMBlockHeading = HMBlockBase & {
   attributes: HMBlockBase['attributes'] & {}
 }
 
-export type HMBlockEquation = HMBlockBase & {
-  type: 'equation'
+export type HMBlockMath = HMBlockBase & {
+  type: 'equation' | 'math'
 }
 
 export type HMBlockImage = HMBlockBase & {
@@ -209,7 +209,7 @@ export type HMBlockNostr = HMBlockBase & {
 export type HMBlock =
   | HMBlockParagraph
   | HMBlockHeading
-  | HMBlockEquation
+  | HMBlockMath
   | HMBlockImage
   | HMBlockFile
   | HMBlockVideo

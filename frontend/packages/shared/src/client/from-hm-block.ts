@@ -140,10 +140,10 @@ export function fromHMBlock(
     })
   }
 
-  if (editorBlock.type === 'equation') {
+  if (['math', 'equation'].includes(editorBlock.type)) {
     res = new ServerBlock({
       id: editorBlock.id,
-      type: 'equation',
+      type: 'math',
       attributes: {},
       ...extractContent(editorBlock.content),
     })
