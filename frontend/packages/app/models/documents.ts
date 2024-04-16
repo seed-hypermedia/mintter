@@ -650,7 +650,6 @@ export function useDraftEditor({
   const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
-  const accounts = useAllAccounts(true)
   const gotEdited = useRef(false)
   const {inlineMentionsData, inlineMentionsQuery} = useInlineMentions()
   const [writeEditorStream, editorStream] = useRef(
