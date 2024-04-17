@@ -201,27 +201,60 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 
 	pub := publishDocument(t, ctx, alice, "")
 	_ = publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
+	comment, err := bob.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
+		Target:         pub.Document.Id + "?v=" + pub.Version,
+		RepliedComment: "",
+		Content: []*documents.BlockNode{{Block: &documents.Block{
+			Id:   "c1",
+			Type: "paragraph",
+			Text: "Bob's comment",
+		}}},
+	})
 
+	require.NoError(t, err)
 	time.Sleep(200 * time.Millisecond)
+
+	// so alice gets Bob's comment
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	comm, err := alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, comment.Id, comm.Id, "Alice should have Bob's comment")
+	require.Equal(t, comment.Content, comm.Content, "Comment's content should not have been deleted")
+
+	reply, err := alice.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
+		Target:         pub.Document.Id + "?v=" + pub.Version,
+		RepliedComment: comment.Id,
+		Content: []*documents.BlockNode{{Block: &documents.Block{
+			Id:   "c2",
+			Type: "paragraph",
+			Text: "Alice's reply",
+		}}},
+	})
+	require.NoError(t, err)
+
+	// so bob gets Alice's document + comment reply
 	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
 	time.Sleep(200 * time.Millisecond)
 
-	doc, err := alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+	doc, err := bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: pub.Document.Id,
 		LocalOnly:  true,
 	})
 	require.NoError(t, err)
-	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should find her own document")
-	require.Equal(t, pub.Version, doc.Version, "alice should find her own document version")
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "Bob should have synced the document")
 
-	doc, err = bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
-		DocumentId: pub.Document.Id,
-		LocalOnly:  true,
+	_, err = bob.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
 	})
-	require.NoError(t, err)
-	require.Equal(t, pub.Document.Id, doc.Document.Id, "bob should have synced the document")
+	require.NoError(t, err, "Bob should have synced Alice's reply")
 
+	// Now Alice removes de document
 	const reason = "I don't want it anymore"
 	_, err = alice.RPC.Entities.DeleteEntity(ctx, &entities.DeleteEntityRequest{
 		Id:     doc.Document.Id,
@@ -245,6 +278,14 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	})
 	require.Error(t, err)
 
+	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
+	})
+	require.Error(t, err)
+	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.Error(t, err)
 	// Only after restoring the document we should get it back.
 	_, err = alice.RPC.Entities.RestoreEntity(ctx, &entities.RestoreEntityRequest{
 		Id: doc.Document.Id,
@@ -266,6 +307,19 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should have her document back")
 
+	comm, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, comment.Id, comm.Id, "alice should have her comment back")
+	require.Equal(t, comment.Content, comm.Content, "Comment's content should not have been deleted")
+
+	rep, err := alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, reply.Id, rep.Id, "alice should have her own reply back")
+	require.Equal(t, reply.Content, rep.Content, "Replies's content should not have been deleted")
 }
 
 func TestBug_SyncHangs(t *testing.T) {

@@ -352,11 +352,8 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID, reason string
 			return err
 		}
 
-		if err := hypersql.EntitiesDelete(conn, string(eid)); err != nil {
-			return err
-		}
-		//TODO(juligasa): remove comments and replays of that entity.
-		return nil
+		return hypersql.EntitiesDelete(conn, string(eid))
+
 	})
 }
 

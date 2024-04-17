@@ -426,7 +426,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		if errors.Is(err, hyper.ErrEntityNotFound) {
 			return nil, err
 		}
-		//return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
+		return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
 		// TODO(juligasa): Empty the data field, size -1 and manually remove links
 
 		var qEmptyBlobs = dqb.Str(`
@@ -447,6 +447,45 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		}
 	}
 	_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		if err = api.blobs.ForEachComment(ctx, eid.String(), func(c cid.Cid, cmt hyper.Comment) error {
+			referencedDocument := strings.Split(cmt.Target, "?v=")[0]
+			if referencedDocument == eid.String() {
+				var qEmptyComments = dqb.Str(`
+					UPDATE blobs
+					SET data = NULL, size = -1
+					WHERE multihash = :hash
+				`)
+				_, err = hypersql.BlobsDelete(conn, c.Hash())
+				if err != nil {
+					_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+						return sqlitex.Exec(conn, qEmptyComments(), func(stmt *sqlite.Stmt) error {
+							return nil
+						}, c.Hash())
+					})
+					if err != nil {
+						return err
+					}
+				}
+				if cmt.RepliedComment.String() != "" {
+					_, err = hypersql.BlobsDelete(conn, cmt.RepliedComment.Hash())
+					if err != nil {
+						_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+							return sqlitex.Exec(conn, qEmptyComments(), func(stmt *sqlite.Stmt) error {
+								return nil
+							}, cmt.RepliedComment.Hash())
+						})
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
 		return sqlitex.WithTx(conn, func() error {
 			res, err := hypersql.EntitiesInsertRemovedRecord(conn, eid.String(), in.Reason, meta)
 			if err != nil {

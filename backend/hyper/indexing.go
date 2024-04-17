@@ -523,6 +523,11 @@ func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment
 	if !strings.HasPrefix(v.Target, "hm://") {
 		return fmt.Errorf("comment target must be a hypermedia resource, got %s", v.Target)
 	}
+	iri := strings.Split(v.Target, "?v=")[0]
+	res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, iri)
+	if err == nil && res.DeletedResourcesIRI == iri {
+		return fmt.Errorf("Comment references to a deleted entity [%s]", res.DeletedResourcesIRI)
+	}
 
 	isReply := v.RepliedComment.Defined() || v.ThreadRoot.Defined()
 
