@@ -339,7 +339,7 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID, reason string
 	}
 	defer release()
 
-	err = sqlitex.WithTx(conn, func() error {
+	return sqlitex.WithTx(conn, func() error {
 		edb, err := hypersql.EntitiesLookupID(conn, string(eid))
 		if err != nil {
 			return fmt.Errorf("%w. problem with the query: %s", ErrEntityNotFound, err.Error())
@@ -356,21 +356,6 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID, reason string
 			return err
 		}
 		//TODO(juligasa): remove comments and replays of that entity.
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	return sqlitex.WithTx(conn, func() error {
-		res, err := hypersql.EntitiesInsertRemovedRecord(conn, eid.String(), reason, meta)
-		if err != nil {
-			return err
-		}
-		if res.ResourceEID != eid.String() {
-			return fmt.Errorf("%w: %s", ErrEntityNotFound, eid)
-		}
-
 		return nil
 	})
 }

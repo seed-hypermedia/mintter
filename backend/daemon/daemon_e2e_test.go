@@ -127,7 +127,7 @@ func TestDaemonPushPublication(t *testing.T) {
 	alice := makeTestApp(t, "alice", cfg, true)
 	ctx := context.Background()
 
-	pub := publishDocument(t, ctx, alice)
+	pub := publishDocument(t, ctx, alice, "")
 	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
 		Url:        ipfs.TestGateway,
@@ -168,7 +168,7 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, alice.Net.MustGet().Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
 	alice.Net.MustGet().Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
 
-	pub := publishDocument(t, ctx, alice)
+	pub := publishDocument(t, ctx, alice, "")
 
 	time.Sleep(time.Second)
 
@@ -199,7 +199,9 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
 	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
 
-	pub := publishDocument(t, ctx, alice)
+	pub := publishDocument(t, ctx, alice, "")
+	_ = publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
+
 	time.Sleep(200 * time.Millisecond)
 	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
@@ -517,22 +519,33 @@ func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
-func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documents.Publication {
+func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string) *documents.Publication {
 	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
-
+	ann := []*documents.Annotation{}
+	if link != "" {
+		ann = append(ann, &documents.Annotation{
+			Type:   "link",
+			Ref:    link,
+			Starts: []int32{0},
+			Ends:   []int32{5},
+		},
+		)
+	}
 	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
 			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-				Id:   "b1",
-				Type: "statement",
-				Text: "Hello world!",
+				Id:          "b1",
+				Type:        "paragraph",
+				Text:        "Hello world!",
+				Annotations: ann,
 			}}},
 		},
 	})
+
 	require.NoError(t, err)
 	require.NotNil(t, updated)
 	published, err := publisher.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})

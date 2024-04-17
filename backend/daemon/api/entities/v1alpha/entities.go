@@ -426,7 +426,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		if errors.Is(err, hyper.ErrEntityNotFound) {
 			return nil, err
 		}
-		return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
+		//return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
 		// TODO(juligasa): Empty the data field, size -1 and manually remove links
 
 		var qEmptyBlobs = dqb.Str(`
@@ -442,9 +442,24 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 				return nil
 			}, in.Id)
 		})
+		if err != nil {
+			return &emptypb.Empty{}, err
+		}
 	}
+	_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		return sqlitex.WithTx(conn, func() error {
+			res, err := hypersql.EntitiesInsertRemovedRecord(conn, eid.String(), in.Reason, meta)
+			if err != nil {
+				return err
+			}
+			if res.ResourceEID != eid.String() {
+				return fmt.Errorf("%w: %s", hyper.ErrEntityNotFound, eid)
+			}
 
-	return &emptypb.Empty{}, nil
+			return nil
+		})
+	})
+	return &emptypb.Empty{}, err
 }
 
 // RestoreEntity implements the corresponding gRPC method.
