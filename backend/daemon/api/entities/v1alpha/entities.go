@@ -426,8 +426,6 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		if errors.Is(err, hyper.ErrEntityNotFound) {
 			return nil, err
 		}
-		return nil, status.Errorf(codes.Unimplemented, "Entity can't be deleted because it's referenced somewhere else")
-		// TODO(juligasa): Empty the data field, size -1 and manually remove links
 
 		var qEmptyBlobs = dqb.Str(`
 		UPDATE blobs
@@ -439,6 +437,20 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 
 		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 			return sqlitex.Exec(conn, qEmptyBlobs(), func(stmt *sqlite.Stmt) error {
+				return nil
+			}, in.Id)
+		})
+		if err != nil {
+			return &emptypb.Empty{}, err
+		}
+		var qDeleteStructuralBlobs = dqb.Str(`
+		DELETE from structural_blobs
+		WHERE id in (
+			SELECT blob_id from structural_blobs_view where resource = :eid
+		)
+		`)
+		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+			return sqlitex.Exec(conn, qDeleteStructuralBlobs(), func(stmt *sqlite.Stmt) error {
 				return nil
 			}, in.Id)
 		})

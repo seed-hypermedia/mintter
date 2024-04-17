@@ -359,7 +359,7 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 
 		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
 		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
-			return fmt.Errorf("Change belongs to a deleted entity [%s]", res.DeletedResourcesIRI)
+			return fmt.Errorf("Change belongs to a deleted document [%s]", res.DeletedResourcesIRI)
 		}
 
 		if ok {
@@ -399,6 +399,10 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 			sb.Meta = title
 		}
 		var currentRole groups.Role
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return fmt.Errorf("Change belongs to a deleted group [%s]", res.DeletedResourcesIRI)
+		}
 		if v.Action == ActionCreate {
 			currentRole = groups.Role_OWNER
 			sb.AddResourceLink("group/member", authorEntity, false, GroupLinkMeta{Role: currentRole})
@@ -514,8 +518,6 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 }
 
 func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment) error {
-	// TODO(juligasa): check if the comment is related to a deleted resource. In that case
-	// do not index it.
 	if v.Target == "" {
 		return fmt.Errorf("comment must have a target")
 	}
