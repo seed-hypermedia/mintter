@@ -43,19 +43,21 @@ import {Avatar} from './avatar'
 function EmbedWrapper({
   hmRef,
   children,
+  depth,
   ...props
-}: PropsWithChildren<{hmRef: string} & ComponentProps<typeof YStack>>) {
+}: PropsWithChildren<
+  {hmRef: string; depth?: number} & ComponentProps<typeof YStack>
+>) {
   const {
     disableEmbedClick = false,
-    layoutUnit,
     comment,
     routeParams,
+    layoutUnit,
   } = usePublicationContentContext()
   const route = useNavRoute()
   const open = useOpenUrl()
   const navigate = useNavigate('replace')
   const unpackRef = unpackHmId(hmRef)
-
   const isHighlight = useMemo(() => {
     return (
       routeParams?.documentId == unpackRef?.qid &&
@@ -72,7 +74,6 @@ function EmbedWrapper({
 
   return (
     <YStack
-      // @ts-expect-error
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
@@ -90,16 +91,19 @@ function EmbedWrapper({
           isHighlight && routeParams?.blockRef == unpackRef?.blockRef
             ? '$yellow4'
             : '$backgroundHover',
-        borderRadius: '$2',
-        borderLeftColor: '$color7',
+        // borderRadius: '$2',
+        // borderRightColor: depth == 1 ? '$blue7' : undefined,
       }}
       margin={0}
-      marginHorizontal={(-1 * layoutUnit) / 2}
-      padding={layoutUnit / 2}
-      overflow="hidden"
+      // marginHorizontal={-1 * layoutUnit}
+
+      // padding={layoutUnit / 2}
+      // overflow="hidden"
       borderRadius={0}
-      borderLeftWidth={6}
-      borderLeftColor={isHighlight ? '$yellow6' : '$color4'}
+      borderRightWidth={3}
+      borderRightColor={'$blue8'}
+      // borderLeftWidth={6}
+      // borderLeftColor={isHighlight ? '$yellow6' : '$color4'}
       onPress={
         !disableEmbedClick
           ? () => {
@@ -125,6 +129,28 @@ function EmbedWrapper({
       {...props}
     >
       {children}
+      {depth == 1 ? <EmbedSideAnnotation hmId={hmRef} /> : undefined}
+    </YStack>
+  )
+}
+
+function EmbedSideAnnotation({hmId}) {
+  const unpacked = unpackHmId(hmId)
+  if (unpacked && unpacked.type != 'd') return null
+  const pub = usePublication({
+    id: unpacked.qid,
+    version: unpacked?.version || undefined,
+  })
+  return (
+    <YStack
+      p="$2"
+      // bg="red"
+      // zIndex={1000}
+      // transform="translateX(110%)"
+    >
+      <SizableText size="$1" fontWeight="600">
+        {pub?.data?.document?.title}
+      </SizableText>
     </YStack>
   )
 }
