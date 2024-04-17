@@ -5,6 +5,7 @@ import {
   GroupVariant,
   HMBlockNode,
   PublicationVariant,
+  UnpackedHypermediaId,
 } from '@mintter/shared'
 import {
   Button,
@@ -22,14 +23,15 @@ import {
   YStack,
 } from '@mintter/ui'
 import {
-  ArrowUpRight,
+  Book,
+  Contact,
   FileText,
   Hash,
   Plus,
   Search,
   Settings,
 } from '@tamagui/lucide-icons'
-import {ReactNode, useEffect, useState} from 'react'
+import {ComponentProps, FC, ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {useAccounts} from '../models/accounts'
@@ -357,63 +359,62 @@ export function MyAccountItem({
 type DocOutlineSection = {
   title: string
   id: string
-  linkRoute?: NavRoute
+  entityId?: UnpackedHypermediaId
+  parentBlockId?: string
   children?: DocOutlineSection[]
+  icon?: FC<ComponentProps<typeof Hash>>
 }
 type DocOutline = DocOutlineSection[]
 
 export function getDocOutline(
   children: HMBlockNode[],
   embeds: EmbedsContent,
+  parentEntityId?: UnpackedHypermediaId,
+  parentBlockId?: string,
 ): DocOutline {
   const outline: DocOutline = []
   children.forEach((child) => {
     if (child.block.type === 'heading') {
       outline.push({
-        title: child.block.text,
         id: child.block.id,
-        children: child.children && getDocOutline(child.children, embeds),
+        title: child.block.text,
+        entityId: parentEntityId,
+        parentBlockId,
+        children:
+          child.children &&
+          getDocOutline(child.children, embeds, parentEntityId, parentBlockId),
       })
-      // } else if ( // disable card links for now
-      //   child.block.type === 'embed' &&
-      //   child.block.attributes?.view === 'card' &&
-      //   embeds[child.block.id]
-      // ) {
-      //   const embed = embeds[child.block.id]
-      //   if (embed?.type === 'd') {
-      //     outline.push({
-      //       id: child.block.id,
-      //       title: embed?.data?.document?.title || 'Untitled Document',
-      //       linkRoute: {
-      //         key: 'publication',
-      //         documentId: embed?.query?.refId?.qid,
-      //         versionId: embed?.query?.refId?.version || undefined,
-      //         variants: embed?.query?.refId?.variants || undefined,
-      //       },
-      //       children: child.children && getDocOutline(child.children, embeds),
-      //     })
-      //   } else if (embed?.type === 'a') {
-      //     outline.push({
-      //       id: child.block.id,
-      //       title: embed?.data?.profile?.alias || 'Untitled Account',
-      //       linkRoute: {
-      //         key: 'account',
-      //         accountId: embed?.query?.refId?.eid,
-      //       },
-      //       children: child.children && getDocOutline(child.children, embeds),
-      //     })
-      //   } else if (embed?.type === 'g') {
-      //     outline.push({
-      //       id: child.block.id,
-      //       title: embed?.data?.title || 'Untitled Group',
-      //       linkRoute: {
-      //         key: 'group',
-      //         groupId: embed?.query?.refId?.qid,
-      //         version: embed?.query?.refId?.version || undefined,
-      //       },
-      //       children: child.children && getDocOutline(child.children, embeds),
-      //     })
-      //   }
+    } else if (
+      child.block.type === 'embed' &&
+      child.block.attributes?.view === 'card' &&
+      embeds[child.block.id]
+    ) {
+      const embed = embeds[child.block.id]
+      if (embed?.type === 'd') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.document?.title || 'Untitled Document',
+          entityId: embed.query.refId,
+          parentBlockId,
+          icon: FileText,
+        })
+      } else if (embed?.type === 'a') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.profile?.alias || 'Untitled Account',
+          entityId: embed.query.refId,
+          parentBlockId,
+          icon: Contact,
+        })
+      } else if (embed?.type === 'g') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.title || 'Untitled Group',
+          entityId: embed.query.refId,
+          parentBlockId,
+          icon: Book,
+        })
+      }
     } else if (child.block.type === 'embed' && embeds[child.block.id]) {
       const embed = embeds[child.block.id]
       if (embed?.type === 'd') {
@@ -426,11 +427,32 @@ export function getDocOutline(
         outline.push({
           id: child.block.id,
           title: embed?.data?.document?.title || 'Untitled Group',
-          children: children && getDocOutline(children, embeds),
+          children:
+            children &&
+            getDocOutline(children, embeds, embed.query.refId, child.block.id),
+          icon: FileText,
+        })
+      } else if (embed?.type === 'a') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.profile?.alias || 'Untitled Account',
+          entityId: embed.query.refId,
+          parentBlockId,
+          icon: Contact,
+        })
+      } else if (embed?.type === 'g') {
+        outline.push({
+          id: child.block.id,
+          title: embed?.data?.title || 'Untitled Group',
+          entityId: embed.query.refId,
+          parentBlockId,
+          icon: Book,
         })
       }
     } else if (child.children) {
-      outline.push(...getDocOutline(child.children, embeds))
+      outline.push(
+        ...getDocOutline(child.children, embeds, parentEntityId, parentBlockId),
+      )
     }
   })
   return outline
@@ -440,7 +462,11 @@ export function activeDocOutline(
   outline: DocOutlineSection[],
   activeBlock: string | null | undefined,
   embeds: EmbedsContent,
-  onBlockSelect: (blockId: string) => void,
+  onBlockSelect: (
+    blockId: string,
+    entityId: UnpackedHypermediaId | undefined,
+    parentBlockId: string | undefined,
+  ) => void,
   onNavigate: (route: NavRoute) => void,
   level = 0,
 ): {outlineContent: ReactNode[]; isBlockActive: boolean} {
@@ -464,16 +490,12 @@ export function activeDocOutline(
     return [
       <SidebarItem
         onPress={() => {
-          if (item.linkRoute) {
-            onNavigate(item.linkRoute)
-          } else {
-            onBlockSelect(item.id)
-          }
+          onBlockSelect(item.id, item.entityId, item.parentBlockId)
         }}
         active={item.id === activeBlock}
         icon={
           <View width={16}>
-            {item.linkRoute ? <ArrowUpRight size={16} /> : <Hash size={16} />}
+            {item.icon ? <item.icon size={16} /> : <Hash size={16} />}
           </View>
         }
         title={item.title || 'Untitled Heading'}

@@ -6,6 +6,7 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {UseQueryOptions} from '@tanstack/react-query'
+import {useAccount} from './accounts'
 import {useEntityTimeline} from './changes'
 import {usePublication} from './documents'
 import {useDocumentGroups} from './groups'
@@ -114,4 +115,14 @@ export function usePublicationVariant({
       variantVersion,
     },
   }
+}
+
+export function useProfilePublication(accountId: string | undefined) {
+  const account = useAccount(accountId)
+  const pub = usePublicationVariant({
+    documentId: account.data?.profile?.rootDocument,
+    variants: accountId ? [{key: 'author', author: accountId}] : [],
+    latest: true,
+  })
+  return pub
 }
