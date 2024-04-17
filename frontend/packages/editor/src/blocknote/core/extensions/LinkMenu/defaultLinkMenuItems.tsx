@@ -141,44 +141,7 @@ export function getLinkMenuItems({
         ]
       }
 
-      if (hmId.type == 'g' || hmId.type == 'a') {
-        linkMenuItems.unshift({
-          name: `Embed ${
-            docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
-          }`,
-          disabled: false,
-          icon: <SquareAsterisk size={18} />,
-          execute: (editor: BlockNoteEditor, ref: string) => {
-            if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-              const hmId = normalizeHmId(ref, gwUrl)
-              if (!hmId) return
-              ref = hmId
-            }
-            const {state, schema} = editor._tiptapEditor
-            const {selection} = state
-            if (!selection.empty) return
-            const node = schema.nodes.embed.create(
-              {
-                url: ref,
-                view: 'content',
-              },
-              schema.text(' '),
-            )
-
-            insertNode(editor, sourceUrl || ref, node)
-          },
-        })
-      }
-
       if (docTitle && docTitle !== sourceUrl) {
-        // linkMenuItems.unshift({
-        //   name: `Mention as "${docTitle}"`,
-        //   disabled: false,
-        //   icon: <SquareAsterisk size={18} />,
-        //   execute: (editor: BlockNoteEditor, ref: string) => {
-        //     // this is the default behavior of HM links and is already applied by this time
-        //   },
-        // })
         linkMenuItems = [
           {
             name: `Link as "${docTitle}"`,
