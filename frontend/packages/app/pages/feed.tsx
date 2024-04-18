@@ -840,21 +840,19 @@ export function FeedPageFooter({
     | ReturnType<typeof useFeedWithLatest>
     | ReturnType<typeof useResourceFeedWithLatest>
 }) {
-  return (
-    feedQuery.data?.length && (
-      <XStack jc="center" gap="$3" paddingVertical="$6">
-        {feedQuery.isFetchingNextPage || feedQuery.isLoading ? (
-          <Spinner />
-        ) : feedQuery.hasNextPage ? (
-          <Button size="$2" onPress={() => feedQuery.fetchNextPage()}>
-            Load More Items
-          </Button>
-        ) : (
-          <ButtonText>End of Feed.</ButtonText>
-        )}
-      </XStack>
-    )
-  )
+  return feedQuery.data?.length ? (
+    <XStack jc="center" gap="$3" paddingVertical="$6">
+      {feedQuery.isFetchingNextPage || feedQuery.isLoading ? (
+        <Spinner />
+      ) : feedQuery.hasNextPage ? (
+        <Button size="$2" onPress={() => feedQuery.fetchNextPage()}>
+          Load More Items
+        </Button>
+      ) : (
+        <ButtonText>End of Feed.</ButtonText>
+      )}
+    </XStack>
+  ) : null
 }
 
 export const ResourceFeed = React.memo(function ResourceFeed({
