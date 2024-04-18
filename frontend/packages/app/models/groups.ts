@@ -35,6 +35,7 @@ import {
   hmDocument,
   hmIdWithVersion,
 } from '@mintter/shared'
+import {useDocumentDrafts} from './publication'
 import {queryKeys} from './query-keys'
 
 export function useAllGroups(
@@ -460,6 +461,23 @@ export function useGroupFrontPub(
     version: frontPubId?.version || undefined,
   })
   return frontPub
+}
+
+export function useGroupFrontPubWithDraft(
+  groupId?: string | undefined,
+  version?: string,
+) {
+  const frontPub = useGroupFrontPub(groupId, version)
+  const drafts = useDocumentDrafts(frontPub.data?.document?.id)
+  return {
+    ...frontPub,
+    data: {
+      publiction: frontPub.data,
+      document: drafts.data?.[0] || frontPub.data?.document,
+      isDocumentDraft: drafts.data?.[0] ? true : false,
+      drafts: drafts.data,
+    },
+  }
 }
 
 /**

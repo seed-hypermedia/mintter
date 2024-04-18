@@ -6,7 +6,7 @@ import {
   UnpackedHypermediaId,
   getDocumentTitle,
 } from '@mintter/shared'
-import {Home} from '@mintter/ui'
+import {Button, Home, SizableText, XStack, YStack} from '@mintter/ui'
 import {
   Book,
   Contact,
@@ -15,13 +15,19 @@ import {
   Sparkles,
   Star,
 } from '@tamagui/lucide-icons'
-import {memo, useMemo} from 'react'
+import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
 import {useAccount, useMyAccount} from '../models/accounts'
-import {usePublication, usePublicationEmbeds} from '../models/documents'
-import {useGroup, useGroupFrontPub} from '../models/groups'
+import {useDocumentEmbeds, usePublication} from '../models/documents'
+import {
+  useGroup,
+  useGroupFrontPub,
+  useGroupFrontPubWithDraft,
+} from '../models/groups'
 import {
   useProfilePublication,
+  useProfilePublicationWithDraft,
   usePublicationVariant,
+  usePublicationVariantWithDraft,
 } from '../models/publication'
 import {appRouteOfId, useNavRoute} from '../utils/navigation'
 import {getRouteContext} from '../utils/route-context'
@@ -71,10 +77,17 @@ export function MainAppSidebar() {
   }
   const myAccount = useMyAccount()
   const accountRoute = route.key === 'account' ? route : null
-  const myAccountRoute =
+  const myAccountMainRoute =
     accountRoute && accountRoute?.accountId === myAccount.data?.id
       ? accountRoute
       : null
+  const myAccountDraftRoute =
+    route.key === 'draft' &&
+    route.contextRoute?.key === 'account' &&
+    route.contextRoute.accountId === myAccount.data?.id
+      ? route
+      : null
+  const myAccountRoute = myAccountMainRoute || myAccountDraftRoute
   const activeBlock = accountRoute?.blockId
   const myProfileDoc = usePublication(
     {
@@ -84,8 +97,8 @@ export function MainAppSidebar() {
       keepPreviousData: false,
     },
   )
-  const myProfileDocEmbeds = usePublicationEmbeds(
-    myProfileDoc.data,
+  const myProfileDocEmbeds = useDocumentEmbeds(
+    myProfileDoc.data?.document,
     !!myProfileDoc.data,
     {skipCards: true},
   )
@@ -195,6 +208,32 @@ function RouteOutline({
   route: NavRoute
   myAccountId: string | undefined
 }) {
+  if (route.key === 'draft') {
+    if (route.contextRoute?.key === 'publication') {
+      return (
+        <>
+          <SidebarDivider />
+          <PublicationRouteOutline route={route.contextRoute} />
+        </>
+      )
+    }
+    if (route.contextRoute?.key === 'account') {
+      return (
+        <>
+          <SidebarDivider />
+          <AccountRouteOutline route={route.contextRoute} />
+        </>
+      )
+    }
+    if (route.contextRoute?.key === 'group') {
+      return (
+        <>
+          <SidebarDivider />
+          <GroupRouteOutline route={route.contextRoute} />
+        </>
+      )
+    }
+  }
   if (route.key === 'account') {
     if (route.accountId === myAccountId) return null
     return (
@@ -432,21 +471,25 @@ function GroupContextItem({
   )
 }
 
+function isDraftActive(route: NavRoute, documentId: string | undefined) {
+  return route.key === 'draft' && route.draftId === documentId
+}
+
 function AccountRouteOutline({route}: {route: AccountRoute}) {
   const activeRoute = useNavRoute()
   const isActive =
     activeRoute.key === 'account' && activeRoute.accountId === route.accountId
   const account = useAccount(route.accountId)
-  const profilePub = useProfilePublication(route.accountId)
-  const pubEmbeds = usePublicationEmbeds(
-    profilePub.data.publication,
+  const profilePub = useProfilePublicationWithDraft(route.accountId)
+  const pubEmbeds = useDocumentEmbeds(
+    profilePub.data?.document,
     !!profilePub.data,
     {
       skipCards: true,
     },
   )
   const docOutline = getDocOutline(
-    profilePub?.data?.publication?.document?.children || [],
+    profilePub?.data?.document?.children || [],
     pubEmbeds,
   )
   const navigate = useNavigate()
@@ -462,34 +505,53 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   return (
     <>
       {useContextItems(route.context)}
-      <SidebarItem
-        active={isActive && !isBlockActive}
-        onPress={() => {
-          if (!isActive) {
-            navigate(route)
-          } else if (route.blockId) {
-            replace({...route, blockId: undefined})
-          }
-        }}
-        title={account.data?.profile?.alias}
-        icon={Contact}
-      />
-      {outlineContent}
+      <DraftItems
+        titleItem={
+          <SidebarItem
+            active={isActive && !isBlockActive}
+            onPress={() => {
+              if (!isActive) {
+                navigate(route)
+              } else if (route.blockId) {
+                replace({...route, blockId: undefined})
+              }
+            }}
+            title={account.data?.profile?.alias}
+            icon={Contact}
+          />
+        }
+        isDraft={profilePub.data?.isDocumentDraft}
+        onPressDraft={
+          isDraftActive(activeRoute, profilePub?.data?.document?.id)
+            ? null
+            : () => {
+                navigate({
+                  key: 'draft',
+                  draftId: profilePub.data?.drafts?.[0]?.id,
+                  contextRoute: route,
+                  variant: null,
+                })
+              }
+        }
+      >
+        {outlineContent}
+      </DraftItems>
     </>
   )
 }
 
 function PublicationRouteOutline({route}: {route: PublicationRoute}) {
-  const pub = usePublicationVariant({
+  const activeRoute = useNavRoute()
+  const pub = usePublicationVariantWithDraft({
     documentId: route.documentId,
     versionId: route.versionId,
     variants: route.variants,
   })
-  const pubEmbeds = usePublicationEmbeds(pub.data.publication, !!pub.data, {
+  const pubEmbeds = useDocumentEmbeds(pub.data?.document, !!pub.data, {
     skipCards: true,
   })
   const docOutline = getDocOutline(
-    pub?.data?.publication?.document?.children || [],
+    pub?.data?.document?.children || [],
     pubEmbeds,
   )
   const navigate = useNavigate()
@@ -505,28 +567,49 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   return (
     <>
       {useContextItems(route.context)}
-      <SidebarItem
-        active={!isBlockActive}
-        onPress={() => {
-          if (route.blockId) {
-            replace({...route, blockId: undefined})
-          }
+      <DraftItems
+        titleItem={
+          <SidebarItem
+            active={!isBlockActive}
+            onPress={() => {
+              if (route.blockId) {
+                replace({...route, blockId: undefined})
+              }
+            }}
+            title={pub.data?.document?.title}
+            icon={FileText}
+          />
+        }
+        isDraft={pub.data?.isDocumentDraft}
+        onPressDraft={() => {
+          isDraftActive(activeRoute, pub?.data?.document?.id)
+            ? null
+            : navigate({
+                key: 'draft',
+                draftId: pub.data?.drafts?.[0]?.id,
+                contextRoute: route,
+                variant: null,
+              })
         }}
-        title={pub.data?.publication?.document?.title}
-        icon={FileText}
-      />
-      {outlineContent}
+      >
+        {outlineContent}
+      </DraftItems>
     </>
   )
 }
 
 function GroupRouteOutline({route}: {route: GroupRoute}) {
+  const activeRoute = useNavRoute()
   const group = useGroup(route.groupId, route.version)
-  const frontPub = useGroupFrontPub(route.groupId, route.version)
+  const frontPub = useGroupFrontPubWithDraft(route.groupId, route.version)
   const navigate = useNavigate()
-  const frontPubEmbeds = usePublicationEmbeds(frontPub.data, !!frontPub.data, {
-    skipCards: true,
-  })
+  const frontPubEmbeds = useDocumentEmbeds(
+    frontPub.data?.document,
+    !!frontPub.data,
+    {
+      skipCards: true,
+    },
+  )
   const frontDocOutline = getDocOutline(
     frontPub?.data?.document?.children || [],
     frontPubEmbeds,
@@ -541,20 +624,80 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
       navigateBlock,
       navigate,
     )
+
   return (
     <>
       {useContextItems(route.context)}
-      <SidebarItem
-        active={!isBlockActive}
-        onPress={() => {
-          if (route.blockId) {
-            replace({...route, blockId: undefined})
-          }
+      <DraftItems
+        titleItem={
+          <SidebarItem
+            active={!isBlockActive}
+            onPress={() => {
+              if (route.blockId) {
+                replace({...route, blockId: undefined})
+              }
+            }}
+            title={group.data?.title}
+            icon={Book}
+          />
+        }
+        isDraft={frontPub.data?.isDocumentDraft}
+        onPressDraft={() => {
+          isDraftActive(activeRoute, frontPub?.data?.document?.id)
+            ? null
+            : navigate({
+                key: 'draft',
+                draftId: frontPub.data?.drafts?.[0]?.id,
+                contextRoute: route,
+                variant: {
+                  key: 'group',
+                  groupId: route.groupId,
+                  pathName: '/',
+                },
+              })
         }}
-        title={group.data?.title}
-        icon={Book}
-      />
-      {frontPubOutlineContent}
+      >
+        {frontPubOutlineContent}
+      </DraftItems>
     </>
+  )
+}
+
+function DraftItems({
+  titleItem,
+  children,
+  onPressDraft,
+  isDraft,
+}: PropsWithChildren<{
+  titleItem: ReactNode
+  onPressDraft: null | (() => void)
+  isDraft?: boolean
+}>) {
+  return (
+    <YStack
+      backgroundColor={isDraft ? '$yellow2' : '$colorTransparent'}
+      theme={isDraft ? 'yellow' : undefined}
+    >
+      {titleItem}
+      {isDraft ? (
+        <XStack
+          padding="$2"
+          paddingHorizontal="$4"
+          backgroundColor="$color5"
+          alignItems="center"
+          jc="space-between"
+        >
+          <SizableText color="$color10" fontSize="$2">
+            Unsaved Document
+          </SizableText>
+          {onPressDraft ? (
+            <Button onPress={onPressDraft} size="$2">
+              Open Draft
+            </Button>
+          ) : null}
+        </XStack>
+      ) : null}
+      {children}
+    </YStack>
   )
 }

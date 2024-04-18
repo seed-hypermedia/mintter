@@ -4,7 +4,7 @@ import {DocumentChange, GRPCClient, GroupVariant} from '@mintter/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {NavMode, useNavRoute} from './navigation'
-import {DraftRoute} from './routes'
+import {AccountRoute, DraftRoute, GroupRoute, PublicationRoute} from './routes'
 import {useNavigate} from './useNavigate'
 
 export function useOpenDraft(navigateMode: NavMode = 'spawn') {
@@ -22,14 +22,27 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   ) {
     createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
+        let contextRoute:
+          | undefined
+          | GroupRoute
+          | PublicationRoute
+          | AccountRoute = undefined
+        if (
+          route.key === 'group' ||
+          route.key === 'publication' ||
+          route.key === 'account'
+        ) {
+          contextRoute = route
+        }
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
           isProfileDocument: opts?.isProfileDocument,
-          variant: groupVariant,
-          contextRoute: route,
+          contextRoute,
+          variant: groupVariant || null,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])
+        invalidate([queryKeys.GET_PUBLICATION_DRAFTS, docId])
         navigate(draftRoute)
       })
       .catch((err) => {

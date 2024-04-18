@@ -3,13 +3,16 @@ import {
   GroupVariant,
   Publication,
   PublicationVariant,
+  hmDocument,
   unpackHmId,
 } from '@mintter/shared'
-import {UseQueryOptions} from '@tanstack/react-query'
+import {UseQueryOptions, useQuery} from '@tanstack/react-query'
+import {useGRPCClient} from '../app-context'
 import {useAccount} from './accounts'
 import {useEntityTimeline} from './changes'
 import {usePublication} from './documents'
 import {useDocumentGroups} from './groups'
+import {queryKeys} from './query-keys'
 
 export function usePublicationVariant({
   documentId,
@@ -117,6 +120,43 @@ export function usePublicationVariant({
   }
 }
 
+export function useDocumentDrafts(docId: string | undefined) {
+  const grpcClient = useGRPCClient()
+  const drafts = useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION_DRAFTS, docId],
+    enabled: !!docId,
+    queryFn: async () => {
+      const result = await grpcClient.drafts.listDocumentDrafts({
+        documentId: docId,
+      })
+      const drafts = await Promise.all(
+        result.drafts.map((draft) =>
+          grpcClient.drafts.getDraft({documentId: draft.id}),
+        ),
+      )
+      return drafts.map((doc) => hmDocument(doc))
+    },
+  })
+  return drafts
+}
+
+export function usePublicationVariantWithDraft(
+  ...args: Parameters<typeof usePublicationVariant>
+) {
+  const variant = usePublicationVariant(...args)
+  const drafts = useDocumentDrafts(variant.data?.publication?.document?.id)
+  return {
+    ...variant,
+    data: {
+      publication: variant.data?.publication,
+      variantVersion: variant.data?.variantVersion,
+      document: drafts.data?.[0] || variant.data.publication?.document,
+      isDocumentDraft: drafts.data?.[0] ? true : false,
+      drafts: drafts.data,
+    },
+  }
+}
+
 export function useProfilePublication(accountId: string | undefined) {
   const account = useAccount(accountId)
   const pub = usePublicationVariant({
@@ -125,4 +165,19 @@ export function useProfilePublication(accountId: string | undefined) {
     latest: true,
   })
   return pub
+}
+
+export function useProfilePublicationWithDraft(accountId: string | undefined) {
+  const pub = useProfilePublication(accountId)
+  const drafts = useDocumentDrafts(pub.data?.publication?.document?.id)
+  return {
+    ...pub,
+    data: {
+      publication: pub.data?.publication,
+      variantVersion: pub.data?.variantVersion,
+      document: drafts.data?.[0] || pub.data.publication?.document,
+      isDocumentDraft: drafts.data?.[0] ? true : false,
+      drafts: drafts.data,
+    },
+  }
 }

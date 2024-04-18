@@ -39,6 +39,7 @@ export const queryKeys = {
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
+  GET_PUBLICATION_DRAFTS: 'GET_PUBLICATION_DRAFTS', //, docId: string
   GET_ACCOUNT_PUBLICATIONS: 'GET_ACCOUNT_PUBLICATIONS', //, accountId: string
   GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST', // 'trusted' | 'global'
   EDITOR_DRAFT: 'EDITOR_DRAFT', // , docId: string

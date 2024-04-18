@@ -37,8 +37,8 @@ import appError from '../errors'
 import {useAccounts} from '../models/accounts'
 import {
   EmbedsContent,
+  useDocumentEmbeds,
   usePublication,
-  usePublicationEmbeds,
 } from '../models/documents'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
@@ -258,7 +258,7 @@ export function SidebarItem({
         textAlign="left"
         outlineColor="transparent"
         // space="$2"
-        backgroundColor={active ? '$blue4' : '$backgroundStrong'}
+        backgroundColor={active ? '$blue4' : '$colorTransparent'}
         hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
         userSelect="none"
         group="item"
@@ -531,7 +531,7 @@ export function SidebarDocument({
   const route = useNavRoute()
   const doc = usePublication({id: docId, version: docVersion || undefined})
   const isRouteActive = route.key == 'publication' && route.documentId == docId
-  const embeds = usePublicationEmbeds(doc.data, isRouteActive, {
+  const embeds = useDocumentEmbeds(doc.data?.document, isRouteActive, {
     skipCards: true,
   })
   const authorAccountsQuery = useAccounts(authors || [])

@@ -20,6 +20,7 @@ import {
   HMAccount,
   HMBlock,
   HMBlockNode,
+  HMDocument,
   HMGroup,
   HMPublication,
   ListPublicationsResponse,
@@ -180,6 +181,7 @@ export function useDeleteDraft(
     },
     onSuccess: (response, documentId, context) => {
       invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
       queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
       opts?.onSuccess?.(response, documentId, context)
     },
@@ -294,8 +296,8 @@ export type EmbedsContent = Record<
   | undefined
 >
 
-export function usePublicationEmbeds(
-  pub: HMPublication | undefined,
+export function useDocumentEmbeds(
+  doc: HMDocument | undefined,
   enabled?: boolean,
   opts?: {skipCards: boolean},
 ): EmbedsContent {
@@ -311,7 +313,7 @@ export function usePublicationEmbeds(
       blockId: string
       refId: UnpackedHypermediaId
     }[] = []
-    extractRefs(pub?.document?.children || [], opts?.skipCards).forEach(
+    extractRefs(doc?.children || [], opts?.skipCards).forEach(
       ({refId, blockId}) => {
         if (refId.type === 'a') {
           queryAccounts.push({blockId, refId})
@@ -327,7 +329,7 @@ export function usePublicationEmbeds(
       queryGroups,
       queryAccounts,
     }
-  }, [pub, enabled])
+  }, [doc, enabled])
   const pubs = usePublications(
     queryPublications.map((q) => ({id: q.refId.qid, version: q.refId.version})),
   )
@@ -427,7 +429,6 @@ export function usePublishDraft(
   const draftRoute = route.key === 'draft' ? route : undefined
   const groupVariant = draftRoute?.variant
   const myAccount = useMyAccount()
-  console.log({draftRoute})
   const isProfileDocument =
     draftRoute?.isProfileDocument ||
     myAccount.data?.profile?.rootDocument === draftRoute?.draftId
@@ -514,6 +515,7 @@ export function usePublishDraft(
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.GET_ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
@@ -681,6 +683,7 @@ export function useDraftEditor({
           // @ts-expect-error
           if (event.output) {
             invalidate([queryKeys.GET_DRAFT_LIST])
+            invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
             invalidate([queryKeys.EDITOR_DRAFT, documentId])
           }
         },
@@ -707,6 +710,7 @@ export function useDraftEditor({
                   value: `Delete draft ${documentId} success`,
                 })
                 invalidate([queryKeys.GET_DRAFT_LIST])
+                invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
               })
           } catch (error) {
             diagnosis?.append(documentId!, {
@@ -793,6 +797,7 @@ export function useDraftEditor({
                   })
 
                   invalidate([queryKeys.GET_DRAFT_LIST])
+                  invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
 
                   return res
                 })
@@ -814,6 +819,7 @@ export function useDraftEditor({
             })
 
             invalidate([queryKeys.GET_DRAFT_LIST])
+            invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
 
             return newDraft
           } catch (error) {
@@ -917,6 +923,7 @@ export function useDraftEditor({
           title: state.context.title,
         }).then(() => {
           invalidate([queryKeys.GET_DRAFT_LIST])
+          invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
           invalidate([queryKeys.EDITOR_DRAFT, documentId])
         })
       }
