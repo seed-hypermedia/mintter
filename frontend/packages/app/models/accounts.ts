@@ -94,7 +94,7 @@ export function useSetTrusted(
   })
 }
 
-export function useAccountIsConnected(account: Account) {
+export function useAccountIsConnected(account: HMAccount) {
   const peers = useConnectedPeers()
   return !!peers.data?.find((peer) => peer.accountId == account.id)
 }

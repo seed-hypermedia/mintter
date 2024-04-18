@@ -56,7 +56,6 @@ export const queryKeys = {
 
   // changes
   CHANGE: 'CHANGE', //, changeId: string
-  ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
 
   // cid
   BLOB_DATA: 'BLOB_DATA', //, cid: string
@@ -143,8 +142,6 @@ export function labelOfQueryKey(key: QueryKey) {
     // changes
     case queryKeys.CHANGE:
       return 'Change'
-    case queryKeys.ALL_ENTITY_CHANGES:
-      return 'Entity Changes'
 
     // cid
     case queryKeys.BLOB_DATA:

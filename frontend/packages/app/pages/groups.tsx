@@ -10,9 +10,11 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Trash} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useDeleteDialog} from '../components/delete-dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {
   ListItem,
@@ -20,6 +22,7 @@ import {
   copyLinkMenuItem,
 } from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
+import {MenuItemType} from '../components/options-dropdown'
 import {useMyAccount} from '../models/accounts'
 import {useFavorite} from '../models/favorites'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -123,9 +126,11 @@ function SiteUrlButton({group}: {group: Group}) {
 export function GroupListItem({
   group,
   onCopy,
+  onDelete,
 }: {
   group: HMGroup
-  onCopy: () => void
+  onCopy?: () => void
+  onDelete?: (input: {id: string; title?: string}) => void
 }) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
@@ -136,7 +141,29 @@ export function GroupListItem({
     navigate(groupRoute, e)
   }
   const gwUrl = useGatewayUrl()
-
+  const menuItems: MenuItemType[] = []
+  if (onCopy) {
+    menuItems.push(copyLinkMenuItem(onCopy, 'Group'))
+  }
+  menuItems.push({
+    label: 'Open in new Window',
+    key: 'spawn',
+    icon: ExternalLink,
+    onPress: () => {
+      spawn(groupRoute)
+    },
+  })
+  if (onDelete) {
+    menuItems.push({
+      label: 'Delete Group',
+      key: 'delete',
+      icon: Trash,
+      onPress: () => {
+        if (!group.id) return
+        onDelete({id: group.id, title: group.title})
+      },
+    })
+  }
   return (
     <ListItem
       title={group.title}
@@ -169,17 +196,7 @@ export function GroupListItem({
         </XStack>
       }
       onPress={goToItem}
-      menuItems={[
-        copyLinkMenuItem(onCopy, 'Group'),
-        {
-          label: 'Open in new Window',
-          key: 'spawn',
-          icon: ExternalLink,
-          onPress: () => {
-            spawn(groupRoute)
-          },
-        },
-      ]}
+      menuItems={menuItems}
     />
   )
 }
@@ -189,6 +206,7 @@ export default function GroupsPage() {
   const myGroups = useAccountGroups(myAccount.data?.id)
   const groups = myGroups.data?.items || []
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
+  const deleteDialog = useDeleteDialog()
   let content = myGroups.isLoading ? (
     <Container>
       <Spinner />
@@ -208,6 +226,7 @@ export default function GroupsPage() {
               if (!groupId) return
               onCopyId(groupId)
             }}
+            onDelete={deleteDialog.open}
           />
         )
       }}
@@ -225,6 +244,7 @@ export default function GroupsPage() {
     <>
       <MainWrapperNoScroll>{content}</MainWrapperNoScroll>
       {copyDialogContent}
+      {deleteDialog.content}
       <Footer />
     </>
   )

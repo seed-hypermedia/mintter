@@ -14,9 +14,11 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Trash} from '@tamagui/lucide-icons'
 import {AccountTrustButton} from '../components/account-trust'
 import {Avatar} from '../components/avatar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useDeleteDialog} from '../components/delete-dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {OnlineIndicator} from '../components/indicator'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
@@ -30,9 +32,11 @@ import {AccountRoute} from '../utils/routes'
 export function ContactItem({
   account,
   onCopy,
+  onDelete,
 }: {
   account: HMAccount
   onCopy: () => void
+  onDelete: (input: {id: string; title?: string}) => void
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -41,7 +45,9 @@ export function ContactItem({
   const favorite = useFavorite(accountUrl)
   const alias = account.profile?.alias
   const gwUrl = useGatewayUrl()
-  const openRoute: AccountRoute = {key: 'account', accountId: account.id}
+  const accountId = account.id
+  if (!accountId) throw new Error('Account ID is required')
+  const openRoute: AccountRoute = {key: 'account', accountId}
   return (
     <ListItem
       icon={
@@ -55,7 +61,7 @@ export function ContactItem({
       onPress={() => {
         navigate(openRoute)
       }}
-      title={alias || account.id.slice(0, 5) + '...' + account.id.slice(-5)}
+      title={alias || accountId.slice(0, 5) + '...' + accountId.slice(-5)}
       accessory={
         <>
           {accountUrl && (
@@ -69,7 +75,7 @@ export function ContactItem({
             </XStack>
           )}
           <AccountTrustButton
-            accountId={account.id}
+            accountId={accountId}
             isTrusted={account.isTrusted}
           />
           <OnlineIndicator online={isConnected} />
@@ -90,6 +96,17 @@ export function ContactItem({
             ? `${account.profile.alias}'s Profile`
             : `Profile`,
         ),
+        {
+          key: 'delete',
+          label: 'Delete Account',
+          icon: Trash,
+          onPress: () => {
+            onDelete({
+              id: createHmId('a', accountId),
+              title: account.profile?.alias,
+            })
+          },
+        },
       ]}
     />
   )
@@ -118,6 +135,7 @@ export default function ContactsPage() {
   const untrustedAccounts = allAccounts.filter(
     (account) => !account.isTrusted && !!account.profile?.alias, // hide contacts without an alias because this is confusing for users
   )
+  const deleteEntity = useDeleteDialog()
   const [copyDialogContent, onCopy] = useCopyGatewayReference()
   if (contacts.isLoading) {
     return (
@@ -161,6 +179,7 @@ export default function ContactsPage() {
                 onCopy={() => {
                   onCopy(hmId('a', item.id))
                 }}
+                onDelete={deleteEntity.open}
               />
             )
           }}
@@ -170,6 +189,7 @@ export default function ContactsPage() {
         />
       </MainWrapperNoScroll>
       {copyDialogContent}
+      {deleteEntity.content}
       <Footer />
     </>
   )
