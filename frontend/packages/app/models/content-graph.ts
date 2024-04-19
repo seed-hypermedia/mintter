@@ -13,6 +13,7 @@ export function useEntityMentions(entityId?: string) {
     queryFn: async () => {
       const result = await grpcClient.entities.listEntityMentions({
         id: entityId,
+        pageSize: 400000000,
       })
 
       return {
