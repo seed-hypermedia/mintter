@@ -24,6 +24,8 @@ import {
 } from '@mintter/ui'
 import {
   Book,
+  ChevronDown,
+  ChevronUp,
   Contact,
   FileText,
   Hash,
@@ -295,6 +297,35 @@ export function SidebarItem({
         {children}
       </ListItem>
     </View>
+  )
+}
+
+export function SidebarGroupItem({
+  items,
+  ...props
+}: {
+  items: ReactNode[]
+} & ComponentProps<typeof SidebarItem>) {
+  const [isCollapsed, setIsCollapsed] = useState(true)
+  return (
+    <>
+      <SidebarItem
+        {...props}
+        iconAfter={
+          <Button
+            size="$2"
+            chromeless
+            backgroundColor={'$colorTransparent'}
+            onPress={(e) => {
+              e.stopPropagation()
+              setIsCollapsed(isCollapsed ? false : true)
+            }}
+            icon={isCollapsed ? ChevronDown : ChevronUp}
+          />
+        }
+      />
+      {isCollapsed ? null : items}
+    </>
   )
 }
 

@@ -5,6 +5,7 @@ import {
   HMDocument,
   UnpackedHypermediaId,
   getDocumentTitle,
+  unpackHmId,
 } from '@mintter/shared'
 import {Button, Home, SizableText, XStack, YStack} from '@mintter/ui'
 import {
@@ -18,6 +19,7 @@ import {
 import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {useDocumentEmbeds, usePublication} from '../models/documents'
+import {useFavorites} from '../models/favorites'
 import {
   useGroup,
   useGroupFrontPub,
@@ -29,7 +31,7 @@ import {
   usePublicationVariant,
   usePublicationVariantWithDraft,
 } from '../models/publication'
-import {appRouteOfId, useNavRoute} from '../utils/navigation'
+import {appRouteOfId, getRouteKey, useNavRoute} from '../utils/navigation'
 import {getRouteContext} from '../utils/route-context'
 import {
   AccountRoute,
@@ -42,6 +44,7 @@ import {useNavigate} from '../utils/useNavigate'
 import {
   GenericSidebarContainer,
   SidebarDivider,
+  SidebarGroupItem,
   SidebarItem,
   activeDocOutline,
   getDocOutline,
@@ -155,16 +158,6 @@ export function MainAppSidebar() {
         rightHover={[]}
       />
       <SidebarItem
-        active={route.key == 'favorites'}
-        onPress={() => {
-          navigate({key: 'favorites'})
-        }}
-        title="Favorites"
-        bold
-        icon={Star}
-        rightHover={[]}
-      />
-      <SidebarItem
         active={route.key == 'contacts'}
         onPress={() => {
           navigate({key: 'contacts'})
@@ -173,6 +166,8 @@ export function MainAppSidebar() {
         title="Contacts"
         bold
       />
+      <SidebarDivider />
+      <SidebarFavorites key={getRouteKey(route)} />
       <SidebarDivider />
       {/* {account.data && (
         <MyAccountItem
@@ -198,6 +193,103 @@ export function MainAppSidebar() {
         <RouteOutline route={route} myAccountId={myAccount.data?.id} />
       )}
     </GenericSidebarContainer>
+  )
+}
+
+function SidebarFavorites() {
+  const navigate = useNavigate()
+  const favorites = useFavorites()
+  const route = useNavRoute()
+  return (
+    <SidebarGroupItem
+      active={route.key == 'favorites'}
+      onPress={() => {
+        navigate({key: 'favorites'})
+      }}
+      title="Favorites"
+      bold
+      icon={Star}
+      rightHover={[]}
+      items={favorites.map((fav) => {
+        const {key, url} = fav
+        if (key === 'account') {
+          return <FavoriteAccountItem key={url} url={url} />
+        }
+        if (key === 'document') {
+          return <FavoritePublicationItem key={url} url={url} />
+        }
+        if (key === 'group') {
+          return <FavoriteGroupItem key={url} url={url} />
+        }
+        return null
+      })}
+    />
+  )
+}
+
+function FavoriteAccountItem({url}: {url: string}) {
+  const id = unpackHmId(url)
+  const route = useNavRoute()
+  const accountId = id?.eid
+  const account = useAccount(accountId)
+  const navigate = useNavigate()
+  if (!accountId) return null
+  return (
+    <SidebarItem
+      active={route.key === 'account' && route.accountId === accountId}
+      indented
+      onPress={() => {
+        navigate({key: 'account', accountId})
+      }}
+      title={account.data?.profile?.alias || 'Unknown Account'}
+    />
+  )
+}
+
+function FavoriteGroupItem({url}: {url: string}) {
+  const id = unpackHmId(url)
+  const route = useNavRoute()
+  const navigate = useNavigate()
+  const groupId = id?.qid
+  const group = useGroup(groupId)
+  if (!groupId) return null
+  return (
+    <SidebarItem
+      indented
+      active={route.key === 'group' && route.groupId === groupId}
+      onPress={() => {
+        navigate({key: 'group', groupId})
+      }}
+      title={group.data?.title || 'Unknown Group'}
+    />
+  )
+}
+
+function FavoritePublicationItem({url}: {url: string}) {
+  const id = unpackHmId(url)
+  const route = useNavRoute()
+  const navigate = useNavigate()
+  const pub = usePublicationVariant({
+    documentId: id?.qid,
+    versionId: id?.version || undefined,
+    variants: id?.variants || undefined,
+  })
+  const documentId = id?.qid
+  if (!documentId) return null
+  return (
+    <SidebarItem
+      indented
+      active={route.key === 'publication' && route.documentId === documentId}
+      onPress={() => {
+        navigate({
+          key: 'publication',
+          documentId,
+          versionId: id?.version || undefined,
+          variants: id?.variants || undefined,
+        })
+      }}
+      title={getDocumentTitle(pub.data?.publication?.document)}
+    />
   )
 }
 
