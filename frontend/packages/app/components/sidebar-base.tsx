@@ -238,6 +238,8 @@ export function SidebarItem({
   paddingVertical,
   minHeight,
   menuItems,
+  isCollapsed,
+  onSetCollapsed,
   ...props
 }: ListItemProps & {
   indented?: boolean | number
@@ -245,6 +247,8 @@ export function SidebarItem({
   selected?: boolean
   rightHover?: ReactNode[]
   menuItems?: MenuItemType[]
+  isCollapsed?: boolean | null
+  onSetCollapsed?: (collapsed: boolean) => void
 }) {
   const indent = indented ? (typeof indented === 'number' ? indented : 1) : 0
   return (
@@ -256,7 +260,7 @@ export function SidebarItem({
         minHeight={minHeight || 35}
         paddingVertical={paddingVertical || '$1'}
         paddingHorizontal="$4"
-        paddingLeft={indent * 10 + 18}
+        paddingLeft={indent * 10 + 30}
         textAlign="left"
         outlineColor="transparent"
         // space="$2"
@@ -295,6 +299,22 @@ export function SidebarItem({
         {...props}
       >
         {children}
+        {isCollapsed != null ? (
+          <Button
+            position="absolute"
+            left={-54}
+            size="$1"
+            chromeless
+            backgroundColor={'$colorTransparent'}
+            onPress={(e) => {
+              e.stopPropagation()
+              onSetCollapsed?.(!isCollapsed)
+            }}
+            icon={isCollapsed ? ChevronDown : ChevronUp}
+            opacity={isCollapsed ? 1 : 0}
+            $group-item-hover={{opacity: 1, backgroundColor: 'red'}}
+          />
+        ) : null}
       </ListItem>
     </View>
   )
@@ -302,27 +322,19 @@ export function SidebarItem({
 
 export function SidebarGroupItem({
   items,
+  defaultExpanded,
   ...props
 }: {
   items: ReactNode[]
+  defaultExpanded?: boolean
 } & ComponentProps<typeof SidebarItem>) {
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(defaultExpanded ? false : true)
   return (
     <>
       <SidebarItem
         {...props}
-        iconAfter={
-          <Button
-            size="$2"
-            chromeless
-            backgroundColor={'$colorTransparent'}
-            onPress={(e) => {
-              e.stopPropagation()
-              setIsCollapsed(isCollapsed ? false : true)
-            }}
-            icon={isCollapsed ? ChevronDown : ChevronUp}
-          />
-        }
+        isCollapsed={items.length ? isCollapsed : null}
+        onSetCollapsed={setIsCollapsed}
       />
       {isCollapsed ? null : items}
     </>
@@ -518,8 +530,8 @@ export function activeDocOutline(
     } else if (item.id === activeBlock) {
       isBlockActive = true
     }
-    return [
-      <SidebarItem
+    return (
+      <SidebarGroupItem
         onPress={() => {
           onBlockSelect(item.id, item.entityId, item.parentBlockId)
         }}
@@ -531,9 +543,10 @@ export function activeDocOutline(
         }
         title={item.title || 'Untitled Heading'}
         indented={2 + level}
-      />,
-      ...(childrenOutline?.outlineContent || []),
-    ]
+        items={childrenOutline?.outlineContent || []}
+        defaultExpanded
+      />
+    )
   })
   return {outlineContent, isBlockActive}
 }

@@ -407,7 +407,7 @@ function useNavigateBlock() {
 }
 
 function useContextItems(context: BaseEntityRoute[] | undefined) {
-  return (
+  const items =
     context?.map((contextRoute, index) => {
       if (contextRoute.key === 'account')
         return (
@@ -432,7 +432,7 @@ function useContextItems(context: BaseEntityRoute[] | undefined) {
         )
       return null
     }) || null
-  )
+  return {items}
 }
 
 function useIntermediateContext(
@@ -594,12 +594,13 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
     navigateBlock,
     navigate,
   )
+  const {items} = useContextItems(route.context)
   return (
     <>
-      {useContextItems(route.context)}
+      {items}
       <DraftItems
         titleItem={
-          <SidebarItem
+          <SidebarGroupItem
             active={isActive && !isBlockActive}
             onPress={() => {
               if (!isActive) {
@@ -610,6 +611,8 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
             }}
             title={account.data?.profile?.alias}
             icon={Contact}
+            items={outlineContent}
+            defaultExpanded
           />
         }
         isDraft={profilePub.data?.isDocumentDraft}
@@ -625,9 +628,7 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
                 })
               }
         }
-      >
-        {outlineContent}
-      </DraftItems>
+      ></DraftItems>
     </>
   )
 }
@@ -656,12 +657,13 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
     navigateBlock,
     navigate,
   )
+  const {items} = useContextItems(route.context)
   return (
     <>
-      {useContextItems(route.context)}
+      {items}
       <DraftItems
         titleItem={
-          <SidebarItem
+          <SidebarGroupItem
             active={!isBlockActive}
             onPress={() => {
               if (route.blockId) {
@@ -670,6 +672,8 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
             }}
             title={pub.data?.document?.title}
             icon={FileText}
+            items={outlineContent}
+            defaultExpanded
           />
         }
         isDraft={pub.data?.isDocumentDraft}
@@ -683,9 +687,7 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
                 variant: null,
               })
         }}
-      >
-        {outlineContent}
-      </DraftItems>
+      ></DraftItems>
     </>
   )
 }
@@ -716,13 +718,13 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
       navigateBlock,
       navigate,
     )
-
+  const {items} = useContextItems(route.context)
   return (
     <>
-      {useContextItems(route.context)}
+      {items}
       <DraftItems
         titleItem={
-          <SidebarItem
+          <SidebarGroupItem
             active={!isBlockActive}
             onPress={() => {
               if (route.blockId) {
@@ -731,6 +733,8 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
             }}
             title={group.data?.title}
             icon={Book}
+            items={frontPubOutlineContent}
+            defaultExpanded
           />
         }
         isDraft={frontPub.data?.isDocumentDraft}
@@ -748,9 +752,7 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
                 },
               })
         }}
-      >
-        {frontPubOutlineContent}
-      </DraftItems>
+      ></DraftItems>
     </>
   )
 }
