@@ -530,6 +530,11 @@ export function BlockNodeContent({
     }
   }, [elm.current, blockNode.block])
 
+  // @ts-expect-error
+  if (isBlockNodeEmpty(blockNode)) {
+    return null
+  }
+
   return (
     <YStack
       ref={elm}
@@ -724,6 +729,29 @@ export function BlockNodeContent({
       ) : null}
     </YStack>
   )
+}
+
+function isBlockNodeEmpty(bn: HMBlockNode): boolean {
+  if (bn.children && bn.children.length) return false
+  if (typeof bn.block == 'undefined') return true
+  switch (bn.block.type) {
+    case 'paragraph':
+    case 'heading':
+    case 'math':
+    case 'equation':
+    case 'code':
+    case 'codeBlock':
+      return !bn.block.text
+    case 'image':
+    case 'file':
+    case 'video':
+    case 'nostr':
+    case 'embed':
+    case 'web-embed':
+      return !bn.block.ref
+    default:
+      return false
+  }
 }
 
 export const blockStyles: YStackProps = {

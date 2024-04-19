@@ -28,8 +28,17 @@ import {
   YStack,
 } from '@mintter/ui'
 import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
-import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
-import {useAccount} from '../models/accounts'
+import {
+  ComponentProps,
+  PropsWithChildren,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {YStackProps} from 'tamagui'
+import {useAccount, useAccounts} from '../models/accounts'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useGroup, useGroupFrontpage} from '../models/groups'
@@ -38,6 +47,7 @@ import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {Avatar} from './avatar'
 
 function EmbedWrapper({
@@ -58,6 +68,11 @@ function EmbedWrapper({
   const open = useOpenUrl()
   const navigate = useNavigate('replace')
   const unpackRef = unpackHmId(hmRef)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const sideannotationRef = useRef<HTMLDivElement>(null)
+  const wrapperRect = useRef<DOMRect>()
+  const sideRect = useRef<DOMRect>()
+  const [sidePos, setSidePos] = useState<'bottom' | 'right'>('bottom')
   const isHighlight = useMemo(() => {
     return (
       routeParams?.documentId == unpackRef?.qid &&
@@ -72,8 +87,42 @@ function EmbedWrapper({
     unpackRef?.version,
   ])
 
+  useEffect(() => {
+    if (wrapperRef.current) {
+      observeSize(wrapperRef.current, (rect) => {
+        wrapperRect.current = rect
+        console.log('OBSERVER', wrapperRect.current)
+      })
+    }
+    if (sideannotationRef.current) {
+      observeSize(sideannotationRef.current, (rect) => {
+        sideRect.current = rect
+        console.log('OBSERVER SIDE', sideRect.current)
+      })
+    }
+
+    function onWindowResize() {
+      if (wrapperRect.current && sideRect.current) {
+        const targetSize = sideRect.current.width + 48
+        setSidePos(
+          targetSize < window.innerWidth - wrapperRect.current.right
+            ? 'right'
+            : 'bottom',
+        )
+      }
+    }
+
+    window.addEventListener('resize', onWindowResize, false)
+    onWindowResize()
+
+    return () => {
+      window.removeEventListener('resize', onWindowResize, false)
+    }
+  }, [wrapperRef])
+
   return (
     <YStack
+      ref={wrapperRef}
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
@@ -129,31 +178,99 @@ function EmbedWrapper({
       {...props}
     >
       {children}
-      {depth == 1 ? <EmbedSideAnnotation hmId={hmRef} /> : undefined}
+      <EmbedSideAnnotation
+        sidePos={sidePos}
+        ref={sideannotationRef}
+        hmId={hmRef}
+      />
     </YStack>
   )
 }
 
-function EmbedSideAnnotation({hmId}) {
+function observeSize(element: HTMLDivElement, callback: (r: DOMRect) => void) {
+  const ro = new ResizeObserver(() => {
+    const r = element.getBoundingClientRect()
+    callback(r)
+  })
+  ro.observe(element)
+}
+
+const EmbedSideAnnotation = forwardRef<
+  HTMLDivElement,
+  {hmId: string; sidePos: 'bottom' | 'right'}
+>(function EmbedSideAnnotation({hmId, sidePos}, ref) {
   const unpacked = unpackHmId(hmId)
   if (unpacked && unpacked.type != 'd') return null
   const pub = usePublication({
-    id: unpacked.qid,
+    id: unpacked?.qid,
     version: unpacked?.version || undefined,
   })
+  const editors = useAccounts(pub.data?.document?.editors || [])
+
+  // @ts-expect-error
+  const sideStyles: YStackProps =
+    sidePos == 'right'
+      ? {
+          position: 'absolute',
+          top: 32,
+          right: -16,
+          transform: 'translateX(100%)',
+        }
+      : {}
+
   return (
     <YStack
+      ref={ref}
       p="$2"
-      // bg="red"
-      // zIndex={1000}
-      // transform="translateX(110%)"
+      flex="none"
+      className="embed-side-annotation"
+      width="max-content"
+      maxWidth={300}
+      {...sideStyles}
     >
+      {/* <XStack ai="center" gap="$2" bg="green"> */}
       <SizableText size="$1" fontWeight="600">
         {pub?.data?.document?.title}
       </SizableText>
+      {/* <SizableText fontSize={12} color="$color9">
+          {formattedDateMedium(pub.data?.document?.publishTime)}
+        </SizableText> */}
+      {/* </XStack> */}
+      <XStack
+        marginHorizontal="$2"
+        gap="$2"
+        ai="center"
+        paddingVertical="$1"
+        alignSelf="flex-start"
+      >
+        <XStack ai="center">
+          {editors
+            .map((editor) => editor.data)
+            .filter(Boolean)
+            .map(
+              (editorAccount, idx) =>
+                editorAccount?.id && (
+                  <XStack
+                    zIndex={idx + 1}
+                    key={editorAccount?.id}
+                    borderColor="$background"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderRadius={100}
+                    marginLeft={-8}
+                  >
+                    <BaseAccountLinkAvatar
+                      account={editorAccount}
+                      accountId={editorAccount?.id}
+                    />
+                  </XStack>
+                ),
+            )}
+        </XStack>
+      </XStack>
     </YStack>
   )
-}
+})
 
 export function EmbedPublication(props: EntityComponentProps) {
   if (props.block.attributes?.view == 'card') {
