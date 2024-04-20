@@ -438,7 +438,10 @@ function ProfileDoc({}: {}) {
       <AppPublicationContentProvider
         routeParams={{blockRef: accountRoute?.blockId}}
       >
-        <PublicationContent publication={pub.data} />
+        <PublicationContent
+          publication={pub.data}
+          focusBlockId={accountRoute?.focusBlockId}
+        />
       </AppPublicationContentProvider>
     </PageContainer>
   ) : null

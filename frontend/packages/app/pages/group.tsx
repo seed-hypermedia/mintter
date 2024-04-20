@@ -960,7 +960,10 @@ function FrontPublicationDisplay({
       <AppPublicationContentProvider
         routeParams={{blockRef: groupRoute?.blockId}}
       >
-        <PublicationContent publication={pub.data} />
+        <PublicationContent
+          publication={pub.data}
+          focusBlockId={groupRoute?.focusBlockId}
+        />
       </AppPublicationContentProvider>
     </YStack>
   ) : null

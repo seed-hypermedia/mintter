@@ -1,10 +1,7 @@
 import {
   Account,
-  API_FILE_URL,
   getBlockNode,
-  GroupVariant,
   HMBlockNode,
-  PublicationVariant,
   UnpackedHypermediaId,
 } from '@mintter/shared'
 import {
@@ -13,40 +10,30 @@ import {
   ListItemProps,
   Separator,
   SizableText,
-  Spinner,
   Tooltip,
-  UIAvatar,
   useStream,
   View,
   XStack,
-  YGroup,
   YStack,
 } from '@mintter/ui'
 import {
+  ArrowDownRight,
   Book,
   ChevronDown,
   ChevronUp,
   Contact,
   FileText,
   Hash,
-  Plus,
   Search,
   Settings,
 } from '@tamagui/lucide-icons'
 import {ComponentProps, FC, ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
-import {useAccounts} from '../models/accounts'
-import {
-  EmbedsContent,
-  useDocumentEmbeds,
-  usePublication,
-} from '../models/documents'
+import {EmbedsContent} from '../models/documents'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
-import {useNavRoute} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
@@ -153,30 +140,6 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
         </XStack>
       </YStack>
     </>
-  )
-}
-
-export function NewDocumentButton({
-  groupVariant,
-  label,
-}: {
-  groupVariant?: GroupVariant | undefined
-  label?: string
-}) {
-  const openDraft = useOpenDraft('push')
-  return (
-    <Tooltip content={`New ${label || 'Document'}`}>
-      <Button
-        size="$2"
-        chromeless
-        backgroundColor="$colorTransparent"
-        iconAfter={Plus}
-        onPress={(e) => {
-          e.stopPropagation()
-          openDraft(groupVariant)
-        }}
-      />
-    </Tooltip>
   )
 }
 
@@ -501,11 +464,39 @@ export function getDocOutline(
   return outline
 }
 
+export function FocusButton({
+  onPress,
+  label,
+}: {
+  onPress: () => void
+  label?: string
+}) {
+  return (
+    <Tooltip content={label ? `Focus ${label}` : 'Focus'}>
+      <Button
+        icon={ArrowDownRight}
+        onPress={(e) => {
+          e.stopPropagation()
+          onPress()
+        }}
+        chromeless
+        backgroundColor={'$colorTransparent'}
+        size="$1"
+      />
+    </Tooltip>
+  )
+}
+
 export function activeDocOutline(
   outline: DocOutlineSection[],
   activeBlock: string | null | undefined,
   embeds: EmbedsContent,
   onBlockSelect: (
+    blockId: string,
+    entityId: UnpackedHypermediaId | undefined,
+    parentBlockId: string | undefined,
+  ) => void,
+  onBlockFocus: (
     blockId: string,
     entityId: UnpackedHypermediaId | undefined,
     parentBlockId: string | undefined,
@@ -521,6 +512,7 @@ export function activeDocOutline(
           activeBlock,
           embeds,
           onBlockSelect,
+          onBlockFocus,
           onNavigate,
           level + 1,
         )
@@ -544,6 +536,13 @@ export function activeDocOutline(
         title={item.title || 'Untitled Heading'}
         indented={2 + level}
         items={childrenOutline?.outlineContent || []}
+        rightHover={[
+          <FocusButton
+            onPress={() => {
+              onBlockFocus(item.id, item.entityId, item.parentBlockId)
+            }}
+          />,
+        ]}
         defaultExpanded
       />
     )
@@ -553,101 +552,4 @@ export function activeDocOutline(
 
 export function SidebarDivider() {
   return <Separator marginVertical="$2" />
-}
-
-export function SidebarDocument({
-  docId,
-  docVersion,
-  onPress,
-  active,
-  authors,
-  pinVariants,
-  isPinned,
-}: {
-  docId: string
-  docVersion?: string | null
-  onPress: () => void
-  active?: boolean
-  authors?: string[]
-  pinVariants?: PublicationVariant[]
-  isPinned: boolean
-}) {
-  const route = useNavRoute()
-  const doc = usePublication({id: docId, version: docVersion || undefined})
-  const isRouteActive = route.key == 'publication' && route.documentId == docId
-  const embeds = useDocumentEmbeds(doc.data?.document, isRouteActive, {
-    skipCards: true,
-  })
-  const authorAccountsQuery = useAccounts(authors || [])
-  const authorAccounts = authorAccountsQuery
-    .map((query) => query.data)
-    .filter(Boolean)
-  if (!docId) return null
-  const activeOutline =
-    isRouteActive || active
-      ? getDocOutline(doc?.data?.document?.children || [], embeds)
-      : []
-  const pubRoute = route.key == 'publication' ? route : null
-  const activeBlock = pubRoute?.blockId
-  const replace = useNavigate('replace')
-  const navigate = useNavigate()
-  const {outlineContent, isBlockActive} = activeDocOutline(
-    activeOutline,
-    activeBlock,
-    embeds,
-    (blockId) => {
-      const pubRoute = route.key == 'publication' ? route : null
-      if (!pubRoute) return
-      replace({
-        ...pubRoute,
-        blockId,
-      })
-    },
-    navigate,
-  )
-  return [
-    <YGroup.Item>
-      <SidebarItem
-        onPress={onPress}
-        active={(isRouteActive || active) && !isBlockActive}
-        color={isPinned ? undefined : '$color11'}
-        icon={
-          authorAccounts.length ? (
-            <XStack minWidth={26} paddingLeft={8}>
-              {authorAccounts.map((account, idx) => {
-                if (!account) return null
-
-                return (
-                  <XStack
-                    zIndex={idx + 1}
-                    marginLeft={-8}
-                    borderColor="$background"
-                    backgroundColor="$background"
-                    borderWidth={2}
-                    borderRadius={100}
-                    key={account.id}
-                  >
-                    <UIAvatar
-                      id={account.id}
-                      size={22}
-                      url={`${API_FILE_URL}/${account?.profile?.avatar}`}
-                      label={account.profile?.alias || account.id}
-                    />
-                  </XStack>
-                )
-              })}
-            </XStack>
-          ) : (
-            <XStack width={16}>
-              <FileText />
-            </XStack>
-          )
-        }
-        title={doc.data?.document?.title || <Spinner />}
-        indented
-        rightHover={[]}
-      />
-    </YGroup.Item>,
-    ...outlineContent,
-  ]
 }

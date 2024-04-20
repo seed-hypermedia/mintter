@@ -50,7 +50,7 @@ import {AppPublicationContentProvider} from './publication-content-provider'
 export default function PublicationPage() {
   const route = useNavRoute()
   if (route.key !== 'publication')
-    throw new Error('Publication page expects publication actor')
+    throw new Error('Publication page expects publication route')
 
   const docId = route?.documentId
   const accessory = route?.accessory
@@ -207,6 +207,7 @@ export default function PublicationPage() {
                       <PublicationContent
                         ref={rangeRef}
                         publication={publication.data?.publication}
+                        focusBlockId={route.focusBlockId}
                       />
                     </>
                   ) : null}

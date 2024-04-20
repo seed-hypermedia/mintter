@@ -18,7 +18,7 @@ import {
 } from '@tamagui/lucide-icons'
 import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
 import {useAccount, useMyAccount} from '../models/accounts'
-import {useDocumentEmbeds, usePublication} from '../models/documents'
+import {useDocumentEmbeds} from '../models/documents'
 import {useFavorites} from '../models/favorites'
 import {
   useGroup,
@@ -32,7 +32,7 @@ import {
   usePublicationVariantWithDraft,
 } from '../models/publication'
 import {appRouteOfId, getRouteKey, useNavRoute} from '../utils/navigation'
-import {getRouteContext} from '../utils/route-context'
+import {getRouteContext, getRouteParentContext} from '../utils/route-context'
 import {
   AccountRoute,
   BaseEntityRoute,
@@ -91,51 +91,6 @@ export function MainAppSidebar() {
       ? route
       : null
   const myAccountRoute = myAccountMainRoute || myAccountDraftRoute
-  const activeBlock = accountRoute?.blockId
-  const myProfileDoc = usePublication(
-    {
-      id: myAccount.data?.profile?.rootDocument,
-    },
-    {
-      keepPreviousData: false,
-    },
-  )
-  const myProfileDocEmbeds = useDocumentEmbeds(
-    myProfileDoc.data?.document,
-    !!myProfileDoc.data,
-    {skipCards: true},
-  )
-  const frontDocOutline = getDocOutline(
-    myProfileDoc?.data?.document?.children || [],
-    myProfileDocEmbeds,
-  )
-  const {outlineContent: myAccountOutlineContent, isBlockActive} =
-    activeDocOutline(
-      frontDocOutline,
-      activeBlock,
-      myProfileDocEmbeds,
-      (blockId) => {
-        const myAccountId = myAccount.data?.id
-        if (!myAccountId) return
-        const accountRoute =
-          route.key == 'account' && myAccountId === route.accountId
-            ? route
-            : null
-        if (!accountRoute) {
-          navigate({
-            key: 'account',
-            accountId: myAccountId,
-            blockId,
-          })
-        } else {
-          replace({
-            ...accountRoute,
-            blockId,
-          })
-        }
-      },
-      navigate,
-    )
   return (
     <GenericSidebarContainer>
       <SidebarItem
@@ -209,7 +164,20 @@ function SidebarFavorites() {
       title="Favorites"
       bold
       icon={Star}
-      rightHover={[]}
+      rightHover={
+        [
+          // <OptionsDropdown
+          //   menuItems={[
+          //     {
+          //       key: 'a',
+          //       icon: Pencil,
+          //       label: 'Edit Favorites',
+          //       onPress: () => {},
+          //     },
+          //   ]}
+          // />,
+        ]
+      }
       items={favorites.map((fav) => {
         const {key, url} = fav
         if (key === 'account') {
@@ -354,18 +322,19 @@ function RouteOutline({
   return null
 }
 
-function useNavigateBlock() {
-  const route = useNavRoute()
+function useNavigateBlock(fromRoute: NavRoute) {
   const replace = useNavigate('replace')
+  const thisRoute = useNavRoute()
   const navigate = useNavigate()
-  return (
+  function navigateBlock(
     blockId: string,
     entityId?: UnpackedHypermediaId,
     parentBlockId?: string,
-  ) => {
-    const context = getRouteContext(route, parentBlockId)
-    if (entityId) {
-      let destRoute = appRouteOfId(entityId)
+  ) {
+    if (entityId || getRouteKey(fromRoute) !== getRouteKey(thisRoute)) {
+      const destRoute = entityId ? appRouteOfId(entityId) : fromRoute
+      // uh, I'm sure this code is buggy:
+      const context = entityId ? getRouteContext(fromRoute, parentBlockId) : []
       if (destRoute?.key === 'publication') {
         navigate({
           ...destRoute,
@@ -387,23 +356,53 @@ function useNavigateBlock() {
       } else if (destRoute) {
         navigate(destRoute)
       }
-    } else if (route.key === 'publication') {
+    } else if (fromRoute.key === 'publication') {
       replace({
-        ...route,
+        ...fromRoute,
         blockId,
       })
-    } else if (route.key === 'group') {
+    } else if (fromRoute.key === 'group') {
       replace({
-        ...route,
+        ...fromRoute,
         blockId,
       })
-    } else if (route.key === 'account') {
+    } else if (fromRoute.key === 'account') {
       replace({
-        ...route,
+        ...fromRoute,
         blockId,
       })
     }
   }
+  function focusBlock(
+    blockId: string,
+    entityId?: UnpackedHypermediaId,
+    parentBlockId?: string,
+  ) {
+    const context = getRouteParentContext(fromRoute)
+    const destRoute = entityId ? appRouteOfId(entityId) : fromRoute
+    if (destRoute?.key === 'publication') {
+      navigate({
+        ...destRoute,
+        context,
+        focusBlockId: blockId,
+      })
+    } else if (destRoute?.key === 'group') {
+      navigate({
+        ...destRoute,
+        context,
+        focusBlockId: blockId,
+      })
+    } else if (destRoute?.key === 'account') {
+      navigate({
+        ...destRoute,
+        context,
+        focusBlockId: blockId,
+      })
+    } else if (destRoute) {
+      navigate(destRoute)
+    }
+  }
+  return {navigateBlock, focusBlock}
 }
 
 function useContextItems(context: BaseEntityRoute[] | undefined) {
@@ -586,12 +585,13 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   )
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const navigateBlock = useNavigateBlock()
+  const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const {outlineContent, isBlockActive} = activeDocOutline(
     docOutline,
-    route.blockId,
+    route.blockId || route.focusBlockId,
     pubEmbeds,
     navigateBlock,
+    focusBlock,
     navigate,
   )
   const {items} = useContextItems(route.context)
@@ -649,12 +649,13 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   )
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const navigateBlock = useNavigateBlock()
+  const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const {outlineContent, isBlockActive} = activeDocOutline(
     docOutline,
-    route.blockId,
+    route.blockId || route.focusBlockId,
     pubEmbeds,
     navigateBlock,
+    focusBlock,
     navigate,
   )
   const {items} = useContextItems(route.context)
@@ -708,14 +709,15 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
     frontPub?.data?.document?.children || [],
     frontPubEmbeds,
   )
-  const navigateBlock = useNavigateBlock()
+  const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const replace = useNavigate('replace')
   const {outlineContent: frontPubOutlineContent, isBlockActive} =
     activeDocOutline(
       frontDocOutline,
-      route.blockId,
+      route.blockId || route.focusBlockId,
       frontPubEmbeds,
       navigateBlock,
+      focusBlock,
       navigate,
     )
   const {items} = useContextItems(route.context)

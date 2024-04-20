@@ -253,10 +253,12 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
 
 export function PublicationContent({
   publication,
+  focusBlockId,
   maxBlockCount,
   marginVertical = '$5',
   ...props
 }: XStackProps & {
+  focusBlockId?: string | undefined
   maxBlockCount?: number
   publication: HMPublication
   marginVertical?: any
@@ -273,9 +275,12 @@ export function PublicationContent({
     allBlocks[0]?.block?.text &&
     allBlocks[0]?.block?.text === publication.document?.title
   const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
-  const displayBlocks = maxBlockCount
-    ? clipContentBlocks(displayableBlocks, maxBlockCount)
+  const focusedBlocks = focusBlockId
+    ? [getBlockNodeById(displayableBlocks, focusBlockId)]
     : displayableBlocks
+  const displayBlocks = maxBlockCount
+    ? clipContentBlocks(focusedBlocks, maxBlockCount)
+    : focusedBlocks
   return (
     <YStack
       ref={wrapper}
@@ -1644,12 +1649,12 @@ export function BlockContentUnknown(props: BlockContentProps) {
 }
 
 export function getBlockNodeById(
-  blocks: Array<BlockNode | HMBlockNode>,
+  blocks: Array<HMBlockNode>,
   blockId: string,
-): BlockNode | HMBlockNode | null {
+): HMBlockNode | null {
   if (!blockId) return null
 
-  let res: BlockNode | HMBlockNode | undefined
+  let res: HMBlockNode | undefined
   blocks.find((bn) => {
     if (bn.block?.id == blockId) {
       res = bn
