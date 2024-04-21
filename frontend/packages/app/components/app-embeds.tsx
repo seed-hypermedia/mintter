@@ -62,7 +62,6 @@ function EmbedWrapper({
     disableEmbedClick = false,
     comment,
     routeParams,
-    layoutUnit,
   } = usePublicationContentContext()
   const route = useNavRoute()
   const open = useOpenUrl()
@@ -178,11 +177,13 @@ function EmbedWrapper({
       {...props}
     >
       {children}
-      <EmbedSideAnnotation
-        sidePos={sidePos}
-        ref={sideannotationRef}
-        hmId={hmRef}
-      />
+      {!comment ? (
+        <EmbedSideAnnotation
+          sidePos={sidePos}
+          ref={sideannotationRef}
+          hmId={hmRef}
+        />
+      ) : null}
     </YStack>
   )
 }

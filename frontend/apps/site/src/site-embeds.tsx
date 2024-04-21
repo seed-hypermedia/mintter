@@ -34,7 +34,15 @@ import {
 } from '@mintter/ui'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
-import {PropsWithChildren, ReactNode, useMemo, useState} from 'react'
+import {
+  PropsWithChildren,
+  ReactNode,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {NextLink} from 'src/next-link'
 import {trpc} from './trpc'
 
@@ -109,27 +117,75 @@ export function SitePublicationContentProvider({
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   const {layoutUnit} = usePublicationContentContext()
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const sideannotationRef = useRef<HTMLDivElement>(null)
+  const wrapperRect = useRef<DOMRect>()
+  const sideRect = useRef<DOMRect>()
+  const [sidePos, setSidePos] = useState<'bottom' | 'right'>('bottom')
+
+  useEffect(() => {
+    if (wrapperRef.current) {
+      observeSize(wrapperRef.current, (rect) => {
+        wrapperRect.current = rect
+        console.log('OBSERVER', wrapperRect.current)
+      })
+    }
+    if (sideannotationRef.current) {
+      observeSize(sideannotationRef.current, (rect) => {
+        sideRect.current = rect
+        console.log('OBSERVER SIDE', sideRect.current)
+      })
+    }
+
+    function onWindowResize() {
+      if (wrapperRect.current && sideRect.current) {
+        const targetSize = sideRect.current.width + 48
+        setSidePos(
+          targetSize < window.innerWidth - wrapperRect.current.right
+            ? 'right'
+            : 'bottom',
+        )
+      }
+    }
+
+    window.addEventListener('resize', onWindowResize, false)
+    onWindowResize()
+
+    return () => {
+      window.removeEventListener('resize', onWindowResize, false)
+    }
+  }, [wrapperRef])
+
   return (
     <NextLink
       href={stripHMLinkPrefix(props.hmRef)}
       style={{textDecoration: 'none', display: 'block', width: '100%'}}
     >
       <YStack
+        ref={wrapperRef}
         {...blockStyles}
         className="block-embed"
         hoverStyle={{
           cursor: 'pointer',
-          backgroundColor: '$color5',
+          backgroundColor: '$backgroundHover',
         }}
         margin={0}
         mb="$2"
-        marginHorizontal={(-1 * layoutUnit) / 2}
+        // marginHorizontal={(-1 * layoutUnit) / 2}
         width={`calc(100% + ${layoutUnit})`}
-        padding={layoutUnit / 2}
-        overflow="hidden"
-        borderRadius={layoutUnit / 4}
+        // padding={layoutUnit / 2}
+        borderRadius={0}
+        borderRightWidth={3}
+        borderRightColor={'$blue8'}
+        // overflow="hidden"
+        // borderRadius={layoutUnit / 4}
       >
         {props.children}
+        <EmbedSideAnnotation
+          ref={sideannotationRef}
+          hmId={props.hmRef}
+          sidePos={sidePos}
+        />
       </YStack>
     </NextLink>
   )
@@ -406,3 +462,86 @@ export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
     </Link>
   )
 }
+
+function observeSize(element: HTMLDivElement, callback: (r: DOMRect) => void) {
+  const ro = new ResizeObserver(() => {
+    const r = element.getBoundingClientRect()
+    callback(r)
+  })
+  ro.observe(element)
+}
+
+const EmbedSideAnnotation = forwardRef<
+  HTMLDivElement,
+  {hmId: string; sidePos: 'bottom' | 'right'}
+>(function EmbedSideAnnotation({hmId, sidePos}, ref) {
+  const unpacked = unpackHmId(hmId)
+  if (unpacked && unpacked.type != 'd') return null
+  const pub = trpc.publication.get.useQuery({
+    documentId: unpacked?.qid,
+    versionId: unpacked?.version || undefined,
+  })
+
+  const editors = pub.data?.publication?.document?.editors
+
+  // @ts-expect-error
+  const sideStyles: YStackProps =
+    sidePos == 'right'
+      ? {
+          position: 'absolute',
+          top: 32,
+          right: -16,
+          transform: 'translateX(100%)',
+        }
+      : {}
+
+  return (
+    <YStack
+      ref={ref}
+      p="$2"
+      flex="none"
+      className="embed-side-annotation"
+      width="max-content"
+      maxWidth={300}
+      {...sideStyles}
+    >
+      {/* <XStack ai="center" gap="$2" bg="green"> */}
+      <SizableText size="$1" fontWeight="600">
+        {pub?.data?.publication?.document?.title}
+      </SizableText>
+      {/* <SizableText fontSize={12} color="$color9">
+          {formattedDateMedium(pub.data?.document?.publishTime)}
+        </SizableText> */}
+      {/* </XStack> */}
+      {/* <XStack
+        marginHorizontal="$2"
+        gap="$2"
+        ai="center"
+        paddingVertical="$1"
+        alignSelf="flex-start"
+      >
+        <XStack ai="center">
+          {editors?.filter(Boolean).map(
+            (editorAccount, idx) => <SizableText>{editorAccount}</SizableText>,
+            // editorAccount?.id && (
+            //   <XStack
+            //     zIndex={idx + 1}
+            //     key={editorAccount?.id}
+            //     borderColor="$background"
+            //     backgroundColor="$background"
+            //     borderWidth={2}
+            //     borderRadius={100}
+            //     marginLeft={-8}
+            //   >
+            //     <BaseAccountLinkAvatar
+            //       account={editorAccount}
+            //       accountId={editorAccount?.id}
+            //     />
+            //   </XStack>
+            // ),
+          )}
+        </XStack>
+      </XStack> */}
+    </YStack>
+  )
+})
