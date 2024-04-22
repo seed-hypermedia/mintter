@@ -1,4 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
+import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@mintter/shared'
 import {
   AlertDialog,
   AlertDialogContentProps,
@@ -42,14 +43,16 @@ export function useDeleteDialog() {
 }
 
 export function DeleteEntityDialog({
-  input: {id, title},
+  input: {id, title, onSuccess},
   onClose,
 }: {
-  input: {id: string; title?: string}
+  input: {id: string; title?: string; onSuccess?: () => void}
   onClose?: () => void
 }) {
   const deleteEntity = useDeleteEntity({
-    onSuccess: onClose,
+    onSuccess: () => {
+      onClose?.(), onSuccess?.()
+    },
   })
   const {
     control,
@@ -64,7 +67,9 @@ export function DeleteEntityDialog({
         : 'Deleted because...',
     },
   })
+  const hid = unpackHmId(id)
   const onSubmit: SubmitHandler<DeleteFormFields> = (data) => {
+    console.log('DeleteEntityDialog.onSubmit', {id, data})
     deleteEntity.mutate({
       id,
       reason: data.description,
@@ -73,19 +78,22 @@ export function DeleteEntityDialog({
   useEffect(() => {
     setFocus('description')
   }, [setFocus])
+  if (!hid) throw new Error('Invalid id passed to DeleteEntityDialog')
   return (
     <YStack space backgroundColor="$background" padding="$4" borderRadius="$3">
-      <AlertDialog.Title>Delete document</AlertDialog.Title>
+      <AlertDialog.Title>
+        Delete this {HYPERMEDIA_ENTITY_TYPES[hid.type]}
+      </AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to delete this? You may describe why this should
-        be removed, so you can remember why you did this.
+        Are you sure you want to delete this from your computer? It will also be
+        blocked to prevent you seeing it again.
       </AlertDialog.Description>
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <FormField
-          name="description"
-          label="Reason for Deleting"
-          errors={errors}
-        >
+      <AlertDialog.Description>
+        You may describe your reason for deleting+blocking this{' '}
+        {HYPERMEDIA_ENTITY_TYPES[hid.type].toLocaleLowerCase()} below.
+      </AlertDialog.Description>
+      <Form onSubmit={handleSubmit(onSubmit)} gap="$4">
+        <FormField name="description" errors={errors}>
           <FormTextArea
             control={control}
             name="description"
@@ -99,7 +107,9 @@ export function DeleteEntityDialog({
             </Button>
           </AlertDialog.Cancel>
           <Form.Trigger asChild>
-            <Button theme="red">Delete</Button>
+            <Button theme="red">
+              {`Delete + Block ${HYPERMEDIA_ENTITY_TYPES[hid.type]}`}
+            </Button>
           </Form.Trigger>
         </XStack>
       </Form>

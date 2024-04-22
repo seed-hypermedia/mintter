@@ -77,6 +77,7 @@ import {
 
 export function DocOptionsButton() {
   const route = useNavRoute()
+  const dispatch = useNavigationDispatch()
   if (route.key !== 'publication')
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
@@ -134,6 +135,10 @@ export function DocOptionsButton() {
         deleteEntity.open({
           id: route.documentId,
           title: pub.data?.publication?.document?.title,
+          onSuccess: () => {
+            // dispatch({type: 'backplace', route: {key: 'feed', tab: 'trusted'}})
+            dispatch({type: 'pop'})
+          },
         })
       },
     },
@@ -180,15 +185,20 @@ export function AccountOptionsButton() {
   const accountUrl = createHmId('a', route.accountId)
   menuItems.push(useFavoriteMenuItem(accountUrl))
   const account = useAccount(route.accountId)
+  const dispatch = useNavigationDispatch()
   const deleteEntity = useDeleteDialog()
   menuItems.push({
     key: 'delete',
     label: 'Delete Account',
     icon: Trash,
+
     onPress: () => {
       deleteEntity.open({
-        id: route.accountId,
+        id: createHmId('a', route.accountId),
         title: account.data?.profile?.alias,
+        onSuccess: () => {
+          dispatch({type: 'pop'})
+        },
       })
     },
   })
@@ -216,6 +226,7 @@ export function GroupOptionsButton() {
   const cloneGroup = useAppDialog(CloneGroupDialog)
   const deleteEntity = useDeleteDialog()
   const gwUrl = useGatewayUrl()
+  const dispatch = useNavigationDispatch()
   const menuItems: MenuItemType[] = [
     {
       key: 'clone',
@@ -249,6 +260,9 @@ export function GroupOptionsButton() {
         deleteEntity.open({
           id: groupId,
           title: group.data?.title,
+          onSuccess: () => {
+            dispatch({type: 'pop'})
+          },
         })
       },
     },
