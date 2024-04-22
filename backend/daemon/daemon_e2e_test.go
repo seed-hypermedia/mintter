@@ -200,7 +200,7 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
 
 	pub := publishDocument(t, ctx, alice, "")
-	_ = publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
+	linkedDoc := publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
 	comment, err := bob.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
 		Target:         pub.Document.Id + "?v=" + pub.Version,
 		RepliedComment: "",
@@ -278,6 +278,11 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	})
 	require.Error(t, err)
 
+	pubList, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubList.Publications, 1)
+	require.Equal(t, pubList.Publications[0].Document.Id, linkedDoc.Document.Id, "Alice SHould see the document linking the deleted one")
+
 	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
 		Id: reply.Id,
 	})
@@ -306,6 +311,11 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should have her document back")
+
+	pubList, err = alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubList.Publications, 2)
+	require.Equal(t, pubList.Publications[1].Document.Id, doc.Document.Id, "alice should see her document on the list")
 
 	comm, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
 		Id: comment.Id,
