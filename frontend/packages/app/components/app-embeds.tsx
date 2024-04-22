@@ -90,13 +90,11 @@ function EmbedWrapper({
     if (wrapperRef.current) {
       observeSize(wrapperRef.current, (rect) => {
         wrapperRect.current = rect
-        console.log('OBSERVER', wrapperRect.current)
       })
     }
     if (sideannotationRef.current) {
       observeSize(sideannotationRef.current, (rect) => {
         sideRect.current = rect
-        console.log('OBSERVER SIDE', sideRect.current)
       })
     }
 
@@ -112,7 +110,9 @@ function EmbedWrapper({
     }
 
     window.addEventListener('resize', onWindowResize, false)
-    onWindowResize()
+    setTimeout(() => {
+      onWindowResize()
+    }, 500)
 
     return () => {
       window.removeEventListener('resize', onWindowResize, false)
@@ -237,6 +237,9 @@ const EmbedSideAnnotation = forwardRef<
           {formattedDateMedium(pub.data?.document?.publishTime)}
         </SizableText> */}
       {/* </XStack> */}
+      <SizableText size="$1" color="$color9">
+        {formattedDateMedium(pub.data?.document?.updateTime)}
+      </SizableText>
       <XStack
         marginHorizontal="$2"
         gap="$2"

@@ -31,6 +31,7 @@ import {
   XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
+  useMedia,
 } from '@mintter/ui'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
@@ -44,6 +45,7 @@ import {
   useState,
 } from 'react'
 import {NextLink} from 'src/next-link'
+import {AccountRow} from './account-row'
 import {trpc} from './trpc'
 
 export function SitePublicationContentProvider({
@@ -122,6 +124,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   const wrapperRect = useRef<DOMRect>()
   const sideRect = useRef<DOMRect>()
   const [sidePos, setSidePos] = useState<'bottom' | 'right'>('bottom')
+  const media = useMedia()
 
   useEffect(() => {
     if (wrapperRef.current) {
@@ -139,22 +142,25 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
 
     function onWindowResize() {
       if (wrapperRect.current && sideRect.current) {
+        const isLg = media?.lg || false
+
         const targetSize = sideRect.current.width + 48
-        setSidePos(
-          targetSize < window.innerWidth - wrapperRect.current.right
-            ? 'right'
-            : 'bottom',
-        )
+        const targetSpace = isLg
+          ? window.innerWidth - wrapperRect.current.right
+          : window.innerWidth - wrapperRect.current.right - 300
+        setSidePos(targetSize < targetSpace ? 'right' : 'bottom')
       }
     }
 
     window.addEventListener('resize', onWindowResize, false)
-    onWindowResize()
+    setTimeout(() => {
+      onWindowResize()
+    }, 500)
 
     return () => {
       window.removeEventListener('resize', onWindowResize, false)
     }
-  }, [wrapperRef])
+  }, [wrapperRef, media])
 
   return (
     <NextLink
@@ -509,11 +515,14 @@ const EmbedSideAnnotation = forwardRef<
       <SizableText size="$1" fontWeight="600">
         {pub?.data?.publication?.document?.title}
       </SizableText>
+      <SizableText size="$1" color="$color9">
+        {formattedDateMedium(pub.data?.publication?.document?.updateTime)}
+      </SizableText>
       {/* <SizableText fontSize={12} color="$color9">
           {formattedDateMedium(pub.data?.document?.publishTime)}
         </SizableText> */}
       {/* </XStack> */}
-      {/* <XStack
+      <XStack
         marginHorizontal="$2"
         gap="$2"
         ai="center"
@@ -522,26 +531,23 @@ const EmbedSideAnnotation = forwardRef<
       >
         <XStack ai="center">
           {editors?.filter(Boolean).map(
-            (editorAccount, idx) => <SizableText>{editorAccount}</SizableText>,
-            // editorAccount?.id && (
-            //   <XStack
-            //     zIndex={idx + 1}
-            //     key={editorAccount?.id}
-            //     borderColor="$background"
-            //     backgroundColor="$background"
-            //     borderWidth={2}
-            //     borderRadius={100}
-            //     marginLeft={-8}
-            //   >
-            //     <BaseAccountLinkAvatar
-            //       account={editorAccount}
-            //       accountId={editorAccount?.id}
-            //     />
-            //   </XStack>
-            // ),
+            (editorAccount, idx) =>
+              editorAccount && (
+                <XStack
+                  zIndex={idx + 1}
+                  key={editorAccount}
+                  borderColor="$background"
+                  backgroundColor="$background"
+                  borderWidth={2}
+                  borderRadius={100}
+                  marginLeft={-8}
+                >
+                  <AccountRow onlyAvatar account={editorAccount} />
+                </XStack>
+              ),
           )}
         </XStack>
-      </XStack> */}
+      </XStack>
     </YStack>
   )
 })
