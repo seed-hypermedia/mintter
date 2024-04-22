@@ -69,13 +69,17 @@ export const slashMenuItems = [
     icon: <RiImage2Fill size={18} />,
     hint: 'Insert an Image',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'image',
-        props: {
-          url: '',
-          defaultOpen: 'true',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'image',
+          props: {
+            url: '',
+            defaultOpen: 'true',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -87,13 +91,17 @@ export const slashMenuItems = [
     icon: <RiVideoAddFill size={18} />,
     hint: 'Insert a Video',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'video',
-        props: {
-          url: '',
-          defaultOpen: 'true',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'video',
+          props: {
+            url: '',
+            defaultOpen: 'true',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -105,13 +113,17 @@ export const slashMenuItems = [
     icon: <RiFile2Fill size={18} />,
     hint: 'Insert a File',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'file',
-        props: {
-          url: '',
-          defaultOpen: 'true',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'file',
+          props: {
+            url: '',
+            defaultOpen: 'true',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -123,12 +135,16 @@ export const slashMenuItems = [
     icon: <RiArticleFill size={18} />,
     hint: 'Insert a Hypermedia Embed',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'embed',
-        props: {
-          ref: '',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'embed',
+          props: {
+            ref: '',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -140,9 +156,13 @@ export const slashMenuItems = [
     icon: <RiFunctions size={18} />,
     hint: 'Insert an Math Block',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'math',
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'math',
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -154,12 +174,16 @@ export const slashMenuItems = [
     icon: <RiMessage2Fill size={18} />,
     hint: 'Insert a nostr note',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'nostr',
-        props: {
-          url: '',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'nostr',
+          props: {
+            url: '',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },
@@ -171,12 +195,16 @@ export const slashMenuItems = [
     icon: <TwitterXIcon width={18} height={18} />,
     hint: 'Insert an X Post embed',
     execute: (editor) => {
-      insertOrUpdateBlock(editor, {
-        type: 'web-embed',
-        props: {
-          url: '',
-        },
-      } as PartialBlock<HMBlockSchema>)
+      insertOrUpdateBlock(
+        editor,
+        {
+          type: 'web-embed',
+          props: {
+            url: '',
+          },
+        } as PartialBlock<HMBlockSchema>,
+        true,
+      )
       const {state, view} = editor._tiptapEditor
       view.dispatch(state.tr.scrollIntoView())
     },

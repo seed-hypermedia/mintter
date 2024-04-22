@@ -6,6 +6,7 @@ import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 export function insertOrUpdateBlock<BSchema extends BlockSchema>(
   editor: BlockNoteEditor<BSchema>,
   block: PartialBlock<BSchema>,
+  isNode?: boolean,
 ) {
   const currentBlock = editor.getTextCursorPosition().block
 
@@ -16,6 +17,23 @@ export function insertOrUpdateBlock<BSchema extends BlockSchema>(
     currentBlock.content.length === 0
   ) {
     editor.updateBlock(currentBlock, block)
+    if (isNode) {
+      const cursorPosition = editor.getTextCursorPosition()
+      editor.focus()
+      if (cursorPosition.nextBlock)
+        editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
+      else {
+        editor.insertBlocks(
+          [{type: 'paragraph', content: ''}],
+          currentBlock,
+          'after',
+        )
+        editor.setTextCursorPosition(
+          editor.getTextCursorPosition().nextBlock!,
+          'start',
+        )
+      }
+    }
   } else {
     editor.insertBlocks([block], currentBlock, 'after')
     editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
