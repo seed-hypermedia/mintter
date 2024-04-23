@@ -424,31 +424,16 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 	err = api.blobs.ForEachComment(ctx, eid.String(), func(c cid.Cid, cmt hyper.Comment, conn *sqlite.Conn) error {
 		referencedDocument := strings.Split(cmt.Target, "?v=")[0]
 		if referencedDocument == eid.String() {
-			var qEmptyComments = dqb.Str(`
-					UPDATE blobs
-					SET data = NULL, size = -1
-					WHERE multihash = :hash
-				`)
 			_, err = hypersql.BlobsDelete(conn, c.Hash())
 			if err != nil {
-				_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-					return sqlitex.Exec(conn, qEmptyComments(), func(_ *sqlite.Stmt) error {
-						return nil
-					}, c.Hash())
-				})
-				if err != nil {
+				if err = hypersql.BlobsEmptyByHash(conn, c.Hash()); err != nil {
 					return err
 				}
 			}
 			if cmt.RepliedComment.String() != "" {
 				_, err = hypersql.BlobsDelete(conn, cmt.RepliedComment.Hash())
 				if err != nil {
-					_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-						return sqlitex.Exec(conn, qEmptyComments(), func(_ *sqlite.Stmt) error {
-							return nil
-						}, cmt.RepliedComment.Hash())
-					})
-					if err != nil {
+					if err = hypersql.BlobsEmptyByHash(conn, cmt.RepliedComment.Hash()); err != nil {
 						return err
 					}
 				}
@@ -465,32 +450,15 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 			return nil, err
 		}
 
-		var qEmptyBlobs = dqb.Str(`
-		UPDATE blobs
-	    SET data = NULL, size = -1
-		WHERE id in (
-			SELECT blob_id from structural_blobs_view where resource = :eid
-		)
-		`)
-
 		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-			return sqlitex.Exec(conn, qEmptyBlobs(), func(_ *sqlite.Stmt) error {
-				return nil
-			}, in.Id)
+			return hypersql.BlobsEmptyByEID(conn, in.Id)
 		})
 		if err != nil {
 			return &emptypb.Empty{}, err
 		}
-		var qDeleteStructuralBlobs = dqb.Str(`
-		DELETE from structural_blobs
-		WHERE id in (
-			SELECT blob_id from structural_blobs_view where resource = :eid
-		)
-		`)
+
 		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-			return sqlitex.Exec(conn, qDeleteStructuralBlobs(), func(_ *sqlite.Stmt) error {
-				return nil
-			}, in.Id)
+			return hypersql.BlobsStructuralDelete(conn, in.Id)
 		})
 		if err != nil {
 			return &emptypb.Empty{}, err

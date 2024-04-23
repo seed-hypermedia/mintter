@@ -187,6 +187,68 @@ RETURNING blobs.id`
 	return out, err
 }
 
+func BlobsEmptyByHash(conn *sqlite.Conn, blobsMultihash []byte) error {
+	const query = `UPDATE blobs
+SET data ='NULL', size =-1
+WHERE blobs.multihash = :blobsMultihash`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":blobsMultihash", blobsMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsEmptyByHash: %w", err)
+	}
+
+	return err
+}
+
+func BlobsEmptyByEID(conn *sqlite.Conn, eid string) error {
+	const query = `UPDATE blobs
+SET data = 'NULL', size =-1
+WHERE blobs.id IN (SELECT structural_blobs_view.blob_id FROM structural_blobs_view WHERE structural_blobs_view.resource = :eid)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":eid", eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsEmptyByEID: %w", err)
+	}
+
+	return err
+}
+
+func BlobsStructuralDelete(conn *sqlite.Conn, eid string) error {
+	const query = `DELETE FROM structural_blobs
+WHERE structural_blobs.id IN (SELECT structural_blobs_view.blob_id FROM structural_blobs_view WHERE structural_blobs_view.resource = :eid)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":eid", eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsStructuralDelete: %w", err)
+	}
+
+	return err
+}
+
 type BlobsListKnownResult struct {
 	BlobsID        int64
 	BlobsMultihash []byte
