@@ -344,12 +344,14 @@ function useNavigateBlock(fromRoute: NavRoute) {
       } else if (destRoute?.key === 'group') {
         navigate({
           ...destRoute,
+          tab: 'front',
           context,
           blockId,
         })
       } else if (destRoute?.key === 'account') {
         navigate({
           ...destRoute,
+          tab: 'profile',
           context,
           blockId,
         })
@@ -364,11 +366,13 @@ function useNavigateBlock(fromRoute: NavRoute) {
     } else if (fromRoute.key === 'group') {
       replace({
         ...fromRoute,
+        tab: 'front',
         blockId,
       })
     } else if (fromRoute.key === 'account') {
       replace({
         ...fromRoute,
+        tab: 'profile',
         blockId,
       })
     }
