@@ -134,7 +134,7 @@ func (srv *Server) ListComments(ctx context.Context, in *documents.ListCommentsR
 	}
 
 	resp := &documents.ListCommentsResponse{}
-	if err := srv.blobs.ForEachComment(ctx, in.Target, func(c cid.Cid, cmt hyper.Comment, conn *sqlite.Conn) error {
+	if err := srv.blobs.ForEachComment(ctx, in.Target, func(c cid.Cid, cmt hyper.Comment, _ *sqlite.Conn) error {
 		pb, err := commentToProto(ctx, srv.blobs, c, cmt)
 		if err != nil {
 			return fmt.Errorf("failed to convert comment %s to proto", c.String())

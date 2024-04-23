@@ -324,6 +324,7 @@ func SortCIDs(cids []cid.Cid) []cid.Cid {
 	return cids
 }
 
+// ForEachComment iterates through a target document comments to manipulate them.
 func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c cid.Cid, cmt Comment, conn *sqlite.Conn) error) (err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
