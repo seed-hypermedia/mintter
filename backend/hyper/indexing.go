@@ -339,6 +339,10 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 	// Indexing specific to various types of Entities
 	switch {
 	case v.Entity.HasPrefix("hm://a/"):
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return fmt.Errorf("Change belongs to a deleted account [%s]", res.DeletedResourcesIRI)
+		}
 		if v, ok := v.Patch["avatar"].(cid.Cid); ok {
 			sb.AddBlobLink("account/avatar", v)
 		}
