@@ -433,7 +433,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 				_, err = hypersql.BlobsDelete(conn, c.Hash())
 				if err != nil {
 					_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-						return sqlitex.Exec(conn, qEmptyComments(), func(stmt *sqlite.Stmt) error {
+						return sqlitex.Exec(conn, qEmptyComments(), func(_ *sqlite.Stmt) error {
 							return nil
 						}, c.Hash())
 					})
@@ -445,7 +445,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 					_, err = hypersql.BlobsDelete(conn, cmt.RepliedComment.Hash())
 					if err != nil {
 						_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-							return sqlitex.Exec(conn, qEmptyComments(), func(stmt *sqlite.Stmt) error {
+							return sqlitex.Exec(conn, qEmptyComments(), func(_ *sqlite.Stmt) error {
 								return nil
 							}, cmt.RepliedComment.Hash())
 						})
@@ -460,7 +460,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 			return nil
 		})
 	})
-	err = api.blobs.DeleteEntity(ctx, eid, in.Reason, meta)
+	err = api.blobs.DeleteEntity(ctx, eid, meta)
 	if err != nil {
 		if errors.Is(err, hyper.ErrEntityNotFound) {
 			return nil, err
@@ -475,7 +475,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		`)
 
 		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-			return sqlitex.Exec(conn, qEmptyBlobs(), func(stmt *sqlite.Stmt) error {
+			return sqlitex.Exec(conn, qEmptyBlobs(), func(_ *sqlite.Stmt) error {
 				return nil
 			}, in.Id)
 		})
@@ -489,7 +489,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 		)
 		`)
 		_, err = &emptypb.Empty{}, api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-			return sqlitex.Exec(conn, qDeleteStructuralBlobs(), func(stmt *sqlite.Stmt) error {
+			return sqlitex.Exec(conn, qDeleteStructuralBlobs(), func(_ *sqlite.Stmt) error {
 				return nil
 			}, in.Id)
 		})
