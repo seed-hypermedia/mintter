@@ -780,9 +780,9 @@ export class ListDeletedEntitiesResponse extends Message<ListDeletedEntitiesResp
 /**
  * Request for restoring an entity.
  *
- * @generated from message com.mintter.entities.v1alpha.RestoreEntityRequest
+ * @generated from message com.mintter.entities.v1alpha.UndeleteEntityRequest
  */
-export class RestoreEntityRequest extends Message<RestoreEntityRequest> {
+export class UndeleteEntityRequest extends Message<UndeleteEntityRequest> {
   /**
    * Entity ID of the entity to be restored.
    * All versions will also be restored.
@@ -791,31 +791,31 @@ export class RestoreEntityRequest extends Message<RestoreEntityRequest> {
    */
   id = "";
 
-  constructor(data?: PartialMessage<RestoreEntityRequest>) {
+  constructor(data?: PartialMessage<UndeleteEntityRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.entities.v1alpha.RestoreEntityRequest";
+  static readonly typeName = "com.mintter.entities.v1alpha.UndeleteEntityRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RestoreEntityRequest {
-    return new RestoreEntityRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RestoreEntityRequest {
-    return new RestoreEntityRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RestoreEntityRequest {
-    return new RestoreEntityRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RestoreEntityRequest | PlainMessage<RestoreEntityRequest> | undefined, b: RestoreEntityRequest | PlainMessage<RestoreEntityRequest> | undefined): boolean {
-    return proto3.util.equals(RestoreEntityRequest, a, b);
+  static equals(a: UndeleteEntityRequest | PlainMessage<UndeleteEntityRequest> | undefined, b: UndeleteEntityRequest | PlainMessage<UndeleteEntityRequest> | undefined): boolean {
+    return proto3.util.equals(UndeleteEntityRequest, a, b);
   }
 }
 

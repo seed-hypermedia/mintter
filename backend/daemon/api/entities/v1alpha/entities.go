@@ -513,8 +513,8 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 	return &emptypb.Empty{}, err
 }
 
-// RestoreEntity implements the corresponding gRPC method.
-func (api *Server) RestoreEntity(ctx context.Context, in *entities.RestoreEntityRequest) (*emptypb.Empty, error) {
+// UndeleteEntity implements the corresponding gRPC method.
+func (api *Server) UndeleteEntity(ctx context.Context, in *entities.UndeleteEntityRequest) (*emptypb.Empty, error) {
 	if in.Id == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "must specify entity ID to restore")
 	}

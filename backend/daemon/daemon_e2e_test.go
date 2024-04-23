@@ -267,6 +267,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.Equal(t, doc.Document.Id, lst.DeletedEntities[0].Id)
 	require.Equal(t, reason, lst.DeletedEntities[0].DeletedReason)
 
+	// bob creates another document that should get to Alice
+	BobsPub := publishDocument(t, ctx, bob, "")
 	// Even if we sync we shouldn't get the document back
 	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
@@ -280,8 +282,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 
 	pubList, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
-	require.Len(t, pubList.Publications, 1)
-	require.Equal(t, pubList.Publications[0].Document.Id, linkedDoc.Document.Id, "Alice SHould see the document linking the deleted one")
+	require.Len(t, pubList.Publications, 2)
+	require.Equal(t, pubList.Publications[1].Document.Id, linkedDoc.Document.Id, "Alice Should see the document linking the deleted one")
 
 	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
 		Id: reply.Id,
@@ -291,8 +293,16 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 		Id: comment.Id,
 	})
 	require.Error(t, err)
+
+	// But she should get Bob's document
+	_, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: BobsPub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+
 	// Only after restoring the document we should get it back.
-	_, err = alice.RPC.Entities.RestoreEntity(ctx, &entities.RestoreEntityRequest{
+	_, err = alice.RPC.Entities.UndeleteEntity(ctx, &entities.UndeleteEntityRequest{
 		Id: doc.Document.Id,
 	})
 	require.NoError(t, err)
@@ -314,8 +324,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 
 	pubList, err = alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
-	require.Len(t, pubList.Publications, 2)
-	require.Equal(t, pubList.Publications[1].Document.Id, doc.Document.Id, "alice should see her document on the list")
+	require.Len(t, pubList.Publications, 3)
+	require.Equal(t, pubList.Publications[2].Document.Id, doc.Document.Id, "alice should see her document on the list")
 
 	comm, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
 		Id: comment.Id,

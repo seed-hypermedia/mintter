@@ -37,9 +37,9 @@ type EntitiesClient interface {
 	DeleteEntity(ctx context.Context, in *DeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists deleted entities.
 	ListDeletedEntities(ctx context.Context, in *ListDeletedEntitiesRequest, opts ...grpc.CallOption) (*ListDeletedEntitiesResponse, error)
-	// Try to bring back the deleted entity in next syncync round. It may fail if there is no
-	// provider for that entity, even though it once was when the entity was created.
-	RestoreEntity(ctx context.Context, in *RestoreEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Undo the entity delition by removing the entity from the deleted list. That entity, if available
+	// will be synced back in the next syncing round (or manually discovered).
+	UndeleteEntity(ctx context.Context, in *UndeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List mentions of a given Entity across the locally-available content.
 	ListEntityMentions(ctx context.Context, in *ListEntityMentionsRequest, opts ...grpc.CallOption) (*ListEntityMentionsResponse, error)
 }
@@ -106,9 +106,9 @@ func (c *entitiesClient) ListDeletedEntities(ctx context.Context, in *ListDelete
 	return out, nil
 }
 
-func (c *entitiesClient) RestoreEntity(ctx context.Context, in *RestoreEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *entitiesClient) UndeleteEntity(ctx context.Context, in *UndeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/RestoreEntity", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/UndeleteEntity", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,9 +142,9 @@ type EntitiesServer interface {
 	DeleteEntity(context.Context, *DeleteEntityRequest) (*emptypb.Empty, error)
 	// Lists deleted entities.
 	ListDeletedEntities(context.Context, *ListDeletedEntitiesRequest) (*ListDeletedEntitiesResponse, error)
-	// Try to bring back the deleted entity in next syncync round. It may fail if there is no
-	// provider for that entity, even though it once was when the entity was created.
-	RestoreEntity(context.Context, *RestoreEntityRequest) (*emptypb.Empty, error)
+	// Undo the entity delition by removing the entity from the deleted list. That entity, if available
+	// will be synced back in the next syncing round (or manually discovered).
+	UndeleteEntity(context.Context, *UndeleteEntityRequest) (*emptypb.Empty, error)
 	// List mentions of a given Entity across the locally-available content.
 	ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error)
 }
@@ -171,8 +171,8 @@ func (UnimplementedEntitiesServer) DeleteEntity(context.Context, *DeleteEntityRe
 func (UnimplementedEntitiesServer) ListDeletedEntities(context.Context, *ListDeletedEntitiesRequest) (*ListDeletedEntitiesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDeletedEntities not implemented")
 }
-func (UnimplementedEntitiesServer) RestoreEntity(context.Context, *RestoreEntityRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RestoreEntity not implemented")
+func (UnimplementedEntitiesServer) UndeleteEntity(context.Context, *UndeleteEntityRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UndeleteEntity not implemented")
 }
 func (UnimplementedEntitiesServer) ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEntityMentions not implemented")
@@ -297,20 +297,20 @@ func _Entities_ListDeletedEntities_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Entities_RestoreEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RestoreEntityRequest)
+func _Entities_UndeleteEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndeleteEntityRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EntitiesServer).RestoreEntity(ctx, in)
+		return srv.(EntitiesServer).UndeleteEntity(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.entities.v1alpha.Entities/RestoreEntity",
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/UndeleteEntity",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EntitiesServer).RestoreEntity(ctx, req.(*RestoreEntityRequest))
+		return srv.(EntitiesServer).UndeleteEntity(ctx, req.(*UndeleteEntityRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -365,8 +365,8 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Entities_ListDeletedEntities_Handler,
 		},
 		{
-			MethodName: "RestoreEntity",
-			Handler:    _Entities_RestoreEntity_Handler,
+			MethodName: "UndeleteEntity",
+			Handler:    _Entities_UndeleteEntity_Handler,
 		},
 		{
 			MethodName: "ListEntityMentions",

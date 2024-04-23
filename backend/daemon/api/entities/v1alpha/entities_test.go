@@ -220,7 +220,7 @@ func TestDeleteEntity(t *testing.T) {
 }
 
 func newTestDocsAPI(t *testing.T, db *sqlitex.Pool, name string) *documents.Server {
-	u := coretest.NewTester("alice")
+	u := coretest.NewTester(name)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))

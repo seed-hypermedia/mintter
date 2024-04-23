@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DeleteEntityRequest, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListDeletedEntitiesRequest, ListDeletedEntitiesResponse, ListEntityMentionsRequest, ListEntityMentionsResponse, RestoreEntityRequest, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
+import { Change, DeleteEntityRequest, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListDeletedEntitiesRequest, ListDeletedEntitiesResponse, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse, UndeleteEntityRequest } from "./entities_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -83,14 +83,14 @@ export const Entities = {
       kind: MethodKind.Unary,
     },
     /**
-     * Try to bring back the deleted entity in next syncync round. It may fail if there is no
-     * provider for that entity, even though it once was when the entity was created.
+     * Undo the entity delition by removing the entity from the deleted list. That entity, if available
+     * will be synced back in the next syncing round (or manually discovered).
      *
-     * @generated from rpc com.mintter.entities.v1alpha.Entities.RestoreEntity
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.UndeleteEntity
      */
-    restoreEntity: {
-      name: "RestoreEntity",
-      I: RestoreEntityRequest,
+    undeleteEntity: {
+      name: "UndeleteEntity",
+      I: UndeleteEntityRequest,
       O: Empty,
       kind: MethodKind.Unary,
     },
