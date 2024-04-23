@@ -332,7 +332,7 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 }
 
 // DeleteEntity deletes an entity from the database.
-func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID, meta string) error {
+func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err

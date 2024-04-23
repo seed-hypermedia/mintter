@@ -460,7 +460,7 @@ func (api *Server) DeleteEntity(ctx context.Context, in *entities.DeleteEntityRe
 			return nil
 		})
 	})
-	err = api.blobs.DeleteEntity(ctx, eid, meta)
+	err = api.blobs.DeleteEntity(ctx, eid)
 	if err != nil {
 		if errors.Is(err, hyper.ErrEntityNotFound) {
 			return nil, err
