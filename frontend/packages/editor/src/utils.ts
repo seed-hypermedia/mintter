@@ -19,3 +19,14 @@ export function camelToFlat(camel: string) {
 
   return camelCase
 }
+
+export const timeoutPromise = (promise, delay, reason) =>
+  Promise.race([
+    promise,
+    new Promise((resolve, reject) =>
+      setTimeout(
+        () => (reason === undefined ? resolve(null) : reject(reason)),
+        delay,
+      ),
+    ),
+  ])

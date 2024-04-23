@@ -12,7 +12,7 @@ import {
 import {MediaContainer} from './media-container'
 import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
 import {HMBlockSchema} from './schema'
-import {isValidUrl} from './utils'
+import {isValidUrl, timeoutPromise} from './utils'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -52,22 +52,47 @@ const Render = (
 ) => {
   const theme = useTheme()
   const upload = trpc.webImporting.importWebFile.useMutation()
-  const submitImage = async (url: string, assign: any, setFileName: any) => {
+
+  const submitImage = (
+    url: string,
+    assign: any,
+    setFileName: any,
+    setLoading: any,
+  ) => {
     if (isValidUrl(url)) {
-      const imageData = await upload.mutateAsync(url)
-      if (imageData?.cid) {
-        if (!imageData.type.includes('image')) {
-          setFileName({name: 'The provided URL is not an image.', color: 'red'})
-          return
-        }
-        assign({props: {url: `ipfs://${imageData.cid}`}} as MediaType)
-      } else {
-        let imgTypeSplit = imageData.type.split('/')
-        setFileName({
-          name: `uploadedImage.${imgTypeSplit[imgTypeSplit.length - 1]}`,
-          color: 'red',
+      setLoading(true)
+      timeoutPromise(upload.mutateAsync(url), 5000, {
+        reason: 'Error fetching the image.',
+      })
+        .then((imageData) => {
+          console.log(imageData)
+          setLoading(false)
+          if (imageData?.cid) {
+            if (!imageData.type.includes('image')) {
+              setFileName({
+                name: 'The provided URL is not an image.',
+                color: 'red',
+              })
+              return
+            }
+            assign({props: {url: `ipfs://${imageData.cid}`}} as MediaType)
+            setLoading(false)
+          } else {
+            let imgTypeSplit = imageData.type.split('/')
+            setFileName({
+              name: `uploadedImage.${imgTypeSplit[imgTypeSplit.length - 1]}`,
+              color: 'red',
+            })
+            setLoading(false)
+          }
         })
-      }
+        .catch((e) => {
+          setFileName({
+            name: e.reason,
+            color: 'red',
+          })
+          setLoading(false)
+        })
     } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
 
     const cursorPosition = editor.getTextCursorPosition()

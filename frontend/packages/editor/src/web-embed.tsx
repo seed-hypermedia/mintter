@@ -50,11 +50,7 @@ const Render = (
 ) => {
   const theme = useTheme()
 
-  const submitTwitterLink = async (
-    url: string,
-    assign: any,
-    setFileName: any,
-  ) => {
+  const submitTwitterLink = (url: string, assign: any, setFileName: any) => {
     if (isValidUrl(url)) {
       if (url.includes('twitter') || url.includes('x.com')) {
         assign({props: {url: url}} as MediaType)

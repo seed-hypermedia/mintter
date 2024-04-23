@@ -49,7 +49,7 @@ interface RenderProps {
     assign,
     setFileName,
     setLoading,
-  ) => Promise<void> | undefined
+  ) => Promise<void> | void | undefined
   icon: JSX.Element | FunctionComponent<{color?: string; size?: number}>
   DisplayComponent: React.ComponentType<DisplayComponentProps>
 }
@@ -204,7 +204,7 @@ function MediaForm({
     assign,
     setFileName,
     setLoading,
-  ) => Promise<void> | undefined
+  ) => Promise<void> | void | undefined
   icon: JSX.Element | FunctionComponent<{color?: string; size?: number}> | null
 }) {
   const [url, setUrl] = useState('')

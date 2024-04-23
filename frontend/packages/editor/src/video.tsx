@@ -57,7 +57,7 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const theme = useTheme()
-  const submitVideo = async (url: string, assign: any, setFileName: any) => {
+  const submitVideo = (url: string, assign: any, setFileName: any) => {
     if (isValidUrl(url)) {
       let embedUrl = 'https://www.youtube.com/embed/'
       if (url.includes('youtu.be') || url.includes('youtube')) {
