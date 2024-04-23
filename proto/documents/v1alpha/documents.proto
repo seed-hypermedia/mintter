@@ -151,9 +151,6 @@ service Publications {
   // Gets a single publication.
   rpc GetPublication(GetPublicationRequest) returns (Publication);
 
-  // Deletes a publication from the local node. It removes all the patches corresponding to a document.
-  rpc DeletePublication(DeletePublicationRequest) returns (google.protobuf.Empty);
-
   // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 
@@ -175,13 +172,6 @@ message GetPublicationRequest {
   // Optional. If true, only local publications will be found. False by default.
   // Deprecated: use [Entities.DiscoverEntity] API explicitly instead.
   bool local_only = 3;
-}
-
-// Request for deleting a publication.
-message DeletePublicationRequest {
-  // Document ID of the publication to be removed.
-  // All versions will also be removed.
-  string document_id = 1;
 }
 
 // Request for getting a single publication.
@@ -248,6 +238,21 @@ message Publication {
 
   // Published document.
   Document document = 2;
+}
+
+// Publication that has been deleted
+message DeletedPublication { 
+  // EID of the deleted publication.
+  string eid = 1;
+
+  // When the publication was deleted.
+  google.protobuf.Timestamp deleted_time = 2;
+
+  // Reason why that publication was deleted.
+  string deleted_reason = 3;
+
+  // Further metadata about the deleted Publication, title, etc ...
+  string metadata = 4;
 }
 
 // Document represents metadata and content of a draft or publication.

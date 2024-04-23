@@ -127,7 +127,7 @@ func TestDaemonPushPublication(t *testing.T) {
 	alice := makeTestApp(t, "alice", cfg, true)
 	ctx := context.Background()
 
-	pub := publishDocument(t, ctx, alice)
+	pub := publishDocument(t, ctx, alice, "")
 	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
 		Url:        ipfs.TestGateway,
@@ -168,7 +168,7 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, alice.Net.MustGet().Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
 	alice.Net.MustGet().Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
 
-	pub := publishDocument(t, ctx, alice)
+	pub := publishDocument(t, ctx, alice, "")
 
 	time.Sleep(time.Second)
 
@@ -176,6 +176,170 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, err)
 
 	testutil.ProtoEqual(t, pub, remotePub, "remote publication doesn't match")
+}
+
+func TestAPIDeleteAndRestoreEntity(t *testing.T) {
+	t.Parallel()
+
+	aliceCfg := makeTestConfig(t)
+	bobCfg := makeTestConfig(t)
+
+	aliceCfg.Syncing.WarmupDuration = 100 * time.Millisecond
+	bobCfg.Syncing.WarmupDuration = 100 * time.Millisecond
+
+	alice := makeTestApp(t, "alice", aliceCfg, true)
+	bob := makeTestApp(t, "bob", bobCfg, true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+
+	pub := publishDocument(t, ctx, alice, "")
+	linkedDoc := publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
+	comment, err := bob.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
+		Target:         pub.Document.Id + "?v=" + pub.Version,
+		RepliedComment: "",
+		Content: []*documents.BlockNode{{Block: &documents.Block{
+			Id:   "c1",
+			Type: "paragraph",
+			Text: "Bob's comment",
+		}}},
+	})
+
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	// so alice gets Bob's comment
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	comm, err := alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, comment.Id, comm.Id, "Alice should have Bob's comment")
+	require.Equal(t, comment.Content, comm.Content, "Comment's content should not have been deleted")
+
+	reply, err := alice.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
+		Target:         pub.Document.Id + "?v=" + pub.Version,
+		RepliedComment: comment.Id,
+		Content: []*documents.BlockNode{{Block: &documents.Block{
+			Id:   "c2",
+			Type: "paragraph",
+			Text: "Alice's reply",
+		}}},
+	})
+	require.NoError(t, err)
+
+	// so bob gets Alice's document + comment reply
+	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	doc, err := bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "Bob should have synced the document")
+
+	_, err = bob.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
+	})
+	require.NoError(t, err, "Bob should have synced Alice's reply")
+
+	// Now Alice removes de document
+	const reason = "I don't want it anymore"
+	_, err = alice.RPC.Entities.DeleteEntity(ctx, &entities.DeleteEntityRequest{
+		Id:     doc.Document.Id,
+		Reason: reason,
+	})
+	require.NoError(t, err)
+	lst, err := alice.RPC.Entities.ListDeletedEntities(ctx, &entities.ListDeletedEntitiesRequest{})
+	require.NoError(t, err)
+	require.Len(t, lst.DeletedEntities, 1)
+	require.Equal(t, doc.Document.Id, lst.DeletedEntities[0].Id)
+	require.Equal(t, reason, lst.DeletedEntities[0].DeletedReason)
+
+	// bob creates another document that should get to Alice
+	BobsPub := publishDocument(t, ctx, bob, "")
+	// Even if we sync we shouldn't get the document back
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	_, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.Error(t, err)
+
+	pubList, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubList.Publications, 2)
+	require.Equal(t, pubList.Publications[1].Document.Id, linkedDoc.Document.Id, "Alice Should see the document linking the deleted one")
+
+	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
+	})
+	require.Error(t, err)
+	_, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.Error(t, err)
+
+	// But she should get Bob's document
+	_, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: BobsPub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+
+	// Only after restoring the document we should get it back.
+	_, err = alice.RPC.Entities.UndeleteEntity(ctx, &entities.UndeleteEntityRequest{
+		Id: doc.Document.Id,
+	})
+	require.NoError(t, err)
+
+	lst, err = alice.RPC.Entities.ListDeletedEntities(ctx, &entities.ListDeletedEntitiesRequest{})
+	require.NoError(t, err)
+	require.Len(t, lst.DeletedEntities, 0)
+
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	doc, err = alice.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+		LocalOnly:  true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub.Document.Id, doc.Document.Id, "alice should have her document back")
+
+	pubList, err = alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubList.Publications, 3)
+	require.Equal(t, pubList.Publications[2].Document.Id, doc.Document.Id, "alice should see her document on the list")
+
+	comm, err = alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: comment.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, comment.Id, comm.Id, "alice should have her comment back")
+	require.Equal(t, comment.Content, comm.Content, "Comment's content should not have been deleted")
+
+	rep, err := alice.RPC.Documents.GetComment(ctx, &documents.GetCommentRequest{
+		Id: reply.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, reply.Id, rep.Id, "alice should have her own reply back")
+	require.Equal(t, reply.Content, rep.Content, "Replies's content should not have been deleted")
 }
 
 func TestBug_SyncHangs(t *testing.T) {
@@ -429,22 +593,33 @@ func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
-func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documents.Publication {
+func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string) *documents.Publication {
 	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
-
+	ann := []*documents.Annotation{}
+	if link != "" {
+		ann = append(ann, &documents.Annotation{
+			Type:   "link",
+			Ref:    link,
+			Starts: []int32{0},
+			Ends:   []int32{5},
+		},
+		)
+	}
 	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
 			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-				Id:   "b1",
-				Type: "statement",
-				Text: "Hello world!",
+				Id:          "b1",
+				Type:        "paragraph",
+				Text:        "Hello world!",
+				Annotations: ann,
 			}}},
 		},
 	})
+
 	require.NoError(t, err)
 	require.NotNil(t, updated)
 	published, err := publisher.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})

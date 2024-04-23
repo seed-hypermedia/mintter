@@ -187,6 +187,68 @@ RETURNING blobs.id`
 	return out, err
 }
 
+func BlobsEmptyByHash(conn *sqlite.Conn, blobsMultihash []byte) error {
+	const query = `UPDATE blobs
+SET data ='NULL', size =-1
+WHERE blobs.multihash = :blobsMultihash`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":blobsMultihash", blobsMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsEmptyByHash: %w", err)
+	}
+
+	return err
+}
+
+func BlobsEmptyByEID(conn *sqlite.Conn, eid string) error {
+	const query = `UPDATE blobs
+SET data = 'NULL', size =-1
+WHERE blobs.id IN (SELECT structural_blobs_view.blob_id FROM structural_blobs_view WHERE structural_blobs_view.resource = :eid)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":eid", eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsEmptyByEID: %w", err)
+	}
+
+	return err
+}
+
+func BlobsStructuralDelete(conn *sqlite.Conn, eid string) error {
+	const query = `DELETE FROM structural_blobs
+WHERE structural_blobs.id IN (SELECT structural_blobs_view.blob_id FROM structural_blobs_view WHERE structural_blobs_view.resource = :eid)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":eid", eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobsStructuralDelete: %w", err)
+	}
+
+	return err
+}
+
 type BlobsListKnownResult struct {
 	BlobsID        int64
 	BlobsMultihash []byte
@@ -686,6 +748,134 @@ WHERE resources.iri = :entities_eid`
 	}
 
 	return err
+}
+
+type EntitiesInsertRemovedRecordResult struct {
+	ResourceEID string
+}
+
+func EntitiesInsertRemovedRecord(conn *sqlite.Conn, iri string, reason string, meta string) (EntitiesInsertRemovedRecordResult, error) {
+	const query = `INSERT OR IGNORE INTO deleted_resources (iri, reason, meta)
+VALUES (:iri, :reason, :meta)
+RETURNING deleted_resources.iri AS resource_eid`
+
+	var out EntitiesInsertRemovedRecordResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":iri", iri)
+		stmt.SetText(":reason", reason)
+		stmt.SetText(":meta", meta)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("EntitiesInsertRemovedRecord: more than one result return for a single-kind query")
+		}
+
+		out.ResourceEID = stmt.ColumnText(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesInsertRemovedRecord: %w", err)
+	}
+
+	return out, err
+}
+
+func EntitiesDeleteRemovedRecord(conn *sqlite.Conn, resource_eid string) error {
+	const query = `DELETE FROM deleted_resources
+WHERE deleted_resources.iri = :resource_eid`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":resource_eid", resource_eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesDeleteRemovedRecord: %w", err)
+	}
+
+	return err
+}
+
+type EntitiesLookupRemovedRecordResult struct {
+	DeletedResourcesIRI        string
+	DeletedResourcesDeleteTime int64
+	DeletedResourcesReason     string
+	DeletedResourcesMeta       string
+}
+
+func EntitiesLookupRemovedRecord(conn *sqlite.Conn, resource_eid string) (EntitiesLookupRemovedRecordResult, error) {
+	const query = `SELECT deleted_resources.iri, deleted_resources.delete_time, deleted_resources.reason, deleted_resources.meta
+FROM deleted_resources
+WHERE deleted_resources.iri = :resource_eid
+LIMIT 1`
+
+	var out EntitiesLookupRemovedRecordResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":resource_eid", resource_eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("EntitiesLookupRemovedRecord: more than one result return for a single-kind query")
+		}
+
+		out.DeletedResourcesIRI = stmt.ColumnText(0)
+		out.DeletedResourcesDeleteTime = stmt.ColumnInt64(1)
+		out.DeletedResourcesReason = stmt.ColumnText(2)
+		out.DeletedResourcesMeta = stmt.ColumnText(3)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesLookupRemovedRecord: %w", err)
+	}
+
+	return out, err
+}
+
+type EntitiesListRemovedRecordsResult struct {
+	DeletedResourcesIRI        string
+	DeletedResourcesDeleteTime int64
+	DeletedResourcesReason     string
+	DeletedResourcesMeta       string
+}
+
+func EntitiesListRemovedRecords(conn *sqlite.Conn) ([]EntitiesListRemovedRecordsResult, error) {
+	const query = `SELECT deleted_resources.iri, deleted_resources.delete_time, deleted_resources.reason, deleted_resources.meta
+FROM deleted_resources`
+
+	var out []EntitiesListRemovedRecordsResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, EntitiesListRemovedRecordsResult{
+			DeletedResourcesIRI:        stmt.ColumnText(0),
+			DeletedResourcesDeleteTime: stmt.ColumnInt64(1),
+			DeletedResourcesReason:     stmt.ColumnText(2),
+			DeletedResourcesMeta:       stmt.ColumnText(3),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesListRemovedRecords: %w", err)
+	}
+
+	return out, err
 }
 
 type ChangesListFromChangeSetResult struct {

@@ -40,11 +40,13 @@ import {
   Pencil,
   Plus,
   Send,
+  Trash,
   UploadCloud,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
 import {useAppContext} from '../app-context'
+import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {usePushPublication} from '../models/documents'
 import {useGatewayHost, useGatewayUrl} from '../models/gateway-settings'
@@ -59,6 +61,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {NavRoute} from '../utils/routes'
 import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
+import {useDeleteDialog} from './delete-dialog'
 import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
 import {useFavoriteMenuItem} from './favoriting'
@@ -74,6 +77,7 @@ import {
 
 export function DocOptionsButton() {
   const route = useNavRoute()
+  const dispatch = useNavigationDispatch()
   if (route.key !== 'publication')
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
@@ -87,7 +91,13 @@ export function DocOptionsButton() {
   const gwHost = useGatewayHost()
   const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
   const push = usePushPublication()
+  const deleteEntity = useDeleteDialog()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
+  const pub = usePublicationVariant({
+    documentId: route.documentId,
+    versionId: route.versionId,
+    variants: route.variants,
+  })
   const menuItems: MenuItemType[] = [
     {
       key: 'link',
@@ -114,6 +124,21 @@ export function DocOptionsButton() {
           loading: 'Pushing...',
           success: `Pushed to ${gwHost}`,
           error: (err) => `Could not push to ${gwHost}: ${err.message}`,
+        })
+      },
+    },
+    {
+      key: 'delete',
+      label: 'Delete Publication',
+      icon: Trash,
+      onPress: () => {
+        deleteEntity.open({
+          id: route.documentId,
+          title: pub.data?.publication?.document?.title,
+          onSuccess: () => {
+            // dispatch({type: 'backplace', route: {key: 'feed', tab: 'trusted'}})
+            dispatch({type: 'pop'})
+          },
         })
       },
     },
@@ -144,6 +169,7 @@ export function DocOptionsButton() {
     <>
       {copyContent}
       {addToCategoryDialog.content}
+      {deleteEntity.content}
       <OptionsDropdown menuItems={menuItems} />
     </>
   )
@@ -158,9 +184,27 @@ export function AccountOptionsButton() {
   const menuItems: MenuItemType[] = []
   const accountUrl = createHmId('a', route.accountId)
   menuItems.push(useFavoriteMenuItem(accountUrl))
+  const account = useAccount(route.accountId)
+  const dispatch = useNavigationDispatch()
+  const deleteEntity = useDeleteDialog()
+  menuItems.push({
+    key: 'delete',
+    label: 'Delete Account',
+    icon: Trash,
 
+    onPress: () => {
+      deleteEntity.open({
+        id: createHmId('a', route.accountId),
+        title: account.data?.profile?.alias,
+        onSuccess: () => {
+          dispatch({type: 'pop'})
+        },
+      })
+    },
+  })
   return (
     <>
+      {deleteEntity.content}
       <OptionsDropdown menuItems={menuItems} />
     </>
   )
@@ -180,7 +224,9 @@ export function GroupOptionsButton() {
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
   const cloneGroup = useAppDialog(CloneGroupDialog)
+  const deleteEntity = useDeleteDialog()
   const gwUrl = useGatewayUrl()
+  const dispatch = useNavigationDispatch()
   const menuItems: MenuItemType[] = [
     {
       key: 'clone',
@@ -204,6 +250,20 @@ export function GroupOptionsButton() {
           }),
         )
         toast.success('Copied Public Group URL')
+      },
+    },
+    {
+      key: 'delete',
+      label: 'Delete Group',
+      icon: Trash,
+      onPress: () => {
+        deleteEntity.open({
+          id: groupId,
+          title: group.data?.title,
+          onSuccess: () => {
+            dispatch({type: 'pop'})
+          },
+        })
       },
     },
   ]
@@ -236,6 +296,7 @@ export function GroupOptionsButton() {
     <>
       <OptionsDropdown menuItems={menuItems} />
       {publish.content}
+      {deleteEntity.content}
       {editInfo.content}
       {cloneGroup.content}
     </>

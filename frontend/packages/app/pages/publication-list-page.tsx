@@ -26,9 +26,8 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import React, {ReactNode, memo} from 'react'
 import {useAppContext} from '../app-context'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {DeleteDocumentDialog} from '../components/delete-dialog'
+import {useDeleteDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
-import {useAppDialog} from '../components/dialog'
 import {EmptyList} from '../components/empty-list'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
@@ -158,7 +157,7 @@ function MyPublicationsList() {
   const publications = useAccountPublicationFullList(myAccount.data?.id)
   const drafts = useDraftList()
   const {queryClient, grpcClient} = useAppContext()
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+  const deleteDialog = useDeleteDialog()
 
   const items = publications.data
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -219,7 +218,10 @@ function MyPublicationsList() {
                   label: 'Delete Publication',
                   icon: Delete,
                   onPress: () => {
-                    deleteDialog.open(docId)
+                    deleteDialog.open({
+                      id: docId,
+                      title: publication?.document?.title,
+                    })
                   },
                 },
               ]}
@@ -243,7 +245,7 @@ export function PublicationsList({
   const publications = usePublicationFullList({trustedOnly})
   const drafts = useDraftList()
   const {queryClient, grpcClient} = useAppContext()
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+  const deleteDialog = useDeleteDialog()
 
   const items = publications.data
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -308,7 +310,10 @@ export function PublicationsList({
                   label: 'Delete Publication',
                   icon: Delete,
                   onPress: () => {
-                    deleteDialog.open(docId)
+                    deleteDialog.open({
+                      id: docId,
+                      title: publication?.document?.title,
+                    })
                   },
                 },
               ]}

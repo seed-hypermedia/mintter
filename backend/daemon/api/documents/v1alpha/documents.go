@@ -630,21 +630,6 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 	}, nil
 }
 
-// DeletePublication implements the corresponding gRPC method.
-func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
-	if in.DocumentId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
-	}
-
-	eid := hyper.EntityID(in.DocumentId)
-
-	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
 // PushPublication implements the corresponding gRPC method.
 func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublicationRequest) (*emptypb.Empty, error) {
 	if in.DocumentId == "" {

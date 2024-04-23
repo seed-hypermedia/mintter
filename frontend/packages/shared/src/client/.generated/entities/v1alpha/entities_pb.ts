@@ -473,6 +473,71 @@ export class Entity extends Message<Entity> {
 }
 
 /**
+ * Publication that has been deleted
+ *
+ * @generated from message com.mintter.entities.v1alpha.DeletedEntity
+ */
+export class DeletedEntity extends Message<DeletedEntity> {
+  /**
+   * EID of the deleted entity.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * When the entity was deleted.
+   *
+   * @generated from field: google.protobuf.Timestamp delete_time = 2;
+   */
+  deleteTime?: Timestamp;
+
+  /**
+   * Reason why this entity was deleted.
+   *
+   * @generated from field: string deleted_reason = 3;
+   */
+  deletedReason = "";
+
+  /**
+   * Further metadata about the deleted entity, title, etc ...
+   *
+   * @generated from field: string metadata = 4;
+   */
+  metadata = "";
+
+  constructor(data?: PartialMessage<DeletedEntity>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.DeletedEntity";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "delete_time", kind: "message", T: Timestamp },
+    { no: 3, name: "deleted_reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "metadata", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletedEntity {
+    return new DeletedEntity().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeletedEntity {
+    return new DeletedEntity().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeletedEntity {
+    return new DeletedEntity().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeletedEntity | PlainMessage<DeletedEntity> | undefined, b: DeletedEntity | PlainMessage<DeletedEntity> | undefined): boolean {
+    return proto3.util.equals(DeletedEntity, a, b);
+  }
+}
+
+/**
  * Request to
  *
  * @generated from message com.mintter.entities.v1alpha.SearchEntitiesRequest
@@ -565,6 +630,196 @@ export class SearchEntitiesResponse extends Message<SearchEntitiesResponse> {
 }
 
 /**
+ * Request for deleting an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.DeleteEntityRequest
+ */
+export class DeleteEntityRequest extends Message<DeleteEntityRequest> {
+  /**
+   * Entity ID of the entity to be removed.
+   * All versions will also be removed.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Optional. Reason why the user wants to delete that entity.
+   *
+   * @generated from field: string reason = 2;
+   */
+  reason = "";
+
+  constructor(data?: PartialMessage<DeleteEntityRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.DeleteEntityRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteEntityRequest {
+    return new DeleteEntityRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteEntityRequest {
+    return new DeleteEntityRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteEntityRequest {
+    return new DeleteEntityRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteEntityRequest | PlainMessage<DeleteEntityRequest> | undefined, b: DeleteEntityRequest | PlainMessage<DeleteEntityRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteEntityRequest, a, b);
+  }
+}
+
+/**
+ * Request for listing deleted entities.
+ *
+ * @generated from message com.mintter.entities.v1alpha.ListDeletedEntitiesRequest
+ */
+export class ListDeletedEntitiesRequest extends Message<ListDeletedEntitiesRequest> {
+  /**
+   * Optional. Number of results per page. Default is defined by the server.
+   *
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize = 0;
+
+  /**
+   * Optional. Value from next_page_token obtains from a previous response.
+   *
+   * @generated from field: string page_token = 2;
+   */
+  pageToken = "";
+
+  constructor(data?: PartialMessage<ListDeletedEntitiesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.ListDeletedEntitiesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDeletedEntitiesRequest {
+    return new ListDeletedEntitiesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDeletedEntitiesRequest {
+    return new ListDeletedEntitiesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDeletedEntitiesRequest {
+    return new ListDeletedEntitiesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDeletedEntitiesRequest | PlainMessage<ListDeletedEntitiesRequest> | undefined, b: ListDeletedEntitiesRequest | PlainMessage<ListDeletedEntitiesRequest> | undefined): boolean {
+    return proto3.util.equals(ListDeletedEntitiesRequest, a, b);
+  }
+}
+
+/**
+ * Response with list of deleted entities.
+ *
+ * @generated from message com.mintter.entities.v1alpha.ListDeletedEntitiesResponse
+ */
+export class ListDeletedEntitiesResponse extends Message<ListDeletedEntitiesResponse> {
+  /**
+   * List of deleted entities.
+   *
+   * @generated from field: repeated com.mintter.entities.v1alpha.DeletedEntity deleted_entities = 1;
+   */
+  deletedEntities: DeletedEntity[] = [];
+
+  /**
+   * Token for the next page if there're more results.
+   *
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken = "";
+
+  constructor(data?: PartialMessage<ListDeletedEntitiesResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.ListDeletedEntitiesResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "deleted_entities", kind: "message", T: DeletedEntity, repeated: true },
+    { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListDeletedEntitiesResponse {
+    return new ListDeletedEntitiesResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListDeletedEntitiesResponse {
+    return new ListDeletedEntitiesResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListDeletedEntitiesResponse {
+    return new ListDeletedEntitiesResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListDeletedEntitiesResponse | PlainMessage<ListDeletedEntitiesResponse> | undefined, b: ListDeletedEntitiesResponse | PlainMessage<ListDeletedEntitiesResponse> | undefined): boolean {
+    return proto3.util.equals(ListDeletedEntitiesResponse, a, b);
+  }
+}
+
+/**
+ * Request for restoring an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.UndeleteEntityRequest
+ */
+export class UndeleteEntityRequest extends Message<UndeleteEntityRequest> {
+  /**
+   * Entity ID of the entity to be restored.
+   * All versions will also be restored.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<UndeleteEntityRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.UndeleteEntityRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UndeleteEntityRequest {
+    return new UndeleteEntityRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UndeleteEntityRequest | PlainMessage<UndeleteEntityRequest> | undefined, b: UndeleteEntityRequest | PlainMessage<UndeleteEntityRequest> | undefined): boolean {
+    return proto3.util.equals(UndeleteEntityRequest, a, b);
+  }
+}
+
+/**
  * Request to list mentions of an entity.
  *
  * @generated from message com.mintter.entities.v1alpha.ListEntityMentionsRequest
@@ -593,11 +848,14 @@ export class ListEntityMentionsRequest extends Message<ListEntityMentionsRequest
   pageToken = "";
 
   /**
-   * Optional. Whether to return the results in the descending order (newest-first).
+   * Optional. Whether to return the results in descending order (newest-first).
    * By default mentions are listed in the chronological order,
    * according to the *locally perceived* order of the blobs that contain the mentions.
+   *
    * I.e. we sort the links according to the time we receive the blobs, not according to the time blobs claim to have been created.
    * This is to prevent losing new mentions in case of receiving out-of-date blobs.
+   *
+   * This flag must remain the same when paginating through the results.
    *
    * @generated from field: bool reverse_order = 4;
    */

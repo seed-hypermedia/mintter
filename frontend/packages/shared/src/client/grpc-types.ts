@@ -43,7 +43,6 @@ export {
   BlockNode,
   CreateDraftRequest,
   DeleteDraftRequest,
-  DeletePublicationRequest,
   DocumentChange,
   GetDraftRequest,
   GetPublicationRequest,
@@ -55,6 +54,7 @@ export {
 } from './.generated/documents/v1alpha/documents_pb'
 export {
   Change,
+  DeleteEntityRequest,
   DiscoverEntityRequest,
   DiscoverEntityResponse,
   EntityTimeline,

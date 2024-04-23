@@ -742,42 +742,6 @@ func TestGetPublicationWithDraftID(t *testing.T) {
 	require.Nil(t, published, "draft is not a publication")
 }
 
-func TestAPIDeletePublication(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}}},
-	)
-
-	_, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
-	require.NoError(t, err)
-
-	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
-
-	deleted, err := api.DeletePublication(ctx, &documents.DeletePublicationRequest{DocumentId: doc.Id})
-	require.NoError(t, err)
-	require.NotNil(t, deleted)
-
-	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 0)
-
-	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
-	require.Error(t, err, "must fail to get deleted publication")
-	_ = pub
-
-	// TODO: fix status codes.
-	// s, ok := status.FromError(err)
-	// require.True(t, ok)
-	// require.Nil(t, pub)
-	// require.Equal(t, codes.NotFound, s.Code())
-}
-
 func TestPublisherAndEditors(t *testing.T) {
 	t.Parallel()
 

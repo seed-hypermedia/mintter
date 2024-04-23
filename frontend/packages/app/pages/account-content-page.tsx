@@ -21,6 +21,7 @@ import {
 import {ReactNode, useMemo} from 'react'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useDeleteDialog} from '../components/delete-dialog'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {useAllAccounts} from '../models/accounts'
@@ -178,7 +179,7 @@ function AccountGroups() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const {data: groups} = useAccountGroups(accountId)
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-
+  const deleteDialog = useDeleteDialog()
   return (
     <>
       <MainWrapperNoScroll>
@@ -193,11 +194,13 @@ function AccountGroups() {
                   if (!groupId) return
                   onCopyId(groupId)
                 }}
+                onDelete={deleteDialog.open}
               />
             )}
           />
         ) : null}
         {copyDialogContent}
+        {deleteDialog.content}
       </MainWrapperNoScroll>
       <Footer></Footer>
     </>

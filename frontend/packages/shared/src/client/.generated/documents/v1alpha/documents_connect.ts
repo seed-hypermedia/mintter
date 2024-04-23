@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -111,17 +111,6 @@ export const Publications = {
       name: "GetPublication",
       I: GetPublicationRequest,
       O: Publication,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * Deletes a publication from the local node. It removes all the patches corresponding to a document.
-     *
-     * @generated from rpc com.mintter.documents.v1alpha.Publications.DeletePublication
-     */
-    deletePublication: {
-      name: "DeletePublication",
-      I: DeletePublicationRequest,
-      O: Empty,
       kind: MethodKind.Unary,
     },
     /**

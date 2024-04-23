@@ -185,23 +185,6 @@ export function useDeleteDraft(
   })
 }
 
-export function useDeletePublication(
-  opts: UseMutationOptions<void, unknown, string>,
-) {
-  const invalidate = useQueryInvalidator()
-  const grpcClient = useGRPCClient()
-  return useMutation({
-    ...opts,
-    mutationFn: async (documentId) => {
-      await grpcClient.publications.deletePublication({documentId})
-    },
-    onSuccess: (...args) => {
-      invalidate([queryKeys.GET_PUBLICATION_LIST])
-      opts?.onSuccess?.(...args)
-    },
-  })
-}
-
 export function usePublication(
   {
     id,

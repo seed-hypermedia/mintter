@@ -453,6 +453,18 @@ var migrations = []migration{
 			JOIN public_keys pk ON pk.id = lb.author;
 		`))
 	}},
+	{Version: "2024-04-08.01", Run: func(_ *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE IF EXISTS deleted_resources;
+
+			CREATE TABLE IF NOT EXISTS deleted_resources (
+				iri TEXT PRIMARY KEY,
+				delete_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+				reason TEXT,
+				meta TEXT
+			);
+		`))
+	}},
 }
 
 const (

@@ -33,7 +33,7 @@ import (
 // EntityID is a type for IDs of mutable entities.
 type EntityID string
 
-// EntityIDFromCID converts a previously CID-encoded Entity ID bas into the initial form.
+// EntityIDFromCID converts a previously CID-encoded Entity ID back into the initial form.
 func EntityIDFromCID(c cid.Cid) (EntityID, error) {
 	codec, hash := ipfs.DecodeCID(c)
 
@@ -324,7 +324,8 @@ func SortCIDs(cids []cid.Cid) []cid.Cid {
 	return cids
 }
 
-func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c cid.Cid, cmt Comment) error) (err error) {
+// ForEachComment iterates through a target document comments to manipulate them.
+func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c cid.Cid, cmt Comment, conn *sqlite.Conn) error) (err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -360,7 +361,7 @@ func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c 
 			return fmt.Errorf("forEachComment: failed to decode comment %s for target %s: %w", chcid, target, err)
 		}
 
-		if err := fn(chcid, cmt); err != nil {
+		if err := fn(chcid, cmt, conn); err != nil {
 			return err
 		}
 

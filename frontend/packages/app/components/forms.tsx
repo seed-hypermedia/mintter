@@ -21,17 +21,19 @@ export function FormField<Fields extends FieldValues>({
 }: PropsWithChildren<{
   name: keyof Fields
   errors: FieldErrors<Fields>
-  label: string
+  label?: string
 }>) {
   return (
     <Fieldset borderColor="transparent">
       <XStack ai="center" justifyContent="space-between">
-        <Label
-          htmlFor={String(name)}
-          color={errors[name]?.message ? '$red10' : undefined}
-        >
-          {label}
-        </Label>
+        {label ? (
+          <Label
+            htmlFor={String(name)}
+            color={errors[name]?.message ? '$red10' : undefined}
+          >
+            {label}
+          </Label>
+        ) : null}
         <SizableText color="$red10">{errors[name]?.message}</SizableText>
       </XStack>
       {children}

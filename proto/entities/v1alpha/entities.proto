@@ -4,6 +4,8 @@ package com.mintter.entities.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
+import "google/protobuf/empty.proto";
+
 option go_package = "mintter/backend/genproto/entities/v1alpha;entities";
 
 // Provides functionality to query information about Hypermedia Entities.
@@ -21,6 +23,16 @@ service Entities {
   // A fuzzy search is performed among documents, groups and accounts.
   // For groups and documents, we match the title, while we match alias in accounts.
   rpc SearchEntities(SearchEntitiesRequest) returns (SearchEntitiesResponse);
+
+  // Deletes an entity from the local node. It removes all the patches corresponding to it, including comments.
+  rpc DeleteEntity(DeleteEntityRequest) returns (google.protobuf.Empty);
+
+  // Lists deleted entities.
+  rpc ListDeletedEntities(ListDeletedEntitiesRequest) returns (ListDeletedEntitiesResponse);
+
+  // Undo the entity delition by removing the entity from the deleted list. That entity, if available
+  // will be synced back in the next syncing round (or manually discovered).
+  rpc UndeleteEntity(UndeleteEntityRequest) returns (google.protobuf.Empty);
 
   // List mentions of a given Entity across the locally-available content.
   rpc ListEntityMentions(ListEntityMentionsRequest) returns (ListEntityMentionsResponse);
@@ -132,6 +144,20 @@ message Entity {
   string owner = 3;
 }
 
+// Publication that has been deleted
+message DeletedEntity { 
+  // EID of the deleted entity.
+  string id = 1;
+
+  // When the entity was deleted.
+  google.protobuf.Timestamp delete_time = 2;
+
+  // Reason why this entity was deleted.
+  string deleted_reason = 3;
+
+  // Further metadata about the deleted entity, title, etc ...
+  string metadata = 4;
+}
 // Request to
 message SearchEntitiesRequest {
   // Query to find. Since we use
@@ -147,6 +173,42 @@ message SearchEntitiesResponse {
 
   // Token for the next page if there's any.
   string next_page_token = 2;
+}
+
+// Request for deleting an entity.
+message DeleteEntityRequest {
+  // Entity ID of the entity to be removed.
+  // All versions will also be removed.
+  string id = 1;
+
+  // Optional. Reason why the user wants to delete that entity.
+  string reason = 2;
+}
+
+// Request for listing deleted entities.
+message ListDeletedEntitiesRequest {
+  // Optional. Number of results per page. Default is defined by the server.
+  int32 page_size = 1;
+
+  // Optional. Value from next_page_token obtains from a previous response.
+  string page_token = 2;
+
+}
+
+// Response with list of deleted entities.
+message ListDeletedEntitiesResponse {
+  // List of deleted entities.
+  repeated DeletedEntity deleted_entities= 1;
+
+  // Token for the next page if there're more results.
+  string next_page_token = 2;
+}
+
+// Request for restoring an entity.
+message UndeleteEntityRequest {
+  // Entity ID of the entity to be restored.
+  // All versions will also be restored.
+  string id = 1;
 }
 
 // Request to list mentions of an entity.

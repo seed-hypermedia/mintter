@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -32,6 +33,13 @@ type EntitiesClient interface {
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
 	SearchEntities(ctx context.Context, in *SearchEntitiesRequest, opts ...grpc.CallOption) (*SearchEntitiesResponse, error)
+	// Deletes an entity from the local node. It removes all the patches corresponding to it, including comments.
+	DeleteEntity(ctx context.Context, in *DeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Lists deleted entities.
+	ListDeletedEntities(ctx context.Context, in *ListDeletedEntitiesRequest, opts ...grpc.CallOption) (*ListDeletedEntitiesResponse, error)
+	// Undo the entity delition by removing the entity from the deleted list. That entity, if available
+	// will be synced back in the next syncing round (or manually discovered).
+	UndeleteEntity(ctx context.Context, in *UndeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List mentions of a given Entity across the locally-available content.
 	ListEntityMentions(ctx context.Context, in *ListEntityMentionsRequest, opts ...grpc.CallOption) (*ListEntityMentionsResponse, error)
 }
@@ -80,6 +88,33 @@ func (c *entitiesClient) SearchEntities(ctx context.Context, in *SearchEntitiesR
 	return out, nil
 }
 
+func (c *entitiesClient) DeleteEntity(ctx context.Context, in *DeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/DeleteEntity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entitiesClient) ListDeletedEntities(ctx context.Context, in *ListDeletedEntitiesRequest, opts ...grpc.CallOption) (*ListDeletedEntitiesResponse, error) {
+	out := new(ListDeletedEntitiesResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/ListDeletedEntities", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entitiesClient) UndeleteEntity(ctx context.Context, in *UndeleteEntityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/UndeleteEntity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *entitiesClient) ListEntityMentions(ctx context.Context, in *ListEntityMentionsRequest, opts ...grpc.CallOption) (*ListEntityMentionsResponse, error) {
 	out := new(ListEntityMentionsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/ListEntityMentions", in, out, opts...)
@@ -103,6 +138,13 @@ type EntitiesServer interface {
 	// A fuzzy search is performed among documents, groups and accounts.
 	// For groups and documents, we match the title, while we match alias in accounts.
 	SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error)
+	// Deletes an entity from the local node. It removes all the patches corresponding to it, including comments.
+	DeleteEntity(context.Context, *DeleteEntityRequest) (*emptypb.Empty, error)
+	// Lists deleted entities.
+	ListDeletedEntities(context.Context, *ListDeletedEntitiesRequest) (*ListDeletedEntitiesResponse, error)
+	// Undo the entity delition by removing the entity from the deleted list. That entity, if available
+	// will be synced back in the next syncing round (or manually discovered).
+	UndeleteEntity(context.Context, *UndeleteEntityRequest) (*emptypb.Empty, error)
 	// List mentions of a given Entity across the locally-available content.
 	ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error)
 }
@@ -122,6 +164,15 @@ func (UnimplementedEntitiesServer) DiscoverEntity(context.Context, *DiscoverEnti
 }
 func (UnimplementedEntitiesServer) SearchEntities(context.Context, *SearchEntitiesRequest) (*SearchEntitiesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchEntities not implemented")
+}
+func (UnimplementedEntitiesServer) DeleteEntity(context.Context, *DeleteEntityRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteEntity not implemented")
+}
+func (UnimplementedEntitiesServer) ListDeletedEntities(context.Context, *ListDeletedEntitiesRequest) (*ListDeletedEntitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeletedEntities not implemented")
+}
+func (UnimplementedEntitiesServer) UndeleteEntity(context.Context, *UndeleteEntityRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UndeleteEntity not implemented")
 }
 func (UnimplementedEntitiesServer) ListEntityMentions(context.Context, *ListEntityMentionsRequest) (*ListEntityMentionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEntityMentions not implemented")
@@ -210,6 +261,60 @@ func _Entities_SearchEntities_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Entities_DeleteEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).DeleteEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/DeleteEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).DeleteEntity(ctx, req.(*DeleteEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entities_ListDeletedEntities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeletedEntitiesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).ListDeletedEntities(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/ListDeletedEntities",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).ListDeletedEntities(ctx, req.(*ListDeletedEntitiesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entities_UndeleteEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndeleteEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).UndeleteEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/UndeleteEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).UndeleteEntity(ctx, req.(*UndeleteEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Entities_ListEntityMentions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListEntityMentionsRequest)
 	if err := dec(in); err != nil {
@@ -250,6 +355,18 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchEntities",
 			Handler:    _Entities_SearchEntities_Handler,
+		},
+		{
+			MethodName: "DeleteEntity",
+			Handler:    _Entities_DeleteEntity_Handler,
+		},
+		{
+			MethodName: "ListDeletedEntities",
+			Handler:    _Entities_ListDeletedEntities_Handler,
+		},
+		{
+			MethodName: "UndeleteEntity",
+			Handler:    _Entities_UndeleteEntity_Handler,
 		},
 		{
 			MethodName: "ListEntityMentions",

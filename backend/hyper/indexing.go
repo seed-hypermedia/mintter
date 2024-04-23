@@ -339,6 +339,10 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 	// Indexing specific to various types of Entities
 	switch {
 	case v.Entity.HasPrefix("hm://a/"):
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return fmt.Errorf("Change belongs to a deleted account [%s]", res.DeletedResourcesIRI)
+		}
 		if v, ok := v.Patch["avatar"].(cid.Cid); ok {
 			sb.AddBlobLink("account/avatar", v)
 		}
@@ -356,6 +360,12 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 			sb.Meta = title
 		}
 		blocks, ok := v.Patch["blocks"].(map[string]any)
+
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return fmt.Errorf("Change belongs to a deleted document [%s]", res.DeletedResourcesIRI)
+		}
+
 		if ok {
 			for id, blk := range blocks {
 				v, ok := blk.(map[string]any)["#map"]
@@ -374,7 +384,6 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 				}
 				blk.Id = id
 				blk.Revision = c.String()
-
 				if err := indexURL(&sb, bs.log, blk.Id, "doc/"+blk.Type, blk.Ref); err != nil {
 					return err
 				}
@@ -394,6 +403,10 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 			sb.Meta = title
 		}
 		var currentRole groups.Role
+		res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, sb.Resource.ID.String())
+		if err == nil && res.DeletedResourcesIRI == sb.Resource.ID.String() {
+			return fmt.Errorf("Change belongs to a deleted group [%s]", res.DeletedResourcesIRI)
+		}
 		if v.Action == ActionCreate {
 			currentRole = groups.Role_OWNER
 			sb.AddResourceLink("group/member", authorEntity, false, GroupLinkMeta{Role: currentRole})
@@ -515,6 +528,11 @@ func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment
 
 	if !strings.HasPrefix(v.Target, "hm://") {
 		return fmt.Errorf("comment target must be a hypermedia resource, got %s", v.Target)
+	}
+	iri := strings.Split(v.Target, "?v=")[0]
+	res, err := hypersql.EntitiesLookupRemovedRecord(idx.conn, iri)
+	if err == nil && res.DeletedResourcesIRI == iri {
+		return fmt.Errorf("Comment references to a deleted entity [%s]", res.DeletedResourcesIRI)
 	}
 
 	isReply := v.RepliedComment.Defined() || v.ThreadRoot.Defined()

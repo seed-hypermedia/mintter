@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse } from "./entities_pb";
-import { MethodKind } from "@bufbuild/protobuf";
+import { Change, DeleteEntityRequest, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest, ListDeletedEntitiesRequest, ListDeletedEntitiesResponse, ListEntityMentionsRequest, ListEntityMentionsResponse, SearchEntitiesRequest, SearchEntitiesResponse, UndeleteEntityRequest } from "./entities_pb";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Provides functionality to query information about Hypermedia Entities.
@@ -58,6 +58,40 @@ export const Entities = {
       name: "SearchEntities",
       I: SearchEntitiesRequest,
       O: SearchEntitiesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Deletes an entity from the local node. It removes all the patches corresponding to it, including comments.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.DeleteEntity
+     */
+    deleteEntity: {
+      name: "DeleteEntity",
+      I: DeleteEntityRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists deleted entities.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.ListDeletedEntities
+     */
+    listDeletedEntities: {
+      name: "ListDeletedEntities",
+      I: ListDeletedEntitiesRequest,
+      O: ListDeletedEntitiesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Undo the entity delition by removing the entity from the deleted list. That entity, if available
+     * will be synced back in the next syncing round (or manually discovered).
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.UndeleteEntity
+     */
+    undeleteEntity: {
+      name: "UndeleteEntity",
+      I: UndeleteEntityRequest,
+      O: Empty,
       kind: MethodKind.Unary,
     },
     /**
