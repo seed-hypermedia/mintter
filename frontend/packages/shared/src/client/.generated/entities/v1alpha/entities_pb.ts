@@ -488,9 +488,9 @@ export class DeletedEntity extends Message<DeletedEntity> {
   /**
    * When the entity was deleted.
    *
-   * @generated from field: google.protobuf.Timestamp deleted_time = 2;
+   * @generated from field: google.protobuf.Timestamp delete_time = 2;
    */
-  deletedTime?: Timestamp;
+  deleteTime?: Timestamp;
 
   /**
    * Reason why this entity was deleted.
@@ -515,7 +515,7 @@ export class DeletedEntity extends Message<DeletedEntity> {
   static readonly typeName = "com.mintter.entities.v1alpha.DeletedEntity";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "deleted_time", kind: "message", T: Timestamp },
+    { no: 2, name: "delete_time", kind: "message", T: Timestamp },
     { no: 3, name: "deleted_reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "metadata", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);

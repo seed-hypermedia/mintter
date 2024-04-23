@@ -527,8 +527,7 @@ func (api *Server) RestoreEntity(ctx context.Context, in *entities.RestoreEntity
 }
 
 // ListDeletedEntities implements the corresponding gRPC method.
-func (api *Server) ListDeletedEntities(ctx context.Context, in *entities.ListDeletedEntitiesRequest) (*entities.ListDeletedEntitiesResponse, error) {
-
+func (api *Server) ListDeletedEntities(ctx context.Context, _ *entities.ListDeletedEntitiesRequest) (*entities.ListDeletedEntitiesResponse, error) {
 	resp := &entities.ListDeletedEntitiesResponse{
 		DeletedEntities: make([]*entities.DeletedEntity, 0),
 	}
@@ -541,7 +540,7 @@ func (api *Server) ListDeletedEntities(ctx context.Context, in *entities.ListDel
 		for _, entity := range list {
 			resp.DeletedEntities = append(resp.DeletedEntities, &entities.DeletedEntity{
 				Id:            entity.DeletedResourcesIRI,
-				DeletedTime:   &timestamppb.Timestamp{Seconds: entity.DeletedResourcesDeleteTime},
+				DeleteTime:    &timestamppb.Timestamp{Seconds: entity.DeletedResourcesDeleteTime},
 				DeletedReason: entity.DeletedResourcesReason,
 				Metadata:      entity.DeletedResourcesMeta,
 			})

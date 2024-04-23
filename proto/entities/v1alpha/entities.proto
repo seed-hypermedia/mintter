@@ -150,7 +150,7 @@ message DeletedEntity {
   string id = 1;
 
   // When the entity was deleted.
-  google.protobuf.Timestamp deleted_time = 2;
+  google.protobuf.Timestamp delete_time = 2;
 
   // Reason why this entity was deleted.
   string deleted_reason = 3;
