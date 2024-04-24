@@ -196,6 +196,7 @@ export function SidebarItem({
   indented,
   bold,
   active,
+  activeBgColor,
   rightHover,
   color,
   paddingVertical,
@@ -207,6 +208,7 @@ export function SidebarItem({
 }: ListItemProps & {
   indented?: boolean | number
   bold?: boolean
+  activeBgColor?: ComponentProps<typeof ListItem>['backgroundColor']
   selected?: boolean
   rightHover?: ReactNode[]
   menuItems?: MenuItemType[]
@@ -214,6 +216,7 @@ export function SidebarItem({
   onSetCollapsed?: (collapsed: boolean) => void
 }) {
   const indent = indented ? (typeof indented === 'number' ? indented : 1) : 0
+  const activeBg = activeBgColor || '$blue4'
   return (
     <View group="item">
       <ListItem
@@ -227,8 +230,8 @@ export function SidebarItem({
         textAlign="left"
         outlineColor="transparent"
         // space="$2"
-        backgroundColor={active ? '$blue4' : '$colorTransparent'}
-        hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
+        backgroundColor={active ? activeBg : '$colorTransparent'}
+        hoverStyle={active ? {backgroundColor: activeBg} : {}}
         userSelect="none"
         group="item"
         color={color || '$gray12'}
@@ -490,6 +493,7 @@ export function FocusButton({
 export function activeDocOutline(
   outline: DocOutlineSection[],
   activeBlock: string | null | undefined,
+  focusBlock: string | null | undefined,
   embeds: EmbedsContent,
   onBlockSelect: (
     blockId: string,
@@ -503,13 +507,19 @@ export function activeDocOutline(
   ) => void,
   onNavigate: (route: NavRoute) => void,
   level = 0,
-): {outlineContent: ReactNode[]; isBlockActive: boolean} {
+): {
+  outlineContent: ReactNode[]
+  isBlockActive: boolean
+  isBlockFocused: boolean
+} {
   let isBlockActive = false
+  let isBlockFocused = false
   const outlineContent = outline.map((item) => {
     const childrenOutline = item.children
       ? activeDocOutline(
           item.children,
           activeBlock,
+          focusBlock,
           embeds,
           onBlockSelect,
           onBlockFocus,
@@ -522,15 +532,25 @@ export function activeDocOutline(
     } else if (item.id === activeBlock) {
       isBlockActive = true
     }
+    if (childrenOutline?.isBlockFocused) {
+      isBlockFocused = true
+    } else if (item.id === focusBlock) {
+      isBlockFocused = true
+    }
     return (
       <SidebarGroupItem
         onPress={() => {
           onBlockSelect(item.id, item.entityId, item.parentBlockId)
         }}
-        active={item.id === activeBlock}
+        active={item.id === activeBlock || item.id === focusBlock}
+        activeBgColor={item.id === activeBlock ? '$yellow4' : undefined}
         icon={
           <View width={16}>
-            {item.icon ? <item.icon size={16} /> : <Hash size={16} />}
+            {item.icon ? (
+              <item.icon color="$color9" size={16} />
+            ) : (
+              <Hash color="$color9" size={16} />
+            )}
           </View>
         }
         title={item.title || 'Untitled Heading'}
@@ -547,7 +567,7 @@ export function activeDocOutline(
       />
     )
   })
-  return {outlineContent, isBlockActive}
+  return {outlineContent, isBlockActive, isBlockFocused}
 }
 
 export function SidebarDivider() {

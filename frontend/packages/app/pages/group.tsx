@@ -23,31 +23,23 @@ import {
   DialogDescription,
   DialogTitle,
   Form,
-  H1,
   Heading,
   Label,
   List,
   ListItem,
+  PageContainer,
   RadioButtons,
   Section,
   Separator,
   SizableText,
   Tooltip,
   View,
-  XGroup,
   XStack,
   YGroup,
   YStack,
   toast,
 } from '@mintter/ui'
-import {
-  ArrowUpRight,
-  Pencil,
-  PlusCircle,
-  Store,
-  Trash,
-  X,
-} from '@tamagui/lucide-icons'
+import {Pencil, PlusCircle, Store, Trash, X} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'
 import {
@@ -68,13 +60,11 @@ import {Avatar} from '../components/avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
-import {EditDocButton} from '../components/edit-doc-button'
 import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
-import {OptionsDropdown} from '../components/options-dropdown'
 import {PublicationListItem} from '../components/publication-list-item'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import appError from '../errors'
@@ -122,7 +112,13 @@ export default function GroupPage() {
       <GroupDocuments groupRoute={groupRoute} myMemberRole={myMemberRole} />
     )
   } else {
-    content = <GroupFront groupRoute={groupRoute} myMemberRole={myMemberRole} />
+    content = (
+      <GroupFront
+        groupRoute={groupRoute}
+        group={group.data}
+        myMemberRole={myMemberRole}
+      />
+    )
   }
 
   return (
@@ -227,11 +223,17 @@ function GroupHeader({
         paddingVertical={0}
         marginBottom={groupRoute.tab !== 'profile' ? '$4' : undefined}
       >
-        <XStack gap="$2">
-          <H1 fontWeight="bold" f={1}>
-            {group.data?.title}
-          </H1>
-          <YStack paddingTop="$4">
+        <XStack gap="$2" jc="space-between" ai="center">
+          <SizableText
+            whiteSpace="nowrap"
+            overflow="hidden"
+            textOverflow="ellipsis"
+            size="$5"
+            fontWeight="700"
+          >
+            {group.data?.title || 'Untitled Group'}
+          </SizableText>
+          <YStack paddingVertical="$2">
             <XStack alignItems="center" gap="$2">
               <Tooltip
                 content={
@@ -545,8 +547,8 @@ function GroupFront({
   ].filter(Boolean)
   if (!frontPageId?.docId || !frontDocumentUrl) return null
   return (
-    <YStack>
-      <XStack
+    <PageContainer>
+      {/* <XStack
         gap="$2"
         paddingVertical="$4"
         paddingHorizontal={0}
@@ -603,12 +605,12 @@ function GroupFront({
             />
           </Tooltip>
         </XStack>
-      </XStack>
+      </XStack> */}
       <FrontPublicationDisplay
         urlWithVersion={frontDocumentUrl}
         groupTitle={group.title || ''}
       />
-    </YStack>
+    </PageContainer>
   )
 }
 

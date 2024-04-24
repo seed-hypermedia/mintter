@@ -6,9 +6,7 @@ import {Trash} from '@tamagui/lucide-icons'
 import React, {ReactNode} from 'react'
 import {useAppContext} from '../app-context'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
-import {useAppDialog} from '../components/dialog'
 import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
 import {
@@ -18,6 +16,7 @@ import {
 } from '../models/documents'
 import {DraftRoute} from '../utils/routes'
 import {useClickNavigate} from '../utils/useNavigate'
+import {useDeleteDialog} from './delete-dialog'
 
 export function PublicationsList({
   header,
@@ -29,7 +28,7 @@ export function PublicationsList({
   const publications = usePublicationFullList({trustedOnly})
   const drafts = useDraftList()
   const {queryClient, grpcClient} = useAppContext()
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+  const deleteDialog = useDeleteDialog()
 
   const items = publications.data
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -94,7 +93,10 @@ export function PublicationsList({
                   label: 'Delete Publication',
                   icon: Delete,
                   onPress: () => {
-                    deleteDialog.open(docId)
+                    deleteDialog.open({
+                      id: docId,
+                      title: publication.document.title,
+                    })
                   },
                 },
               ]}

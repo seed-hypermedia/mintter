@@ -304,7 +304,6 @@ function AccountPageHeader() {
                 label={account.profile?.alias}
                 url={getAvatarUrl(account.profile?.avatar)}
               />
-
               <SizableText
                 whiteSpace="nowrap"
                 overflow="hidden"

@@ -55,13 +55,14 @@ import {useGatewayHost, useGatewayUrl} from '../models/gateway-settings'
 import {
   useCanEditGroup,
   useGroup,
+  useGroupContent,
   useInvertedGroupContent,
 } from '../models/groups'
 import {RemoveProfileDocDialog} from '../pages/account-page'
 import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {useOpenDraft} from '../utils/open-draft'
-import {NavRoute} from '../utils/routes'
+import {GroupRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {CloneGroupDialog} from './clone-group'
 import {useCopyGatewayReference} from './copy-gateway-reference'
@@ -274,7 +275,7 @@ function EditAccountButton() {
   if (myAccount.data?.id !== route.accountId) {
     return null
   }
-
+  if (route.tab !== 'profile') return null
   return (
     <EditDocButton
       docId={myAccount.data?.profile?.rootDocument || undefined}
@@ -282,6 +283,32 @@ function EditAccountButton() {
       baseVersion={undefined}
       navMode="push"
       contextRoute={route}
+    />
+  )
+}
+
+function EditGroupButton({route}: {route: GroupRoute}) {
+  const groupContent = useGroupContent(route.groupId, route.version)
+  // if (myAccount.data?.id !== route.accountId) {
+  //   return null
+  // }
+  const frontId = groupContent.data?.content['/']
+  const id = frontId ? unpackHmId(frontId) : null
+  if (route.tab !== 'front' && route.tab != null) return null
+  if (!id?.qid) return null
+  return (
+    <EditDocButton
+      docId={id?.qid || undefined}
+      // baseVersion={id?.version || undefined}
+      navMode="push"
+      contextRoute={route}
+      variants={[
+        {
+          key: 'group',
+          groupId: route.groupId,
+          pathName: '/',
+        },
+      ]}
     />
   )
 }
@@ -297,12 +324,14 @@ export function GroupOptionsButton() {
   const myAccount = useMyAccount()
   const group = useGroup(groupId)
   const editInfo = useEditGroupInfoDialog()
+  const groupContent = useGroupContent(groupId, groupRouteVersion)
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
   const cloneGroup = useAppDialog(CloneGroupDialog)
   const deleteEntity = useDeleteDialog()
   const gwUrl = useGatewayUrl()
   const dispatch = useNavigationDispatch()
+  const spawn = useNavigate('spawn')
   const menuItems: MenuItemType[] = [
     {
       key: 'clone',
@@ -339,6 +368,28 @@ export function GroupOptionsButton() {
           onSuccess: () => {
             dispatch({type: 'pop'})
           },
+        })
+      },
+    },
+    {
+      key: 'openNewWindow',
+      label: 'Open Front Document in New Window',
+      icon: ArrowUpRight,
+      onPress: () => {
+        const frontId = groupContent.data?.content['/']
+        const frontHmId = frontId ? unpackHmId(frontId) : null
+        if (!frontHmId) return
+        spawn({
+          key: 'publication',
+          documentId: frontHmId.qid,
+          versionId: frontHmId.version || undefined,
+          variants: [
+            {
+              key: 'group',
+              groupId,
+              pathName: '/',
+            },
+          ],
         })
       },
     },
@@ -713,6 +764,7 @@ export function PageActionButtons(props: TitleBarProps) {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
       <GroupOptionsButton key="groupOptions" />,
+      <EditGroupButton route={route} key="editGroup" />,
       <NewDocumentButton
         key="newDocument"
         label="Group Document"
@@ -721,6 +773,7 @@ export function PageActionButtons(props: TitleBarProps) {
           groupId: route.groupId,
           pathName: null,
         }}
+        contextRoute={route}
       />,
     ]
   } else if (route.key === 'publication') {

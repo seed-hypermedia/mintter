@@ -499,7 +499,7 @@ function AccountContextItem({
         title={account.data?.profile?.alias || 'Unknown Account'}
         icon={Contact}
         onPress={() => {
-          navigate({...route, blockId: undefined})
+          navigate({...route, blockId: undefined, focusBlockId: undefined})
         }}
       />
       {useIntermediateContext(
@@ -590,27 +590,28 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   const navigate = useNavigate()
   const replace = useNavigate('replace')
   const {navigateBlock, focusBlock} = useNavigateBlock(route)
-  const {outlineContent, isBlockActive} = activeDocOutline(
+  const {outlineContent, isBlockActive, isBlockFocused} = activeDocOutline(
     docOutline,
-    route.blockId || route.focusBlockId,
+    route.blockId,
+    route.focusBlockId,
     pubEmbeds,
     navigateBlock,
     focusBlock,
     navigate,
   )
-  const {items} = useContextItems(route.context)
+  const {items: parentContext} = useContextItems(route.context)
+  const isRootActive = isActive && !isBlockFocused
   return (
     <>
-      {items}
+      {parentContext}
       <DraftItems
         titleItem={
           <SidebarGroupItem
-            active={isActive && !isBlockActive}
+            active={isRootActive}
             onPress={() => {
-              if (!isActive) {
-                navigate(route)
-              } else if (route.blockId) {
-                replace({...route, blockId: undefined})
+              console.log('onPress')
+              if (!isRootActive) {
+                replace({...route, blockId: undefined, focusBlockId: undefined})
               }
             }}
             title={account.data?.profile?.alias}
@@ -647,25 +648,23 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   const pubEmbeds = useDocumentEmbeds(pub.data?.document, !!pub.data, {
     skipCards: true,
   })
-  const docOutline = getDocOutline(
-    pub?.data?.document?.children || [],
-    pubEmbeds,
-  )
+  const outline = getDocOutline(pub?.data?.document?.children || [], pubEmbeds)
   const navigate = useNavigate()
   const replace = useNavigate('replace')
   const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const {outlineContent, isBlockActive} = activeDocOutline(
-    docOutline,
-    route.blockId || route.focusBlockId,
+    outline,
+    route.blockId,
+    route.focusBlockId,
     pubEmbeds,
     navigateBlock,
     focusBlock,
     navigate,
   )
-  const {items} = useContextItems(route.context)
+  const {items: parentContext} = useContextItems(route.context)
   return (
     <>
-      {items}
+      {parentContext}
       <DraftItems
         titleItem={
           <SidebarGroupItem
@@ -697,6 +696,43 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   )
 }
 
+// function useOutlineFocus(
+//   children: HMBlockNode[],
+//   focusBlockId: string | undefined,
+// ): {
+//   focusedChildren: HMBlockNode[]
+//   focusContext: ReactNode
+// } {
+//   let foundBlockPath = findBlockPath(children, focusBlockId)
+//   console.log('foundBlockPath', foundBlockPath)
+// }
+
+// function findBlockPath(
+//   children: HMBlockNode[],
+//   blockId: string,
+//   parentPath?: string[],
+// ): null | string[] {
+//   let foundBlockPath: string[] = []
+//   children.find((node) => {
+//     if (node.block.id === blockId) {
+//       foundBlockPath = [...(parentPath || []), blockId]
+//       return true
+//     }
+//     if (node.children?.length) {
+//       const childPath = findBlockPath(
+//         node.children,
+//         blockId,
+//         parentPath ? [...parentPath, node.block.id] : [node.block.id],
+//       )
+//       if (childPath) {
+//         foundBlockPath = childPath
+//         return true
+//       }
+//     }
+//     return false
+//   })
+// }
+
 function GroupRouteOutline({route}: {route: GroupRoute}) {
   const activeRoute = useNavRoute()
   const group = useGroup(route.groupId, route.version)
@@ -718,16 +754,17 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
   const {outlineContent: frontPubOutlineContent, isBlockActive} =
     activeDocOutline(
       frontDocOutline,
-      route.blockId || route.focusBlockId,
+      route.blockId,
+      route.focusBlockId,
       frontPubEmbeds,
       navigateBlock,
       focusBlock,
       navigate,
     )
-  const {items} = useContextItems(route.context)
+  const {items: parentContext} = useContextItems(route.context)
   return (
     <>
-      {items}
+      {parentContext}
       <DraftItems
         titleItem={
           <SidebarGroupItem
