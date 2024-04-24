@@ -163,6 +163,7 @@ const display = ({
   selected,
   setSelected,
 }: DisplayComponentProps) => {
+  const unpackedId = unpackHmId(block.props.url)
   return (
     <MediaContainer
       editor={editor}
@@ -176,6 +177,13 @@ const display = ({
       {block.props.url && (
         <ErrorBoundary FallbackComponent={EmbedError}>
           <BlockContentEmbed
+            expanded={
+              unpackedId &&
+              unpackedId.blockRange &&
+              'expanded' in unpackedId.blockRange
+                ? true
+                : false
+            }
             block={{
               id: block.id,
               type: 'embed',
@@ -348,11 +356,11 @@ function EmbedControl({
           >
             {expanded
               ? expandButtonHover.hover
-                ? 'Expand'
-                : 'Collapse'
+                ? 'Collapse'
+                : 'Expand'
               : expandButtonHover.hover
-              ? 'Collapse'
-              : 'Expand'}
+              ? 'Expand'
+              : 'Collapse'}
           </Button>
         </Tooltip>
       ) : null}

@@ -57,7 +57,7 @@ export function AppPublicationContentProvider({
                 blockRange: BlockRange | ExpandedBlockRange | undefined,
               ) => {
                 if (blockId && reference) {
-                  reference.onCopy(blockId, blockRange)
+                  reference.onCopy(blockId, blockRange || {expanded: true})
                 }
               }
             : null

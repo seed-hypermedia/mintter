@@ -1586,7 +1586,7 @@ export function ContentEmbed({
                   !props.blockRef && pub?.document?.title ? true : idx == 0
                 }
                 depth={1}
-                expanded={!!props.blockRange?.expanded || true}
+                expanded={!!props.blockRange?.expanded || false}
                 blockNode={bn}
                 childrenType="group"
                 index={idx}
