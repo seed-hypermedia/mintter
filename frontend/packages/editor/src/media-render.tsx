@@ -133,7 +133,7 @@ export const MediaRender: React.FC<RenderProps> = ({
   }
 
   return (
-    <YStack overflow="hidden">
+    <YStack>
       {block.props.url ? (
         <MediaComponent
           block={block}

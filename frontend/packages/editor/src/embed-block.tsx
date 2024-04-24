@@ -28,7 +28,7 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import {useCallback, useMemo} from 'react'
+import {forwardRef, useCallback, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Block, BlockNoteEditor, HMBlockSchema} from '.'
 import {createReactBlockSpec} from './blocknote/react'
@@ -496,3 +496,83 @@ function EmbedControl({
     </XStack>
   )
 }
+
+const EmbedSideAnnotation = forwardRef<
+  HTMLDivElement,
+  {hmId: string; sidePos: 'bottom' | 'right'}
+>(function EmbedSideAnnotation({hmId, sidePos}, ref) {
+  const unpacked = unpackHmId(hmId)
+  if (unpacked && unpacked.type != 'd') return null
+  const pub = usePublication({
+    id: unpacked?.qid,
+    version: unpacked?.version || undefined,
+  })
+  const editors = useAccounts(pub.data?.document?.editors || [])
+
+  // @ts-expect-error
+  const sideStyles: YStackProps =
+    sidePos == 'right'
+      ? {
+          position: 'absolute',
+          top: 32,
+          right: -16,
+          transform: 'translateX(100%)',
+        }
+      : {}
+
+  return (
+    <YStack
+      ref={ref}
+      p="$2"
+      flex="none"
+      className="embed-side-annotation"
+      width="max-content"
+      maxWidth={300}
+      {...sideStyles}
+    >
+      {/* <XStack ai="center" gap="$2" bg="green"> */}
+      <SizableText size="$1" fontWeight="600">
+        {pub?.data?.document?.title}
+      </SizableText>
+      {/* <SizableText fontSize={12} color="$color9">
+          {formattedDateMedium(pub.data?.document?.publishTime)}
+        </SizableText> */}
+      {/* </XStack> */}
+      <SizableText size="$1" color="$color9">
+        {formattedDateMedium(pub.data?.document?.updateTime)}
+      </SizableText>
+      <XStack
+        marginHorizontal="$2"
+        gap="$2"
+        ai="center"
+        paddingVertical="$1"
+        alignSelf="flex-start"
+      >
+        <XStack ai="center">
+          {editors
+            .map((editor) => editor.data)
+            .filter(Boolean)
+            .map(
+              (editorAccount, idx) =>
+                editorAccount?.id && (
+                  <XStack
+                    zIndex={idx + 1}
+                    key={editorAccount?.id}
+                    borderColor="$background"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderRadius={100}
+                    marginLeft={-8}
+                  >
+                    <BaseAccountLinkAvatar
+                      account={editorAccount}
+                      accountId={editorAccount?.id}
+                    />
+                  </XStack>
+                ),
+            )}
+        </XStack>
+      </XStack>
+    </YStack>
+  )
+})
