@@ -10,6 +10,7 @@ import {
   ErrorBlock,
   InlineEmbedComponentProps,
   PublicationCardView,
+  UnpackedHypermediaId,
   blockStyles,
   createHmId,
   formattedDateMedium,
@@ -28,8 +29,17 @@ import {
   YStack,
 } from '@mintter/ui'
 import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
-import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
-import {useAccount} from '../models/accounts'
+import {
+  ComponentProps,
+  PropsWithChildren,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {YStackProps} from 'tamagui'
+import {useAccount, useAccounts} from '../models/accounts'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useGroup, useGroupFrontpage} from '../models/groups'
@@ -38,19 +48,24 @@ import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
 import {getRouteContext, useOpenInContext} from '../utils/route-context'
 import {useNavigate} from '../utils/useNavigate'
+import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {Avatar} from './avatar'
 
 function EmbedWrapper({
   hmRef,
   parentBlockId,
   children,
+  depth,
   ...props
 }: PropsWithChildren<
-  {hmRef: string; parentBlockId: string | null} & ComponentProps<typeof YStack>
+  {
+    hmRef: string
+    parentBlockId: string | null
+    depth?: number
+  } & ComponentProps<typeof YStack>
 >) {
   const {
     disableEmbedClick = false,
-    layoutUnit,
     comment,
     routeParams,
   } = usePublicationContentContext()
@@ -58,7 +73,11 @@ function EmbedWrapper({
   const open = useOpenInContext()
   const navigate = useNavigate('replace')
   const unpackRef = unpackHmId(hmRef)
-
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const sideannotationRef = useRef<HTMLDivElement>(null)
+  const wrapperRect = useRef<DOMRect>()
+  const sideRect = useRef<DOMRect>()
+  const [sidePos, setSidePos] = useState<'bottom' | 'right'>('bottom')
   const isHighlight = useMemo(() => {
     return (
       routeParams?.documentId == unpackRef?.qid &&
@@ -73,9 +92,42 @@ function EmbedWrapper({
     unpackRef?.version,
   ])
 
+  useEffect(() => {
+    if (wrapperRef.current) {
+      observeSize(wrapperRef.current, (rect) => {
+        wrapperRect.current = rect
+      })
+    }
+    if (sideannotationRef.current) {
+      observeSize(sideannotationRef.current, (rect) => {
+        sideRect.current = rect
+      })
+    }
+
+    function onWindowResize() {
+      if (wrapperRect.current && sideRect.current) {
+        const targetSize = sideRect.current.width + 48
+        setSidePos(
+          targetSize < window.innerWidth - wrapperRect.current.right
+            ? 'right'
+            : 'bottom',
+        )
+      }
+    }
+
+    window.addEventListener('resize', onWindowResize, false)
+    setTimeout(() => {
+      onWindowResize()
+    }, 500)
+
+    return () => {
+      window.removeEventListener('resize', onWindowResize, false)
+    }
+  }, [wrapperRef])
+
   return (
     <YStack
-      // @ts-expect-error
+      ref={wrapperRef}
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
@@ -89,20 +141,24 @@ function EmbedWrapper({
       }
       hoverStyle={{
         cursor: 'pointer',
-        backgroundColor:
-          isHighlight && routeParams?.blockRef == unpackRef?.blockRef
+        backgroundColor: isHighlight
+          ? routeParams?.blockRef == unpackRef?.blockRef
             ? '$yellow4'
-            : '$backgroundHover',
-        borderRadius: '$2',
-        borderLeftColor: '$color7',
+            : '$backgroundTransparent'
+          : '$backgroundTransparent',
+        // borderRadius: '$2',
+        // borderRightColor: depth == 1 ? '$blue7' : undefined,
       }}
       margin={0}
-      marginHorizontal={(-1 * layoutUnit) / 2}
-      padding={layoutUnit / 2}
-      overflow="hidden"
+      // marginHorizontal={-1 * layoutUnit}
+
+      // padding={layoutUnit / 2}
+      // overflow="hidden"
       borderRadius={0}
-      borderLeftWidth={6}
-      borderLeftColor={isHighlight ? '$yellow6' : '$color4'}
+      borderRightWidth={3}
+      borderRightColor={'$blue8'}
+      // borderLeftWidth={6}
+      // borderLeftColor={isHighlight ? '$yellow6' : '$color4'}
       onPress={
         !disableEmbedClick
           ? () => {
@@ -128,9 +184,221 @@ function EmbedWrapper({
       {...props}
     >
       {children}
+      {!comment ? (
+        <EmbedSideAnnotation
+          sidePos={sidePos}
+          ref={sideannotationRef}
+          hmId={hmRef}
+        />
+      ) : null}
     </YStack>
   )
 }
+
+function observeSize(element: HTMLDivElement, callback: (r: DOMRect) => void) {
+  const ro = new ResizeObserver(() => {
+    const r = element.getBoundingClientRect()
+    callback(r)
+  })
+  ro.observe(element)
+}
+
+const EmbedSideAnnotation = forwardRef<
+  HTMLDivElement,
+  {hmId: string; sidePos: 'bottom' | 'right'}
+>(function EmbedSideAnnotation({hmId, sidePos}, ref) {
+  const unpacked = unpackHmId(hmId)
+
+  // @ts-expect-error
+  const sideStyles: YStackProps =
+    sidePos == 'right'
+      ? {
+          position: 'absolute',
+          top: 32,
+          right: -16,
+          transform: 'translateX(100%)',
+        }
+      : {}
+
+  if (unpacked && unpacked.type == 'c')
+    return (
+      <CommentSideAnnotation
+        ref={ref}
+        unpackedRef={unpacked}
+        sideStyles={sideStyles}
+      />
+    )
+  if (unpacked && unpacked.type != 'd') return null
+  const pub = usePublication({
+    id: unpacked?.qid,
+    version: unpacked?.version || undefined,
+  })
+  const editors = useAccounts(pub.data?.document?.editors || [])
+
+  return (
+    <YStack
+      ref={ref}
+      p="$2"
+      flex="none"
+      className="embed-side-annotation"
+      width="max-content"
+      maxWidth={300}
+      group="item"
+      {...sideStyles}
+    >
+      {/* <XStack ai="center" gap="$2" bg="green"> */}
+      <SizableText size="$1" fontWeight="600">
+        {pub?.data?.document?.title}
+      </SizableText>
+      {/* <SizableText fontSize={12} color="$color9">
+          {formattedDateMedium(pub.data?.document?.publishTime)}
+        </SizableText> */}
+      {/* </XStack> */}
+      <SizableText size="$1" color="$color9">
+        {formattedDateMedium(pub.data?.document?.updateTime)}
+      </SizableText>
+      <XStack
+        marginHorizontal="$2"
+        gap="$2"
+        ai="center"
+        paddingVertical="$1"
+        alignSelf="flex-start"
+      >
+        <XStack ai="center">
+          {editors
+            .map((editor) => editor.data)
+            .filter(Boolean)
+            .map(
+              (editorAccount, idx) =>
+                editorAccount?.id && (
+                  <XStack
+                    zIndex={idx + 1}
+                    key={editorAccount?.id}
+                    borderColor="$background"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderRadius={100}
+                    marginLeft={-8}
+                  >
+                    <BaseAccountLinkAvatar
+                      account={editorAccount}
+                      accountId={editorAccount?.id}
+                    />
+                  </XStack>
+                ),
+            )}
+        </XStack>
+      </XStack>
+      <SizableText
+        size="$1"
+        color="$blue9"
+        opacity={0}
+        $group-item-hover={{opacity: 1}}
+      >
+        Go to Document →
+      </SizableText>
+    </YStack>
+  )
+})
+
+const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
+  props: {unpackedRef?: UnpackedHypermediaId; sideStyles: YStackProps},
+  ref,
+) {
+  const comment = useComment(props.unpackedRef?.id)
+
+  const unpackedTarget = useMemo(() => {
+    if (comment && comment.data?.target) {
+      return unpackHmId(comment.data.target)
+    } else {
+      return null
+    }
+  }, [comment])
+
+  const pubTarget = usePublicationVariant({
+    documentId: unpackedTarget?.qid,
+    versionId: unpackedTarget?.version || undefined,
+    variants: unpackedTarget?.variants || [],
+  })
+
+  const editors = useAccounts(
+    pubTarget.data?.publication?.document?.editors || [],
+  )
+
+  if (pubTarget.status == 'success') {
+    return (
+      <YStack
+        ref={ref}
+        p="$2"
+        flex="none"
+        className="embed-side-annotation"
+        width="max-content"
+        maxWidth={300}
+        group="item"
+        {...props.sideStyles}
+      >
+        {/* <XStack ai="center" gap="$2" bg="green"> */}
+        <SizableText size="$1">
+          comment on{' '}
+          <SizableText size="$1" fontWeight="600">
+            {pubTarget?.data?.publication?.document?.title}
+          </SizableText>
+        </SizableText>
+        {/* <SizableText fontSize={12} color="$color9">
+            {formattedDateMedium(pub.data?.document?.publishTime)}
+          </SizableText> */}
+        {/* </XStack> */}
+        <SizableText size="$1" color="$color9">
+          {formattedDateMedium(
+            pubTarget.data?.publication?.document?.updateTime,
+          )}
+        </SizableText>
+        <XStack
+          marginHorizontal="$2"
+          gap="$2"
+          ai="center"
+          paddingVertical="$1"
+          alignSelf="flex-start"
+        >
+          <XStack ai="center">
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map(
+                (editorAccount, idx) =>
+                  editorAccount?.id && (
+                    <XStack
+                      zIndex={idx + 1}
+                      key={editorAccount?.id}
+                      borderColor="$background"
+                      backgroundColor="$background"
+                      borderWidth={2}
+                      borderRadius={100}
+                      marginLeft={-8}
+                    >
+                      <BaseAccountLinkAvatar
+                        account={editorAccount}
+                        accountId={editorAccount?.id}
+                      />
+                    </XStack>
+                  ),
+              )}
+          </XStack>
+        </XStack>
+        <SizableText
+          size="$1"
+          color="$blue9"
+          opacity={0}
+          $group-item-hover={{opacity: 1}}
+        >
+          Go to Document →
+        </SizableText>
+      </YStack>
+    )
+  }
+
+  return null
+})
 
 export function EmbedPublication(props: EntityComponentProps) {
   if (props.block.attributes?.view == 'card') {
@@ -267,7 +535,7 @@ export function EmbedComment(props: EntityComponentProps) {
   if (comment.isLoading) return <Spinner />
   return (
     <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
-      <XStack flexWrap="wrap" jc="space-between">
+      <XStack flexWrap="wrap" jc="space-between" p="$3">
         <XStack gap="$2">
           <UIAvatar
             label={account.data?.profile?.alias}

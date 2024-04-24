@@ -189,7 +189,7 @@ export const MediaContainer = ({
         borderColor={selected ? '$color8' : 'transparent'}
         borderWidth={2}
         borderRadius="$2"
-        overflow="hidden"
+        // overflow="hidden"
         hoverStyle={{
           backgroundColor: '$color4',
         }}

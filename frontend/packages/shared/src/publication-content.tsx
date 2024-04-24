@@ -545,6 +545,11 @@ export function BlockNodeContent({
     }
   }, [elm.current, blockNode.block])
 
+  // @ts-expect-error
+  if (isBlockNodeEmpty(blockNode)) {
+    return null
+  }
+
   return (
     <YStack
       ref={elm}
@@ -740,6 +745,29 @@ export function BlockNodeContent({
       ) : null}
     </YStack>
   )
+}
+
+function isBlockNodeEmpty(bn: HMBlockNode): boolean {
+  if (bn.children && bn.children.length) return false
+  if (typeof bn.block == 'undefined') return true
+  switch (bn.block.type) {
+    case 'paragraph':
+    case 'heading':
+    case 'math':
+    case 'equation':
+    case 'code':
+    case 'codeBlock':
+      return !bn.block.text
+    case 'image':
+    case 'file':
+    case 'video':
+    case 'nostr':
+    case 'embed':
+    case 'web-embed':
+      return !bn.block.ref
+    default:
+      return false
+  }
 }
 
 export const blockStyles: YStackProps = {
@@ -1526,46 +1554,46 @@ export function ContentEmbed({
   else if (embedData.data.embedBlocks) {
     content = (
       <>
-        {!props.blockRef && pub?.document?.title ? (
-          <YStack
-            padding="$2"
-            maxWidth="95%"
-            borderBottomColor="$color8"
-            borderBottomWidth={1}
-            mb="$2"
-          >
-            <SizableText
-              padding="$2"
-              maxWidth="100%"
-              fontWeight="800"
-              fontSize={contentTextUnit * 1.6}
-              lineHeight={contentTextUnit * 1.9}
-              $gtMd={{
-                fontSize: contentTextUnit * 1.7,
-                lineHeight: contentTextUnit * 1.2 * 1.7,
-              }}
-              $gtLg={{
-                fontSize: contentTextUnit * 1.8,
-                lineHeight: contentTextUnit * 1.2 * 1.8,
-              }}
-            >
-              {pub?.document.title}
-            </SizableText>
-          </YStack>
-        ) : null}
+        {/* ADD SIDENOTE HERE */}
         <BlockNodeList childrenType="group">
-          {embedData.data.embedBlocks.map((bn, idx) => (
+          {!props.blockRef && pub?.document?.title ? (
             <BlockNodeContent
-              key={bn.block?.id}
-              isFirstChild={idx == 0}
-              depth={1}
-              expanded={!!props.blockRange?.expanded || true}
-              blockNode={bn}
+              key={`title-${pub.document.id}`}
+              isFirstChild
+              depth={props.depth}
+              expanded
+              blockNode={{
+                block: {
+                  type: 'heading',
+                  id: `heading-${props.eid}`,
+                  text: pub?.document?.title,
+                  attributes: {
+                    childrenType: 'group',
+                  },
+                  annotations: [],
+                },
+                children: embedData.data.embedBlocks as Array<HMBlockNode>,
+              }}
               childrenType="group"
-              index={idx}
+              index={0}
               embedDepth={1}
             />
-          ))}
+          ) : (
+            embedData.data.embedBlocks.map((bn, idx) => (
+              <BlockNodeContent
+                key={bn.block?.id}
+                isFirstChild={
+                  !props.blockRef && pub?.document?.title ? true : idx == 0
+                }
+                depth={1}
+                expanded={!!props.blockRange?.expanded || true}
+                blockNode={bn}
+                childrenType="group"
+                index={idx}
+                embedDepth={1}
+              />
+            ))
+          )}
         </BlockNodeList>
         {showReferenced ? (
           <XStack jc="flex-end">
@@ -1610,7 +1638,11 @@ export function ContentEmbed({
     )
   }
   return (
-    <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
+    <EmbedWrapper
+      depth={props.depth}
+      hmRef={props.id}
+      parentBlockId={parentBlockId || ''}
+    >
       {content}
     </EmbedWrapper>
   )

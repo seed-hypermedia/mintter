@@ -25,3 +25,12 @@
     'Helvetica Neue',
     sans-serif;
 }
+
+.block-embed .block-embed {
+  border-right-width: 0px;
+}
+
+.block-embed .block-embed > .embed-side-annotation,
+.feed-item-container .embed-side-annotation {
+  display: none !important;
+}

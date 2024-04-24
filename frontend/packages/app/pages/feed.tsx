@@ -138,6 +138,7 @@ function FeedItemContainer({
           p="$4"
           alignSelf="stretch"
           overflow="hidden"
+          className="feed-item-container"
         >
           {children}
         </YStack>
