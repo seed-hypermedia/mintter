@@ -21,7 +21,6 @@ import {
 } from '@mintter/ui'
 import {useMemo} from 'react'
 import {useAccount} from '../models/accounts'
-import {useEntityTimeline} from '../models/changes'
 import {useComment} from '../models/comments'
 import {useDocTextContent, usePublication} from '../models/documents'
 import {AppPublicationContentProvider} from '../pages/publication-content-provider'
@@ -56,12 +55,12 @@ function PublicationCitationItem({mention}: {mention: Mention}) {
     },
   )
   const versionChanges = new Set(unpackedSource?.version?.split('.'))
-  const timeline = useEntityTimeline(mention.source)
-  const authors = new Set(
-    timeline.data?.timelineEntries
-      .filter(([changeId]) => versionChanges.has(changeId))
-      .map(([changeId, change]) => change.author),
-  )
+  // const timeline = useEntityTimeline(mention.source)
+  // const authors = new Set(
+  //   timeline.data?.timelineEntries
+  //     .filter(([changeId]) => versionChanges.has(changeId))
+  //     .map(([changeId, change]) => change.author),
+  // )
   let {data: account} = useAccount(pub.data?.document?.author)
 
   const docTextContent = useDocTextContent(pub.data)
@@ -70,7 +69,7 @@ function PublicationCitationItem({mention}: {mention: Mention}) {
     documentId: unpackedSource!.qid,
     versionId: mention.sourceBlob?.cid,
     blockId: mention.sourceContext,
-    variants: [...authors].map((author) => ({key: 'author', author})),
+    // variants: [...authors].map((author) => ({key: 'author', author})),
   }
   return (
     <PanelCard
