@@ -218,7 +218,7 @@ export function SidebarItem({
   const indent = indented ? (typeof indented === 'number' ? indented : 1) : 0
   const activeBg = activeBgColor || '$blue4'
   return (
-    <View group="item">
+    <View>
       <ListItem
         hoverTheme
         pressTheme
