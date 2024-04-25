@@ -69,7 +69,7 @@ export default function PublicationPage() {
   const mentions = useEntityMentions(
     publication.status == 'success' ? docId : undefined,
   )
-
+  console.log(`== ~ PublicationPage ~ mentions:`, mentions)
   const firstPubDialog = useAppDialog(FirstPublishDialog, {
     onClose: useCallback(() => {
       replace({...route, showFirstPublicationMessage: false})

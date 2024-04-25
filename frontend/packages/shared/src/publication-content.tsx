@@ -619,105 +619,109 @@ export function BlockNodeContent({
           parentBlockId={parentBlockId}
           {...interactiveProps}
         />
-        {!props.embedDepth && !renderOnly ? (
-          <XStack
-            pl="$2"
-            borderRadius={layoutUnit / 4}
-            gap="$2"
-            onHoverIn={() =>
-              props.embedDepth ? undefined : hoverProps.onHoverIn()
-            }
-            onHoverOut={() =>
-              props.embedDepth ? undefined : hoverProps.onHoverOut()
-            }
-          >
-            {citations?.length ? (
-              <Tooltip
-                content={`See ${citations.length} ${pluralS(
-                  citations.length,
-                  'document',
-                )} referencing this`}
-                delay={800}
+
+        <XStack
+          pl="$2"
+          borderRadius={layoutUnit / 4}
+          gap="$2"
+          onHoverIn={() =>
+            props.embedDepth ? undefined : hoverProps.onHoverIn()
+          }
+          onHoverOut={() =>
+            props.embedDepth ? undefined : hoverProps.onHoverOut()
+          }
+        >
+          {citations?.length ? (
+            <Tooltip
+              content={`See ${citations.length} ${pluralS(
+                citations.length,
+                'document',
+              )} referencing this`}
+              delay={800}
+            >
+              <Button
+                size="$2"
+                chromeless
+                padding={layoutUnit / 4}
+                borderRadius={layoutUnit / 4}
+                // theme="blue"
+                onPress={() => onCitationClick?.()}
               >
-                <Button
-                  size="$2"
-                  chromeless
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  theme="blue"
-                  onPress={() => onCitationClick?.()}
-                >
-                  <XStack gap="$2" ai="center">
-                    <BlockQuote size={layoutUnit / 2} color="$blue11" />
-                    <SizableText color="$blue11" size="$2">
-                      {String(citations.length)}
-                    </SizableText>
-                  </XStack>
-                </Button>
-              </Tooltip>
-            ) : null}
-            {onCopyBlock ? (
-              <Tooltip content="Copy block reference" delay={800}>
-                <Button
-                  size="$2"
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  chromeless
-                  icon={Link}
-                  onPress={() => {
-                    if (blockNode.block?.id) {
-                      onCopyBlock(blockNode.block.id)
-                    } else {
-                      console.error('onCopyBlock Error: no blockId available')
-                    }
-                  }}
-                />
-              </Tooltip>
-            ) : null}
-            {onReplyBlock ? (
-              <Tooltip content="Reply to block" delay={800}>
-                <Button
-                  size="$2"
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  chromeless
-                  icon={Reply}
-                  onPress={() => {
-                    if (blockNode.block?.id) {
-                      onReplyBlock(blockNode.block.id)
-                    } else {
-                      console.error('onReplyBlock Error: no blockId available')
-                    }
-                  }}
-                />
-              </Tooltip>
-            ) : null}
-            {onBlockComment ? (
-              <Tooltip content="Comment on this block" delay={800}>
-                <Button
-                  size="$2"
-                  opacity={hover ? 1 : 0}
-                  padding={layoutUnit / 4}
-                  borderRadius={layoutUnit / 4}
-                  chromeless
-                  icon={MessageSquare}
-                  onPress={() => {
-                    if (blockNode.block?.id) {
-                      onBlockComment(blockNode.block.id)
-                    } else {
-                      console.error(
-                        'onBlockComment Error: no blockId available',
-                      )
-                    }
-                  }}
-                />
-              </Tooltip>
-            ) : null}
-          </XStack>
-        ) : null}
+                <XStack gap="$2" ai="center">
+                  <BlockQuote size={layoutUnit / 2} color="$blue11" />
+                  <SizableText color="$blue11" size="$2">
+                    {String(citations.length)}
+                  </SizableText>
+                </XStack>
+              </Button>
+            </Tooltip>
+          ) : null}
+          {!props.embedDepth && !renderOnly ? (
+            <>
+              {onCopyBlock ? (
+                <Tooltip content="Copy block reference" delay={800}>
+                  <Button
+                    size="$2"
+                    opacity={hover ? 1 : 0}
+                    padding={layoutUnit / 4}
+                    borderRadius={layoutUnit / 4}
+                    chromeless
+                    icon={Link}
+                    onPress={() => {
+                      if (blockNode.block?.id) {
+                        onCopyBlock(blockNode.block.id)
+                      } else {
+                        console.error('onCopyBlock Error: no blockId available')
+                      }
+                    }}
+                  />
+                </Tooltip>
+              ) : null}
+              {onReplyBlock ? (
+                <Tooltip content="Reply to block" delay={800}>
+                  <Button
+                    size="$2"
+                    opacity={hover ? 1 : 0}
+                    padding={layoutUnit / 4}
+                    borderRadius={layoutUnit / 4}
+                    chromeless
+                    icon={Reply}
+                    onPress={() => {
+                      if (blockNode.block?.id) {
+                        onReplyBlock(blockNode.block.id)
+                      } else {
+                        console.error(
+                          'onReplyBlock Error: no blockId available',
+                        )
+                      }
+                    }}
+                  />
+                </Tooltip>
+              ) : null}
+              {onBlockComment ? (
+                <Tooltip content="Comment on this block" delay={800}>
+                  <Button
+                    size="$2"
+                    opacity={hover ? 1 : 0}
+                    padding={layoutUnit / 4}
+                    borderRadius={layoutUnit / 4}
+                    chromeless
+                    icon={MessageSquare}
+                    onPress={() => {
+                      if (blockNode.block?.id) {
+                        onBlockComment(blockNode.block.id)
+                      } else {
+                        console.error(
+                          'onBlockComment Error: no blockId available',
+                        )
+                      }
+                    }}
+                  />
+                </Tooltip>
+              ) : null}
+            </>
+          ) : null}
+        </XStack>
       </XStack>
       {bnChildren && _expanded ? (
         <BlockNodeList
@@ -2028,7 +2032,7 @@ export function useBlockCitations(blockId?: string) {
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
     return context.citations.filter((c) => {
-      return c.sourceContext == blockId
+      return c.targetFragment == blockId
     })
   }, [blockId, context.citations])
 
