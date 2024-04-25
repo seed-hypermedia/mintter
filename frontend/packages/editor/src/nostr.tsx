@@ -6,7 +6,6 @@ import {
   H2,
   Input,
   Paragraph,
-  Popover,
   SizableText,
   Tabs,
   Text,
@@ -24,12 +23,7 @@ import {
   verifySignature,
 } from 'nostr-tools'
 import {useEffect, useState} from 'react'
-import {
-  RiCheckFill,
-  RiCloseCircleLine,
-  RiMessage2Fill,
-  RiRefreshLine,
-} from 'react-icons/ri'
+import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -422,224 +416,184 @@ function NostrForm({
   }
 
   return (
-    <div>
-      <YStack
-        //@ts-ignore
-        contentEditable={false}
-        position="relative"
-        borderWidth={0}
-        outlineWidth={0}
+    <YStack
+      position="relative"
+      borderWidth={2.5}
+      borderColor="$color6"
+      borderRadius="$2"
+      outlineWidth={0}
+      // @ts-ignore
+      contentEditable={false}
+    >
+      <Tabs
+        value={tabState}
+        onValueChange={(value: string) => {
+          setState({
+            name: undefined,
+            color: undefined,
+          })
+          setTabState(value)
+        }}
+        orientation="horizontal"
+        flexDirection="column"
       >
-        <Popover
-          placement="bottom"
-          size="$5"
-          defaultOpen={boolRegex.test(block.props.defaultOpen)}
-          stayInFrame
+        <Tabs.List
+          marginBottom="$1"
+          backgroundColor="$background"
+          borderBottomColor="$color8"
+          borderBottomWidth="$1"
+          borderBottomLeftRadius={0}
+          borderBottomRightRadius={0}
+          borderRadius={0}
         >
-          <Popover.Trigger asChild>
-            <Button
-              icon={<RiMessage2Fill fill={theme.color12.get()} />}
-              borderRadius={0}
-              size="$5"
-              justifyContent="flex-start"
-            >
-              Add a nostr note
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content
-            padding={0}
-            elevation="$3"
-            overflow="hidden"
-            size="$5"
-            borderRadius="$5"
-            shadowColor="$shadowColor"
-            opacity={1}
-            enterStyle={{x: 0, y: -10, opacity: 0}}
-            exitStyle={{x: 0, y: -10, opacity: 0}}
-            animation={[
-              'quick',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
+          <Tabs.Tab
+            unstyled
+            value="search"
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            borderBottomLeftRadius={0}
+            borderBottomRightRadius={0}
+            borderBottomWidth={tabState == 'search' ? '$1' : '$0'}
+            hoverStyle={{
+              backgroundColor: '$borderColorHover',
+              cursor: 'pointer',
+            }}
           >
-            <Tabs
-              value={tabState}
-              onValueChange={(value: string) => {
-                setState({
-                  name: undefined,
-                  color: undefined,
-                })
-                setTabState(value)
-              }}
-              orientation="horizontal"
-              flexDirection="column"
-              width={500}
-            >
-              <Tabs.List
-                marginBottom="$-0.5"
-                backgroundColor="$background"
-                borderBottomColor="$color8"
-                borderBottomWidth="$1"
-                borderBottomLeftRadius={0}
-                borderBottomRightRadius={0}
-                borderRadius={0}
-              >
-                <Tabs.Tab
+            <SizableText size="$2">Search</SizableText>
+          </Tabs.Tab>
+          <Tabs.Tab
+            unstyled
+            value="manual"
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            borderBottomLeftRadius={0}
+            borderBottomRightRadius={0}
+            borderBottomWidth={tabState == 'manual' ? '$1' : '$0'}
+            hoverStyle={{
+              backgroundColor: '$borderColorHover',
+              cursor: 'pointer',
+            }}
+          >
+            <SizableText size="$2">Manual</SizableText>
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Content value="search">
+          <XStack
+            padding="$4"
+            alignItems="center"
+            backgroundColor="$background"
+            borderRadius="$2"
+          >
+            <Form width="100%" onSubmit={() => searchNote()} borderWidth={0}>
+              <XStack flex={1} gap="$3">
+                <Input
                   unstyled
-                  value="search"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == 'search' ? '$1' : '$0'}
+                  borderColor="$color8"
+                  borderWidth="$1"
+                  borderRadius="$2"
+                  paddingLeft="$3"
+                  height="$3"
+                  width="100%"
+                  placeholder="Input nevent or note1"
                   hoverStyle={{
-                    backgroundColor: '$borderColorHover',
-                    cursor: 'pointer',
+                    borderColor: '$color11',
                   }}
-                >
-                  <SizableText size="$2">Search</SizableText>
-                </Tabs.Tab>
-                <Tabs.Tab
+                  focusStyle={{
+                    borderColor: '$color11',
+                  }}
+                  onChange={(e) => setNevent(e.nativeEvent.text)}
+                  autoFocus={true}
+                />
+                <Form.Trigger asChild>
+                  <Button
+                    unstyled
+                    alignItems="center"
+                    justifyContent="center"
+                    width="$12"
+                    flex={0}
+                    flexShrink={0}
+                    borderWidth="0"
+                    borderRadius="$2"
+                    size="$3"
+                    fontWeight="bold"
+                    backgroundColor="$color12"
+                    color="$color1"
+                    hoverStyle={{
+                      backgroundColor: '$color11',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    SEARCH
+                  </Button>
+                </Form.Trigger>
+              </XStack>
+              {state.name && (
+                <SizableText size="$2" color={state.color} paddingTop="$2">
+                  {state.name}
+                </SizableText>
+              )}
+            </Form>
+          </XStack>
+        </Tabs.Content>
+        <Tabs.Content value="manual">
+          <XStack
+            padding="$4"
+            alignItems="center"
+            backgroundColor="$background"
+            borderRadius="$2"
+          >
+            <Form width="100%" onSubmit={() => submitNote()} borderWidth={0}>
+              <XStack flex={1} gap="$3">
+                <Input
                   unstyled
-                  value="manual"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == 'manual' ? '$1' : '$0'}
+                  borderColor="$color8"
+                  borderWidth="$1"
+                  borderRadius="$2"
+                  paddingLeft="$3"
+                  height="$3"
+                  width="100%"
+                  placeholder="Input JSON note"
                   hoverStyle={{
-                    backgroundColor: '$borderColorHover',
-                    cursor: 'pointer',
+                    borderColor: '$color11',
                   }}
-                >
-                  <SizableText size="$2">Manual</SizableText>
-                </Tabs.Tab>
-              </Tabs.List>
-              <Tabs.Content value="search">
-                <XStack
-                  padding="$4"
-                  alignItems="center"
-                  backgroundColor="$background"
-                >
-                  <Form
+                  focusStyle={{
+                    borderColor: '$color11',
+                  }}
+                  onChange={(e) => setRawNote(e.nativeEvent.text)}
+                  autoFocus={true}
+                />
+                <Form.Trigger asChild>
+                  <Button
+                    unstyled
                     alignItems="center"
-                    onSubmit={() => searchNote()}
-                    borderWidth={0}
+                    justifyContent="center"
+                    width="$12"
+                    flex={0}
+                    flexShrink={0}
+                    borderWidth="0"
+                    borderRadius="$2"
+                    size="$3"
+                    fontWeight="bold"
+                    backgroundColor="$color12"
+                    color="$color1"
+                    hoverStyle={{
+                      backgroundColor: '$color11',
+                      cursor: 'pointer',
+                    }}
                   >
-                    <YStack flex={1}>
-                      <XStack>
-                        <Input
-                          width={360}
-                          marginRight="$3"
-                          borderColor="$color8"
-                          borderWidth="$0.5"
-                          borderRadius="$3"
-                          size="$3.5"
-                          placeholder="Input nevent or note1"
-                          focusStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          hoverStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          onChange={(e) => setNevent(e.nativeEvent.text)}
-                        />
-                        <Form.Trigger asChild>
-                          <Button
-                            flex={0}
-                            flexShrink={0}
-                            borderRadius="$3"
-                            size="$3.5"
-                            theme={'green'}
-                            focusStyle={{
-                              outlineWidth: 0,
-                            }}
-                          >
-                            Search
-                          </Button>
-                        </Form.Trigger>
-                      </XStack>
-                      {state.name && (
-                        <SizableText
-                          size="$2"
-                          color={state.color}
-                          paddingTop="$2"
-                        >
-                          {state.name}
-                        </SizableText>
-                      )}
-                    </YStack>
-                  </Form>
-                </XStack>
-              </Tabs.Content>
-              <Tabs.Content value="manual">
-                <XStack
-                  padding="$4"
-                  alignItems="center"
-                  backgroundColor="$background"
-                >
-                  <Form
-                    alignItems="center"
-                    onSubmit={() => submitNote()}
-                    borderWidth={0}
-                  >
-                    <YStack flex={1}>
-                      <XStack>
-                        <Input
-                          width={360}
-                          marginRight="$3"
-                          borderColor="$color8"
-                          borderWidth="$0.5"
-                          borderRadius="$3"
-                          size="$3.5"
-                          placeholder="Input JSON note"
-                          focusStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          hoverStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          onChange={(e) => setRawNote(e.nativeEvent.text)}
-                        />
-                        <Form.Trigger asChild>
-                          <Button
-                            flex={0}
-                            flexShrink={0}
-                            borderRadius="$3"
-                            size="$3.5"
-                            theme={'green'}
-                            focusStyle={{
-                              outlineWidth: 0,
-                            }}
-                          >
-                            Embed
-                          </Button>
-                        </Form.Trigger>
-                      </XStack>
-                      {state.name && (
-                        <SizableText
-                          size="$2"
-                          color={state.color}
-                          paddingTop="$2"
-                        >
-                          {state.name}
-                        </SizableText>
-                      )}
-                    </YStack>
-                  </Form>
-                </XStack>
-              </Tabs.Content>
-            </Tabs>
-          </Popover.Content>
-        </Popover>
-      </YStack>
-    </div>
+                    EMBED
+                  </Button>
+                </Form.Trigger>
+              </XStack>
+              {state.name && (
+                <SizableText size="$2" color={state.color} paddingTop="$2">
+                  {state.name}
+                </SizableText>
+              )}
+            </Form>
+          </XStack>
+        </Tabs.Content>
+      </Tabs>
+    </YStack>
   )
 }

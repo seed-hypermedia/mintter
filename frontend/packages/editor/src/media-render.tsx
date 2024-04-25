@@ -355,7 +355,9 @@ function MediaForm({
   return (
     <YStack
       position="relative"
-      borderWidth="$0.5"
+      borderWidth={2.5}
+      borderColor={drag ? '$color12' : '$color6'}
+      borderRadius="$2"
       borderStyle={drag ? 'dashed' : 'solid'}
       outlineWidth={0}
       // @ts-ignore
@@ -372,12 +374,18 @@ function MediaForm({
           zIndex={999}
           alignItems="center"
           justifyContent="center"
-          backgroundColor="rgba(255, 255, 255, 0.7);"
+          backgroundColor="rgb(255, 255, 255, 0.5)"
+          borderRadius="$2"
         >
           <SizableText fontWeight="bold">DROP MEDIA HERE</SizableText>
         </XStack>
       )}
-      <XStack padding="$4" alignItems="center" backgroundColor="$background">
+      <XStack
+        padding="$4"
+        alignItems="center"
+        backgroundColor="$background"
+        borderRadius="$2"
+      >
         {mediaType !== 'file' ? (
           <Form
             width="100%"
@@ -391,9 +399,9 @@ function MediaForm({
             <XStack flex={1} gap="$3">
               <Input
                 unstyled
-                borderColor="$color12"
+                borderColor="$color8"
                 borderWidth="$1"
-                borderRadius="0"
+                borderRadius="$2"
                 paddingLeft="$3"
                 height="$3"
                 width="100%"
@@ -401,7 +409,10 @@ function MediaForm({
                   mediaType === 'web-embed' ? 'X.com' : mediaType
                 } URL here...`}
                 hoverStyle={{
-                  borderColor: '$color9',
+                  borderColor: '$color11',
+                }}
+                focusStyle={{
+                  borderColor: '$color11',
                 }}
                 onChange={(e) => {
                   setUrl(e.nativeEvent.text)
@@ -422,7 +433,7 @@ function MediaForm({
                   flex={0}
                   flexShrink={0}
                   borderWidth="0"
-                  borderRadius="$0"
+                  borderRadius="$2"
                   size="$3"
                   fontWeight="bold"
                   backgroundColor={
@@ -433,7 +444,7 @@ function MediaForm({
                   hoverStyle={
                     fileName.color !== 'red'
                       ? {
-                          backgroundColor: '$color10',
+                          backgroundColor: '$color11',
                           cursor: 'pointer',
                         }
                       : {cursor: 'auto'}
@@ -454,7 +465,8 @@ function MediaForm({
                 <>
                   <Label
                     htmlFor={'file-upload' + block.id}
-                    borderColor="$color12"
+                    borderColor="$color8"
+                    borderRadius="$2"
                     borderWidth="$0.5"
                     width="$8"
                     justifyContent="center"
