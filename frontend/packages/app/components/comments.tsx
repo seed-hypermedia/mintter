@@ -56,7 +56,6 @@ export function CommentGroup({
   targetDocVersion: string
 }) {
   const createComment = useCreateComment()
-  const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
     <YStack position="relative">

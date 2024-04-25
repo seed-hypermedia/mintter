@@ -1,22 +1,51 @@
 import {useEntityMentions} from '@mintter/app/models/content-graph'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {formattedDateMedium, pluralS, unpackHmId} from '@mintter/shared'
+import {
+  BlockRange,
+  BlocksContent,
+  ExpandedBlockRange,
+  HYPERMEDIA_SCHEME,
+  formattedDateMedium,
+  pluralS,
+  serializeBlockRange,
+  unpackHmId,
+} from '@mintter/shared'
 import {Mention} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
-import {PanelCard} from '@mintter/ui'
+import {
+  ButtonText,
+  PanelCard,
+  SizableText,
+  XStack,
+  YStack,
+  copyUrlToClipboardWithFeedback,
+} from '@mintter/ui'
+import {useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
+import {useComment} from '../models/comments'
 import {useDocTextContent, usePublication} from '../models/documents'
+import {AppPublicationContentProvider} from '../pages/publication-content-provider'
 import {PublicationRoute} from '../utils/routes'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 
 function CitationItem({mention}: {mention: Mention}) {
   if (!mention.source) throw 'Invalid citation'
+
+  if (mention.source.startsWith(`${HYPERMEDIA_SCHEME}://d`)) {
+    return <PublicationCitationItem mention={mention} />
+  }
+
+  if (mention.source.startsWith(`${HYPERMEDIA_SCHEME}://c`)) {
+    return <CommentCitationItem mention={mention} />
+  }
+
+  return null
+}
+
+function PublicationCitationItem({mention}: {mention: Mention}) {
   const spawn = useNavigate('spawn')
-  console.log('CitationItem', mention)
-  const sourceId = unpackHmId(mention.source)
-  if (sourceId?.type !== 'd')
-    throw new Error('CitationItem only supports documents right now')
+  const unpackedSource = unpackHmId(mention.source)
   const pub = usePublication(
     {
       id: mention.source,
@@ -26,7 +55,7 @@ function CitationItem({mention}: {mention: Mention}) {
       enabled: !!mention.source,
     },
   )
-  const versionChanges = new Set(sourceId?.version?.split('.'))
+  const versionChanges = new Set(unpackedSource?.version?.split('.'))
   const timeline = useEntityTimeline(mention.source)
   const authors = new Set(
     timeline.data?.timelineEntries
@@ -38,7 +67,7 @@ function CitationItem({mention}: {mention: Mention}) {
   const docTextContent = useDocTextContent(pub.data)
   const destRoute: PublicationRoute = {
     key: 'publication',
-    documentId: sourceId?.qid,
+    documentId: unpackedSource!.qid,
     versionId: mention.sourceBlob?.cid,
     blockId: mention.sourceContext,
     variants: [...authors].map((author) => ({key: 'author', author})),
@@ -50,12 +79,151 @@ function CitationItem({mention}: {mention: Mention}) {
       author={account}
       date={formattedDateMedium(pub.data?.document?.createTime)}
       onPress={() => {
-        spawn(destRoute)
+        if (unpackedSource) {
+          spawn(destRoute)
+        }
       }}
       avatar={
         <AccountLinkAvatar accountId={pub.data?.document?.author} size={24} />
       }
     />
+  )
+}
+
+function CommentCitationItem({mention}: {mention: Mention}) {
+  const spawn = useNavigate('spawn')
+  const unpackedSource = unpackHmId(mention.source)
+  const {data: comment} = useComment(unpackedSource?.id, {
+    enabled: !!mention.source && !!unpackedSource,
+  })
+
+  const commentTarget = useMemo(() => {
+    if (comment?.target) {
+      return unpackHmId(comment.target)
+    }
+    return null
+  }, [comment])
+
+  const pub = usePublication(
+    {
+      id: commentTarget?.qid,
+      version: commentTarget?.version || undefined,
+    },
+    {
+      enabled: !!commentTarget,
+    },
+  )
+
+  let {data: account} = useAccount(comment?.author)
+
+  // const docTextContent = useDocTextContent(pub.data)
+  // const destRoute: PublicationRoute = {
+  //   key: 'publication',
+  //   documentId: unpackedSource!.qid,
+  //   versionId: mention.sourceBlob?.cid,
+  //   blockId: mention.sourceContext,
+  //   variants: [...authors].map((author) => ({key: 'author', author})),
+  // }
+
+  return (
+    <YStack
+      overflow="hidden"
+      borderRadius="$2"
+      backgroundColor={'$backgroundTransparent'}
+      hoverStyle={{
+        cursor: 'pointer',
+        backgroundColor: '$backgroundHover',
+      }}
+      margin="$4"
+      padding="$4"
+      paddingVertical="$4"
+      gap="$2"
+      onPress={() => {
+        if (comment) {
+          spawn({
+            key: 'comment',
+            commentId: comment.id,
+            showThread: false,
+          })
+        }
+      }}
+    >
+      <XStack gap="$2" ai="center">
+        <AccountLinkAvatar accountId={comment?.author} size={24} />
+        <SizableText size="$2" fontWeight="600">
+          {account?.profile?.alias || '...'}
+        </SizableText>
+        {pub?.data?.document?.title ? (
+          <>
+            <SizableText flexShrink="0" size="$2">
+              comment on{' '}
+            </SizableText>
+            <ButtonText
+              size="$4"
+              fontSize="$2"
+              textDecorationLine="underline"
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+              width="100%"
+              overflow="hidden"
+              onPress={() => {
+                if (commentTarget) {
+                  spawn({
+                    key: 'publication',
+                    documentId: commentTarget.qid,
+                    versionId: commentTarget.version || undefined,
+                    variants: commentTarget.variants || [],
+                  })
+                }
+              }}
+            >
+              {pub.data.document.title}
+            </ButtonText>
+          </>
+        ) : null}
+
+        <XStack flex={1} />
+        <SizableText
+          flexShrink={0}
+          size="$2"
+          color="$color9"
+          paddingHorizontal="$1"
+        >
+          {formattedDateMedium(comment?.createTime)}
+        </SizableText>
+      </XStack>
+      <YStack gap="$2" flex={1} marginHorizontal="$-2">
+        <AppPublicationContentProvider
+          comment
+          // onReplyBlock={onReplyBlock}
+          onCopyBlock={(
+            blockId: string,
+            blockRange: BlockRange | ExpandedBlockRange | undefined,
+          ) => {
+            const url = `${comment?.id}#${blockId}${serializeBlockRange(
+              blockRange,
+            )}`
+            copyUrlToClipboardWithFeedback(url, 'Comment Block')
+          }}
+        >
+          <BlocksContent blocks={comment?.content} parentBlockId={null} />
+        </AppPublicationContentProvider>
+      </YStack>
+    </YStack>
+    // <PanelCard
+    //   title={pub.data?.document?.title}
+    //   content={docTextContent}
+    //   author={account}
+    //   date={formattedDateMedium(pub.data?.document?.createTime)}
+    //   onPress={() => {
+    //     if (unpackedSource) {
+    //       spawn(destRoute)
+    //     }
+    //   }}
+    //   avatar={
+    //     <AccountLinkAvatar accountId={pub.data?.document?.author} size={24} />
+    //   }
+    // />
   )
 }
 

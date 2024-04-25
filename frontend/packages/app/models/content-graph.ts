@@ -20,7 +20,7 @@ export function useEntityMentions(entityId?: string) {
         ...result,
         mentions: result.mentions.filter((mention) => {
           const sourceId = unpackHmId(mention.source)
-          if (sourceId?.type !== 'd') return false
+          if (sourceId?.type == 'g') return false
           return true
         }),
       }

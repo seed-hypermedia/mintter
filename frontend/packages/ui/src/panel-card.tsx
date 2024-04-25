@@ -63,6 +63,7 @@ export function PanelCard({
       <YStack gap="$2" flex={1}>
         {title && (
           <SizableText
+            fontWeight={600}
             textOverflow="ellipsis"
             overflow="hidden"
             whiteSpace="nowrap"
