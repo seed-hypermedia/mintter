@@ -131,7 +131,9 @@ export function usePublicationFullList(
   return {...pubList, data}
 }
 
-export function useDraftList(opts: UseQueryOptions = {}) {
+export function useDraftList(
+  opts: UseQueryOptions<unknown, unknown, HMDocument[]> = {},
+) {
   const grpcClient = useGRPCClient()
   const draftListQuery = useInfiniteQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
@@ -139,6 +141,7 @@ export function useDraftList(opts: UseQueryOptions = {}) {
     queryFn: async (context) => {
       const result = await grpcClient.drafts.listDrafts({
         pageToken: context.pageParam,
+        pageSize: 2000000, // temp large page size because we do not paginate drafts from the frontend
       })
 
       const documents =
@@ -147,7 +150,7 @@ export function useDraftList(opts: UseQueryOptions = {}) {
         ) || []
       return {
         ...result,
-        documents,
+        documents: documents.map(hmDocument),
       }
     },
     getNextPageParam: (lastPage) => {

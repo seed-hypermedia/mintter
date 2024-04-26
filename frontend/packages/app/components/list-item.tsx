@@ -18,6 +18,8 @@ export function ListItem({
   icon,
   onPointerEnter,
   menuItems = [],
+  theme,
+  backgroundColor,
 }: {
   accessory?: ReactElement
   icon?: ReactElement
@@ -25,6 +27,8 @@ export function ListItem({
   onPress: ButtonProps['onPress'] | ComponentProps<typeof ButtonText>['onPress']
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[] | (() => (MenuItemType | null)[])
+  theme?: ComponentProps<typeof Button>['theme']
+  backgroundColor?: ComponentProps<typeof Button>['backgroundColor']
 }) {
   let {hover, ...hoverProps} = useHover()
   const [currentMenuItems, setMenuItems] = useState(
@@ -33,6 +37,8 @@ export function ListItem({
   return (
     <XStack paddingVertical="$1.5" w="100%" maxWidth={900} group="item">
       <Button
+        theme={theme}
+        backgroundColor={backgroundColor}
         onPointerEnter={() => {
           onPointerEnter?.()
           if (!currentMenuItems && typeof menuItems === 'function') {
@@ -45,7 +51,6 @@ export function ListItem({
         maxWidth={900}
         f={1}
         width="100%"
-        bg="$colo7"
         hoverStyle={{
           bg: '$backgroundFocus',
           borderColor: '$background',

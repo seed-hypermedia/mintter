@@ -4,13 +4,15 @@ import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {
-  Account,
   Event,
+  HMAccount,
+  HMDocument,
   HMPublication,
   Profile,
   PublicationContent,
   abbreviateCid,
   createHmId,
+  getDocumentTitle,
   hmId,
   pluralS,
   pluralizer,
@@ -25,7 +27,6 @@ import {
   ChevronDown,
   Heading,
   List,
-  ListItem,
   MenuItem,
   Popover,
   RadioButtons,
@@ -40,7 +41,7 @@ import {
 } from '@mintter/ui'
 import {PageContainer} from '@mintter/ui/src/container'
 import {Trash} from '@tamagui/lucide-icons'
-import React, {ReactNode} from 'react'
+import React, {ReactNode, useMemo} from 'react'
 import {VirtuosoHandle} from 'react-virtuoso'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountTrustButton} from '../components/account-trust'
@@ -50,7 +51,7 @@ import {useDeleteDialog} from '../components/delete-dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {FooterButton} from '../components/footer'
 import {GroupListItem} from '../components/groups-list'
-import {copyLinkMenuItem} from '../components/list-item'
+import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
 import {CopyReferenceButton} from '../components/titlebar-common'
@@ -58,6 +59,7 @@ import {useAccount, useMyAccount, useSetProfile} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {
   useAccountPublicationFullList,
+  useDraftList,
   usePublication,
 } from '../models/documents'
 import {useResourceFeedWithLatest} from '../models/feed'
@@ -154,6 +156,22 @@ function MainAccountPage() {
   const {data: documents} = useAccountPublicationFullList(
     route.tab === 'documents' ? accountId : undefined,
   )
+  const {data: drafts} = useDraftList({})
+  const allDocs = useMemo(() => {
+    if (route.tab !== 'documents') return []
+    const allPubIds = new Set<string>()
+    if (!documents) return []
+    const docs = documents.map((d) => {
+      if (d.publication?.document?.id)
+        allPubIds.add(d.publication?.document?.id)
+      return {key: 'publication', ...d}
+    })
+    if (!isMe) return docs
+    const newDrafts = drafts.documents
+      .filter((d) => !allPubIds.has(d.id))
+      .map((d) => ({key: 'draft', document: d}))
+    return [...newDrafts, ...docs]
+  }, [isMe, route.tab, drafts, documents])
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   const scrollRef = React.useRef<VirtuosoHandle>(null)
 
@@ -162,9 +180,14 @@ function MainAccountPage() {
     | Event
     | ListAccountGroupsResponse_Item
     | {
+        key: 'publication'
         publication: HMPublication
-        author: Account | undefined
-        editors: (Account | undefined)[]
+        author: HMAccount | undefined
+        editors: (HMAccount | undefined)[]
+      }
+    | {
+        key: 'draft'
+        document: HMDocument
       }
   > = ['profile']
   const feed = useResourceFeedWithLatest(
@@ -173,11 +196,12 @@ function MainAccountPage() {
   if (route.tab === 'groups') {
     items = groups?.items || []
   } else if (route.tab === 'documents') {
-    items = documents || []
+    items = allDocs || []
   } else if (route.tab === 'activity') {
     items = feed.data || []
   }
   const {content: deleteDialog, open: openDelete} = useDeleteDialog()
+  const navigate = useNavigate()
   return (
     <>
       <List
@@ -219,9 +243,9 @@ function MainAccountPage() {
               <PublicationListItem
                 key={docId}
                 publication={item.publication}
-                hasDraft={undefined}
                 author={item.author}
                 editors={item.editors}
+                hasDraft={drafts.documents.find((d) => d.id === docId)}
                 menuItems={() => [
                   copyLinkMenuItem(() => {
                     const id = unpackDocId(docId)
@@ -259,6 +283,27 @@ function MainAccountPage() {
             )
           } else if (item instanceof Event) {
             return <FeedItem event={item} />
+          } else if (item.key === 'draft') {
+            return (
+              <ListItem
+                title={getDocumentTitle(item.document)}
+                onPress={() => {
+                  navigate({
+                    key: 'draft',
+                    draftId: item.document.id,
+                    variant: null,
+                  })
+                }}
+                theme="yellow"
+                backgroundColor="$color3"
+                accessory={
+                  <Button disabled onPress={(e) => {}} size="$1">
+                    Draft
+                  </Button>
+                }
+              />
+            )
+            return <SizableText>{item.document.title}</SizableText>
           }
           console.log('unrecognized item', item)
         }}
