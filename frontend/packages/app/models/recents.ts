@@ -1,4 +1,5 @@
 import {trpc} from '@mintter/desktop/src/trpc'
+import {useQueryInvalidator} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
 import {getRecentsRouteEntityUrl} from '../utils/routes'
 
@@ -12,4 +13,13 @@ export function useRecents() {
       return item.url !== currentRouteUrl
     }),
   }
+}
+
+export function useDeleteRecent() {
+  const invalidate = useQueryInvalidator()
+  return trpc.recents.deleteRecent.useMutation({
+    onSuccess: () => {
+      invalidate(['trpc.recents.getRecents'])
+    },
+  })
 }
