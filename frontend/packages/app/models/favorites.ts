@@ -3,8 +3,6 @@ import {
   HMAccount,
   HMGroup,
   UnpackedHypermediaId,
-  hmAccount,
-  hmGroup,
   unpackHmId,
 } from '@mintter/shared'
 import {useMemo} from 'react'
@@ -64,45 +62,12 @@ export function useFavorites() {
   }, [favoritesQuery.data])
   const groupsQuery = useGroups(groups)
   const accountsQuery = useAccounts(accounts)
-  // const groupIds = pins.data?.groups.map((group) => group.groupId)
-  // const groupContentQueries = useGroupsContent(groupIds || [])
-  // if (!pins.data) return pins
-  // return {
-  //   ...pins,
-  //   data: {
-  //     ...pins.data,
-  //     groups: pins.data.groups.map((group) => {
-  //       return {
-  //         ...group,
-  //         documents: group.documents
-  //           .map((docPin) => {
-  //             if (!docPin.pathName) return undefined
-  //             const queryIndex = groupIds?.findIndex(
-  //               (id) => id === group.groupId,
-  //             )
-  //             if (queryIndex == null || queryIndex === -1) return undefined
-  //             const resolvedPinUrl =
-  //               groupContentQueries[queryIndex].data?.content?.[docPin.pathName]
-  //             if (!resolvedPinUrl) return undefined
-  //             const resolvedPinId = unpackDocId(resolvedPinUrl)
-  //             if (!resolvedPinId) return undefined
-  //             return {
-  //               ...docPin,
-  //               docId: resolvedPinId.docId,
-  //               docVersion: resolvedPinId.version,
-  //             }
-  //           })
-  //           .filter(Boolean),
-  //       }
-  //     }),
-  //   },
-  // }
   const favoriteItems: FavoriteItem[] = []
   favorites?.forEach((id, favoriteIndex) => {
     const url = favoriteUrls[favoriteIndex]
     if (id?.type === 'g' && id?.groupPathName === null && url) {
       const groupQ = groupsQuery.find((group) => group.data?.id === id.qid)
-      const group = hmGroup(groupQ?.data)
+      const group = groupQ?.data
       if (group) {
         favoriteItems.push({
           key: 'group',
@@ -118,7 +83,7 @@ export function useFavorites() {
       const accountQ = accountsQuery.find(
         (account) => account.data?.id === id.eid,
       )
-      const account = hmAccount(accountQ?.data)
+      const account = accountQ?.data
       if (account) {
         favoriteItems.push({
           key: 'account',

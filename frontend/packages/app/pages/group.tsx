@@ -199,7 +199,10 @@ function GroupHeader({
   const siteBaseUrl = group.data?.siteInfo?.baseUrl
   const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
   const now = useRoughTime()
-  const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
+  const lastSyncTimeSec = lastSyncTime
+    ? new Date(lastSyncTime).getUTCSeconds()
+    : null
+  const syncAge = lastSyncTimeSec ? now - BigInt(lastSyncTimeSec) : 0n
   const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
   const isRecentlyOkSynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
   const siteVersionMatches = true

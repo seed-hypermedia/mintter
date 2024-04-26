@@ -3,7 +3,7 @@ import {useGRPCClient, useQueryInvalidator} from '@mintter/app/app-context'
 import appError from '@mintter/app/errors'
 import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {queryKeys} from '@mintter/app/models/query-keys'
-import {Account, GRPCClient, Profile} from '@mintter/shared'
+import {GRPCClient, HMAccount, Profile, hmAccount} from '@mintter/shared'
 import {
   UseMutationOptions,
   useMutation,
@@ -14,7 +14,7 @@ import {useConnectedPeers} from './networking'
 
 export function useAccount(accountId?: string) {
   const grpcClient = useGRPCClient()
-  return useQuery<Account | null, ConnectError>(
+  return useQuery<HMAccount | null, ConnectError>(
     getAccountQuery(grpcClient, accountId),
   )
 }
@@ -30,10 +30,10 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
   return {
     enabled: !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
-    queryFn: () =>
-      grpcClient.accounts.getAccount({id: accountId}).catch((e) => {
-        return null
-      }),
+    queryFn: async () => {
+      const acct = await grpcClient.accounts.getAccount({id: accountId})
+      return hmAccount(acct)
+    },
     useErrorBoundary: () => false,
   }
 }
@@ -41,7 +41,7 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
 export function useAllAccounts(filterSites?: boolean) {
   // let isDaemonReady = useDaemonReady()
   const grpcClient = useGRPCClient()
-  const contacts = useQuery<{accounts: Array<Account>}, ConnectError>({
+  const contacts = useQuery<{accounts: Array<HMAccount>}, ConnectError>({
     // enabled: !!isDaemonReady,
     queryKey: [queryKeys.GET_ALL_ACCOUNTS, filterSites],
     queryFn: async () => {

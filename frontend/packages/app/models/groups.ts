@@ -1,6 +1,5 @@
 import {
   GRPCClient,
-  Group,
   HMBlock,
   ListDocumentGroupsResponse,
   ListGroupsResponse,
@@ -16,6 +15,7 @@ import {
   UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
+  UseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQueries,
@@ -32,7 +32,9 @@ import {
   DocumentChange,
   HMBlockNode,
   HMDocument,
+  HMGroup,
   hmDocument,
+  hmGroup,
   hmIdWithVersion,
 } from '@mintter/shared'
 import {useDocumentDrafts} from './publication'
@@ -79,7 +81,7 @@ function createGroupQuery(
     queryKey: [queryKeys.GET_GROUP, groupId, version],
     queryFn: async () => {
       const group = await grpcClient.groups.getGroup({id: groupId, version})
-      return group
+      return hmGroup(group)
     },
   }
 }
@@ -94,15 +96,15 @@ function createGroupQuery(
 export function useGroup(
   groupId: string | undefined,
   version?: string | undefined,
-  opts?: UseQueryOptions<Group>,
-) {
+  opts?: UseQueryOptions<unknown, unknown, HMGroup>,
+): UseQueryResult<HMGroup> {
   const grpcClient = useGRPCClient()
   return useQuery(groupQuery(grpcClient, {groupId, version}, opts))
 }
 
 export function useGroups(
   groups: {id: string; version?: string | null}[],
-  opts?: UseQueryOptions<Group[]>,
+  opts?: UseQueryOptions<unknown, HMGroup[]>,
 ) {
   const grpcClient = useGRPCClient()
   return useQueries({
@@ -116,8 +118,8 @@ export function useGroups(
 function groupQuery(
   grpcClient: GRPCClient,
   {groupId, version}: {groupId?: string; version?: string},
-  opts?: UseQueryOptions<Group>,
-): UseQueryOptions {
+  opts?: UseQueryOptions<unknown, unknown, HMGroup>,
+): UseQueryOptions<unknown, unknown, HMGroup> {
   return {
     ...createGroupQuery(grpcClient, groupId, version),
     enabled: !!groupId,
@@ -485,11 +487,11 @@ export function useGroupFrontPubWithDraft(
  * @param groupIds
  * @returns returns all the content for a list of groupIds
  */
-export function useGroupsContent(groupIds: string[]) {
+export function useGroupsContent(groups: {id: string; version?: string}[]) {
   const grpcClient = useGRPCClient()
   return useQueries({
-    queries: groupIds.map((groupId) =>
-      getGroupContentQuery(grpcClient, groupId),
+    queries: groups.map(({id, version}) =>
+      getGroupContentQuery(grpcClient, id, version),
     ),
   })
 }

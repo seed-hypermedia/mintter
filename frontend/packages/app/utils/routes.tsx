@@ -69,6 +69,7 @@ export const basePublicationRouteSchema = z.object({
     .nullable()
     .optional(),
 })
+export type BasePublicationRoute = z.infer<typeof basePublicationRouteSchema>
 
 export const baseGroupRouteSchema = z.object({
   key: z.literal('group'),
@@ -81,6 +82,7 @@ export const baseGroupRouteSchema = z.object({
     .nullable()
     .optional(),
 })
+export type BaseGroupRoute = z.infer<typeof baseGroupRouteSchema>
 
 export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
@@ -92,6 +94,7 @@ export const baseAccountRouteSchema = z.object({
     .nullable()
     .optional(),
 })
+export type BaseAccountRoute = z.infer<typeof baseAccountRouteSchema>
 
 export const baseEntityRouteSchema = z.discriminatedUnion('key', [
   basePublicationRouteSchema,
@@ -105,6 +108,17 @@ export const accountRouteSchema = baseAccountRouteSchema.extend({
   tab: z.enum(['profile', 'documents', 'groups', 'activity']).optional(), // profile is the default
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
+
+export const groupRouteSchema = baseGroupRouteSchema.extend({
+  context: z.array(baseEntityRouteSchema).optional(),
+  tab: z.enum(['front', 'documents', 'activity']).optional(), // front is the default
+})
+export type GroupRoute = z.infer<typeof groupRouteSchema>
+
+export const publicationRouteSchema = basePublicationRouteSchema.extend({
+  context: z.array(baseEntityRouteSchema).optional(),
+})
+export type PublicationRoute = z.infer<typeof publicationRouteSchema>
 
 export const favoritesSchema = z.object({
   key: z.literal('favorites'),
@@ -125,19 +139,8 @@ export const commentDraftRouteSchema = z.object({
 })
 export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 
-export const publicationRouteSchema = basePublicationRouteSchema.extend({
-  context: z.array(baseEntityRouteSchema).optional(),
-})
-export type PublicationRoute = z.infer<typeof publicationRouteSchema>
-
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
-
-export const groupRouteSchema = baseGroupRouteSchema.extend({
-  context: z.array(baseEntityRouteSchema).optional(),
-  tab: z.enum(['front', 'documents', 'activity']).optional(), // front is the default
-})
-export type GroupRoute = z.infer<typeof groupRouteSchema>
 
 export const draftRouteSchema = z.object({
   key: z.literal('draft'),

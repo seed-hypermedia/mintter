@@ -49,6 +49,7 @@ import {
   activeDocOutline,
   getDocOutline,
 } from './sidebar-base'
+import {SidebarNeo} from './sidebar-neo'
 
 export const AppSidebar = memo(MainAppSidebar)
 
@@ -122,8 +123,9 @@ export function MainAppSidebar() {
         bold
       />
       <SidebarDivider />
-      <SidebarFavorites key={getRouteKey(route)} />
-      <SidebarDivider />
+      <SidebarNeo />
+      {/* <SidebarFavorites key={getRouteKey(route)} />
+      <SidebarDivider /> */}
       {/* {account.data && (
         <MyAccountItem
           active={
@@ -136,7 +138,7 @@ export function MainAppSidebar() {
         />
       )} */}
       {/* {myAccountOutlineContent} */}
-      {myAccount.data?.id && (
+      {/* {myAccount.data?.id && (
         <AccountRouteOutline
           route={
             myAccountRoute || {key: 'account', accountId: myAccount.data?.id}
@@ -146,7 +148,7 @@ export function MainAppSidebar() {
 
       {myAccountRoute ? null : (
         <RouteOutline route={route} myAccountId={myAccount.data?.id} />
-      )}
+      )} */}
     </GenericSidebarContainer>
   )
 }

@@ -244,7 +244,39 @@ export type HMGroup = {
   ownerAccountId?: string
   createTime?: HMTimestamp
   version?: string
+  siteInfo?: HMGroupSiteInfo
 }
+
+export type HMEntity =
+  | {
+      type: 'a'
+      account: HMAccount
+    }
+  | {
+      type: 'g'
+      group: HMGroup
+    }
+  | {
+      type: 'd'
+      publication: HMPublication
+    }
+
+export type HMEntityContent =
+  | {
+      type: 'a'
+      account: HMAccount
+      document?: HMDocument
+    }
+  | {
+      type: 'g'
+      group: HMGroup
+      document?: HMDocument
+    }
+  | {
+      type: 'd'
+      publication: HMPublication
+      document?: HMDocument
+    }
 
 export type HMComment = {
   id: string

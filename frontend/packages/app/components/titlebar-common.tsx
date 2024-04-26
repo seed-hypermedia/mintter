@@ -275,7 +275,7 @@ function EditAccountButton() {
   if (myAccount.data?.id !== route.accountId) {
     return null
   }
-  if (route.tab !== 'profile') return null
+  if (route.tab !== 'profile' && route.tab) return null
   return (
     <EditDocButton
       docId={myAccount.data?.profile?.rootDocument || undefined}

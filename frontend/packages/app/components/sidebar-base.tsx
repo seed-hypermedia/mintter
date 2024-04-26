@@ -27,7 +27,15 @@ import {
   Search,
   Settings,
 } from '@tamagui/lucide-icons'
-import {ComponentProps, FC, ReactNode, useEffect, useState} from 'react'
+import {
+  ComponentProps,
+  createElement,
+  FC,
+  isValidElement,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {EmbedsContent} from '../models/documents'
@@ -225,31 +233,19 @@ export function SidebarItem({
         focusTheme
         minHeight={minHeight || 35}
         paddingVertical={paddingVertical || '$1'}
-        paddingHorizontal="$4"
-        paddingLeft={indent * 10 + 30}
+        paddingHorizontal="$2"
+        size="$2"
+        paddingLeft={Math.max(0, indent - 1) * 22 + 28}
         textAlign="left"
         outlineColor="transparent"
-        // space="$2"
         backgroundColor={active ? activeBg : '$colorTransparent'}
         hoverStyle={active ? {backgroundColor: activeBg} : {}}
         userSelect="none"
+        space={'$2'}
         group="item"
         color={color || '$gray12'}
         cursor={active ? undefined : 'pointer'}
-        title={
-          title ? (
-            <SizableText
-              fontSize="$3"
-              color={color || '$gray12'}
-              cursor={active ? undefined : 'pointer'}
-              fontWeight={bold ? 'bold' : undefined}
-              userSelect="none"
-            >
-              {title}
-            </SizableText>
-          ) : undefined
-        }
-        icon={icon}
+        title={undefined}
         iconAfter={
           iconAfter || (
             <>
@@ -264,23 +260,40 @@ export function SidebarItem({
         }
         {...props}
       >
-        {children}
-        {isCollapsed != null ? (
-          <Button
-            position="absolute"
-            left={-54}
-            size="$1"
-            chromeless
-            backgroundColor={'$colorTransparent'}
-            onPress={(e) => {
-              e.stopPropagation()
-              onSetCollapsed?.(!isCollapsed)
-            }}
-            icon={isCollapsed ? ChevronDown : ChevronUp}
-            opacity={isCollapsed ? 1 : 0}
-            $group-item-hover={{opacity: 1, backgroundColor: 'red'}}
-          />
-        ) : null}
+        <XStack gap="$2" jc="center">
+          {isValidElement(icon) ? (
+            icon
+          ) : icon ? (
+            <View width={18}>{createElement(icon, {size: 18})}</View>
+          ) : (
+            <View width={18} />
+          )}
+          {children}
+          <SizableText
+            fontSize="$3"
+            color={color || '$gray12'}
+            cursor={active ? undefined : 'pointer'}
+            fontWeight={bold ? 'bold' : undefined}
+            userSelect="none"
+          >
+            {title}
+          </SizableText>
+          {isCollapsed != null ? (
+            <Button
+              position="absolute"
+              bg="red"
+              left={-24}
+              size="$1"
+              chromeless
+              backgroundColor={'$colorTransparent'}
+              onPress={(e) => {
+                e.stopPropagation()
+                onSetCollapsed?.(!isCollapsed)
+              }}
+              icon={isCollapsed ? ChevronDown : ChevronUp}
+            />
+          ) : null}
+        </XStack>
       </ListItem>
     </View>
   )
