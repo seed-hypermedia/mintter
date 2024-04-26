@@ -103,30 +103,6 @@ export function createAppMenu() {
         },
         {type: 'separator'},
         {
-          id: 'route_pubs',
-          label: 'Documents',
-          accelerator: 'CmdOrCtrl+1',
-          click: () => {
-            openRoute({key: 'documents', tab: 'trusted'})
-          },
-        },
-        {
-          id: 'groups',
-          label: 'Groups',
-          accelerator: 'CmdOrCtrl+3',
-          click: () => {
-            openRoute({key: 'groups'})
-          },
-        },
-        {
-          id: 'route_drafts',
-          label: 'Drafts',
-          accelerator: 'CmdOrCtrl+8',
-          click: () => {
-            openRoute({key: 'documents', tab: 'drafts'})
-          },
-        },
-        {
           id: 'route_contacts',
           label: 'Contacts',
           accelerator: 'CmdOrCtrl+9',
