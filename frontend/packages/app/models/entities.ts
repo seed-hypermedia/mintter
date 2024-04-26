@@ -2,15 +2,18 @@ import {unpackHmId} from '@mintter/shared'
 import {UseMutationOptions, useMutation} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
+import {useDeleteRecent} from './recents'
 
 export function useDeleteEntity(
   opts: UseMutationOptions<void, unknown, {id: string; reason: string}>,
 ) {
+  const deleteRecent = useDeleteRecent()
   const invalidate = useQueryInvalidator()
   const grpcClient = useGRPCClient()
   return useMutation({
     ...opts,
     mutationFn: async ({id, reason}: {id: string; reason: string}) => {
+      await deleteRecent.mutateAsync(id)
       await grpcClient.entities.deleteEntity({id, reason})
     },
     onSuccess: (

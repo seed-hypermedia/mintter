@@ -1,5 +1,6 @@
 import {NavRoute, getRecentsRouteEntityUrl} from '@mintter/app/utils/routes'
 import {PublicationVariant, getPublicationVariant} from '@mintter/shared'
+import {z} from 'zod'
 import {grpcClient} from './app-grpc'
 import {invalidateQueries} from './app-invalidation'
 import {appStore} from './app-store'
@@ -120,5 +121,14 @@ export const recentsApi = t.router({
   }),
   getDocVariants: t.procedure.query(async () => {
     return recentsState.docVariants
+  }),
+  deleteRecent: t.procedure.input(z.string()).mutation(({input}) => {
+    updateRecents((state: RecentsState): RecentsState => {
+      const recents = state.recents.filter((item) => item.url !== input)
+      return {
+        ...state,
+        recents,
+      }
+    })
   }),
 })
