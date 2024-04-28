@@ -21,26 +21,26 @@ export function hmPublication(
 }
 
 export function hmDocument(input?: Document | null): HMDocument | null {
-  if (!input) return null
+  if (!input || typeof input.toJson != 'function') return null
   return input.toJson() as HMDocument
 }
 
 export function hmAccount(input?: Account | null) {
-  if (!input) return null
+  if (!input || typeof input.toJson != 'function') return null
   return input.toJson() as HMAccount
 }
 
 export function hmGroup(input?: Group | null) {
-  if (!input) return null
+  if (!input || typeof input.toJson != 'function') return null
   return input.toJson() as HMGroup
 }
 
 export function hmChangeInfo(input?: ChangeInfo | null) {
-  if (!input) return null
+  if (!input || typeof input.toJson != 'function') return null
   return input.toJson() as HMChangeInfo
 }
 
 export function hmLink(input?: MttLink) {
-  if (!input) return null
+  if (!input || typeof input.toJson != 'function') return null
   return input.toJson() as HMLink
 }
