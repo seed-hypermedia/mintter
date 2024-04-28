@@ -63,6 +63,7 @@ export const ContainerLarge = styled(YStack, {
   paddingVertical: '$6',
   width: '100%',
   maxWidth: 760,
+  flexShrink: 'unset',
   $gtLg: {
     maxWidth: 940,
   },
