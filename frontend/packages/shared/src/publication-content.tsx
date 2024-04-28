@@ -310,7 +310,9 @@ export function PublicationContent({
                         start: state.context.rangeStart,
                         end: state.context.rangeEnd,
                       }
-                    : undefined,
+                    : {
+                        expanded: true,
+                      },
                 )
               }}
             />
@@ -669,7 +671,7 @@ export function BlockNodeContent({
                     icon={Link}
                     onPress={() => {
                       if (blockNode.block?.id) {
-                        onCopyBlock(blockNode.block.id)
+                        onCopyBlock(blockNode.block.id, {expanded: true})
                       } else {
                         console.error('onCopyBlock Error: no blockId available')
                       }
