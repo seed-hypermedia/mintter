@@ -532,13 +532,15 @@ const SuggestionItem = React.memo(function SuggestionItem(props: {
         borderColor: '$colorTransparent',
         color: 'white',
       }}
+      height="auto"
+      minHeight={28}
       onMouseEnter={props.onMouseEnter}
       // icon={<Avatar size={18} url={props.embedRef?.profile?.avatar} />} avatars make everything slooow
     >
       <SizableText
         size="$2"
         p={0}
-        fontWeight="600"
+        fontWeight="400"
         f={1}
         color={props.selected ? 'white' : '$color'}
         hoverStyle={{
