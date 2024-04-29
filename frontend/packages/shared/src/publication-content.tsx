@@ -1183,6 +1183,7 @@ function InlineContentView({
       fontSize={fSize}
       lineHeight={fSize * 1.5}
       data-range-offset={contentOffset}
+      whiteSpace="pre-wrap"
       {...props}
     >
       {inline.map((content, index) => {
