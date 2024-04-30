@@ -238,41 +238,43 @@ function GroupHeader({
           </SizableText>
           <YStack paddingVertical="$2">
             <XStack alignItems="center" gap="$2">
-              <Tooltip
-                content={
-                  group.data
-                    ? `Open group in the web (${syncStatus?.message(
-                        group.data,
-                      )})`
-                    : ''
-                }
-              >
-                <Button
-                  size="$2"
-                  fontFamily={'$mono'}
-                  fontSize="$4"
-                  // hoverStyle={{textDecorationLine: 'underline'}}
-                  onPress={() => {
-                    openUrl(siteBaseUrl)
-                  }}
-                  color="$blue10"
-                  icon={
-                    syncStatus &&
-                    group.data && (
-                      <View
-                        style={{
-                          borderRadius: 5,
-                          width: 10,
-                          height: 10,
-                          backgroundColor: syncStatus.color,
-                        }}
-                      />
-                    )
+              {siteBaseUrl ? (
+                <Tooltip
+                  content={
+                    group.data
+                      ? `Open group in the web (${syncStatus?.message(
+                          group.data,
+                        )})`
+                      : ''
                   }
                 >
-                  {hostnameStripProtocol(siteBaseUrl)}
-                </Button>
-              </Tooltip>
+                  <Button
+                    size="$2"
+                    fontFamily={'$mono'}
+                    fontSize="$4"
+                    // hoverStyle={{textDecorationLine: 'underline'}}
+                    onPress={() => {
+                      openUrl(siteBaseUrl)
+                    }}
+                    color="$blue10"
+                    icon={
+                      syncStatus &&
+                      group.data && (
+                        <View
+                          style={{
+                            borderRadius: 5,
+                            width: 10,
+                            height: 10,
+                            backgroundColor: syncStatus.color,
+                          }}
+                        />
+                      )
+                    }
+                  >
+                    {hostnameStripProtocol(siteBaseUrl)}
+                  </Button>
+                </Tooltip>
+              ) : null}
               <FavoriteButton url={groupId} />
               {!frontDocumentUrl && isMember && (
                 <Tooltip content={'Create Front Document'}>
