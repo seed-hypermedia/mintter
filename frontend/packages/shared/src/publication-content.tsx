@@ -517,8 +517,16 @@ export function BlockNodeContent({
 
   const interactiveProps = !renderOnly ? hoverProps : {}
 
-  const isHighlight = useMemo(() => {
-    return routeParams?.blockRef == blockNode.block?.id && !comment
+  const [isHighlight, setHighlight] = useState(false)
+
+  useEffect(() => {
+    let val = routeParams?.blockRef == blockNode.block?.id && !comment
+    if (val) {
+      setTimeout(() => {
+        setHighlight(false)
+      }, 1000)
+    }
+    setHighlight(val)
   }, [routeParams?.blockRef, comment, blockNode.block])
 
   function handleBlockNodeToggle() {

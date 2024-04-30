@@ -78,12 +78,22 @@ function EmbedWrapper({
   const wrapperRect = useRef<DOMRect>()
   const sideRect = useRef<DOMRect>()
   const [sidePos, setSidePos] = useState<'bottom' | 'right'>('bottom')
-  const isHighlight = useMemo(() => {
-    return (
-      routeParams?.documentId == unpackRef?.qid &&
-      routeParams?.version == unpackRef?.version &&
-      comment
-    )
+  const [isHighlight, setHighlight] = useState(false)
+
+  useEffect(() => {
+    const val =
+      (routeParams?.documentId == unpackRef?.qid &&
+        routeParams?.version == unpackRef?.version &&
+        comment) ||
+      false
+
+    if (val) {
+      setTimeout(() => {
+        setHighlight(false)
+      }, 1000)
+    }
+
+    setHighlight(val)
   }, [
     routeParams?.documentId,
     routeParams?.version,
