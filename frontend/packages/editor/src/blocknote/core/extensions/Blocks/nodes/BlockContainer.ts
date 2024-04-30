@@ -375,7 +375,7 @@ export const BlockContainer = Node.create<{
 
           if (dispatch) {
             // Adds blockGroup node with child blocks if necessary.
-            if (block.children !== undefined) {
+            if (block.children !== undefined && block.children.length > 0) {
               const childNodes = []
 
               // Creates ProseMirror nodes for each child block, including their descendants.

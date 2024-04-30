@@ -1,7 +1,9 @@
 import {Separator, SizableText, TextArea, XStack, YStack} from '@mintter/ui'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
+import {NodeSelection} from 'prosemirror-state'
 import {useEffect, useRef, useState} from 'react'
+import {findNextBlock, findPreviousBlock} from './block-utils'
 import {
   Block,
   BlockNoteEditor,
@@ -135,16 +137,84 @@ const Render = (
           >
             <TextArea
               ref={inputRef}
-              onBlur={() => setOpened(false)}
-              onKeyDown={(e) => {
-                console.log(e)
-                // Allow arrow key events to propagate and be handled elsewhere
-                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                  console.log('Arrow key pressed, handling elsewhere')
-                  // Do not preventDefault or stopPropagation
-                  return
+              onBlur={() => {
+                if (!selected) setOpened(false)
+              }}
+              onKeyPress={(e) => {
+                // @ts-ignore
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  const {state, view} = tiptapEditor
+                  const prevBlockInfo = findPreviousBlock(
+                    view,
+                    state.selection.from,
+                  )
+                  if (prevBlockInfo) {
+                    const {prevBlock, prevBlockPos} = prevBlockInfo
+                    const prevNode = prevBlock.firstChild!
+                    const prevNodePos = prevBlockPos + 1
+                    if (
+                      [
+                        'image',
+                        'file',
+                        'embed',
+                        'video',
+                        'web-embed',
+                        'equation',
+                        'math',
+                      ].includes(prevNode.type.name)
+                    ) {
+                      const selection = NodeSelection.create(
+                        state.doc,
+                        prevNodePos,
+                      )
+                      view.dispatch(state.tr.setSelection(selection))
+                      return true
+                    } else {
+                      editor.setTextCursorPosition(
+                        editor.getTextCursorPosition().prevBlock!,
+                        'end',
+                      )
+                    }
+                    editor.focus()
+                    setOpened(false)
+                  }
                 }
-                // Handle other keys as needed
+                // @ts-ignore
+                else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  const {state, view} = tiptapEditor
+                  let nextBlockInfo = findNextBlock(view, state.selection.from)
+                  if (nextBlockInfo) {
+                    const {nextBlock, nextBlockPos} = nextBlockInfo
+                    const nextNode = nextBlock.firstChild!
+                    const nextNodePos = nextBlockPos + 1
+                    if (
+                      [
+                        'image',
+                        'file',
+                        'embed',
+                        'video',
+                        'web-embed',
+                        'equation',
+                        'math',
+                      ].includes(nextNode.type.name)
+                    ) {
+                      const selection = NodeSelection.create(
+                        state.doc,
+                        nextNodePos,
+                      )
+                      view.dispatch(state.tr.setSelection(selection))
+                    } else {
+                      editor.setTextCursorPosition(
+                        editor.getTextCursorPosition().nextBlock!,
+                        'start',
+                      )
+                    }
+                    editor.focus()
+                    setOpened(false)
+                  }
+                }
               }}
               width={'100%'}
               placeholder="E = mc^2"
