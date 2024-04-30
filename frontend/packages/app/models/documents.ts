@@ -1428,9 +1428,20 @@ export function useAccountPublications(accountId?: string | undefined) {
       const result = await grpcClient.publications.listAccountPublications({
         accountId,
       })
-      const publications: HMPublication[] = result.publications
-        .map((pub) => hmPublication(pub))
-        .filter(Boolean)
+      const publications: HMPublication[] =
+        result.publications
+          .map((pub) => hmPublication(pub))
+          .filter(Boolean)
+          .sort((a, b) => {
+            const aTime = a?.document?.updateTime
+              ? new Date(a.document.updateTime)
+              : 0
+            const bTime = b?.document?.updateTime
+              ? new Date(b.document.updateTime)
+              : 0
+            if (!aTime || !bTime) return 0
+            return bTime.getTime() - aTime.getTime()
+          }) || []
       return {
         publications,
       }
