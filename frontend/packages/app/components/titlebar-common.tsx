@@ -756,7 +756,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
-  } else if (route.key === 'groups') {
+  } else if (route.key == 'account' && route.tab === 'groups') {
     buttonGroup = [
       <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
     ]
