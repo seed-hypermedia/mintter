@@ -754,17 +754,18 @@ export function PageActionButtons(props: TitleBarProps) {
     buttonGroup = [
       <NewDocumentButton key="newDocument" groupVariant={undefined} />,
     ]
-  } else if (route.key === 'contacts') {
+  } else if (route.key == 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key == 'account' && route.tab === 'groups') {
     buttonGroup = [
       <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
     ]
-  } else if (route.key === 'group') {
+  } else if (route.key == 'group') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
       <GroupOptionsButton key="groupOptions" />,
       <EditGroupButton route={route} key="editGroup" />,
+      <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
       <NewDocumentButton
         key="newDocument"
         label="Group Document"
