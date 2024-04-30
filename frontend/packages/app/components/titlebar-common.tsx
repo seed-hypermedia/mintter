@@ -35,8 +35,10 @@ import {
   ArrowLeftFromLine,
   ArrowRightFromLine,
   ArrowUpRight,
+  Book,
   Copy,
   ExternalLink,
+  FileText,
   Link,
   Pencil,
   Plus,
@@ -72,7 +74,7 @@ import {EditDocButton} from './edit-doc-button'
 import {useEditGroupInfoDialog} from './edit-group-info'
 import {useEditProfileDialog} from './edit-profile-dialog'
 import {useFavoriteMenuItem} from './favoriting'
-import {CreateGroupButton} from './new-group'
+import {useCreateGroupDialog} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {TitleBarProps} from './titlebar'
@@ -744,48 +746,91 @@ function NewDocumentButton({
   )
 }
 
+function CreateDropdown({groupVariant}: {groupVariant?: GroupVariant}) {
+  const openDraft = useOpenDraft('push')
+  const canEdit = useCanEditGroup(groupVariant?.groupId)
+  if (groupVariant && !canEdit) return null
+  const createGroup = useCreateGroupDialog()
+  return (
+    <>
+      <OptionsDropdown
+        menuItems={[
+          {
+            key: 'doc',
+            label: 'New Document',
+            icon: FileText,
+            onPress: () => {
+              openDraft(groupVariant)
+            },
+          },
+          {
+            key: 'group',
+            label: 'New Group',
+            icon: Book,
+            onPress: () => {
+              createGroup.open({})
+            },
+          },
+        ]}
+        button={
+          <Button size="$2" icon={Plus}>
+            Create
+          </Button>
+        }
+      />
+      {createGroup.content}
+    </>
+  )
+}
+
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
-  let buttonGroup: ReactNode[] = []
+  let buttonGroup: ReactNode[] = [<CreateDropdown key="create" />]
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
-  } else if (route.key === 'documents') {
-    buttonGroup = [
-      <NewDocumentButton key="newDocument" groupVariant={undefined} />,
-    ]
   } else if (route.key == 'contacts') {
-    buttonGroup = [<ContactsPrompt key="addContact" />]
-  } else if (route.key == 'account' && route.tab === 'groups') {
     buttonGroup = [
-      <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
+      <ContactsPrompt key="addContact" />,
+      <CreateDropdown key="create" />,
     ]
+  } else if (route.key == 'account' && route.tab === 'groups') {
+    buttonGroup = [<CreateDropdown key="create" />]
   } else if (route.key == 'group') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
-      <GroupOptionsButton key="groupOptions" />,
       <EditGroupButton route={route} key="editGroup" />,
-      <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
-      <NewDocumentButton
-        key="newDocument"
-        label="Group Document"
+      // <NewDocumentButton
+      //   key="newDocument"
+      //   label="Group Document"
+      //   groupVariant={{
+      //     key: 'group',
+      //     groupId: route.groupId,
+      //     pathName: null,
+      //   }}
+      //   contextRoute={route}
+      // />,
+      <CreateDropdown
+        key="create"
         groupVariant={{
           key: 'group',
           groupId: route.groupId,
           pathName: null,
         }}
-        contextRoute={route}
       />,
+      <GroupOptionsButton key="groupOptions" />,
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
       <PublicationVariants key="variants" route={route} />,
+      <CreateDropdown key="create" />,
       <DocOptionsButton key="options" />,
     ]
   } else if (route.key === 'account') {
     buttonGroup = [
       <EditAccountButton key="editAccount" />,
+      <CreateDropdown key="create" />,
       <AccountOptionsButton key="accountOptions" />,
     ]
   }

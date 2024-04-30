@@ -13,6 +13,7 @@ import {usePopoverState} from '../use-popover-state'
 export type MenuItemType = {
   key: string
   label: string
+  subLabel?: string
   icon: FC
   onPress: () => void
 }
@@ -20,10 +21,12 @@ export type MenuItemType = {
 export function OptionsDropdown({
   menuItems,
   hiddenUntilItemHover,
+  button,
 }: {
   menuItems: (MenuItemType | null)[]
   hiddenUntilItemHover?: boolean
   hover?: boolean
+  button?: JSX.Element
 }) {
   const popoverState = usePopoverState()
   return (
@@ -35,16 +38,18 @@ export function OptionsDropdown({
     >
       <Popover {...popoverState} placement="bottom-end">
         <Popover.Trigger asChild>
-          <Button
-            size="$1"
-            circular
-            data-trigger
-            onPress={(e) => {
-              // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
-              e.stopPropagation()
-            }}
-            icon={MoreHorizontal}
-          />
+          {button || (
+            <Button
+              size="$1"
+              circular
+              data-trigger
+              onPress={(e) => {
+                // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
+                e.stopPropagation()
+              }}
+              icon={MoreHorizontal}
+            />
+          )}
         </Popover.Trigger>
         <Popover.Content
           padding={0}
@@ -72,6 +77,7 @@ export function OptionsDropdown({
                         popoverState.onOpenChange(false)
                         item.onPress()
                       }}
+                      subTitle={item.subLabel}
                       title={item.label}
                       icon={item.icon}
                     />

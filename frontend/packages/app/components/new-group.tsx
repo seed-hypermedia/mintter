@@ -6,7 +6,7 @@ import {SubmitHandler, useForm} from 'react-hook-form'
 import * as z from 'zod'
 import {useCreateGroup} from '../models/groups'
 import {useNavigate} from '../utils/useNavigate'
-import {AppDialog, DialogTitle} from './dialog'
+import {AppDialog, DialogTitle, useAppDialog} from './dialog'
 import {FormInput} from './form-input'
 
 const newGroupSchema = z.object({
@@ -116,4 +116,12 @@ export function CreateGroupButton({
       triggerLabel={triggerLabel}
     />
   )
+}
+
+function AddGroupDialog({onClose}: {onClose: () => void}) {
+  return <AddGroupForm onClose={onClose} isOpen />
+}
+
+export function useCreateGroupDialog() {
+  return useAppDialog(AddGroupDialog)
 }
