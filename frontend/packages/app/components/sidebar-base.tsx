@@ -20,7 +20,7 @@ import {
   ArrowDownRight,
   Book,
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
   Contact,
   FileText,
   Hash,
@@ -260,7 +260,7 @@ export function SidebarItem({
         }
         {...props}
       >
-        <XStack gap="$2" jc="center">
+        <XStack gap="$2" jc="center" f={1}>
           {isValidElement(icon) ? (
             icon
           ) : icon ? (
@@ -270,6 +270,11 @@ export function SidebarItem({
           )}
           {children}
           <SizableText
+            f={1}
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            width="100%"
+            overflow="hidden"
             fontSize="$3"
             color={color || '$gray12'}
             cursor={active ? undefined : 'pointer'}
@@ -290,7 +295,7 @@ export function SidebarItem({
                 e.stopPropagation()
                 onSetCollapsed?.(!isCollapsed)
               }}
-              icon={isCollapsed ? ChevronDown : ChevronUp}
+              icon={isCollapsed ? ChevronRight : ChevronDown}
             />
           ) : null}
         </XStack>
