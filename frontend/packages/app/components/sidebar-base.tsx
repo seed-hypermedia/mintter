@@ -231,7 +231,7 @@ export function SidebarItem({
         hoverTheme
         pressTheme
         focusTheme
-        minHeight={minHeight || 35}
+        minHeight={minHeight || 32}
         paddingVertical={paddingVertical || '$1'}
         paddingHorizontal="$2"
         size="$2"
@@ -241,7 +241,7 @@ export function SidebarItem({
         backgroundColor={active ? activeBg : '$colorTransparent'}
         hoverStyle={active ? {backgroundColor: activeBg} : {}}
         userSelect="none"
-        space={'$2'}
+        gap="$2"
         group="item"
         color={color || '$gray12'}
         cursor={active ? undefined : 'pointer'}
@@ -286,7 +286,6 @@ export function SidebarItem({
           {isCollapsed != null ? (
             <Button
               position="absolute"
-              bg="red"
               left={-24}
               size="$1"
               chromeless
