@@ -23,7 +23,6 @@ import {
   DialogDescription,
   DialogTitle,
   Form,
-  Heading,
   Label,
   List,
   ListItem,
@@ -945,6 +944,26 @@ function FrontPublicationDisplay({
     version: unpacked?.version || '',
   })
 
+  const pubWithHeading =
+    pub.data?.document?.title && groupTitle !== pub.data?.document?.title
+      ? {
+          ...pub.data,
+          document: {
+            ...pub.data.document,
+            children: [
+              {
+                block: {
+                  type: 'heading',
+                  id: unpacked?.docId,
+                  text: pub.data.document.title,
+                },
+                children: pub.data.document.children,
+              },
+            ],
+          },
+        }
+      : pub.data
+
   return pub.status == 'success' && pub.data ? (
     <YStack
       width="100%"
@@ -952,23 +971,11 @@ function FrontPublicationDisplay({
       paddingHorizontal="$5"
       alignSelf="center"
     >
-      {pub.data?.document?.title && groupTitle !== pub.data?.document?.title ? (
-        <Heading
-          size="$1"
-          fontSize={'$2'}
-          paddingHorizontal="$5"
-          $gtMd={{
-            paddingHorizontal: '$6',
-          }}
-        >
-          {pub.data?.document?.title}
-        </Heading>
-      ) : null}
       <AppPublicationContentProvider
         routeParams={{blockRef: groupRoute?.blockId}}
       >
         <PublicationContent
-          publication={pub.data}
+          publication={pubWithHeading}
           focusBlockId={groupRoute?.focusBlockId}
         />
       </AppPublicationContentProvider>

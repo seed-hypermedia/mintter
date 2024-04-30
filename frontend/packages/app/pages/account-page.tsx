@@ -464,26 +464,34 @@ function ProfileDoc({}: {}) {
         </SizableText>
       </PageContainer>
     )
+
+  const pubDataWithHeading =
+    pub.data?.document?.title &&
+    account.data?.profile?.alias !== pub.data?.document?.title
+      ? {
+          ...pub.data,
+          document: {
+            ...pub.data.document,
+            children: [
+              {
+                block: {
+                  type: 'heading',
+                  text: pub.data.document.title,
+                },
+                children: pub.data.document.children,
+              },
+            ],
+          },
+        }
+      : pub.data
+
   return pub.status == 'success' && pub.data ? (
     <PageContainer>
-      {pub.data?.document?.title &&
-      account.data?.profile?.alias !== pub.data?.document?.title ? (
-        <Heading
-          size="$1"
-          fontSize={'$2'}
-          paddingHorizontal="$5"
-          $gtMd={{
-            paddingHorizontal: '$6',
-          }}
-        >
-          {pub.data?.document?.title}
-        </Heading>
-      ) : null}
       <AppPublicationContentProvider
         routeParams={{blockRef: accountRoute?.blockId}}
       >
         <PublicationContent
-          publication={pub.data}
+          publication={pubDataWithHeading}
           focusBlockId={accountRoute?.focusBlockId}
         />
       </AppPublicationContentProvider>
