@@ -15,7 +15,7 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useMemo, useState} from 'react'
+import {ReactNode, memo, useCallback, useMemo, useState} from 'react'
 import {Button, SizableText, Spinner, View} from 'tamagui'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {
@@ -63,7 +63,10 @@ export function SidebarNeo() {
   const entityContents = useEntitiesContent(
     myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
   )
-  function handleNavigate(route: NavRoute, doReplace?: boolean) {
+  const handleNavigate = useCallback(function handleNavigate(
+    route: NavRoute,
+    doReplace?: boolean,
+  ) {
     if (doReplace) replace(route)
     else navigate(route)
     const destEntityRoutes = getEntityRoutes(route)
@@ -75,7 +78,7 @@ export function SidebarNeo() {
     setCollapseFavorites(true)
     setCollapseMe(isMyAccountActive ? false : true)
     setCollapseStandalone(isMyAccountActive ? true : false)
-  }
+  }, [])
   if (isMyAccountActive) {
     // the active route is under myAccount section
     myAccountSection = (
@@ -228,6 +231,7 @@ function ContextItems({
   route: BaseEntityRoute
   onNavigate: (route: NavRoute) => void
 }) {
+  console.log('ContextItems', info)
   if (!info) return null
   return (
     <>
@@ -238,7 +242,7 @@ function ContextItems({
         title={info.title}
         icon={info.icon}
         onPress={() => {
-          onNavigate({...route, focusBlockId: undefined})
+          onNavigate({...route, blockId: undefined, focusBlockId: undefined})
         }}
         iconAfter={<ResumeDraftButton docId={info.docId} />}
       />
@@ -280,6 +284,7 @@ function RouteSection({
   const thisRoute = routes.at(-1)
   const prevRoutes = routes.slice(0, -1)
   const thisRouteEntity = entityContents?.find((c) => c.route === thisRoute)
+  console.log('thisEntity', thisRouteEntity)
   const thisRouteInfo = getItemDetails(
     thisRouteEntity?.entity,
     thisRoute?.focusBlockId,
@@ -291,6 +296,23 @@ function RouteSection({
           thisRoute?.focusBlockId,
         )?.children
       : thisRouteEntity?.entity?.document?.children
+  const onActivateBlock = useCallback(
+    (blockId) => {
+      if (!thisRoute) return
+      const thisRouteKey = getRouteKey(thisRoute)
+      const activeRouteKey = getRouteKey(activeRoute)
+      const shouldReplace = thisRouteKey === activeRouteKey
+      onNavigate({...thisRoute, blockId}, shouldReplace)
+    },
+    [thisRoute, activeRoute],
+  )
+  const onFocusBlock = useCallback(
+    (blockId) => {
+      if (!thisRoute) return
+      onNavigate({...thisRoute, focusBlockId: blockId})
+    },
+    [onNavigate, thisRoute],
+  )
   return (
     <>
       {prevRoutes.map((contextRoute) => {
@@ -321,15 +343,8 @@ function RouteSection({
           indent={1}
           activeBlock={thisRouteEntity?.route?.blockId}
           nodes={focusedNodes}
-          onActivateBlock={(blockId) => {
-            const thisRouteKey = getRouteKey(thisRoute)
-            const activeRouteKey = getRouteKey(activeRoute)
-            const shouldReplace = thisRouteKey === activeRouteKey
-            onNavigate({...thisRoute, blockId}, shouldReplace)
-          }}
-          onFocusBlock={(blockId) => {
-            onNavigate({...thisRoute, focusBlockId: blockId})
-          }}
+          onActivateBlock={onActivateBlock}
+          onFocusBlock={onFocusBlock}
         />
       )}
     </>
