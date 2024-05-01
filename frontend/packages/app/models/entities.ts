@@ -8,13 +8,14 @@ import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {
   BaseAccountRoute,
+  BaseDraftRoute,
   BaseEntityRoute,
   BaseGroupRoute,
   BasePublicationRoute,
   NavRoute,
 } from '../utils/routes'
 import {useAccount, useAccounts} from './accounts'
-import {usePublication, usePublications} from './documents'
+import {useDrafts, usePublication, usePublications} from './documents'
 import {useGroup, useGroupContent, useGroups, useGroupsContent} from './groups'
 import {usePublicationVariant} from './publication'
 import {queryKeys} from './query-keys'
@@ -81,6 +82,13 @@ export function getEntityRoutes(route: NavRoute): BaseEntityRoute[] {
     if (context) return [...context, baseRoute]
     return [baseRoute]
   }
+  if (route.key === 'draft') {
+    const {contextRoute, ...draftRoute} = route
+    const entityRoutes = contextRoute
+      ? getEntityRoutes(contextRoute).slice(1)
+      : []
+    return [...entityRoutes, draftRoute]
+  }
   return []
 }
 
@@ -143,7 +151,7 @@ export function useEntityContent(
 export function useEntitiesContent(
   routes: BaseEntityRoute[],
 ): {route: BaseEntityRoute; entity?: HMEntityContent}[] {
-  const {groups, accounts, publications} = useMemo(() => {
+  const {groups, accounts, publications, drafts} = useMemo(() => {
     const groups: BaseGroupRoute[] = routes.filter(
       (r) => r.key === 'group',
     ) as BaseGroupRoute[]
@@ -153,10 +161,14 @@ export function useEntitiesContent(
     const publications: BasePublicationRoute[] = routes.filter(
       (r) => r.key === 'publication',
     ) as BasePublicationRoute[]
+    const drafts: BaseDraftRoute[] = routes.filter(
+      (r) => r.key === 'draft',
+    ) as BaseDraftRoute[]
     return {
       groups,
       accounts,
       publications,
+      drafts,
     }
   }, [routes])
   const groupQueries = useGroups(
@@ -185,6 +197,13 @@ export function useEntitiesContent(
       return {id: id?.qid, version: id?.version}
     }),
   )
+  const draftQueries = useDrafts(
+    drafts
+      .map((draftRoute, draftIndex) => {
+        return draftRoute.draftId
+      })
+      .filter(Boolean) as string[],
+  )
   return routes.map((route) => {
     const groupRouteIndex = groups.findIndex((r) => r === route)
     if (groupRouteIndex >= 0) {
@@ -212,6 +231,13 @@ export function useEntitiesContent(
       const document = publication?.document
       if (publication) {
         return {route, entity: {type: 'd', publication, document}}
+      }
+    }
+    const draftRouteIndex = drafts.findIndex((r) => r === route)
+    if (draftRouteIndex >= 0) {
+      const draft = draftQueries[draftRouteIndex].data
+      if (draft) {
+        return {route, entity: {type: 'd-draft', document: draft}}
       }
     }
     return {route, entity: undefined}

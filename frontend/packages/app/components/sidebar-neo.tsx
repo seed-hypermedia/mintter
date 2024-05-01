@@ -10,6 +10,7 @@ import {Tooltip} from '@mintter/ui'
 import {
   Book,
   Contact,
+  FilePen,
   FileText,
   Hash,
   Pencil,
@@ -169,6 +170,7 @@ function getBlockHeadings(
   findBlock(children, [])
   return blockHeadings as null | {id: string; text: string}[]
 }
+
 function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
   let title: string | undefined = undefined
   let icon: IconDefinition | undefined = undefined
@@ -185,6 +187,11 @@ function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
     title = getDocumentTitle(entity.document)
     icon = FileText
   }
+  if (entity.type === 'd-draft') {
+    title = getDocumentTitle(entity.document)
+    icon = FilePen
+  }
+
   const headings = getBlockHeadings(entity.document?.children, blockId)
   return {
     docId: entity.document?.id,
@@ -193,6 +200,7 @@ function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
     headings,
   }
 }
+type ItemDetails = ReturnType<typeof getItemDetails>
 
 function ResumeDraftButton({docId}: {docId?: string}) {
   const navigate = useNavigate()
@@ -231,7 +239,6 @@ function ContextItems({
   route: BaseEntityRoute
   onNavigate: (route: NavRoute) => void
 }) {
-  console.log('ContextItems', info)
   if (!info) return null
   return (
     <>
@@ -242,6 +249,7 @@ function ContextItems({
         title={info.title}
         icon={info.icon}
         onPress={() => {
+          if (route.key === 'draft') return
           onNavigate({...route, blockId: undefined, focusBlockId: undefined})
         }}
         iconAfter={<ResumeDraftButton docId={info.docId} />}
@@ -256,6 +264,7 @@ function ContextItems({
           }
           title={heading.text}
           onPress={() => {
+            if (route.key === 'draft') return
             onNavigate({...route, blockId: heading.id})
           }}
         />
@@ -284,16 +293,17 @@ function RouteSection({
   const thisRoute = routes.at(-1)
   const prevRoutes = routes.slice(0, -1)
   const thisRouteEntity = entityContents?.find((c) => c.route === thisRoute)
-  console.log('thisEntity', thisRouteEntity)
-  const thisRouteInfo = getItemDetails(
+  const thisRouteBlockId =
+    thisRoute?.key === 'draft' ? undefined : thisRoute?.blockId
+  const thisRouteDetails = getItemDetails(
     thisRouteEntity?.entity,
-    thisRoute?.focusBlockId,
+    thisRouteBlockId,
   )
   const focusedNodes =
-    thisRoute?.focusBlockId && thisRouteEntity?.entity?.document?.children
+    thisRouteBlockId && thisRouteEntity?.entity?.document?.children
       ? getBlockNodeById(
           thisRouteEntity?.entity?.document?.children,
-          thisRoute?.focusBlockId,
+          thisRouteBlockId,
         )?.children
       : thisRouteEntity?.entity?.document?.children
   const onActivateBlock = useCallback(
@@ -302,6 +312,10 @@ function RouteSection({
       const thisRouteKey = getRouteKey(thisRoute)
       const activeRouteKey = getRouteKey(activeRoute)
       const shouldReplace = thisRouteKey === activeRouteKey
+      if (thisRoute.key === 'draft') {
+        console.log('activate block', blockId)
+        return
+      }
       onNavigate({...thisRoute, blockId}, shouldReplace)
     },
     [thisRoute, activeRoute],
@@ -309,6 +323,10 @@ function RouteSection({
   const onFocusBlock = useCallback(
     (blockId) => {
       if (!thisRoute) return
+      if (thisRoute.key === 'draft') {
+        console.log('focus block in draft?!', blockId)
+        return
+      }
       onNavigate({...thisRoute, focusBlockId: blockId})
     },
     [onNavigate, thisRoute],
@@ -316,7 +334,8 @@ function RouteSection({
   return (
     <>
       {prevRoutes.map((contextRoute) => {
-        const info = getItemDetails(
+        if (contextRoute.key === 'draft') return null // draft should not appear in context
+        const info: ItemDetails = getItemDetails(
           entityContents?.find((c) => c.route === contextRoute)?.entity,
           contextRoute.blockId,
         )
@@ -330,7 +349,7 @@ function RouteSection({
       })}
       {thisRoute && (
         <ContextItems
-          info={thisRouteInfo}
+          info={thisRouteDetails}
           route={thisRoute}
           onNavigate={onNavigate}
           active={active}
@@ -341,7 +360,7 @@ function RouteSection({
       {collapse || !thisRoute ? null : (
         <SidebarOutline
           indent={1}
-          activeBlock={thisRouteEntity?.route?.blockId}
+          activeBlock={thisRouteBlockId}
           nodes={focusedNodes}
           onActivateBlock={onActivateBlock}
           onFocusBlock={onFocusBlock}

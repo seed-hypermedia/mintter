@@ -96,10 +96,19 @@ export const baseAccountRouteSchema = z.object({
 })
 export type BaseAccountRoute = z.infer<typeof baseAccountRouteSchema>
 
+export const baseDraftRouteSchema = z.object({
+  key: z.literal('draft'),
+  draftId: z.string().optional(),
+  variant: groupVariantSchema.nullable(),
+  isProfileDocument: z.boolean().optional(),
+})
+export type BaseDraftRoute = z.infer<typeof baseDraftRouteSchema>
+
 export const baseEntityRouteSchema = z.discriminatedUnion('key', [
   basePublicationRouteSchema,
   baseGroupRouteSchema,
   baseAccountRouteSchema,
+  baseDraftRouteSchema,
 ])
 export type BaseEntityRoute = z.infer<typeof baseEntityRouteSchema>
 
@@ -142,11 +151,7 @@ export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
-export const draftRouteSchema = z.object({
-  key: z.literal('draft'),
-  draftId: z.string().optional(),
-  variant: groupVariantSchema.nullable(),
-  isProfileDocument: z.boolean().optional(),
+export const draftRouteSchema = baseDraftRouteSchema.extend({
   contextRoute: z
     .discriminatedUnion('key', [
       publicationRouteSchema,

@@ -1,4 +1,5 @@
 import {
+  HMAnnotations,
   HMBlock,
   HMBlockChildrenType,
   HMBlockCodeBlock,
@@ -6,6 +7,7 @@ import {
   HMBlockHeading,
   HMBlockImage,
   HMBlockMath,
+  HMBlockNode,
   HMBlockNostr,
   HMBlockParagraph,
   HMBlockVideo,
@@ -16,12 +18,8 @@ import {
   HMStyles,
 } from '../hm-types'
 import {getCIDFromIPFSUrl} from '../utils'
-import {
-  Annotation,
-  Block,
-  BlockNode,
-} from './.generated/documents/v1alpha/documents_pb'
-// import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
+import {Annotation} from './.generated/documents/v1alpha/documents_pb'
+// import {Annotation, Block, BlockNode, HMTextAnnotation} from '@mintter/shared'
 // import {hmBlockSchema} from './schema'
 
 function areStylesEqual(
@@ -67,7 +65,7 @@ function annotationStyle(a: Annotation): HMStyles {
   return {}
 }
 
-export function toHMInlineContent(block: Block): Array<HMInlineContent> {
+export function toHMInlineContent(block: HMBlock): Array<HMInlineContent> {
   const linkEmbedAndRangeAnnotations = block.annotations?.filter(
     (a) => a.type == 'link' || a.type == 'inline-embed' || a.type == 'range',
   )
@@ -139,7 +137,7 @@ export function partialBlockToStyledText({
   annotations,
 }: {
   text: string
-  annotations: Array<Annotation>
+  annotations: HMAnnotations
 }) {
   if (!text) text = ''
   const stylesForIndex: (InternalAnnotation | null)[] = Array(text.length).fill(
@@ -192,15 +190,13 @@ export function partialBlockToStyledText({
   return inlines
 }
 
-export type EditorChildrenType = HMBlockChildrenType
-
 export type ServerToEditorRecursiveOpts = {
   level?: number
 }
 
 function extractChildrenType(
   childrenType: string | undefined,
-): EditorChildrenType {
+): HMBlockChildrenType {
   if (childrenType === 'ol') return 'ol'
   if (childrenType === 'ul') return 'ul'
   if (childrenType === 'blockquote') return 'blockquote'
@@ -209,7 +205,7 @@ function extractChildrenType(
 }
 
 export function toHMBlockParagraph(
-  serverBlock: BlockNode,
+  serverBlock: HMBlockNode,
   opts: ServerToEditorRecursiveOpts,
 ): HMBlockParagraph {
   if (!serverBlock.block) {
@@ -219,7 +215,7 @@ export function toHMBlockParagraph(
   // let type: 'p' | 'code' | 'blockquote' = 'p'
   // if (opts?.paragraphType === 'code') type = 'code'
   // if (opts?.paragraphType === 'blockquote') type = 'blockquote'
-  let childrenType = extractChildrenType(block.attributes.childrenType)
+  let childrenType = extractChildrenType(block.attributes?.childrenType)
   let result = {
     id: block.id,
     type: 'paragraph',
@@ -236,7 +232,7 @@ export function toHMBlockParagraph(
 }
 
 export function toHMBlockHeading(
-  serverBlock: BlockNode,
+  serverBlock: HMBlockNode,
   opts?: ServerToEditorRecursiveOpts,
 ): HMBlockHeading {
   if (!serverBlock.block) {
@@ -250,7 +246,7 @@ export function toHMBlockHeading(
     content: toHMInlineContent(block),
     children: toHMBlock(children, {
       level: (opts?.level || 0) + 1,
-      childrenType: block.attributes.childrenType as HMBlockChildrenType,
+      childrenType: block.attributes?.childrenType as HMBlockChildrenType,
     }),
     props: {
       level: opts?.level || 1,
@@ -261,14 +257,14 @@ export function toHMBlockHeading(
 }
 
 export function toHMBlockMath(
-  serverBlock: BlockNode,
+  serverBlock: HMBlockNode,
   opts?: ServerToEditorRecursiveOpts,
 ): HMBlockMath {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
-  let childrenType = extractChildrenType(block.attributes.childrenType)
+  let childrenType = extractChildrenType(block.attributes?.childrenType)
 
   let res: HMBlockMath = {
     type: 'math',
@@ -287,7 +283,7 @@ export function toHMBlockMath(
 }
 
 export function toHMBlock(
-  children: Array<BlockNode> = [],
+  children: HMBlockNode[] = [],
   opts: ServerToEditorRecursiveOpts & {
     childrenType?: HMBlockChildrenType
     listLevel?: string
@@ -305,11 +301,11 @@ export function toHMBlock(
         id: serverBlock.block.id,
         props: {
           url: serverBlock.block.ref,
-          name: serverBlock.block.attributes.name,
-          width: serverBlock.block.attributes.width,
+          name: serverBlock.block.attributes?.name,
+          width: serverBlock.block.attributes?.width,
           textAlignment: 'left',
           childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
+            serverBlock.block.attributes?.childrenType,
           ),
         },
         content: toHMInlineContent(serverBlock.block),
@@ -318,17 +314,17 @@ export function toHMBlock(
     }
 
     if (serverBlock.block?.type === 'file') {
-      if (serverBlock.block.attributes.subType?.startsWith('nostr:')) {
+      if (serverBlock.block.attributes?.subType?.startsWith('nostr:')) {
         res = {
           type: 'nostr',
           id: serverBlock.block.id,
           props: {
             url: getCIDFromIPFSUrl(serverBlock.block.ref),
-            name: serverBlock.block.attributes.name,
-            size: serverBlock.block.attributes.size,
+            name: serverBlock.block.attributes?.name,
+            size: serverBlock.block.attributes?.size,
             textAlignment: 'left',
             childrenType: extractChildrenType(
-              serverBlock.block.attributes.childrenType,
+              serverBlock.block.attributes?.childrenType,
             ),
           },
           children: [],
@@ -339,11 +335,11 @@ export function toHMBlock(
           id: serverBlock.block.id,
           props: {
             url: serverBlock.block.ref,
-            name: serverBlock.block.attributes.name,
-            size: serverBlock.block.attributes.size,
+            name: serverBlock.block.attributes?.name,
+            size: serverBlock.block.attributes?.size,
             textAlignment: 'left',
             childrenType: extractChildrenType(
-              serverBlock.block.attributes.childrenType,
+              serverBlock.block.attributes?.childrenType,
             ),
           },
           children: [],
@@ -357,10 +353,10 @@ export function toHMBlock(
         id: serverBlock.block.id,
         props: {
           url: serverBlock.block.ref,
-          name: serverBlock.block.attributes.name,
-          width: serverBlock.block.attributes.width,
+          name: serverBlock.block.attributes?.name,
+          width: serverBlock.block.attributes?.width,
           childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
+            serverBlock.block.attributes?.childrenType,
           ),
         },
         content: toHMInlineContent(serverBlock.block),
@@ -375,7 +371,7 @@ export function toHMBlock(
         props: {
           url: serverBlock.block.ref,
           childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
+            serverBlock.block.attributes?.childrenType,
           ),
         },
         children: [],
@@ -391,7 +387,7 @@ export function toHMBlock(
           view: serverBlock.block.attributes.view || 'content',
           textAlignment: 'left',
           childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
+            serverBlock.block.attributes?.childrenType,
           ),
         },
         children: [],
@@ -406,7 +402,7 @@ export function toHMBlock(
           language: serverBlock.block.attributes.language,
           textAlignment: 'left',
           childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
+            serverBlock.block.attributes?.childrenType,
           ),
         },
         content: toHMInlineContent(serverBlock.block),
@@ -436,20 +432,20 @@ export function toHMBlock(
       res = toHMBlockParagraph(serverBlock, childRecursiveOpts)
     }
 
-    if (serverBlock.block?.attributes.childrenType) {
+    if (serverBlock.block?.attributes?.childrenType) {
       // @ts-expect-error
       res.props.childrenType = serverBlock.block.attributes.childrenType
     }
 
-    if (serverBlock.block?.attributes.start) {
+    if (serverBlock.block?.attributes?.start) {
       res.props.start = serverBlock.block.attributes.start
     }
 
-    if (serverBlock.block?.attributes.listLevel) {
+    if (serverBlock.block?.attributes?.listLevel) {
       res.props.listLevel = serverBlock.block.attributes.listLevel
     }
 
-    if (serverBlock.children.length) {
+    if (serverBlock.children?.length) {
       res.children = toHMBlock(serverBlock.children, {
         level: childRecursiveOpts.level ? childRecursiveOpts.level + 1 : 1,
       })
