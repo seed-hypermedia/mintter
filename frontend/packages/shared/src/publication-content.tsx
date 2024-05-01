@@ -1410,11 +1410,11 @@ export function EmbedGroupCardContent({group}: {group: HMGroup}) {
 export function EmbedAccountContent({account}: {account: HMAccount}) {
   const {ipfsBlobPrefix} = usePublicationContentContext()
   return (
-    <XStack gap="$3" padding="$4" alignItems="flex-start">
+    <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
         <UIAvatar
           id={account.id}
-          size={36}
+          size={40}
           label={account.profile?.alias}
           url={`${ipfsBlobPrefix}${account.profile?.avatar}`}
         />

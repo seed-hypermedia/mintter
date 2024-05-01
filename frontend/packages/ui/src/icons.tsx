@@ -37,6 +37,7 @@ export {
   Star as Favorite,
   File,
   FileText,
+  FileWarning,
   ChevronRight as Forward,
   Globe,
   ListPlus as GroupIcon,

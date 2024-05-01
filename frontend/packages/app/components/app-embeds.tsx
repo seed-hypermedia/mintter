@@ -22,6 +22,7 @@ import {
 import {
   Button,
   ButtonText,
+  FileWarning,
   SizableText,
   Spinner,
   UIAvatar,
@@ -56,14 +57,17 @@ function EmbedWrapper({
   parentBlockId,
   children,
   depth,
+  viewType = 'content',
   ...props
 }: PropsWithChildren<
   {
     hmRef: string
     parentBlockId: string | null
     depth?: number
+    viewType?: 'content' | 'card'
   } & ComponentProps<typeof YStack>
 >) {
+  console.log('-=-= viewType', viewType)
   const {
     disableEmbedClick = false,
     comment,
@@ -194,7 +198,7 @@ function EmbedWrapper({
       {...props}
     >
       {children}
-      {!comment ? (
+      {!comment && viewType == 'content' ? (
         <EmbedSideAnnotation
           sidePos={sidePos}
           ref={sideannotationRef}
@@ -468,6 +472,7 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
 }
 
 export function EmbedPublicationCard(props: EntityComponentProps) {
+  console.log(`== ~ EmbedPublicationCard ~ props:`, props)
   // we can't pass anything else to `createHmId` because this is creating the string we need to pass to getPublication
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = usePublicationVariant({
@@ -503,6 +508,7 @@ export function EmbedAccount(
   props: EntityComponentProps,
   parentBlockId: string | null,
 ) {
+  console.log(`== ~ props EmbedAccount:`, props)
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = useAccount(accountId)
 
@@ -521,7 +527,17 @@ export function EmbedAccount(
       )
     }
 
-    return null
+    return (
+      <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
+        <EmbedAccountContent account={accountQuery.data!} />
+        <XStack p="$2" theme="red" gap="$2">
+          <FileWarning size={14} />
+          <SizableText size="$1">
+            This account does not have a Profile page
+          </SizableText>
+        </XStack>
+      </EmbedWrapper>
+    )
   }
 }
 
@@ -613,17 +629,31 @@ export function EmbedGroup(props: EntityComponentProps) {
 }
 
 export function EmbedGroupCard(
-  props: EntityComponentProps & {groupId?: string},
+  props: EntityComponentProps & {groupId?: string; noContent?: boolean},
 ) {
   const groupQuery = useGroup(props.groupId, props.version || undefined)
 
   const group = hmGroup(groupQuery.data)
 
   return group && groupQuery.status == 'success' ? (
-    <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
+    <EmbedWrapper
+      hmRef={props.id}
+      parentBlockId={props.parentBlockId}
+      viewType="card"
+    >
       <EmbedGroupCardContent group={group} />
+      {props.noContent ? (
+        <XStack p="$2" theme="red" gap="$2">
+          <FileWarning size={14} />
+          <SizableText size="$1">
+            This group does not have a Homepage
+          </SizableText>
+        </XStack>
+      ) : null}
     </EmbedWrapper>
-  ) : null
+  ) : (
+    <ErrorBlock message="Failed to load group embed" />
+  )
 }
 
 function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
@@ -636,7 +666,7 @@ function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
     return <EmbedPublicationContent {...props} {...groupFrontPage} />
   }
 
-  return null
+  return <EmbedGroupCard noContent {...props} />
 }
 
 export function EmbedInline(props: InlineEmbedComponentProps) {
