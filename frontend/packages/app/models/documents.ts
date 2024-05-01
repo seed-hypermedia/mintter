@@ -11,9 +11,6 @@ import {
   useBlockNote,
 } from '@mintter/editor'
 import {
-  Block,
-  BlockNode,
-  Document,
   DocumentChange,
   GRPCClient,
   GroupVariant,
@@ -571,12 +568,25 @@ type MoveBlockAction = {
 export function useDraft({
   documentId,
   ...options
-}: UseQueryOptions<Document | null> & {
+}: UseQueryOptions<HMDocument | null> & {
   documentId?: string
 }) {
   const grpcClient = useGRPCClient()
   const diagnosis = useDraftDiagnosis()
   return useQuery(queryDraft({documentId, grpcClient, diagnosis, ...options}))
+}
+
+export function useDrafts(
+  ids: string[],
+  options?: UseQueryOptions<HMDocument | null>,
+) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: ids.map((draftId) =>
+      queryDraft({documentId: draftId, grpcClient}),
+    ),
+    ...(options || {}),
+  })
 }
 
 export function queryDraft({
@@ -588,7 +598,7 @@ export function queryDraft({
   documentId?: string
   grpcClient: GRPCClient
   diagnosis?: ReturnType<typeof useDraftDiagnosis>
-} & UseQueryOptions<Document | null>): UseQueryOptions<Document | null> {
+} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
     enabled: !!documentId,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
@@ -598,13 +608,15 @@ export function queryDraft({
         let serverDraft = await grpcClient.drafts.getDraft({
           documentId,
         })
+        // const doc = serverDraft
+        const doc = serverDraft ? hmDocument(serverDraft) : null
 
         diagnosis?.append(documentId!, {
           key: 'getDraft',
-          value: hmDocument(serverDraft),
+          value: doc,
         })
 
-        return serverDraft
+        return doc
       } catch (error) {
         diagnosis?.append(documentId!, {
           key: 'getDraftError',
@@ -663,10 +675,12 @@ export function useDraftEditor({
     draftMachine.provide({
       actions: {
         populateEditor: ({event}) => {
+          console.log('populateEditor', event)
           if (
             event.type == 'GET.DRAFT.SUCCESS' &&
-            event.draft.children.length
+            event.draft.children?.length
           ) {
+            console.log('uh?!', event.draft.children)
             let editorBlocks = toHMBlock(event.draft.children)
             const tiptap = editor?._tiptapEditor
             // editor.removeBlocks(editor.topLevelBlocks)
@@ -722,7 +736,7 @@ export function useDraftEditor({
             })
           }
 
-          replace({key: 'documents', tab: 'drafts'})
+          replace({key: 'feed', tab: 'trusted'})
         },
       },
       actors: {
@@ -743,22 +757,28 @@ export function useDraftEditor({
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
         >(async ({input}) => {
-          const prevDraft = input.draft
+          const prevDraft = input.draft ? hmDocument(input.draft) : null
+          if (!prevDraft) throw new Error('Expecting previous draft to restore')
+          if (!prevDraft.children)
+            throw new Error('Expecting previous draft with children to restore')
           const prevBlocksMap = input.blocksMap
           try {
             // delete draft
             await grpcClient.drafts.deleteDraft({documentId})
             // create new draft
-            const newDraft = await grpcClient.drafts.createDraft({
+            const newDraftRaw = await grpcClient.drafts.createDraft({
               existingDocumentId: documentId,
             })
+            const newDraft = newDraftRaw ? hmDocument(newDraftRaw) : null
 
-            const newBlocksMap = createBlocksMap(newDraft.children, '')
+            const newBlocksMap = newDraft?.children
+              ? createBlocksMap(newDraft.children, '')
+              : {}
             // prevDraft is the final result I want
 
             let {changes, touchedBlocks} = compareDraftWithMap(
               newBlocksMap,
-              prevDraft!.children,
+              prevDraft?.children,
               '',
             )
 
@@ -812,7 +832,7 @@ export function useDraftEditor({
         resetDraft: fromPromise<
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
-        >(async ({input}) => {
+        >(async () => {
           try {
             // delete draft
             await grpcClient.drafts.deleteDraft({documentId})
@@ -1062,11 +1082,11 @@ export type BlocksMap = Record<string, BlocksMapItem>
 export type BlocksMapItem = {
   parent: string
   left: string
-  block: Block
+  block: HMBlock
 }
 
 export function createBlocksMap(
-  blockNodes: Array<BlockNode>,
+  blockNodes: Array<HMBlockNode>,
   parentId: string,
 ) {
   let result: BlocksMap = {}
@@ -1075,14 +1095,16 @@ export function createBlocksMap(
     if (bn.block?.id) {
       let prevBlockNode = idx > 0 ? blockNodes[idx - 1] : undefined
 
-      result[bn.block.id] = {
-        parent: parentId,
-        left:
-          prevBlockNode && prevBlockNode.block ? prevBlockNode.block.id : '',
-        block: bn.block,
+      if (bn.block) {
+        result[bn.block.id] = {
+          parent: parentId,
+          left:
+            prevBlockNode && prevBlockNode.block ? prevBlockNode.block.id : '',
+          block: bn.block,
+        }
       }
 
-      if (bn.children.length) {
+      if (bn.children?.length) {
         // recursively call the block children and append to the result
         result = {...result, ...createBlocksMap(bn.children, bn.block.id)}
       }
@@ -1137,7 +1159,7 @@ export function compareBlocksWithMap(
 
     if (
       !prevBlockState ||
-      prevBlockState.block.attributes.listLevel !==
+      prevBlockState.block.attributes?.listLevel !==
         currentBlockState.attributes.listLevel
     ) {
       const serverBlock = fromHMBlock(block)
@@ -1211,7 +1233,7 @@ export function compareBlocksWithMap(
 
 export function compareDraftWithMap(
   blocksMap: BlocksMap,
-  blockNodes: Document['children'],
+  blockNodes: HMBlockNode[],
   parentId: string,
 ) {
   let changes: Array<DocumentChange> = []
@@ -1289,7 +1311,7 @@ export function compareDraftWithMap(
         }
       }
 
-      if (bn.children.length) {
+      if (bn.children?.length) {
         let nestedResults = compareDraftWithMap(
           blocksMap,
           bn.children,
@@ -1326,7 +1348,7 @@ export function extractDeletes(
   )
 }
 
-export function isBlocksEqual(b1: Block, b2: Block): boolean {
+export function isBlocksEqual(b1: HMBlock, b2: HMBlock): boolean {
   let result =
     // b1.id == b2.id &&
     b1.text == b2.text &&
@@ -1338,10 +1360,11 @@ export function isBlocksEqual(b1: Block, b2: Block): boolean {
   return result
 }
 
-function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
+function isBlockAttributesEqual(b1: HMBlock, b2: HMBlock): boolean {
   let a1 = b1.attributes
   let a2 = b2.attributes
-
+  if (!a1 && !a2) return true
+  if (!a1 || !a2) return false
   return (
     a1.childrenType == a2.childrenType &&
     a1.start == a2.start &&
@@ -1428,20 +1451,19 @@ export function useAccountPublications(accountId?: string | undefined) {
       const result = await grpcClient.publications.listAccountPublications({
         accountId,
       })
-      const publications: HMPublication[] =
-        result.publications
-          .map((pub) => hmPublication(pub))
-          .filter(Boolean)
-          .sort((a, b) => {
-            const aTime = a?.document?.updateTime
-              ? new Date(a.document.updateTime)
-              : 0
-            const bTime = b?.document?.updateTime
-              ? new Date(b.document.updateTime)
-              : 0
-            if (!aTime || !bTime) return 0
-            return bTime.getTime() - aTime.getTime()
-          }) || []
+      const publications: HMPublication[] = (result.publications
+        .map((pub) => hmPublication(pub))
+        .filter(Boolean)
+        .sort((a, b) => {
+          const aTime = a?.document?.updateTime
+            ? new Date(a.document.updateTime)
+            : 0
+          const bTime = b?.document?.updateTime
+            ? new Date(b.document.updateTime)
+            : 0
+          if (!aTime || !bTime) return 0
+          return bTime.getTime() - aTime.getTime()
+        }) || []) as HMPublication[]
       return {
         publications,
       }

@@ -1,4 +1,4 @@
-import {Document} from '@mintter/shared'
+import {Document, HMDocument} from '@mintter/shared'
 import {createActorContext} from '@xstate/react'
 import {StateFrom, assign, createMachine} from 'xstate'
 import {BlocksMap, createBlocksMap} from './documents'
@@ -261,7 +261,7 @@ export const draftMachine = createMachine(
         | {type: 'RESET.CORRUPT.DRAFT'}
         | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
-        | {type: 'GET.DRAFT.SUCCESS'; draft: Document}
+        | {type: 'GET.DRAFT.SUCCESS'; draft: HMDocument}
         | {type: 'SAVE.ON.EXIT'},
       context: {} as {
         blocksMap: BlocksMap

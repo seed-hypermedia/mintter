@@ -222,6 +222,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
     const draft = initCommentDraft.current
     if (!readyEditor.current || !draft) return
     const editor = readyEditor.current
+    console.log('comment draft mmokay')
     const editorBlocks = toHMBlock(draft.blocks)
     editor.removeBlocks(editor.topLevelBlocks)
     editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)

@@ -67,7 +67,7 @@ export type HMLink = {
   isLatest?: boolean
 }
 
-export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'div'
+export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'div' | 'blockquote'
 export type HMEmbedDisplay = 'content' | 'card'
 
 export type HMStyles = {
@@ -125,12 +125,14 @@ export type HMBlockProps<T = unknown> = {
   defaultOpen?: true
 } & T
 
+export type HMAnnotations = Array<HMTextAnnotation>
+
 export type HMBlockBase = {
   id: string
   revision?: string
   text: string
   ref?: string
-  annotations: Array<TextAnnotation>
+  annotations: HMAnnotations
   attributes?: {
     childrenType: HMBlockChildrenType
     [key: string]: string
@@ -277,6 +279,10 @@ export type HMEntityContent =
       publication: HMPublication
       document?: HMDocument
     }
+  | {
+      type: 'd-draft'
+      document: HMDocument
+    }
 
 export type HMComment = {
   id: string
@@ -335,7 +341,7 @@ export type RangeAnnotation = BaseAnnotation & {
   type: 'range'
 }
 
-export type TextAnnotation =
+export type HMTextAnnotation =
   | LinkAnnotation
   | StrongAnnotation
   | EmphasisAnnotation

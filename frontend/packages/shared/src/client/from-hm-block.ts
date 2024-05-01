@@ -3,13 +3,13 @@ import {Block as ServerBlock} from '@mintter/shared/src/client/grpc-types'
 import {
   ColorAnnotation,
   HMInlineContent,
+  HMTextAnnotation,
   InlineEmbedAnnotation,
-  TextAnnotation,
 } from '../hm-types'
 
 function styleMarkToAnnotationType(
   style: keyof Styles,
-): Exclude<TextAnnotation, InlineEmbedAnnotation | ColorAnnotation>['type'] {
+): Exclude<HMTextAnnotation, InlineEmbedAnnotation | ColorAnnotation>['type'] {
   if (style === 'bold') return 'strong'
   if (style === 'italic') return 'emphasis'
   if (style === 'underline') return 'underline'
@@ -19,11 +19,11 @@ function styleMarkToAnnotationType(
 }
 
 export function extractContent(content: Array<HMInlineContent>): {
-  annotations: Array<TextAnnotation>
+  annotations: Array<HMTextAnnotation>
   text: string
 } {
   let text = ''
-  const annotations: Array<TextAnnotation> = []
+  const annotations: Array<HMTextAnnotation> = []
   const styleStarts: Record<string, number> = {}
   let charIndex = 0
 
