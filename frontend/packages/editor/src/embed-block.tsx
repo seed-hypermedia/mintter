@@ -226,7 +226,10 @@ function EmbedControl({
   const popoverToDocumentState = usePopoverState()
   const expandButtonHover = useHover()
 
-  let versionValue = block.props.url.includes('&l') ? 'latest' : 'exact'
+  let versionValue =
+    block.props.url.includes('&l') || block.props.url.includes('?l')
+      ? 'latest'
+      : 'exact'
   let isVersionLatest = versionValue == 'latest'
 
   const handleViewSelect = useCallback((view: 'content' | 'card') => {
