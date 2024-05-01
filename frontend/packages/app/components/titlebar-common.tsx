@@ -749,8 +749,8 @@ function NewDocumentButton({
 function CreateDropdown({groupVariant}: {groupVariant?: GroupVariant}) {
   const openDraft = useOpenDraft('push')
   const canEdit = useCanEditGroup(groupVariant?.groupId)
-  if (groupVariant && !canEdit) return null
   const createGroup = useCreateGroupDialog()
+  if (groupVariant && !canEdit) return null
   return (
     <>
       <OptionsDropdown
