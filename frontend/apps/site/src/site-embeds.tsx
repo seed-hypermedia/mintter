@@ -25,6 +25,7 @@ import {
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
+  FileWarning,
   SizableText,
   Spinner,
   UIAvatar,
@@ -371,7 +372,9 @@ export function EmbedGroup(props: EntityComponentProps) {
   )
 }
 
-function EmbedGroupCard(props: EntityComponentProps & {groupId?: string}) {
+function EmbedGroupCard(
+  props: EntityComponentProps & {groupId?: string; noContent?: boolean},
+) {
   const groupQuery = trpc.group.get.useQuery({
     groupId,
     version: props.version || undefined,
@@ -383,6 +386,14 @@ function EmbedGroupCard(props: EntityComponentProps & {groupId?: string}) {
   return group ? (
     <EmbedWrapper hmRef={props.id}>
       <EmbedGroupCardContent group={group} />
+      {props.noContent ? (
+        <XStack p="$2" theme="red" gap="$2">
+          <FileWarning size={14} />
+          <SizableText size="$1">
+            This group does not have a Homepage
+          </SizableText>
+        </XStack>
+      ) : null}
     </EmbedWrapper>
   ) : (
     <ErrorBlock message="Failed to load group embed" />
@@ -398,7 +409,7 @@ function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
     return <EmbedPublicationContent {...props} {...groupFrontPage} />
   }
 
-  return null
+  return <EmbedGroupCard noContent {...props} />
 }
 
 function useGroupFrontpage(groupId: string, version?: string) {
@@ -438,7 +449,17 @@ export function EmbedAccount(props: EntityComponentProps) {
       )
     }
   }
-  return null
+  return (
+    <EmbedWrapper hmRef={props.id}>
+      <EmbedAccountContent account={account} />
+      <XStack p="$2" theme="red" gap="$2">
+        <FileWarning size={14} />
+        <SizableText size="$1">
+          This account does not have a Profile page
+        </SizableText>
+      </XStack>
+    </EmbedWrapper>
+  )
 }
 
 function stripHMLinkPrefix(link: string) {
