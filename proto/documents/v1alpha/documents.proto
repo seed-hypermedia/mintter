@@ -223,36 +223,15 @@ message ListAccountPublicationsRequest {
 // === Types ===
 
 // State of the document after publication.
+// Deprecated: use the Document message instead,
+// it has all the same fields.
 message Publication {
   // Version points to the state of the publication at some point in time.
-  // It is represented as a string, although it can be a list of CIDs.
-  // The order of hashes must be deterministic, which is tricky because
-  // CIDs can have different base encoding when represented as a string.
-  // So same hash, can have different string representations.
-  // We should either define a canonical base encoding, or sort binary
-  // representation of the hash portion of the CID.
-  // Anyway, all these details should be opaque for consumers of this API.
-  // On the other hand, if API consumers never compare versions as plain strings
-  // it doesn't really matter if different version strings point to the same document.
+  // Deprecated: use the version field of the Document message instead.
   string version = 1;
 
   // Published document.
   Document document = 2;
-}
-
-// Publication that has been deleted
-message DeletedPublication { 
-  // EID of the deleted publication.
-  string eid = 1;
-
-  // When the publication was deleted.
-  google.protobuf.Timestamp deleted_time = 2;
-
-  // Reason why that publication was deleted.
-  string deleted_reason = 3;
-
-  // Further metadata about the deleted Publication, title, etc ...
-  string metadata = 4;
 }
 
 // Document represents metadata and content of a draft or publication.
@@ -281,6 +260,13 @@ message Document {
 
   // Output only. Time when this version was published. Not present in drafts.
   google.protobuf.Timestamp publish_time = 8;
+
+  // Output only. Current version of the document.
+  string version = 12;
+
+  // Output only. Previous version of the document,
+  // unless this is the first version.
+  string previous_version = 13;
 }
 
 // Content block with children.

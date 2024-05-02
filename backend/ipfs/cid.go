@@ -20,8 +20,8 @@ func NewCID(codec, hashType uint64, data []byte) (cid.Cid, error) {
 }
 
 // MustNewCID creates a new CID from data and panics if it fails.
-func MustNewCID(codec, hashType uint64, data []byte) cid.Cid {
-	c, err := NewCID(codec, hashType, data)
+func MustNewCID[T ~uint64](codec, hashType T, data []byte) cid.Cid {
+	c, err := NewCID(uint64(codec), uint64(hashType), data)
 	if err != nil {
 		panic(err)
 	}

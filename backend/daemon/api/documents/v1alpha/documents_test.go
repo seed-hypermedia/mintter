@@ -335,12 +335,13 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 					},
 				},
 			},
+			Version:         doc.Version,
+			PreviousVersion: doc.PreviousVersion,
 		}
 
-		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
-		if diff != "" {
-			t.Fatal(diff)
-		}
+		testutil.StructsEqual(want, doc).
+			IgnoreFields(documents.Block{}, "Revision").
+			Compare(t, "draft doesn't match the expected format")
 	}
 
 	// === Now reparent b1.1 ===
@@ -389,6 +390,8 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 					},
 				},
 			},
+			Version:         doc.Version,
+			PreviousVersion: doc.PreviousVersion,
 		}
 
 		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
@@ -433,6 +436,8 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 					},
 				},
 			},
+			Version:         doc.Version,
+			PreviousVersion: doc.PreviousVersion,
 		}
 
 		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
@@ -450,6 +455,7 @@ func TestListDrafts(t *testing.T) {
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
+	draft.Version = "" // Drafts are listed without version.
 
 	{
 		list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
@@ -472,6 +478,7 @@ func TestListDrafts(t *testing.T) {
 
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
+	updated.Version = "" // Drafts are listed without version.
 	testutil.ProtoEqual(t, updated, list.Documents[0], "must have draft in the list")
 }
 
@@ -502,12 +509,10 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
-	updated.PublishTime = published.Document.PublishTime // Drafts don't have publish time.
-	updated.Children = published.Document.Children
-	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter())
-	if diff != "" {
-		t.Fatal(diff, "published document doesn't match")
-	}
+
+	testutil.StructsEqual(updated, published.Document).
+		IgnoreFields(documents.Document{}, "PublishTime"). // drafts don't have publish time.
+		Compare(t, "published document doesn't match the draft")
 
 	require.NotEqual(t, "", published.Document.Id, "publication must have id")
 	require.NotEqual(t, "", published.Version, "publication must have version")
@@ -532,6 +537,8 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 
 	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
 	require.NoError(t, err, "must get document after publishing")
+	testutil.StructsEqual(published, got).Compare(t, "published document doesn't match")
+
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 
 	// Must show up in the list.
@@ -540,6 +547,7 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, list.Publications, 1, "must have 1 publication")
 		published.Document.Children = nil
+		published.Document.Version = ""
 		published.Version = ""
 		testutil.ProtoEqual(t, published, list.Publications[0], "publication in the list must match")
 	}
@@ -583,12 +591,10 @@ func TestAPIUpdateDraft_WithList(t *testing.T) {
 		CreateTime:  draft.CreateTime,
 		UpdateTime:  updated.UpdateTime,
 		PublishTime: nil,
+		Version:     updated.Version,
 	}
 
-	diff := cmp.Diff(want, updated, testutil.ExportedFieldsFilter())
-	if diff != "" {
-		t.Fatal(diff)
-	}
+	testutil.StructsEqual(want, updated).Compare(t, "updated draft doesn't match")
 
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
@@ -620,6 +626,7 @@ func TestAPIDeleteDraft(t *testing.T) {
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
+	d2.Version = ""
 	testutil.ProtoEqual(t, d2, list.Documents[0], "second document must be the only thing in the list")
 }
 
@@ -677,18 +684,19 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	require.NotNil(t, published)
-	draft.PublishTime = published.Document.PublishTime // drafts don't have publish time.
 
-	testutil.ProtoEqual(t, draft, published.Document, "published document must match")
+	if diff := cmp.Diff(draft, published.Document, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Document{}, "PublishTime")); diff != "" {
+		t.Log(diff)
+		t.Fatal("published doc must match its final draft")
+	}
 
 	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
 		ExistingDocumentId: published.Document.Id,
 	})
 	require.NoError(t, err)
-	draft2.PublishTime = published.Document.PublishTime
-	published.Document.UpdateTime = draft2.UpdateTime // New draft will have a newer update time.
 
-	testutil.ProtoEqual(t, published.Document, draft2, "draft from publication must be same as published")
+	require.True(t, draft2.UpdateTime.AsTime().After(published.Document.UpdateTime.AsTime()), "draft update time must be greater than previous publication")
+
 	draft2 = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
@@ -712,8 +720,11 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	require.Len(t, pubs.Publications, 1)
 
 	pub2.Document.Children = nil
-	pub2.Version = ""
-	testutil.ProtoEqual(t, pub2, pubs.Publications[0], "publication in the list must be the same as published")
+
+	testutil.StructsEqual(pub2, pubs.Publications[0]).
+		IgnoreFields(documents.Document{}, "Version", "PreviousVersion"). // Listed pubs don't have those fields
+		IgnoreFields(documents.Publication{}, "Version").
+		Compare(t, "publication in the list must be the same as published")
 }
 
 func TestGetPublicationWithDraftID(t *testing.T) {

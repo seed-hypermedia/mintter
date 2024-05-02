@@ -438,7 +438,10 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 			require.Len(t, list.Publications, len(want))
 
 			for w := range want {
-				testutil.ProtoEqual(t, want[w], list.Publications[w], "publication %d doesn't match", w)
+				testutil.StructsEqual(want[w], list.Publications[w]).
+					IgnoreFields(documents.Document{}, "Version", "PreviousVersion").
+					IgnoreFields(documents.Publication{}, "Version").
+					Compare(t, "publication %d doesn't match", w)
 			}
 			return nil
 		})

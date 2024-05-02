@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	blockstore "github.com/ipfs/boxo/blockstore"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
@@ -81,10 +82,42 @@ func (txn *fakeTxn) Discard(ctx context.Context) {}
 
 // ProtoEqual will check if want and got are equal Protobuf messages.
 // For some weird reason they made Messages uncomparable using normal mechanisms.
+//
+// Deprecated: use StructsEqual instead.
 func ProtoEqual(t *testing.T, want, got proto.Message, msg string, format ...interface{}) {
 	t.Helper()
 
 	diff := cmp.Diff(want, got, ExportedFieldsFilter())
+	if diff != "" {
+		t.Log(diff)
+		t.Fatalf(msg, format...)
+	}
+}
+
+// StructsEqualBuilder is a fluent interface for comparing structs.
+type StructsEqualBuilder[T any] struct {
+	a    T
+	b    T
+	opts []cmp.Option
+}
+
+// StructsEqual compares two structs of the same time for equality. It allows to specify field names to ignore.
+func StructsEqual[T any](a, b T) *StructsEqualBuilder[T] {
+	return &StructsEqualBuilder[T]{a: a, b: b, opts: []cmp.Option{ExportedFieldsFilter()}}
+}
+
+// IgnoreFields allows to ignore fields on a certain type.
+// Type must be non-pointer value.
+func (sb *StructsEqualBuilder[T]) IgnoreFields(_type any, fields ...string) *StructsEqualBuilder[T] {
+	sb.opts = append(sb.opts, cmpopts.IgnoreFields(_type, fields...))
+	return sb
+}
+
+// Compare executes the final comparison.
+func (sb *StructsEqualBuilder[T]) Compare(t *testing.T, msg string, format ...any) {
+	t.Helper()
+
+	diff := cmp.Diff(sb.a, sb.b, sb.opts...)
 	if diff != "" {
 		t.Log(diff)
 		t.Fatalf(msg, format...)
