@@ -81,6 +81,8 @@ func (eid EntityID) String() string { return string(eid) }
 type Entity struct {
 	id           EntityID
 	changes      []ParsedBlob[Change]
+	deps         [][]int // deps for each change.
+	rdeps        [][]int // reverse deps for each change.
 	applied      map[cid.Cid]int
 	heads        map[cid.Cid]struct{}
 	state        *crdt2.Map
@@ -214,22 +216,151 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 		return fmt.Errorf("applying change %s out of causal order", c)
 	}
 
-	for _, dep := range ch.Deps {
-		if _, ok := e.applied[dep]; !ok {
+	deps := make([]int, len(ch.Deps))
+
+	for i, dep := range ch.Deps {
+		depIdx, ok := e.applied[dep]
+		if !ok {
 			return fmt.Errorf("missing dependency %s of change %s", dep, c)
 		}
-		delete(e.heads, dep)
+
+		deps[i] = depIdx
 	}
 
-	e.state.ApplyPatch(int64(ch.HLCTime), OriginFromCID(c), ch.Patch)
 	if err := e.maxClock.Track(ch.HLCTime); err != nil {
 		return err
 	}
+
+	e.state.ApplyPatch(int64(ch.HLCTime), OriginFromCID(c), ch.Patch)
 	e.changes = append(e.changes, ParsedBlob[Change]{c, ch})
-	e.applied[c] = len(e.changes) - 1
+	e.deps = append(e.deps, nil)
+	e.rdeps = append(e.rdeps, nil)
 	e.heads[c] = struct{}{}
+	curIdx := len(e.changes) - 1
+	e.applied[c] = curIdx
+
+	// One more pass through the deps to update the internal DAG structure,
+	// and update the heads of the current version.
+	// To avoid corrupting the entity state we shouldn't do this in the first loop we did.
+	for i, dep := range ch.Deps {
+		// If any of the deps was a head, then it's no longer the case.
+		delete(e.heads, dep)
+
+		// Keeping the DAG edges between deps in both directions.
+		e.deps[curIdx] = addUnique(e.deps[curIdx], deps[i])
+		e.rdeps[deps[i]] = addUnique(e.rdeps[deps[i]], curIdx)
+	}
 
 	return nil
+}
+
+// Deps returns the set of dependencies for the current heads.
+// This is a bit more complex than just returning the deps of the head changes as is,
+// because they may be redundant in some cases, when they have links between each other.
+// This method returns the minimal set of deps by reducing the redundant edges.
+//
+// Given the following DAG (d, e) are the heads, while (c, b) are the direct deps,
+// although only (c) needs to be returned, as b is already assumed by c.
+//
+//	a ← b ← c ← d
+//	     ↖
+//	       e
+func (e *Entity) Deps() []cid.Cid {
+	if len(e.heads) == 0 {
+		return nil
+	}
+
+	// Special case when there's only one head,
+	// because there's no need to do any reductions.
+	if len(e.heads) == 1 {
+		var head cid.Cid
+		for head = range e.heads {
+			break
+		}
+
+		return slices.Clone(e.changes[e.applied[head]].Data.Deps)
+	}
+
+	// These two sets initially will contain all deps of the heads
+	// but later the redundant deps will be removed from the reduced set.
+	// We still need to keep the full deps in order to perform the reduction correctly.
+	fullDeps := make(map[int]struct{})
+	reducedDeps := make(map[int]struct{})
+
+	for head := range e.heads {
+		ihead, ok := e.applied[head]
+		if !ok {
+			panic("BUG: head change not applied")
+		}
+
+		for _, dep := range e.deps[ihead] {
+			fullDeps[dep] = struct{}{}
+			reducedDeps[dep] = struct{}{}
+		}
+	}
+
+	// For each collected dep we want to traverse back to the leaves,
+	// and if we find a node along the way that is already a collected dep,
+	// then this current dep is redundant and doesn't need to be returned.
+	var (
+		stack   []int
+		visited = make(map[int]struct{})
+	)
+
+	// Initialize the traversal stack with all the full deps.
+	for dep := range fullDeps {
+		stack = append(stack, dep)
+	}
+
+	// Then for each node in the stack traverse back to the leaves,
+	// breaking early if any of the rdeps is already in the full deps set.
+	for len(stack) > 0 {
+		node := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if _, ok := visited[node]; ok {
+			continue
+		}
+
+		visited[node] = struct{}{}
+		for _, rdep := range e.rdeps[node] {
+			if _, ok := visited[rdep]; !ok {
+				stack = append(stack, rdep)
+			}
+
+			if _, ok := fullDeps[rdep]; ok {
+				delete(reducedDeps, node)
+				break
+			}
+		}
+	}
+
+	out := make([]cid.Cid, 0, len(reducedDeps))
+	for dep := range reducedDeps {
+		out = append(out, e.changes[dep].CID)
+	}
+
+	return out
+}
+
+func addUnique(in []int, v int) []int {
+	// Slice in is very small most of the time,
+	// and is assumed to be sorted.
+	// Our assumption here is that linear search would be faster than binary search,
+	// because most changes have only a few dependencies.
+	var targetIndex int
+	for i, x := range in {
+		if x == v {
+			return in
+		}
+
+		if x > v {
+			targetIndex = i
+			break
+		}
+	}
+
+	return slices.Insert(in, targetIndex, v)
 }
 
 // OriginFromCID creates a CRDT origin from the last 8 chars of the hash.

@@ -626,7 +626,7 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 
 	return &documents.Publication{
 		Document: doc,
-		Version:  mut.Entity().Version().String(),
+		Version:  doc.Version,
 	}, nil
 }
 

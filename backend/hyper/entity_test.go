@@ -4,15 +4,17 @@ import (
 	"context"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
+	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"testing"
 	"time"
 
 	"github.com/ipfs/go-cid"
+	"github.com/multiformats/go-multicodec"
 	"github.com/stretchr/testify/require"
 )
 
-func TestFoo(t *testing.T) {
+func TestEntityFromCID(t *testing.T) {
 	eid := EntityID("my-test-entity")
 	c, err := eid.CID()
 	require.NoError(t, err)
@@ -278,4 +280,63 @@ func TestEntityMutation_Drafts(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, map[cid.Cid]struct{}{ch3.CID: {}}, ee.heads)
 	require.Equal(t, 2, len(ee.applied), "replaced draft must disappear")
+}
+
+func TestEntityDepsReduction(t *testing.T) {
+	// Reproducing this scenario:
+	//   a ← b ← c ← d
+	//    ↖   ↖
+	//      f    e
+	// Direct deps [a, c,b] should be reduced to [c] because b and a are redundant.
+
+	entity := &Entity{}
+
+	a := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("a")) // 0
+	b := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("b")) // 1
+	c := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("c")) // 2
+	d := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("d")) // 3
+	e := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("e")) // 4
+	f := ipfs.MustNewCID(multicodec.Raw, multicodec.Identity, []byte("f")) // 5
+
+	entity.applied = make(map[cid.Cid]int)
+	entity.applied[a] = 0
+	entity.applied[b] = 1
+	entity.applied[c] = 2
+	entity.applied[d] = 3
+	entity.applied[e] = 4
+	entity.applied[f] = 5
+
+	entity.changes = []ParsedBlob[Change]{
+		0: {CID: a},
+		1: {CID: b},
+		2: {CID: c},
+		3: {CID: d},
+		4: {CID: e},
+		5: {CID: f},
+	}
+
+	entity.heads = map[cid.Cid]struct{}{
+		d: {},
+		e: {},
+		f: {},
+	}
+
+	entity.deps = [][]int{
+		0: nil,
+		1: {0},
+		2: {1},
+		3: {2},
+		4: {1},
+		5: {0},
+	}
+
+	entity.rdeps = [][]int{
+		0: {1, 5},
+		1: {2, 4},
+		2: {3},
+		3: {},
+		4: {},
+	}
+
+	require.Equal(t, []cid.Cid{c}, entity.Deps())
 }

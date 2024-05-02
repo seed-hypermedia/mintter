@@ -870,21 +870,15 @@ export class ListAccountPublicationsRequest extends Message<ListAccountPublicati
 
 /**
  * State of the document after publication.
+ * Deprecated: use the Document message instead,
+ * it has all the same fields.
  *
  * @generated from message com.mintter.documents.v1alpha.Publication
  */
 export class Publication extends Message<Publication> {
   /**
    * Version points to the state of the publication at some point in time.
-   * It is represented as a string, although it can be a list of CIDs.
-   * The order of hashes must be deterministic, which is tricky because
-   * CIDs can have different base encoding when represented as a string.
-   * So same hash, can have different string representations.
-   * We should either define a canonical base encoding, or sort binary
-   * representation of the hash portion of the CID.
-   * Anyway, all these details should be opaque for consumers of this API.
-   * On the other hand, if API consumers never compare versions as plain strings
-   * it doesn't really matter if different version strings point to the same document.
+   * Deprecated: use the version field of the Document message instead.
    *
    * @generated from field: string version = 1;
    */
@@ -923,71 +917,6 @@ export class Publication extends Message<Publication> {
 
   static equals(a: Publication | PlainMessage<Publication> | undefined, b: Publication | PlainMessage<Publication> | undefined): boolean {
     return proto3.util.equals(Publication, a, b);
-  }
-}
-
-/**
- * Publication that has been deleted
- *
- * @generated from message com.mintter.documents.v1alpha.DeletedPublication
- */
-export class DeletedPublication extends Message<DeletedPublication> {
-  /**
-   * EID of the deleted publication.
-   *
-   * @generated from field: string eid = 1;
-   */
-  eid = "";
-
-  /**
-   * When the publication was deleted.
-   *
-   * @generated from field: google.protobuf.Timestamp deleted_time = 2;
-   */
-  deletedTime?: Timestamp;
-
-  /**
-   * Reason why that publication was deleted.
-   *
-   * @generated from field: string deleted_reason = 3;
-   */
-  deletedReason = "";
-
-  /**
-   * Further metadata about the deleted Publication, title, etc ...
-   *
-   * @generated from field: string metadata = 4;
-   */
-  metadata = "";
-
-  constructor(data?: PartialMessage<DeletedPublication>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.documents.v1alpha.DeletedPublication";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "eid", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "deleted_time", kind: "message", T: Timestamp },
-    { no: 3, name: "deleted_reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "metadata", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletedPublication {
-    return new DeletedPublication().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeletedPublication {
-    return new DeletedPublication().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeletedPublication {
-    return new DeletedPublication().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DeletedPublication | PlainMessage<DeletedPublication> | undefined, b: DeletedPublication | PlainMessage<DeletedPublication> | undefined): boolean {
-    return proto3.util.equals(DeletedPublication, a, b);
   }
 }
 
@@ -1054,6 +983,21 @@ export class Document extends Message<Document> {
    */
   publishTime?: Timestamp;
 
+  /**
+   * Output only. Current version of the document.
+   *
+   * @generated from field: string version = 12;
+   */
+  version = "";
+
+  /**
+   * Output only. Previous version of the document,
+   * unless this is the first version.
+   *
+   * @generated from field: string previous_version = 13;
+   */
+  previousVersion = "";
+
   constructor(data?: PartialMessage<Document>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1070,6 +1014,8 @@ export class Document extends Message<Document> {
     { no: 6, name: "create_time", kind: "message", T: Timestamp },
     { no: 7, name: "update_time", kind: "message", T: Timestamp },
     { no: 8, name: "publish_time", kind: "message", T: Timestamp },
+    { no: 12, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "previous_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Document {

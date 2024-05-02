@@ -397,9 +397,11 @@ func (dm *Document) Hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 	}
 
 	docpb := &documents.Document{
-		Id:         string(e.ID()),
-		CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
-		Author:     core.Principal(owner).String(),
+		Id:              string(e.ID()),
+		CreateTime:      timestamppb.New(time.Unix(int64(createTime), 0)),
+		Author:          core.Principal(owner).String(),
+		Version:         e.Version().String(),
+		PreviousVersion: hyper.NewVersion(e.Deps()...).String(),
 	}
 
 	docpb.UpdateTime = timestamppb.New(e.LastChangeTime().Time())
