@@ -24,9 +24,12 @@ import {
   BlockQuote,
   Button,
   ButtonText,
+  Check as CheckIcon,
+  Checkbox,
   ChevronDown,
   ChevronUp,
   DialogDescription,
+  Input,
   Label,
   RadioGroup,
   Select,
@@ -68,6 +71,7 @@ import {useGatewayHost} from '../models/gateway-settings'
 import {
   useAccountGroups,
   useCurrentDocumentGroups,
+  useDocumentGroups,
   useGroup,
 } from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
@@ -83,9 +87,7 @@ export default function PublicationPage() {
 
   const docId = route?.documentId
   const publicationPrompt = useRef<any>(null)
-  const pubPromptDialog = useAppDialog(PublicationPrompt, {
-    onClose: () => pubPromptDialog.close(),
-  })
+  const pubPromptDialog = useAppDialog(PublicationPrompt)
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -98,6 +100,10 @@ export default function PublicationPage() {
     versionId: route.versionId,
     variants: route.variants,
   })
+
+  const grouppps = useDocumentGroups(docId)
+
+  console.log(`== ~ PublicationPage ~ grouppps:`, docId, grouppps.data)
 
   const mentions = useEntityMentions(
     publication.status == 'success' ? docId : undefined,
@@ -387,6 +393,8 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
   const editors = useAccounts(publication.document?.editors || [])
   const navigate = useNavigate()
   const docGroups = useCurrentDocumentGroups(publication.document?.id)
+
+  console.log(`== ~ PublicationPageMeta ~ docGroups:`, docGroups)
   const allSelectedGroups = docGroups.data?.filter((groupItem) => {
     const groupItemId = unpackDocId(groupItem.rawUrl)
     return !!groupItemId?.version && groupItemId.version === publication.version
@@ -537,14 +545,18 @@ function PublicationPrompt({
 
   const [pathname, setPathName] = useState(() => {
     if (input.title) {
-      let newVal = pathNameify(input.title || '')
-      if (input.title.at(-1) === ' ' && newVal.at(-1) !== '-')
-        return `${pathNameify(input.title)}-`
-      return newVal
+      return setGroupPath(input.title)
     } else {
       return ''
     }
   })
+
+  function setGroupPath(input: string) {
+    let newVal = pathNameify(input || '')
+    if (input.at(-1) === ' ' && newVal.at(-1) !== '-')
+      return `${pathNameify(input)}-`
+    return newVal
+  }
 
   const [addTo, setAddTo] = useState<'account' | 'location'>('account')
   const accountHomeId = useMemo(() => {
@@ -589,6 +601,8 @@ function PublicationPrompt({
     id: string
     text: string
   } | null>(null)
+
+  const [pushToGroup, setPushToGroup] = useState<boolean>(false)
 
   useEffect(() => {
     if (!targetHome) return
@@ -640,9 +654,12 @@ function PublicationPrompt({
     }
 
     if (draft) {
-      const parentBlockNode = draft.children.find(
-        (bn) => bn.block?.id == targetSection?.id,
-      )
+      const parentBlockNode =
+        targetSection && draft.children.length
+          ? draft.children.find((bn) => bn.block?.id == targetSection?.id)
+          : draft.children
+          ? draft.children[draft.children.length - 1]
+          : null
       if (parentBlockNode) {
         const leftSibling = parentBlockNode.children.length
           ? parentBlockNode.children[parentBlockNode.children.length - 1].block
@@ -673,26 +690,32 @@ function PublicationPrompt({
           changes: draftChanges,
         })
 
-        console.log('=== NEW DRAFT', updatedDraft)
-
         if (
           updatedDraft &&
           updatedDraft.updatedDocument &&
           updatedDraft.updatedDocument.id
         ) {
-          setTimeout(() => {
-            console.log('--- NAV TO ROUTE', {
-              key: 'draft',
-              draftId: updatedDraft.updatedDocument.id,
-              variant: null,
-            })
-            navReplace({
-              key: 'draft',
-              draftId: updatedDraft.updatedDocument.id,
-              variant: null,
-            })
-          }, 300)
+          // setTimeout(() => {
+          //   console.log('--- NAV TO ROUTE', {
+          //     key: 'draft',
+          //     draftId: updatedDraft.updatedDocument.id,
+          //     variant: null,
+          //   })
+          navReplace({
+            key: 'draft',
+            draftId: updatedDraft.updatedDocument.id,
+            variant: null,
+          })
+          // }, 300)
         }
+      } else {
+        setExecuting(false)
+        console.error(
+          'add to location error: no parentBlockNode',
+          draft,
+          targetSection,
+        )
+        throw new Error('add to location error: no parentBlockNode')
       }
     }
     // setTimeout(() => {
@@ -774,46 +797,80 @@ function PublicationPrompt({
             </Label>
           </XStack>
           {addTo == 'location' ? (
-            <XStack ai="center" gap="$3">
-              <XStack f={1}>
-                <GroupSelector
-                  disabled={addTo != 'location'}
-                  value={groupTarget?.id || ''}
-                  groups={groupsOptions}
-                  onValueChange={(val) => {
-                    console.log('--- change', val)
-                    const newG = groupsOptions.find((g) => g.id === val)
+            <YStack gap="$2">
+              <XStack ai="center" gap="$3">
+                <XStack f={1}>
+                  <GroupSelector
+                    disabled={addTo != 'location'}
+                    value={groupTarget?.id || ''}
+                    groups={groupsOptions}
+                    onValueChange={(val) => {
+                      console.log('--- change', val)
+                      const newG = groupsOptions.find((g) => g.id === val)
 
-                    if (newG) {
-                      setGroupTarget(newG)
-                    } else {
-                      throw Error('no group found??')
-                    }
-                  }}
-                />
+                      if (newG) {
+                        setGroupTarget(newG)
+                      } else {
+                        throw Error('no group found??')
+                      }
+                    }}
+                  />
+                </XStack>
+                {targetSectionList.length ? (
+                  <>
+                    <SizableText>/</SizableText>
+                    <XStack f={1}>
+                      <SectionSelector
+                        id="add-to-location"
+                        disabled={addTo != 'location'}
+                        defaultValue={
+                          targetSectionList.length
+                            ? targetSectionList?.[0].id
+                            : undefined
+                        }
+                        sections={targetSectionList}
+                        value={targetSection ? targetSection?.id : ''}
+                        onValueChange={(sectionId) => {
+                          let newS =
+                            targetSectionList.find((s) => s.id == sectionId) ||
+                            null
+
+                          setTargetSection(newS)
+                        }}
+                      />
+                    </XStack>
+                  </>
+                ) : null}
               </XStack>
 
-              <SizableText>/</SizableText>
-              <XStack f={1}>
-                <SectionSelector
-                  id="add-to-location"
-                  disabled={addTo != 'location'}
-                  defaultValue={
-                    targetSectionList.length
-                      ? targetSectionList?.[0].id
-                      : undefined
-                  }
-                  sections={targetSectionList}
-                  value={targetSection ? targetSection?.id : ''}
-                  onValueChange={(sectionId) => {
-                    let newS =
-                      targetSectionList.find((s) => s.id == sectionId) || null
-
-                    setTargetSection(newS)
+              <XStack gap="$4">
+                <XStack gap="$2" ai="center">
+                  <Checkbox
+                    id={'push-to-group'}
+                    size="$4"
+                    checked={pushToGroup}
+                    onCheckedChange={setPushToGroup}
+                  >
+                    <Checkbox.Indicator>
+                      <CheckIcon />
+                    </Checkbox.Indicator>
+                  </Checkbox>
+                  <Label htmlFor="push-to-group">Pathname</Label>
+                </XStack>
+                <Input
+                  disabled={!pushToGroup}
+                  opacity={pushToGroup ? 1 : 0.5}
+                  f={1}
+                  id="pathname"
+                  value={pathname}
+                  onChangeText={(val) => {
+                    let newVal = setGroupPath(val)
+                    setPathName(newVal)
                   }}
+                  placeholder="document pathname"
                 />
               </XStack>
-            </XStack>
+            </YStack>
           ) : null}
         </YStack>
       </RadioGroup>
