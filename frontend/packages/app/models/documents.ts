@@ -1086,11 +1086,10 @@ export type BlocksMapItem = {
 }
 
 export function createBlocksMap(
-  blockNodes: Array<HMBlockNode>,
+  blockNodes: Array<HMBlockNode> = [],
   parentId: string,
 ) {
   let result: BlocksMap = {}
-
   blockNodes.forEach((bn, idx) => {
     if (bn.block?.id) {
       let prevBlockNode = idx > 0 ? blockNodes[idx - 1] : undefined

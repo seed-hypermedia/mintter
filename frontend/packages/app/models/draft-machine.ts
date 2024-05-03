@@ -298,7 +298,9 @@ export const draftMachine = createMachine(
           }
         },
         title: ({event}) =>
-          event.type == 'GET.DRAFT.SUCCESS' ? event.draft.title : '',
+          event.type == 'GET.DRAFT.SUCCESS' && event.draft.title
+            ? event.draft.title
+            : '',
       }),
       setTitle: assign({
         title: ({event, context}) => {

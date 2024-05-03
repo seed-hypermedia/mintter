@@ -235,7 +235,7 @@ export function useEntitiesContent(
     }
     const draftRouteIndex = drafts.findIndex((r) => r === route)
     if (draftRouteIndex >= 0) {
-      const draft = draftQueries[draftRouteIndex].data
+      const draft = draftQueries[draftRouteIndex]?.data
       if (draft) {
         return {route, entity: {type: 'd-draft', document: draft}}
       }
