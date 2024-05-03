@@ -5,45 +5,74 @@ import {useEntityMentions} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
+  Document,
+  DocumentChange,
+  HMGroup,
   Publication,
   PublicationContent,
   PublicationHeading,
+  UnpackedDocId,
   createHmId,
   formattedDateMedium,
+  hmGroup,
   pluralS,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
+  Add,
   BlockQuote,
   Button,
   ButtonText,
+  ChevronDown,
+  ChevronUp,
+  DialogDescription,
+  Label,
+  RadioGroup,
+  Select,
   SizableText,
   Text,
+  Tooltip,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import {ReactNode, useCallback, useEffect, useRef} from 'react'
+import {nanoid} from 'nanoid'
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {Spinner} from 'tamagui'
+import {useGRPCClient} from '../app-context'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {EntityCitationsAccessory} from '../components/citations'
 import {EntityCommentsAccessory} from '../components/comments'
 import {PushToGatewayDialog} from '../components/copy-gateway-reference'
-import {useAppDialog} from '../components/dialog'
+import {DialogTitle, useAppDialog} from '../components/dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
 import {CopyReferenceButton} from '../components/titlebar-common'
-import {useAccounts} from '../models/accounts'
+import {useAccounts, useMyAccount} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useAllPublicationComments, useCreateComment} from '../models/comments'
 import {useGatewayHost} from '../models/gateway-settings'
-import {useCurrentDocumentGroups, useGroup} from '../models/groups'
+import {
+  useAccountGroups,
+  useCurrentDocumentGroups,
+  useGroup,
+} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
+import {consumePublicationPrompt} from '../src/publication-prompt'
+import {pathNameify} from '../utils/path'
 import {getAccountName} from './account-page'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
@@ -53,6 +82,10 @@ export default function PublicationPage() {
     throw new Error('Publication page expects publication route')
 
   const docId = route?.documentId
+  const publicationPrompt = useRef<any>(null)
+  const pubPromptDialog = useAppDialog(PublicationPrompt, {
+    onClose: () => pubPromptDialog.close(),
+  })
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -72,6 +105,16 @@ export default function PublicationPage() {
   const firstPubDialog = useAppDialog(FirstPublishDialog, {
     onClose: useCallback(() => {
       replace({...route, showFirstPublicationMessage: false})
+      if (publicationPrompt.current) {
+        console.log('=== PROMPT: data', publicationPrompt)
+        publicationPrompt.current = null
+        pubPromptDialog.open({
+          docId,
+          version: route.versionId,
+          title: publication.data.publication?.document?.title,
+          afterPublish: true,
+        })
+      }
     }, [replace, route]),
   })
 
@@ -80,8 +123,21 @@ export default function PublicationPage() {
   useEffect(() => {
     if (showFirstPublicationMessage && pubVersion) {
       firstPubDialog.open({route, version: pubVersion})
+    } else if (publicationPrompt.current) {
+      console.log('=== PROMPT: data', publicationPrompt)
+      publicationPrompt.current = null
+      pubPromptDialog.open({
+        docId,
+        version: route.versionId,
+        title: publication.data.publication?.document?.title,
+        afterPublish: true,
+      })
     }
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
+
+  useEffect(() => {
+    publicationPrompt.current = consumePublicationPrompt(docId)
+  }, [])
 
   const id = unpackDocId(docId)
 
@@ -136,6 +192,7 @@ export default function PublicationPage() {
         FallbackComponent={AppErrorPage}
         onReset={() => publication.refetch()}
       >
+        {pubPromptDialog.content}
         {firstPubDialog.content}
         {pushToGatewayDialog.content}
         <CitationsProvider
@@ -193,6 +250,22 @@ export default function PublicationPage() {
                           />
                         )}
                         <CopyReferenceButton />
+                        <Tooltip content="Add to Location">
+                          <Button
+                            icon={Add}
+                            size="$2"
+                            onPress={() => {
+                              pubPromptDialog.open({
+                                title:
+                                  publication.data.publication?.document
+                                    ?.title || '',
+                                version: route.versionId,
+                                docId: route.documentId,
+                                afterPublish: false,
+                              })
+                            }}
+                          />
+                        </Tooltip>
                       </XStack>
                     }
                   >
@@ -428,5 +501,470 @@ function PublicationGroup({groupId}: {groupId: string}) {
     >
       {group.data.title}
     </Button>
+  )
+}
+
+function PublicationPrompt({
+  input,
+  onClose,
+}: {
+  input: {
+    afterPublish: boolean
+    docId: string
+    version: string
+    title: string
+  }
+  onClose: () => void
+}) {
+  const account = useMyAccount()
+  const accountId = account.data?.id
+  const myGroups = useAccountGroups(accountId)
+  const navReplace = useNavigate('replace')
+  const [executing, setExecuting] = useState(false)
+  const groupsOptions = useMemo<Array<HMGroup>>(() => {
+    if (myGroups.data) {
+      return myGroups.data.items
+        .map(({group}) => {
+          let hmg = hmGroup(group)
+          return (hmg as HMGroup) || false
+        })
+        .filter(Boolean)
+    } else {
+      return []
+    }
+  }, [myGroups.data])
+  const grpcClient = useGRPCClient()
+
+  const [pathname, setPathName] = useState(() => {
+    if (input.title) {
+      let newVal = pathNameify(input.title || '')
+      if (input.title.at(-1) === ' ' && newVal.at(-1) !== '-')
+        return `${pathNameify(input.title)}-`
+      return newVal
+    } else {
+      return ''
+    }
+  })
+
+  const [addTo, setAddTo] = useState<'account' | 'location'>('account')
+  const accountHomeId = useMemo(() => {
+    if (addTo != 'account') return undefined
+    return account.data?.profile?.rootDocument
+  }, [addTo])
+
+  const [groupTarget, setGroupTarget] = useState<HMGroup | null>(null)
+  const [groupHomeId, setGroupHomeId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setTargetSection(null)
+
+    setTargetSectionList([])
+    if (addTo != 'location') return
+    if (!groupTarget) return
+
+    getGroupDoc(groupTarget).then((doc) => {
+      setGroupHomeId(doc)
+    })
+
+    async function getGroupDoc(group: HMGroup) {
+      const groupContent = await grpcClient.groups.listContent({
+        id: group.id,
+        version: group.version,
+      })
+
+      return groupContent?.content?.['/'] || null
+    }
+  }, [addTo, groupTarget])
+
+  const targetHome = useMemo(() => {
+    if (addTo == 'account' && accountHomeId) return unpackDocId(accountHomeId)
+    if (addTo == 'location' && groupTarget && typeof groupHomeId == 'string')
+      return unpackDocId(groupHomeId)
+
+    return undefined
+  }, [addTo, accountHomeId, groupHomeId, groupTarget])
+
+  const [targetSectionList, setTargetSectionList] = useState<Array<any>>([])
+  const [targetSection, setTargetSection] = useState<{
+    id: string
+    text: string
+  } | null>(null)
+
+  useEffect(() => {
+    if (!targetHome) return
+    console.log(`== ~ getPubSections ~ unpackRef:`, targetHome)
+    getPubSections(targetHome).then((sections) => {
+      setTargetSectionList(sections)
+    })
+    async function getPubSections(unpackRef: UnpackedDocId) {
+      let sections: Array<{id: string; text: string}> = []
+      const pub = await grpcClient.publications.getPublication({
+        documentId: unpackRef.docId,
+        version: unpackRef?.version || undefined,
+      })
+
+      if (pub?.document?.children.length) {
+        pub?.document?.children.forEach((bn) => {
+          if (bn.block?.type == 'heading') {
+            sections.push({
+              text: bn.block.text,
+              id: bn.block.id,
+            })
+          }
+        })
+      }
+      return sections
+    }
+  }, [targetHome])
+
+  async function performAdd() {
+    setExecuting(true)
+    let embed = {
+      id: nanoid(8),
+      type: 'embed',
+      ref: `${input.docId}?v=${input.version}`,
+      attributes: {
+        view: 'content',
+        childrenType: 'group',
+      },
+    }
+    let draft: Document | null = null
+    try {
+      draft = await grpcClient.drafts.getDraft({
+        documentId: targetHome?.docId,
+      })
+    } catch (error) {
+      draft = await grpcClient.drafts.createDraft({
+        existingDocumentId: targetHome?.docId,
+      })
+    }
+
+    if (draft) {
+      const parentBlockNode = draft.children.find(
+        (bn) => bn.block?.id == targetSection?.id,
+      )
+      if (parentBlockNode) {
+        const leftSibling = parentBlockNode.children.length
+          ? parentBlockNode.children[parentBlockNode.children.length - 1].block
+              ?.id
+          : ''
+
+        let draftChanges = [
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                parent: targetSection!.id,
+                blockId: embed.id,
+                leftSibling,
+              },
+            },
+          }),
+          new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: embed,
+            },
+          }),
+        ]
+
+        let updatedDraft = await grpcClient.drafts.updateDraft({
+          documentId: draft.id,
+          changes: draftChanges,
+        })
+
+        console.log('=== NEW DRAFT', updatedDraft)
+
+        if (
+          updatedDraft &&
+          updatedDraft.updatedDocument &&
+          updatedDraft.updatedDocument.id
+        ) {
+          setTimeout(() => {
+            console.log('--- NAV TO ROUTE', {
+              key: 'draft',
+              draftId: updatedDraft.updatedDocument.id,
+              variant: null,
+            })
+            navReplace({
+              key: 'draft',
+              draftId: updatedDraft.updatedDocument.id,
+              variant: null,
+            })
+          }, 300)
+        }
+      }
+    }
+    // setTimeout(() => {
+    //   if (draft) {
+    //     grpcClient.drafts.deleteDraft({
+    //       documentId: draft.id,
+    //     })
+    //   }
+    //   setExecuting(false)
+    // }, 1000)
+  }
+
+  return (
+    <>
+      {input.afterPublish ? (
+        <>
+          <DialogTitle>{input.title} was published successfully!</DialogTitle>
+          <DialogDescription textAlign="center">
+            You can now see it on your document's list
+          </DialogDescription>
+          <Button size="$2">Copy document's gateway URL</Button>
+          <DialogDescription>
+            You just publish a document to your account, now let's do something
+            fun with it
+          </DialogDescription>
+        </>
+      ) : (
+        <>
+          <DialogTitle>Add {input.title} to Location</DialogTitle>
+          <Button size="$2">Copy document's gateway URL</Button>
+        </>
+      )}
+
+      <RadioGroup
+        gap="$2"
+        defaultValue="account"
+        name="add-to-location"
+        theme="mint"
+        onValueChange={setAddTo}
+      >
+        <YStack borderColor="$color7" borderWidth={2} borderRadius="$3" p="$3">
+          <XStack ai="center" gap="$2">
+            <RadioGroup.Item value="account" id="account">
+              <RadioGroup.Indicator />
+            </RadioGroup.Item>
+            <Label f={1} htmlFor="account" fontWeight="600">
+              Add to my Account Page
+            </Label>
+          </XStack>
+          {addTo == 'account' ? (
+            <XStack ai="center" gap="$3">
+              <SectionSelector
+                id="add-to-account"
+                disabled={addTo != 'account'}
+                defaultValue={
+                  targetSectionList.length
+                    ? targetSectionList?.[0].id
+                    : undefined
+                }
+                sections={targetSectionList}
+                value={targetSection ? targetSection?.id : ''}
+                onValueChange={(sectionId) => {
+                  let newS =
+                    targetSectionList.find((s) => s.id == sectionId) || null
+
+                  setTargetSection(newS)
+                }}
+              />
+            </XStack>
+          ) : null}
+        </YStack>
+        <YStack borderColor="$color7" borderWidth={2} borderRadius="$3" p="$3">
+          <XStack ai="center" gap="$2">
+            <RadioGroup.Item value="location" id="location">
+              <RadioGroup.Indicator />
+            </RadioGroup.Item>
+            <Label f={1} htmlFor="location" fontWeight="600">
+              Add to Group
+            </Label>
+          </XStack>
+          {addTo == 'location' ? (
+            <XStack ai="center" gap="$3">
+              <XStack f={1}>
+                <GroupSelector
+                  disabled={addTo != 'location'}
+                  value={groupTarget?.id || ''}
+                  groups={groupsOptions}
+                  onValueChange={(val) => {
+                    console.log('--- change', val)
+                    const newG = groupsOptions.find((g) => g.id === val)
+
+                    if (newG) {
+                      setGroupTarget(newG)
+                    } else {
+                      throw Error('no group found??')
+                    }
+                  }}
+                />
+              </XStack>
+
+              <SizableText>/</SizableText>
+              <XStack f={1}>
+                <SectionSelector
+                  id="add-to-location"
+                  disabled={addTo != 'location'}
+                  defaultValue={
+                    targetSectionList.length
+                      ? targetSectionList?.[0].id
+                      : undefined
+                  }
+                  sections={targetSectionList}
+                  value={targetSection ? targetSection?.id : ''}
+                  onValueChange={(sectionId) => {
+                    let newS =
+                      targetSectionList.find((s) => s.id == sectionId) || null
+
+                    setTargetSection(newS)
+                  }}
+                />
+              </XStack>
+            </XStack>
+          ) : null}
+        </YStack>
+      </RadioGroup>
+      <XStack jc="flex-end" ai="center" gap="$2">
+        <Button size="$3" theme="red" chromeless outlined onPress={onClose}>
+          Cancel
+        </Button>
+        <Button
+          disabled={executing}
+          opacity={executing ? 0.5 : 1}
+          onPress={performAdd}
+          size="$3"
+        >
+          Move to Location
+        </Button>
+        {executing ? <Spinner size="small" /> : null}
+      </XStack>
+    </>
+  )
+}
+
+function GroupSelector({
+  value,
+  onValueChange,
+  groups,
+  disabled = false,
+  ...props
+}: {
+  groups?: Array<HMGroup>
+  value: string
+
+  onValueChange: (val: string) => void
+  disabled?: boolean
+}) {
+  if (!groups || !groups.length) return null
+  return (
+    <Select
+      id="my-groups"
+      value={value}
+      onValueChange={onValueChange}
+      name="my-groups-selector"
+      disabled={disabled}
+      {...props}
+    >
+      <Select.Trigger width="100%">
+        <Select.Value placeholder="Select a group" />
+      </Select.Trigger>
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronUp size={20} />
+          </YStack>
+        </Select.ScrollUpButton>
+        <Select.Viewport
+          animation="fast"
+          animateOnly={['transform', 'opacity']}
+          enterStyle={{opacity: 0, y: -10}}
+          exitStyle={{opacity: 0, y: 10}}
+        >
+          {groups.map((option, index) => (
+            <Select.Item index={option.id} value={option.id} key={option.id}>
+              <Select.ItemText>{option.title}</Select.ItemText>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+
+        <Select.ScrollDownButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronDown size={20} />
+          </YStack>
+        </Select.ScrollDownButton>
+      </Select.Content>
+    </Select>
+  )
+}
+
+function SectionSelector({
+  sections,
+  id,
+  value,
+  onValueChange,
+  disabled,
+  defaultValue,
+  ...props
+}: {
+  id: string
+  sections: Array<any>
+  value: string
+  ['defaultValue']
+  onValueChange: (value: string) => void
+  disabled?: boolean
+}) {
+  if (!sections) return null
+  return (
+    <Select
+      id={id}
+      value={value}
+      onValueChange={onValueChange}
+      name={id}
+      disabled={disabled}
+      defaultValue={defaultValue}
+      {...props}
+    >
+      <Select.Trigger width="100%">
+        <Select.Value placeholder="Select Section" />
+      </Select.Trigger>
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronUp size={20} />
+          </YStack>
+        </Select.ScrollUpButton>
+        <Select.Viewport
+          animation="fast"
+          animateOnly={['transform', 'opacity']}
+          enterStyle={{opacity: 0, y: -10}}
+          exitStyle={{opacity: 0, y: 10}}
+        >
+          {sections.map((option, index) => (
+            <Select.Item index={option.id} value={option.id} key={option.id}>
+              <Select.ItemText>{option.text}</Select.ItemText>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+
+        <Select.ScrollDownButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronDown size={20} />
+          </YStack>
+        </Select.ScrollDownButton>
+      </Select.Content>
+    </Select>
   )
 }

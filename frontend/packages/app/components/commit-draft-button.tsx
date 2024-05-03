@@ -34,8 +34,10 @@ import {
   useSelectedGroups,
 } from '../models/groups'
 import {useDaemonReady} from '../node-status-context'
+import {configurePrompt} from '../src/publication-prompt'
 import {usePopoverState} from '../use-popover-state'
 import {useAppDialog} from './dialog'
+import DiscardDraftButton from './discard-draft-button'
 import {useMediaDialog} from './media-dialog'
 import {
   ContextPopover,
@@ -385,4 +387,83 @@ function SaveIndicatorStatus() {
   }
 
   return null
+}
+
+export function PublishButton() {
+  const route = useNavRoute()
+  const draftRoute = route.key === 'draft' ? route : null
+  if (!draftRoute) throw new Error('PublishButton requires draft route')
+  const draftId = route.key == 'draft' ? route.draftId : null
+  const navReplace = useNavigate('replace')
+  const grpcClient = useGRPCClient()
+  const mediaDialog = useMediaDialog()
+  const canPublish = DraftStatusContext.useSelector(
+    (s) => s.matches('idle') || s.matches('saved'),
+  )
+  const hasUpdateError = DraftStatusContext.useSelector((s) =>
+    s.matches('error'),
+  )
+  const publish = usePublishDraft({
+    onSuccess: ({pub}) => {
+      if (!pub) return
+      console.log('=== PROMPT: CALL CONFIGURE', draftId)
+      configurePrompt({
+        documentId: draftId,
+        prompt: {
+          key: 'select-location',
+        },
+      })
+      navReplace({
+        key: 'publication',
+        documentId: draftId,
+        versionId: pub.version,
+      })
+    },
+    onError: (e: any) => {
+      toast.error('Failed to publish: ' + e.message)
+    },
+  })
+  return (
+    <>
+      {mediaDialog.content}
+      <SaveIndicatorStatus />
+      <Button
+        size="$2"
+        disabled={!canPublish || hasUpdateError}
+        opacity={!canPublish ? 0.5 : 1}
+        onPress={handlePublish}
+      >
+        Publish
+      </Button>
+    </>
+  )
+
+  function handlePublish() {
+    grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
+      const hasEmptyMedia = draft.children.find((block) => {
+        return (
+          block.block &&
+          ['image', 'video', 'file'].includes(block.block.type) &&
+          !block.block.ref
+        )
+      })
+      if (hasEmptyMedia) {
+        mediaDialog.open({
+          draftId,
+          publish,
+        })
+      } else {
+        publish.mutate({draftId})
+      }
+    })
+  }
+}
+
+export function DraftPublicationButtons() {
+  return (
+    <>
+      <PublishButton />
+      <DiscardDraftButton />
+    </>
+  )
 }

@@ -67,6 +67,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {GroupRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {CloneGroupDialog} from './clone-group'
+import {DraftPublicationButtons} from './commit-draft-button'
 import {useCopyGatewayReference} from './copy-gateway-reference'
 import {useDeleteDialog} from './delete-dialog'
 import {useAppDialog} from './dialog'
@@ -78,11 +79,7 @@ import {useCreateGroupDialog} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {TitleBarProps} from './titlebar'
-import {
-  DraftPublicationButtons,
-  PublicationVariants,
-  VersionContext,
-} from './variants'
+import {PublicationVariants, VersionContext} from './variants'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -719,36 +716,15 @@ export function CopyReferenceButton() {
   )
 }
 
-function NewDocumentButton({
+function CreateDropdown({
   groupVariant,
-  label,
 }: {
   groupVariant?: GroupVariant
-  label?: string
+  key?: string
 }) {
   const openDraft = useOpenDraft('push')
   const canEdit = useCanEditGroup(groupVariant?.groupId)
   if (groupVariant && !canEdit) return null
-  return (
-    <Tooltip content={`New ${label || 'Document'}`}>
-      <Button
-        size="$2"
-        chromeless
-        icon={Plus}
-        onPress={(e) => {
-          e.preventDefault()
-          openDraft(groupVariant)
-        }}
-      >
-        New Document
-      </Button>
-    </Tooltip>
-  )
-}
-
-function CreateDropdown({groupVariant}: {groupVariant?: GroupVariant}) {
-  const openDraft = useOpenDraft('push')
-  const canEdit = useCanEditGroup(groupVariant?.groupId)
   const createGroup = useCreateGroupDialog()
   if (groupVariant && !canEdit) return null
   return (
@@ -800,16 +776,6 @@ export function PageActionButtons(props: TitleBarProps) {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
       <EditGroupButton route={route} key="editGroup" />,
-      // <NewDocumentButton
-      //   key="newDocument"
-      //   label="Group Document"
-      //   groupVariant={{
-      //     key: 'group',
-      //     groupId: route.groupId,
-      //     pathName: null,
-      //   }}
-      //   contextRoute={route}
-      // />,
       <CreateDropdown
         key="create"
         groupVariant={{

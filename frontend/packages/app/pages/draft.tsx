@@ -72,7 +72,6 @@ export default function DraftPage() {
     documentId: route.draftId,
     route,
   })
-
   useEffect(() => {
     function handleSelectAll(event: KeyboardEvent) {
       if (event.key == 'a' && event.metaKey) {

@@ -35,8 +35,6 @@ import {
   Button,
   ButtonText,
   Check,
-  ChevronDown,
-  ChevronUp,
   Dialog,
   DialogDescription,
   DialogProps,
@@ -44,7 +42,6 @@ import {
   Form,
   Input,
   Popover,
-  PopoverTrigger,
   SizableText,
   Spinner,
   Tooltip,
@@ -65,9 +62,7 @@ import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {NavRoute, PublicationRoute} from '../utils/routes'
-import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
-import DiscardDraftButton from './discard-draft-button'
 import {EditDocButton, useEditDraft} from './edit-doc-button'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
@@ -572,7 +567,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   const realVariants = variants || realAuthorVariants
   return (
     <>
-      <ContextPopover {...popoverState}>
+      {/* <ContextPopover {...popoverState}>
         <PopoverTrigger asChild>
           <Button
             size="$2"
@@ -627,7 +622,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
             />
           </YStack>
         </ContextPopoverContent>
-      </ContextPopover>
+      </ContextPopover> */}
       {showEditButton && (
         <EditDocButton
           key="editActions"
@@ -637,7 +632,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           baseVersion={route.versionId}
         />
       )}
-      {renameDialog.content}
+      {/* {renameDialog.content} */}
     </>
   )
 }
@@ -1194,14 +1189,5 @@ export function PublishDialogInstance({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog>
-  )
-}
-
-export function DraftPublicationButtons() {
-  return (
-    <>
-      <CommitDraftButton />
-      <DiscardDraftButton />
-    </>
   )
 }
