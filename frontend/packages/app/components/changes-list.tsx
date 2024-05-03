@@ -31,7 +31,7 @@ import appError from '../errors'
 import {useDocHistory} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
-  useCurrentDocumentGroups,
+  useDocumentGroups,
   useGroup,
   useGroupContent,
   useMyGroups,
@@ -66,7 +66,7 @@ export function EntityVersionsAccessory({
       (item) => item.group?.id === groupVariant?.groupId,
     )
   const postToGroup = useAppDialog(PostToGroupDialog)
-  const currentGroups = useCurrentDocumentGroups(docId)
+  const currentGroups = useDocumentGroups(docId)
   if (!id) return null
   return (
     <>
@@ -94,6 +94,8 @@ export function EntityVersionsAccessory({
                   item && !!docId?.version && item.change.id === docId?.version
                 )
               })
+
+              console.log(`== ~ activeGroups ~ activeGroups:`, activeGroups)
               const change = item?.change
               if (!change) return null
               return (
