@@ -206,6 +206,9 @@ function getItemDetails(
     if (myAccount?.profile?.rootDocument === entity.document?.id) {
       const myAlias = myAccount?.profile?.alias
       title = myAlias ? `${myAlias} Home` : 'My Account Home'
+    } else if (entity.homeGroup) {
+      const groupTitle = entity.homeGroup.title
+      title = groupTitle ? `${groupTitle} Home` : 'Group Home'
     } else {
       title = getDocumentTitle(entity.document)
     }
@@ -342,7 +345,7 @@ function RouteSection({
   const thisRouteDetails = getItemDetails(
     thisRouteEntity?.entity,
     thisRouteFocusBlockId,
-    myAccount.data,
+    myAccount.data || undefined,
   )
   const focusedNodes =
     thisRouteFocusBlockId && thisRouteEntity?.entity?.document?.children
@@ -377,7 +380,7 @@ function RouteSection({
   }, [onNavigate, thisRoute])
   return (
     <>
-      {prevRoutes.map((contextRoute) => {
+      {prevRoutes.map((contextRoute, index) => {
         if (contextRoute.key === 'draft') return null // draft should not appear in context
         const info: ItemDetails = getItemDetails(
           entityContents?.find((c) => c.route === contextRoute)?.entity,
@@ -385,6 +388,7 @@ function RouteSection({
         )
         return (
           <ContextItems
+            key={index}
             info={info}
             route={contextRoute}
             onNavigate={onNavigate}
@@ -530,6 +534,7 @@ function _SidebarOutline({
           rightHover={[
             onFocusBlock ? (
               <FocusButton
+                key="focus"
                 onPress={() => {
                   onFocusBlock(item.id)
                 }}

@@ -282,6 +282,7 @@ export type HMEntityContent =
   | {
       type: 'd-draft'
       document: HMDocument
+      homeGroup: HMGroup | undefined
     }
 
 export type HMComment = {

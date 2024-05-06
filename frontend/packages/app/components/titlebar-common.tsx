@@ -10,6 +10,7 @@ import {
   BlockRange,
   ExpandedBlockRange,
   GroupVariant,
+  Role,
   createHmId,
   createPublicWebHmUrl,
   hmId,
@@ -58,6 +59,7 @@ import {
   useCanEditGroup,
   useGroup,
   useGroupContent,
+  useGroupMembers,
   useInvertedGroupContent,
 } from '../models/groups'
 import {RemoveProfileDocDialog} from '../pages/account-page'
@@ -290,14 +292,17 @@ function EditAccountButton() {
 }
 
 function EditGroupButton({route}: {route: GroupRoute}) {
+  const myAccount = useMyAccount()
+  const groupMembers = useGroupMembers(route.groupId, route.version)
+  const myMemberRole =
+    groupMembers.data?.members[myAccount.data?.id || ''] ||
+    Role.ROLE_UNSPECIFIED
+  const canEdit = myMemberRole !== Role.ROLE_UNSPECIFIED
   const groupContent = useGroupContent(route.groupId, route.version)
-  // if (myAccount.data?.id !== route.accountId) {
-  //   return null
-  // }
   const frontId = groupContent.data?.content['/']
   const id = frontId ? unpackHmId(frontId) : null
   if (route.tab !== 'front' && route.tab != null) return null
-  if (!id?.qid) return null
+  if (!canEdit) return null
   return (
     <EditDocButton
       docId={id?.qid || undefined}

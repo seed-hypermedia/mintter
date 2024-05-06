@@ -575,6 +575,7 @@ export function activeDocOutline(
         items={childrenOutline?.outlineContent || []}
         rightHover={[
           <FocusButton
+            key="focus"
             onPress={() => {
               onBlockFocus(item.id, item.entityId, item.parentBlockId)
             }}

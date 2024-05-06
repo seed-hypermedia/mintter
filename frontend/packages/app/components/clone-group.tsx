@@ -37,7 +37,6 @@ import {FormErrors, FormField} from './forms'
 
 const cloneGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),
-  description: z.string().optional(),
   members: z.array(z.string()).optional(),
 })
 type NewGroupFields = z.infer<typeof cloneGroupSchema>
@@ -190,7 +189,6 @@ function CloneGroupForm({
     resolver: zodResolver(cloneGroupSchema),
     defaultValues: {
       title: `Cloned ${group.title}`,
-      description: group.description,
       members: undefined,
     },
   })
@@ -226,15 +224,6 @@ function CloneGroupForm({
               placeholder={'Group Name'}
               control={control}
               name="title"
-            />
-          </FormField>
-          <FormField name="description" label="Description" errors={errors}>
-            <FormInput
-              multiline
-              minHeight={60}
-              placeholder={'About this group...'}
-              control={control}
-              name="description"
             />
           </FormField>
           <Label htmlFor="members">Members</Label>
