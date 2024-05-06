@@ -21,19 +21,17 @@ function EditGroupInfoForm({
 }) {
   const {mutateAsync} = useUpdateGroup()
   const titleInput = useRef<TextInput | null>(null)
-  const descriptionInput = useRef<TextInput | null>(null)
   return (
     <Form
       onSubmit={() => {
         const title: string = titleInput.current?.value || ''
-        const description: string = descriptionInput.current?.value || ''
 
         onClose()
         toast.promise(
           mutateAsync({
             id: initialGroup.id,
+            description: '',
             title,
-            description,
           }).then(() => {}),
           {
             loading: 'Updating...',
@@ -50,16 +48,6 @@ function EditGroupInfoForm({
         id="title"
         defaultValue={initialGroup.title}
       />
-      <Label htmlFor="description">Description</Label>
-      <Input
-        multiline
-        ref={descriptionInput}
-        minHeight={60}
-        placeholder={'About this group...'}
-        id="description"
-        defaultValue={initialGroup.description}
-      />
-
       <Form.Trigger asChild>
         <Button>Update Group</Button>
       </Form.Trigger>

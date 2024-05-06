@@ -38,7 +38,7 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {Pencil, PlusCircle, Store, Trash, X} from '@tamagui/lucide-icons'
+import {Pencil, PlusCircle, Trash, X} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'
 import {
@@ -85,7 +85,6 @@ import {useOpenUrl} from '../open-url'
 import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {useNavRoute} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
 import {GroupRoute} from '../utils/routes'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
@@ -179,21 +178,11 @@ function GroupHeader({
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,
   })
-  const groupContent = useFullGroupContent(groupId, version)
-  // const groupMembers = useGroupMembers(groupId, version)
   const groupMembers = useGroupMembers(groupId)
-  const isMember = myMemberRole !== Role.ROLE_UNSPECIFIED
-  // const isOwner = myAccount.data?.id === group.data?.ownerAccountId
-  // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
-  const spawn = useNavigate('spawn')
   const replace = useNavigate('replace')
   const ownerAccount = useAccount(group.data?.ownerAccountId)
   const inviteMember = useAppDialog(InviteMemberDialog)
-  const openDraft = useOpenDraft()
   const ownerAccountId = group.data?.ownerAccountId
-  const frontDocumentUrl = groupContent.data?.content
-    ? groupContent.data?.content['/']
-    : undefined
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
   const siteBaseUrl = group.data?.siteInfo?.baseUrl
   const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
@@ -215,7 +204,6 @@ function GroupHeader({
         : GroupStatus.UnsyncedConnected
       : GroupStatus.Disconnected
   const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
-  const removeDoc = useRemoveDocFromGroup()
 
   const openUrl = useOpenUrl()
   return (
@@ -275,25 +263,6 @@ function GroupHeader({
                 </Tooltip>
               ) : null}
               <FavoriteButton url={groupId} />
-              {!frontDocumentUrl && isMember && (
-                <Tooltip content={'Create Front Document'}>
-                  <Button
-                    icon={Store}
-                    size="$2"
-                    onPress={() => {
-                      openDraft(
-                        {groupId, pathName: '/', key: 'group'},
-                        {
-                          pathName: '/',
-                          initialTitle: group?.data?.title,
-                        },
-                      )
-                    }}
-                  >
-                    Add a Frontpage
-                  </Button>
-                </Tooltip>
-              )}
               <CopyReferenceButton />
             </XStack>
           </YStack>
@@ -549,7 +518,7 @@ function GroupFront({
         }
       : null,
   ].filter(Boolean)
-  if (!frontPageId?.docId || !frontDocumentUrl) return null
+  if (!frontPageId?.docId || !frontDocumentUrl) return <View height={1} />
   return (
     <PageContainer>
       {/* <XStack

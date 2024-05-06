@@ -859,7 +859,11 @@ function BlockContent(props: BlockContentProps) {
   return <BlockContentUnknown {...props} />
 }
 
-function BlockContentParagraph({block, ...props}: BlockContentProps) {
+function BlockContentParagraph({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {debug, textUnit, comment} = usePublicationContentContext()
 
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
@@ -883,6 +887,7 @@ function BlockContentParagraph({block, ...props}: BlockContentProps) {
 export function BlockContentHeading({
   block,
   depth,
+  parentBlockId,
   ...props
 }: BlockContentProps) {
   const {textUnit, debug, ffSerif} = usePublicationContentContext()
@@ -1048,7 +1053,11 @@ export function useHeadingMarginStyles(
   }, [depth, unit])
 }
 
-function BlockContentImage({block, ...props}: BlockContentProps) {
+function BlockContentImage({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
   const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
@@ -1084,7 +1093,11 @@ function BlockContentImage({block, ...props}: BlockContentProps) {
   )
 }
 
-function BlockContentVideo({block, ...props}: BlockContentProps) {
+function BlockContentVideo({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
   const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
@@ -1718,7 +1731,11 @@ export function getBlockNodeById(
   return res || null
 }
 
-export function BlockContentFile({block, ...props}: BlockContentProps) {
+export function BlockContentFile({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {hover, ...hoverProps} = useHover()
   const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
@@ -1782,7 +1799,11 @@ export function BlockContentFile({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentNostr({block, ...props}: BlockContentProps) {
+export function BlockContentNostr({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
   const name = block.attributes.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
@@ -1878,7 +1899,11 @@ export function BlockContentNostr({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentXPost({block, ...props}: BlockContentProps) {
+export function BlockContentXPost({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {layoutUnit, onLinkClick} = usePublicationContentContext()
   const urlArray = block.ref?.split('/')
   const xPostId = urlArray?.[urlArray.length - 1].split('?')[0]
@@ -1929,7 +1954,11 @@ export function BlockContentXPost({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentCode({block, ...props}: BlockContentProps) {
+export function BlockContentCode({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {layoutUnit, debug, textUnit} = usePublicationContentContext()
   function getHighlightNodes(result: any) {
     return result.value || result.children || []
@@ -1997,7 +2026,11 @@ export function BlockContentCode({block, ...props}: BlockContentProps) {
   )
 }
 
-export function BlockContentMath({block, ...props}: BlockContentProps) {
+export function BlockContentMath({
+  block,
+  parentBlockId,
+  ...props
+}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
 
   const tex = katex.renderToString(block.text ? block.text : '', {

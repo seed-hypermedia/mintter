@@ -151,7 +151,7 @@ export function useEntityContent(
 export function useEntitiesContent(
   routes: BaseEntityRoute[],
 ): {route: BaseEntityRoute; entity?: HMEntityContent}[] {
-  const {groups, accounts, publications, drafts} = useMemo(() => {
+  const {groups, accounts, publications, drafts, draftGroups} = useMemo(() => {
     const groups: BaseGroupRoute[] = routes.filter(
       (r) => r.key === 'group',
     ) as BaseGroupRoute[]
@@ -164,11 +164,15 @@ export function useEntitiesContent(
     const drafts: BaseDraftRoute[] = routes.filter(
       (r) => r.key === 'draft',
     ) as BaseDraftRoute[]
+    const draftGroups = drafts.map((r) =>
+      r.key === 'draft' ? r.variant?.groupId : undefined,
+    )
     return {
       groups,
       accounts,
       publications,
       drafts,
+      draftGroups,
     }
   }, [routes])
   const groupQueries = useGroups(
@@ -204,6 +208,11 @@ export function useEntitiesContent(
       })
       .filter(Boolean) as string[],
   )
+  const draftGroupQueries = useGroups(
+    draftGroups.filter(Boolean).map((id) => ({id})) as {
+      id: string
+    }[],
+  )
   return routes.map((route) => {
     const groupRouteIndex = groups.findIndex((r) => r === route)
     if (groupRouteIndex >= 0) {
@@ -235,9 +244,15 @@ export function useEntitiesContent(
     }
     const draftRouteIndex = drafts.findIndex((r) => r === route)
     if (draftRouteIndex >= 0) {
+      const draftRoute = drafts[draftRouteIndex]
       const draft = draftQueries[draftRouteIndex]?.data
+      const homeGroup = draftRoute.variant?.groupId
+        ? draftGroupQueries.find(
+            (g) => g.data?.id === draftRoute.variant?.groupId,
+          )?.data
+        : undefined
       if (draft) {
-        return {route, entity: {type: 'd-draft', document: draft}}
+        return {route, entity: {type: 'd-draft', document: draft, homeGroup}}
       }
     }
     return {route, entity: undefined}

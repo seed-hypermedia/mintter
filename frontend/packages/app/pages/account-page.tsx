@@ -25,7 +25,6 @@ import {
   BlockQuote,
   Button,
   ChevronDown,
-  Heading,
   List,
   MenuItem,
   Popover,
@@ -33,6 +32,7 @@ import {
   Section,
   SizableText,
   Spinner,
+  View,
   XStack,
   YGroup,
   YStack,
@@ -55,7 +55,7 @@ import {ListItem, copyLinkMenuItem} from '../components/list-item'
 import {MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
 import {CopyReferenceButton} from '../components/titlebar-common'
-import {useAccount, useMyAccount, useSetProfile} from '../models/accounts'
+import {useAccount, useMyAccount} from '../models/accounts'
 import {useEntityMentions} from '../models/content-graph'
 import {
   useAccountPublicationFullList,
@@ -496,7 +496,9 @@ function ProfileDoc({}: {}) {
         />
       </AppPublicationContentProvider>
     </PageContainer>
-  ) : null
+  ) : (
+    <View height={1} />
+  )
 }
 
 export function RemoveProfileDocDialog({

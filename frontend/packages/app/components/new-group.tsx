@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Button, Form, Label, toast} from '@mintter/ui'
+import {Button, Form, Label, XStack, toast} from '@mintter/ui'
 import {Plus} from '@tamagui/lucide-icons'
 import {ForwardedRef, forwardRef, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
@@ -11,7 +11,6 @@ import {FormInput} from './form-input'
 
 const newGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),
-  description: z.string().optional(),
 })
 type NewGroupFields = z.infer<typeof newGroupSchema>
 
@@ -65,17 +64,11 @@ function AddGroupForm({
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Label htmlFor="title">Title</Label>
         <FormInput placeholder={'Group Name'} control={control} name="title" />
-        <Label htmlFor="description">Description</Label>
-        <FormInput
-          multiline
-          minHeight={60}
-          placeholder={'About this group...'}
-          control={control}
-          name="description"
-        />
-        <Form.Trigger asChild>
-          <Button>Create Group</Button>
-        </Form.Trigger>
+        <XStack mt="$4">
+          <Form.Trigger asChild>
+            <Button>Create Group</Button>
+          </Form.Trigger>
+        </XStack>
       </Form>
     </>
   )
