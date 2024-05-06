@@ -29,6 +29,7 @@ import {
 import {useFavorites} from '../models/favorites'
 import {useGroup} from '../models/groups'
 import {useDocumentDrafts, usePublicationVariant} from '../models/publication'
+import {focusDraftBlock} from '../src/draft-focusing'
 import {getRouteKey, useNavRoute} from '../utils/navigation'
 import {BaseAccountRoute, BaseEntityRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
@@ -357,24 +358,23 @@ function RouteSection({
       const activeRouteKey = getRouteKey(activeRoute)
       const shouldReplace = thisRouteKey === activeRouteKey
       if (thisRoute.key === 'draft') {
-        console.log('activate block', blockId)
+        if (!thisRoute.draftId) return // the draft route should have an id!
+        focusDraftBlock(thisRoute.draftId, blockId)
         return
       }
       onNavigate({...thisRoute, blockId}, shouldReplace)
     },
     [thisRoute, activeRoute],
   )
-  const onFocusBlock = useCallback(
-    (blockId) => {
-      if (!thisRoute) return
-      if (thisRoute.key === 'draft') {
-        console.log('focus block in draft?!', blockId)
-        return
-      }
+  const onFocusBlock = useMemo(() => {
+    if (!thisRoute) return null
+    if (thisRoute.key === 'draft') {
+      return null
+    }
+    return (blockId) => {
       onNavigate({...thisRoute, focusBlockId: blockId})
-    },
-    [onNavigate, thisRoute],
-  )
+    }
+  }, [onNavigate, thisRoute])
   return (
     <>
       {prevRoutes.map((contextRoute) => {
@@ -429,7 +429,7 @@ function SidebarEmbedOutlineItem({
   blockId: string
   activeBlock?: string
   onActivateBlock: (blockId: string) => void
-  onFocusBlock: (blockId: string) => void
+  onFocusBlock: ((blockId: string) => void) | null
 }) {
   const [collapse, setCollapse] = useState(true)
   const loadedEntity = useEntityContent(id)
@@ -485,7 +485,7 @@ function _SidebarOutline({
   activeBlock?: string
   nodes?: HMBlockNode[]
   onActivateBlock: (blockId: string) => void
-  onFocusBlock: (blockId: string) => void
+  onFocusBlock: ((blockId: string) => void) | null
   indent?: number
 }) {
   const outline = getNodesOutline(nodes || [])
@@ -500,15 +500,16 @@ function _SidebarOutline({
           <SidebarEmbedOutlineItem
             activeBlock={activeBlock}
             id={item.embedId}
+            key={item.id}
             blockId={item.id}
             indent={1 + level}
-            key={item.id}
             onActivateBlock={onActivateBlock}
             onFocusBlock={onFocusBlock}
           />
         )
       return (
         <SidebarGroupItem
+          key={item.id}
           onPress={() => {
             onActivateBlock(item.id)
           }}
@@ -527,11 +528,13 @@ function _SidebarOutline({
           indented={1 + level}
           items={childrenOutline || []}
           rightHover={[
-            <FocusButton
-              onPress={() => {
-                onFocusBlock(item.id)
-              }}
-            />,
+            onFocusBlock ? (
+              <FocusButton
+                onPress={() => {
+                  onFocusBlock(item.id)
+                }}
+              />
+            ) : null,
           ]}
           defaultExpanded
         />

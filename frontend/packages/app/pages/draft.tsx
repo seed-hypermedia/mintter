@@ -42,6 +42,7 @@ import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useGroup} from '../models/groups'
+import {subscribeDraftFocus} from '../src/draft-focusing'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -92,6 +93,16 @@ export default function DraftPage() {
       window.removeEventListener('keydown', handleSelectAll)
     }
   }, [])
+
+  useEffect(() => {
+    return subscribeDraftFocus(documentId, (blockId: string) => {
+      if (data.editor) {
+        data.editor._tiptapEditor.commands.focus()
+
+        data.editor.setTextCursorPosition(blockId, 'start')
+      }
+    })
+  }, [data.editor, documentId])
 
   const gwUrl = useGatewayUrl()
 
@@ -543,7 +554,7 @@ function DraftTitleInput({
           }
         }}
         size="$9"
-        readOnly={!fixedTitle}
+        readOnly={!!fixedTitle}
         borderRadius="$1"
         borderWidth={0}
         overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
