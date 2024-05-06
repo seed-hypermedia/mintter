@@ -67,7 +67,6 @@ function EmbedWrapper({
     viewType?: 'content' | 'card'
   } & ComponentProps<typeof YStack>
 >) {
-  console.log('-=-= viewType', viewType)
   const {
     disableEmbedClick = false,
     comment,
@@ -472,7 +471,6 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
 }
 
 export function EmbedPublicationCard(props: EntityComponentProps) {
-  console.log(`== ~ EmbedPublicationCard ~ props:`, props)
   // we can't pass anything else to `createHmId` because this is creating the string we need to pass to getPublication
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = usePublicationVariant({
