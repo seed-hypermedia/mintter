@@ -675,12 +675,10 @@ export function useDraftEditor({
     draftMachine.provide({
       actions: {
         populateEditor: ({event}) => {
-          console.log('populateEditor', event)
           if (
             event.type == 'GET.DRAFT.SUCCESS' &&
             event.draft.children?.length
           ) {
-            console.log('uh?!', event.draft.children)
             let editorBlocks = toHMBlock(event.draft.children)
             const tiptap = editor?._tiptapEditor
             // editor.removeBlocks(editor.topLevelBlocks)

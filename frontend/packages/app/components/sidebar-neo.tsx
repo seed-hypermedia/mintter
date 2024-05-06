@@ -1,4 +1,5 @@
 import {
+  HMAccount,
   HMBlockNode,
   HMEntityContent,
   UnpackedHypermediaId,
@@ -16,7 +17,7 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useCallback, useMemo, useState} from 'react'
+import {ReactNode, memo, useCallback, useEffect, useMemo, useState} from 'react'
 import {Button, SizableText, Spinner, View} from 'tamagui'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {
@@ -43,7 +44,6 @@ type IconDefinition = React.FC<{size: any; color: any}>
 export function SidebarNeo() {
   const route = useNavRoute()
   const [collapseFavorites, setCollapseFavorites] = useState(true)
-  const [collapseMe, setCollapseMe] = useState(true)
   const [collapseStandalone, setCollapseStandalone] = useState(false)
   const myAccount = useMyAccount()
   const myAccountRoute = useMemo(() => {
@@ -57,10 +57,15 @@ export function SidebarNeo() {
   let standaloneSection: ReactNode = null
   const entityRoutes = useEntityRoutes(route)
   const firstEntityRoute = entityRoutes[0]
+  const isMyAccountHomeDraftActive =
+    route.key === 'draft' &&
+    route.draftId === myAccount.data?.profile?.rootDocument
   const isMyAccountActive =
-    firstEntityRoute &&
-    firstEntityRoute.key === 'account' &&
-    firstEntityRoute.accountId === myAccount.data?.id
+    isMyAccountHomeDraftActive ||
+    (firstEntityRoute &&
+      firstEntityRoute.key === 'account' &&
+      firstEntityRoute.accountId === myAccount.data?.id)
+  const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
   const entityContents = useEntitiesContent(
     myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
   )
@@ -80,6 +85,10 @@ export function SidebarNeo() {
     setCollapseMe(isMyAccountActive ? false : true)
     setCollapseStandalone(isMyAccountActive ? true : false)
   }, [])
+  useEffect(() => {
+    if (isMyAccountActive) setCollapseMe(false)
+    else setCollapseStandalone(false)
+  }, [isMyAccountActive])
   if (isMyAccountActive) {
     // the active route is under myAccount section
     myAccountSection = (
@@ -145,7 +154,7 @@ function getBlockHeadings(
   children: HMBlockNode[] | undefined,
   blockId: string | undefined,
 ) {
-  let blockHeadings: null | {id: string; text: string}[] = null
+  let blockHeadings: null | {id: string; text: string}[] = []
   if (!blockId) return []
   function findBlock(
     nodes: HMBlockNode[] | undefined,
@@ -171,9 +180,14 @@ function getBlockHeadings(
   return blockHeadings as null | {id: string; text: string}[]
 }
 
-function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
+function getItemDetails(
+  entity: HMEntityContent | undefined,
+  blockId?: string,
+  myAccount?: HMAccount,
+) {
   let title: string | undefined = undefined
   let icon: IconDefinition | undefined = undefined
+  let isDraft = false
   if (!entity) return null
   if (entity.type === 'a') {
     title = entity.account?.profile?.alias
@@ -188,8 +202,14 @@ function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
     icon = FileText
   }
   if (entity.type === 'd-draft') {
-    title = getDocumentTitle(entity.document)
+    if (myAccount?.profile?.rootDocument === entity.document?.id) {
+      const myAlias = myAccount?.profile?.alias
+      title = myAlias ? `${myAlias} Home` : 'My Account Home'
+    } else {
+      title = getDocumentTitle(entity.document)
+    }
     icon = FilePen
+    isDraft = true
   }
 
   const headings = getBlockHeadings(entity.document?.children, blockId)
@@ -198,12 +218,15 @@ function getItemDetails(entity: HMEntityContent | undefined, blockId?: string) {
     title,
     icon,
     headings,
+    isDraft,
   }
 }
 type ItemDetails = ReturnType<typeof getItemDetails>
 
 function ResumeDraftButton({docId}: {docId?: string}) {
   const navigate = useNavigate()
+  const myAccount = useMyAccount()
+  const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
   const drafts = useDocumentDrafts(docId)
   const draft = drafts.data?.[0]
   if (draft) {
@@ -212,7 +235,12 @@ function ResumeDraftButton({docId}: {docId?: string}) {
         <Button
           onPress={(e) => {
             e.stopPropagation()
-            navigate({key: 'draft', draftId: draft.id, variant: null})
+            navigate({
+              key: 'draft',
+              draftId: draft.id,
+              variant: null,
+              isProfileDocument: isMyHomeDoc,
+            })
           }}
           size="$2"
           theme="yellow"
@@ -231,6 +259,7 @@ function ContextItems({
   onSetCollapsed,
   route,
   onNavigate,
+  showBlockContext,
 }: {
   info: ReturnType<typeof getItemDetails>
   active?: boolean
@@ -238,6 +267,7 @@ function ContextItems({
   onSetCollapsed?: (collapse: boolean) => void
   route: BaseEntityRoute
   onNavigate: (route: NavRoute) => void
+  showBlockContext?: boolean
 }) {
   if (!info) return null
   return (
@@ -252,23 +282,33 @@ function ContextItems({
           if (route.key === 'draft') return
           onNavigate({...route, blockId: undefined, focusBlockId: undefined})
         }}
-        iconAfter={<ResumeDraftButton docId={info.docId} />}
+        iconAfter={
+          info.isDraft ? (
+            <SizableText size="$1" color="$color9">
+              Draft
+            </SizableText>
+          ) : (
+            <ResumeDraftButton docId={info.docId} />
+          )
+        }
       />
-      {info.headings?.map((heading, headingIndex) => (
-        <SidebarItem
-          icon={Hash}
-          active={
-            active &&
-            !!info.headings &&
-            headingIndex === info.headings.length - 1
-          }
-          title={heading.text}
-          onPress={() => {
-            if (route.key === 'draft') return
-            onNavigate({...route, blockId: heading.id})
-          }}
-        />
-      ))}
+      {showBlockContext &&
+        info.headings?.map((heading, headingIndex) => (
+          <SidebarItem
+            key={heading.id}
+            icon={Hash}
+            active={
+              active &&
+              !!info.headings &&
+              headingIndex === info.headings.length - 1
+            }
+            title={heading.text}
+            onPress={() => {
+              if (route.key === 'draft') return
+              onNavigate({...route, blockId: heading.id})
+            }}
+          />
+        ))}
     </>
   )
 }
@@ -295,15 +335,19 @@ function RouteSection({
   const thisRouteEntity = entityContents?.find((c) => c.route === thisRoute)
   const thisRouteBlockId =
     thisRoute?.key === 'draft' ? undefined : thisRoute?.blockId
+  const thisRouteFocusBlockId =
+    thisRoute?.key === 'draft' ? undefined : thisRoute?.focusBlockId
+  const myAccount = useMyAccount()
   const thisRouteDetails = getItemDetails(
     thisRouteEntity?.entity,
-    thisRouteBlockId,
+    thisRouteFocusBlockId,
+    myAccount.data,
   )
   const focusedNodes =
-    thisRouteBlockId && thisRouteEntity?.entity?.document?.children
+    thisRouteFocusBlockId && thisRouteEntity?.entity?.document?.children
       ? getBlockNodeById(
           thisRouteEntity?.entity?.document?.children,
-          thisRouteBlockId,
+          thisRouteFocusBlockId,
         )?.children
       : thisRouteEntity?.entity?.document?.children
   const onActivateBlock = useCallback(
@@ -344,6 +388,7 @@ function RouteSection({
             info={info}
             route={contextRoute}
             onNavigate={onNavigate}
+            showBlockContext
           />
         )
       })}
@@ -355,6 +400,7 @@ function RouteSection({
           active={active}
           isCollapsed={collapse}
           onSetCollapsed={setCollapse}
+          showBlockContext
         />
       )}
       {collapse || !thisRoute ? null : (

@@ -543,7 +543,7 @@ function DraftTitleInput({
           }
         }}
         size="$9"
-        editable={!fixedTitle}
+        readOnly={!fixedTitle}
         borderRadius="$1"
         borderWidth={0}
         overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
