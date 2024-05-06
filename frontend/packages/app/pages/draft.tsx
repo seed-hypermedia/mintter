@@ -36,10 +36,12 @@ import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {ActorRefFrom} from 'xstate'
 import {MainWrapper} from '../components/main-wrapper'
+import {useMyAccount} from '../models/accounts'
 import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
+import {useGroup} from '../models/groups'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -92,6 +94,18 @@ export default function DraftPage() {
   }, [])
 
   const gwUrl = useGatewayUrl()
+
+  const myAccount = useMyAccount()
+  const contextGroup = useGroup(route.variant?.groupId)
+
+  let fixedTitle: string | undefined = undefined
+  if (route.variant?.groupId && route.variant?.pathName === '/') {
+    const groupTitle = contextGroup.data?.title
+    fixedTitle = groupTitle ? `${groupTitle} Home` : 'Group Home'
+  } else if (route.isProfileDocument) {
+    const myAlias = myAccount.data?.profile?.alias
+    fixedTitle = myAlias ? `${myAlias} Home` : 'My Account Home'
+  }
 
   function handleFocusAtMousePos(event) {
     let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
@@ -366,6 +380,7 @@ export default function DraftPage() {
               // style={{border: '1px solid green'}}
             >
               <DraftTitleInput
+                fixedTitle={fixedTitle}
                 draftActor={data.actor}
                 onEnter={() => {
                   data.editor?._tiptapEditor?.commands?.focus?.('start')
@@ -460,9 +475,11 @@ function applyTitleResize(target: HTMLTextAreaElement) {
 }
 
 function DraftTitleInput({
+  fixedTitle,
   onEnter,
   draftActor,
 }: {
+  fixedTitle?: string
   onEnter: () => void
   draftActor: ActorRefFrom<typeof draftMachine>
 }) {
@@ -481,6 +498,7 @@ function DraftTitleInput({
   }, [])
 
   useEffect(() => {
+    if (fixedTitle) return
     const target = input.current
     if (!target) return
     if (target.value !== title) {
@@ -488,7 +506,7 @@ function DraftTitleInput({
       target.value = title || ''
       applyTitleResize(target)
     }
-  }, [title])
+  }, [title, fixedTitle])
 
   useEffect(() => {
     function handleResize() {
@@ -525,6 +543,7 @@ function DraftTitleInput({
           }
         }}
         size="$9"
+        editable={!fixedTitle}
         borderRadius="$1"
         borderWidth={0}
         overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
@@ -539,7 +558,7 @@ function DraftTitleInput({
         outlineColor="transparent"
         borderColor="transparent"
         paddingLeft={9.6}
-        defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
+        defaultValue={fixedTitle || title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
         // value={title}
         onChangeText={(title) => {
           // TODO: change title here
