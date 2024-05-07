@@ -17,6 +17,7 @@ import {Sparkles, Star} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
+import {useFixedDraftTitle} from '../pages/draft'
 import {
   AccountRoute,
   DraftRoute,
@@ -223,7 +224,9 @@ function DraftTitle({
   const title = useDraftTitle({
     documentId: route.draftId,
   })
-  const displayTitle = title ?? 'Untitled Document'
+  const realTitle = title ?? 'Untitled Document'
+  const fixedTitle = useFixedDraftTitle(route)
+  const displayTitle = fixedTitle || realTitle
   useWindowTitle(displayTitle ? `Draft: ${displayTitle}` : undefined)
   return (
     <>

@@ -51,6 +51,7 @@ import {
   handleDragMedia,
 } from '../utils/media-drag'
 import {useOpenDraft} from '../utils/open-draft'
+import {DraftRoute} from '../utils/routes'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftPage() {
@@ -106,17 +107,7 @@ export default function DraftPage() {
 
   const gwUrl = useGatewayUrl()
 
-  const myAccount = useMyAccount()
-  const contextGroup = useGroup(route.variant?.groupId)
-
-  let fixedTitle: string | undefined = undefined
-  if (route.variant?.groupId && route.variant?.pathName === '/') {
-    const groupTitle = contextGroup.data?.title
-    fixedTitle = groupTitle ? `${groupTitle} Home` : 'Group Home'
-  } else if (route.isProfileDocument) {
-    const myAlias = myAccount.data?.profile?.alias
-    fixedTitle = myAlias ? `${myAlias} Home` : 'My Account Home'
-  }
+  const fixedTitle = useFixedDraftTitle(route)
 
   function handleFocusAtMousePos(event) {
     let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
@@ -483,6 +474,21 @@ function applyTitleResize(target: HTMLTextAreaElement) {
 
   // here is the actual auto-resize
   target.style.height = `${target.scrollHeight}px`
+}
+
+export function useFixedDraftTitle(route: DraftRoute) {
+  const myAccount = useMyAccount()
+  const contextGroup = useGroup(route.variant?.groupId)
+
+  let fixedTitle: string | undefined = undefined
+  if (route.variant?.groupId && route.variant?.pathName === '/') {
+    const groupTitle = contextGroup.data?.title
+    fixedTitle = groupTitle ? `${groupTitle} Home` : 'Group Home'
+  } else if (route.isProfileDocument) {
+    const myAlias = myAccount.data?.profile?.alias
+    fixedTitle = myAlias ? `${myAlias} Home` : 'My Account Home'
+  }
+  return fixedTitle
 }
 
 function DraftTitleInput({

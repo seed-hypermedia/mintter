@@ -1,4 +1,5 @@
 import {
+  GroupVariant,
   HMAccount,
   HMBlockNode,
   HMEntityContent,
@@ -189,13 +190,19 @@ function getItemDetails(
   let title: string | undefined = undefined
   let icon: IconDefinition | undefined = undefined
   let isDraft = false
+  let groupHomeVariant: GroupVariant | null = null
   if (!entity) return null
   if (entity.type === 'a') {
     title = entity.account?.profile?.alias
     icon = Contact
   }
-  if (entity.type === 'g') {
+  if (entity.type === 'g' && entity.group?.id) {
     title = entity.group?.title
+    groupHomeVariant = {
+      key: 'group',
+      groupId: entity.group?.id,
+      pathName: '/',
+    }
     icon = Book
   }
   if (entity.type === 'd') {
@@ -223,15 +230,19 @@ function getItemDetails(
     icon,
     headings,
     isDraft,
+    groupHomeVariant,
   }
 }
 type ItemDetails = ReturnType<typeof getItemDetails>
 
-function ResumeDraftButton({docId}: {docId?: string}) {
+function ResumeDraftButton({info}: {info: ItemDetails}) {
+  if (!info) throw new Error('ItemDetails required for ResumeDraftButton')
+  const {docId} = info
   const navigate = useNavigate()
   const myAccount = useMyAccount()
   const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
   const drafts = useDocumentDrafts(docId)
+
   const draft = drafts.data?.[0]
   if (draft) {
     return (
@@ -242,7 +253,7 @@ function ResumeDraftButton({docId}: {docId?: string}) {
             navigate({
               key: 'draft',
               draftId: draft.id,
-              variant: null,
+              variant: info.groupHomeVariant,
               isProfileDocument: isMyHomeDoc,
             })
           }}
@@ -292,7 +303,7 @@ function ContextItems({
               Draft
             </SizableText>
           ) : (
-            <ResumeDraftButton docId={info.docId} />
+            <ResumeDraftButton info={info} />
           )
         }
       />
