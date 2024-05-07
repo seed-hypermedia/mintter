@@ -44,6 +44,7 @@ interface RenderProps {
   block: Block<HMBlockSchema>
   editor: BlockNoteEditor<HMBlockSchema>
   mediaType: string
+  CustomInput?: React.ComponentType<any>
   submit?: (
     url: string,
     assign,
@@ -58,6 +59,7 @@ export const MediaRender: React.FC<RenderProps> = ({
   block,
   editor,
   mediaType,
+  CustomInput,
   submit,
   DisplayComponent,
   icon,
@@ -149,6 +151,7 @@ export const MediaRender: React.FC<RenderProps> = ({
           editor={editor}
           selected={selected}
           mediaType={mediaType}
+          CustomInput={CustomInput}
           submit={submit}
           icon={icon}
         />
@@ -189,16 +192,21 @@ function MediaForm({
   block,
   assign,
   editor,
-  selected = false,
   mediaType,
+  CustomInput,
   submit,
-  icon,
 }: {
   block: Block<HMBlockSchema>
   assign: any
   editor: BlockNoteEditor<HMBlockSchema>
   selected: boolean
   mediaType: string
+  CustomInput?: React.ComponentType<{
+    assign: any
+    setUrl: any
+    fileName: any
+    setFileName: any
+  }>
   submit?: (
     url: string,
     assign,
@@ -397,33 +405,42 @@ function MediaForm({
             borderWidth={0}
           >
             <XStack flex={1} gap="$3">
-              <Input
-                unstyled
-                borderColor="$color8"
-                borderWidth="$1"
-                borderRadius="$2"
-                paddingLeft="$3"
-                height="$3"
-                width="100%"
-                placeholder={`Input ${
-                  mediaType === 'web-embed' ? 'X.com' : mediaType
-                } URL here...`}
-                hoverStyle={{
-                  borderColor: '$color11',
-                }}
-                focusStyle={{
-                  borderColor: '$color11',
-                }}
-                onChange={(e) => {
-                  setUrl(e.nativeEvent.text)
-                  if (fileName.color)
-                    setFileName({
-                      name: 'Upload File',
-                      color: undefined,
-                    })
-                }}
-                autoFocus={true}
-              />
+              {CustomInput ? (
+                <CustomInput
+                  assign={assign}
+                  setUrl={setUrl}
+                  fileName={fileName}
+                  setFileName={setFileName}
+                />
+              ) : (
+                <Input
+                  unstyled
+                  borderColor="$color8"
+                  borderWidth="$1"
+                  borderRadius="$2"
+                  paddingLeft="$3"
+                  height="$3"
+                  width="100%"
+                  placeholder={`Input ${
+                    mediaType === 'web-embed' ? 'X.com' : mediaType
+                  } URL here...`}
+                  hoverStyle={{
+                    borderColor: '$color11',
+                  }}
+                  focusStyle={{
+                    borderColor: '$color11',
+                  }}
+                  onChange={(e) => {
+                    setUrl(e.nativeEvent.text)
+                    if (fileName.color)
+                      setFileName({
+                        name: 'Upload File',
+                        color: undefined,
+                      })
+                  }}
+                  autoFocus={true}
+                />
+              )}
               <Form.Trigger asChild>
                 <Button
                   unstyled
