@@ -172,7 +172,6 @@ export default function ContactsPage() {
       <MainWrapperNoScroll>
         <List
           items={[...trustedAccounts, ...untrustedAccounts]}
-          fixedItemHeight={52}
           renderItem={({item}) => {
             return (
               <ContactItem
@@ -184,9 +183,6 @@ export default function ContactsPage() {
                 onDelete={deleteEntity.open}
               />
             )
-          }}
-          onEndReached={() => {
-            contacts.fetchNextPage()
           }}
         />
       </MainWrapperNoScroll>
