@@ -205,9 +205,33 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
     },
   })
 
+  const addContentBeforeInlineMentionPlugin = new Plugin({
+    props: {
+      handleKeyDown(view, event) {
+        if (view.state.selection.from == view.state.selection.to) {
+          // selection is collapsed
+          const resolved = view.state.doc.resolve(view.state.selection.from)
+
+          if (
+            resolved &&
+            resolved.nodeBefore == null &&
+            resolved.nodeAfter?.type.name == 'inline-embed'
+          ) {
+            // the cursor is collapsed and before the first node of a paragraph that is a 'inline-embed'
+            view.dispatch(view.state.tr.insertText(event.key))
+            return true
+          }
+
+          return false
+        }
+      },
+    },
+  })
+
   return {
     nodes: {[nodeName]: autocompleteTokenNode} as any,
     plugins: [
+      addContentBeforeInlineMentionPlugin,
       autocompleteTokenPlugin,
       keymap({
         Backspace: (state, dispatch) => {
