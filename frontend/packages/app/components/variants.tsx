@@ -61,7 +61,7 @@ import {z} from 'zod'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
-import {useCurrentDocumentGroups} from '../models/groups'
+import {useDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {NavRoute, PublicationRoute} from '../utils/routes'
@@ -1013,7 +1013,7 @@ function GroupVariants({
 }) {
   if (route.key !== 'publication')
     throw new Error('GroupVariants only for publication route')
-  const docGroups = useCurrentDocumentGroups(route.documentId)
+  const docGroups = useDocumentGroups(route.documentId)
   const replaceRoute = useNavigate('replace')
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
   const activeGroupVariants = (route.variants?.filter(

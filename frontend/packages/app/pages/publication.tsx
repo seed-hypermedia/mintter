@@ -42,7 +42,7 @@ import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useAllPublicationComments, useCreateComment} from '../models/comments'
 import {useGatewayHost} from '../models/gateway-settings'
-import {useCurrentDocumentGroups, useGroup} from '../models/groups'
+import {useDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {getAccountName} from './account-page'
 import {AppPublicationContentProvider} from './publication-content-provider'
@@ -313,7 +313,7 @@ function PublicationVersionsFooterButton({
 function PublicationPageMeta({publication}: {publication: Publication}) {
   const editors = useAccounts(publication.document?.editors || [])
   const navigate = useNavigate()
-  const docGroups = useCurrentDocumentGroups(publication.document?.id)
+  const docGroups = useDocumentGroups(publication.document?.id)
   const allSelectedGroups = docGroups.data?.filter((groupItem) => {
     const groupItemId = unpackDocId(groupItem.rawUrl)
     return !!groupItemId?.version && groupItemId.version === publication.version
