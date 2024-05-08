@@ -6,7 +6,6 @@ import {client} from './trpc'
 export function createIPC(): AppIPC {
   return {
     invoke: async (cmd: string, args?: Record<string, unknown>) => {
-      console.debug('IPC INVOKE', cmd, args)
       if (cmd === 'plugin:window|open') {
         const path = (args?.path as string) || ''
         const route = decodeRouteFromPath(path.slice(1))

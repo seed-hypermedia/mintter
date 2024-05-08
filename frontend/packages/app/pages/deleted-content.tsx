@@ -14,8 +14,8 @@ export default function DeletedContent() {
   return (
     <List
       items={deleted.data || []}
-      header={<View height={40} />}
-      footer={<View height={40} />}
+      header={<View height={20} />}
+      footer={<View height={20} />}
       renderItem={({item}) => {
         return (
           <XStack

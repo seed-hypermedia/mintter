@@ -136,6 +136,16 @@ export function openRoute(route: NavRoute) {
   }
 }
 
+function getRouteRefocusKey(route: NavRoute): string | null {
+  if (route.key === 'account') return null
+  if (route.key === 'publication') return null
+  if (route.key === 'comment') return null
+  if (route.key === 'comment-draft') return null
+  if (route.key === 'group') return null
+  if (route.key === 'draft') return null
+  return route.key
+}
+
 export const router = t.router({
   experiments: experimentsApi,
   diagnosis: diagnosisApi,
@@ -169,6 +179,25 @@ export const router = t.router({
       }),
     )
     .mutation(async ({input}) => {
+      const allWindows = getWindowsState()
+      const destRoute = input.routes[input.routeIndex]
+      const destRouteKey = getRouteRefocusKey(destRoute)
+      const matchedWindow = Object.entries(allWindows).find(
+        ([windowId, window]) => {
+          const {routes, routeIndex} = window
+          const activeRoute = routes[routeIndex]
+          const activeRouteKey = getRouteRefocusKey(activeRoute)
+          return activeRouteKey && activeRouteKey === destRouteKey
+        },
+      )
+      if (matchedWindow && input.routes.length === 1) {
+        const [matchedWindowId] = matchedWindow
+        const window = getAllWindows().get(matchedWindowId)
+        if (window) {
+          window.focus()
+          return
+        }
+      }
       const browserWindow = createAppWindow(input)
       trpcHandlers.attachWindow(browserWindow)
       browserWindow.on('close', () => {

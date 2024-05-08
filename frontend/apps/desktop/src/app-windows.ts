@@ -27,8 +27,6 @@ export function getAllWindows() {
 let focusedWindowKey: string | null = null
 
 export function getFocusedWindow(): BrowserWindow | null | undefined {
-  // return focusedWindowKey ? allWindows.get(focusedWindowKey) : null
-  // return Object.values(allWindows).find(window => window.focused)
   return BrowserWindow.getFocusedWindow()
 }
 
