@@ -629,7 +629,20 @@ export function BlockNodeContent({
           parentBlockId={parentBlockId}
           {...interactiveProps}
         />
-
+        {bnChildren && !_expanded ? (
+          <Tooltip content="This block is collapsed. you can expand it and see its children">
+            <Button
+              marginHorizontal={layoutUnit / 4}
+              size="$1"
+              alignSelf="center"
+              icon={MoreHorizontal}
+              onPress={(e) => {
+                e.stopPropagation()
+                handleBlockNodeToggle()
+              }}
+            />
+          </Tooltip>
+        ) : null}
         <XStack
           pl="$2"
           borderRadius={layoutUnit / 4}
@@ -742,20 +755,6 @@ export function BlockNodeContent({
         >
           {bnChildren}
         </BlockNodeList>
-      ) : bnChildren ? (
-        <Tooltip content="This block is collapsed. you can expand it and see its children">
-          <Button
-            marginHorizontal={layoutUnit / 4}
-            size="$1"
-            alignSelf="flex-start"
-            icon={MoreHorizontal}
-            height={12}
-            onPress={(e) => {
-              e.stopPropagation()
-              handleBlockNodeToggle()
-            }}
-          />
-        </Tooltip>
       ) : null}
     </YStack>
   )
