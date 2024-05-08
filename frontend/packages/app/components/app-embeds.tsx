@@ -15,7 +15,6 @@ import {
   createHmId,
   formattedDateMedium,
   getBlockNodeById,
-  hmGroup,
   unpackHmId,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -643,7 +642,7 @@ export function EmbedGroupCard(
 ) {
   const groupQuery = useGroup(props.groupId, props.version || undefined)
 
-  const group = hmGroup(groupQuery.data)
+  const group = groupQuery.data
 
   return group && groupQuery.status == 'success' ? (
     <EmbedWrapper

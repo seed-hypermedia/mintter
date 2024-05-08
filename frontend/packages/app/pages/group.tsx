@@ -70,7 +70,6 @@ import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
-import {useExperiments} from '../models/experiments'
 import {useResourceFeedWithLatest} from '../models/feed'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {
@@ -92,7 +91,6 @@ import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
-  const experiments = useExperiments()
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : undefined
   if (!groupRoute) throw new Error('Group page needs group route')
@@ -173,7 +171,6 @@ function GroupHeader({
   groupRoute: GroupRoute
   myMemberRole: Role
 }) {
-  const accessory = groupRoute?.accessory
   const {groupId, version} = groupRoute
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,

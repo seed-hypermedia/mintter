@@ -15,12 +15,12 @@ import {NavRoute} from '../utils/routes'
 import {getWindowType} from '../utils/window-types'
 import {BaseLoading, NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
+import GroupPage from './group'
 import './polyfills'
 
 var Feed = lazy(() => import('@mintter/app/pages/feed'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
-var Group = lazy(() => import('@mintter/app/pages/group'))
 var Publication = lazy(() => import('@mintter/app/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/pages/draft'))
 var Settings = lazy(() => import('@mintter/app/pages/settings'))
@@ -99,7 +99,7 @@ function getPageComponent(navRoute: NavRoute) {
       }
     case 'group':
       return {
-        PageComponent: Group,
+        PageComponent: GroupPage,
         Fallback: BaseLoading,
       }
     case 'contacts':
