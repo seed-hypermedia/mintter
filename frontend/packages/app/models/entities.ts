@@ -164,7 +164,7 @@ export function useEntityRoutes(route: NavRoute): BaseEntityRoute[] {
 export function useEntityContent(
   id: UnpackedHypermediaId,
 ): HMEntityContent | null | undefined {
-  const {qid, eid, version, type} = id
+  const {qid, eid, version, type, latest} = id
   const account = useAccount(type === 'a' ? eid : undefined)
   const group = useGroup(type === 'g' ? qid : undefined, version || undefined)
   const groupContent = useGroupContent(
@@ -175,6 +175,7 @@ export function useEntityContent(
     documentId: type === 'd' ? qid : undefined,
     versionId: version || undefined,
     variants: id.variants || undefined,
+    latest: latest || false,
   })
   const groupFrontUrl = groupContent.data?.content['/']
   const groupFrontId = groupFrontUrl ? unpackHmId(groupFrontUrl) : null

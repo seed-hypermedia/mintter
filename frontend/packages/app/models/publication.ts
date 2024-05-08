@@ -92,7 +92,7 @@ export function usePublicationVariant({
     }
   }
 
-  const queryVersionId = versionId ? versionId : queryVariantVersion
+  const queryVersionId = versionId && !latest ? versionId : queryVariantVersion
   const pubQuery = usePublication(
     {
       id: queryDocumentId,
