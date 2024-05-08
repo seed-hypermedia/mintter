@@ -490,7 +490,11 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   }, [pub.data])
 
   return (
-    <EmbedWrapper hmRef={props.id} parentBlockId={props.parentBlockId}>
+    <EmbedWrapper
+      hmRef={props.id}
+      parentBlockId={props.parentBlockId}
+      viewType={props.block.attributes?.view == 'card' ? 'card' : 'content'}
+    >
       <PublicationCardView
         title={pub.data?.publication?.document?.title}
         textContent={textContent}
@@ -519,14 +523,22 @@ export function EmbedAccount(
       return <EmbedPublicationContent {...props} {...unpackedRef} />
     } else if (props.block?.attributes?.view == 'card') {
       return (
-        <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
+        <EmbedWrapper
+          hmRef={props.id}
+          parentBlockId={parentBlockId}
+          viewType="card"
+        >
           <EmbedAccountContent account={accountQuery.data!} />
         </EmbedWrapper>
       )
     }
 
     return (
-      <EmbedWrapper hmRef={props.id} parentBlockId={parentBlockId}>
+      <EmbedWrapper
+        hmRef={props.id}
+        parentBlockId={parentBlockId}
+        viewType="card"
+      >
         <EmbedAccountContent account={accountQuery.data!} />
         <XStack p="$2" theme="red" gap="$2">
           <FileWarning size={14} />

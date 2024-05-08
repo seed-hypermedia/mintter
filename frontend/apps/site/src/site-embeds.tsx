@@ -118,7 +118,10 @@ export function SitePublicationContentProvider({
   )
 }
 
-function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
+function EmbedWrapper({
+  viewType = 'content',
+  ...props
+}: PropsWithChildren<{hmRef: string; viewType?: 'content' | 'card'}>) {
   const {layoutUnit} = usePublicationContentContext()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const sideannotationRef = useRef<HTMLDivElement>(null)
@@ -187,7 +190,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
         // overflow="hidden"
         // borderRadius={layoutUnit / 4}
       >
-        {props.children}
+        {props.children && viewType == 'content'}
         <EmbedSideAnnotation
           ref={sideannotationRef}
           hmId={props.hmRef}
@@ -268,7 +271,7 @@ function EmbedPublicationCard(props: EntityComponentProps) {
   if (pub.error) return <ErrorBlock message={pub.error.message} />
 
   return (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} viewType="card">
       <PublicationCardView
         title={pubData?.document?.title}
         textContent={textContent}
@@ -384,7 +387,7 @@ function EmbedGroupCard(
   if (groupQuery.error) return <ErrorBlock message={groupQuery.error.message} />
   const group = groupQuery.data?.group
   return group ? (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} viewType="card">
       <EmbedGroupCardContent group={group} />
       {props.noContent ? (
         <XStack p="$2" theme="red" gap="$2">
@@ -443,14 +446,14 @@ export function EmbedAccount(props: EntityComponentProps) {
       return <EmbedPublicationContent {...props} {...unpackedRef} />
     } else if (props.block?.attributes?.view == 'card') {
       return (
-        <EmbedWrapper hmRef={props.id}>
+        <EmbedWrapper hmRef={props.id} viewType="card">
           <EmbedAccountContent account={account} />
         </EmbedWrapper>
       )
     }
   }
   return (
-    <EmbedWrapper hmRef={props.id}>
+    <EmbedWrapper hmRef={props.id} viewType="card">
       <EmbedAccountContent account={account} />
       <XStack p="$2" theme="red" gap="$2">
         <FileWarning size={14} />
