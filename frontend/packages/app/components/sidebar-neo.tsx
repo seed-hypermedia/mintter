@@ -461,7 +461,7 @@ function SidebarEmbedOutlineItem({
     return (
       <>
         <SidebarItem
-          indented={indent + 1}
+          indented={indent}
           title={info?.title || 'Untitled Embed'}
           icon={info?.icon}
           isCollapsed={collapse}
@@ -478,7 +478,7 @@ function SidebarEmbedOutlineItem({
             onActivateBlock={onActivateBlock}
             onFocusBlock={onFocusBlock}
             nodes={singleBlockNode ? [singleBlockNode] : doc.children}
-            indent={indent + 1}
+            indent={indent}
           />
         )}
       </>
