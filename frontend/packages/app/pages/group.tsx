@@ -208,6 +208,7 @@ function GroupHeader({
   const openUrl = useOpenUrl()
   return (
     <Container paddingBottom={0}>
+      {inviteMember.content}
       <Section
         group="header"
         paddingVertical={0}
@@ -319,6 +320,7 @@ function GroupHeader({
                 {myMemberRole === Role.OWNER ? (
                   <InviteMemberButton
                     onPress={() => {
+                      console.log('== INVITE MEMBER', inviteMember)
                       inviteMember.open({groupId})
                     }}
                   />
