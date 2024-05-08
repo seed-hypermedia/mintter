@@ -28,10 +28,10 @@ var Comment = lazy(() => import('@mintter/app/pages/comment'))
 var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 var Explore = lazy(() => import('@mintter/app/pages/explore'))
 var Favorites = lazy(() => import('@mintter/app/pages/favorites'))
+var DeletedContent = lazy(() => import('@mintter/app/pages/deleted-content'))
 
 export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
-  const isSettings = navR?.key == 'settings'
   const navigate = useNavigate()
   const {PageComponent, Fallback} = useMemo(
     () => getPageComponent(navR),
@@ -55,9 +55,11 @@ export default function Main({className}: {className?: string}) {
     sidebar = <AppSidebar />
   } else if (windowType === 'settings') {
     titlebar = <TitleBar clean />
+  } else if (windowType === 'deleted-content') {
+    titlebar = <TitleBar clean cleanTitle="Review Deleted Content" />
   }
 
-  if (!isSettings) {
+  if (windowType === 'main') {
     launcher = <Launcher />
   }
 
@@ -123,6 +125,11 @@ function getPageComponent(navRoute: NavRoute) {
     case 'settings':
       return {
         PageComponent: Settings,
+        Fallback: BaseLoading,
+      }
+    case 'deleted-content':
+      return {
+        PageComponent: DeletedContent,
         Fallback: BaseLoading,
       }
     case 'comment':

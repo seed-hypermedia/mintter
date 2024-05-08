@@ -1,5 +1,6 @@
 import {TitleBarProps} from '@mintter/app/components/titlebar'
 import {
+  TitleText,
   TitlebarRow,
   TitlebarSection,
   TitlebarWrapper,
@@ -20,11 +21,10 @@ export default function TitleBarWindows(props: TitleBarProps) {
     return (
       <TitlebarWrapper style={{flex: 'none'}} className="window-drag">
         <TitlebarRow>
-          <TitlebarSection
-            flex={1}
-            alignItems="center"
-            justifyContent="flex-end"
-          >
+          <TitlebarSection f={1} paddingHorizontal="$4">
+            <TitleText>{props.cleanTitle}</TitleText>
+          </TitlebarSection>
+          <TitlebarSection f={0} alignItems="center" justifyContent="flex-end">
             <XStack className="no-window-drag">
               <CloseButton />
             </XStack>

@@ -151,6 +151,11 @@ export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
+export const deletedContentRouteSchema = z.object({
+  key: z.literal('deleted-content'),
+})
+export type DeletedContentRoute = z.infer<typeof deletedContentRouteSchema>
+
 export const draftRouteSchema = baseDraftRouteSchema.extend({
   contextRoute: z
     .discriminatedUnion('key', [
@@ -174,6 +179,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   commentDraftRouteSchema,
   exploreRouteSchema,
   favoritesSchema,
+  deletedContentRouteSchema,
 ])
 export type NavRoute = z.infer<typeof navRouteSchema>
 

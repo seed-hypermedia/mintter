@@ -1,7 +1,7 @@
 import {NavRoute} from './routes'
 
 export type WindowTypeInfo = {
-  key: 'settings' | 'comment' | 'main'
+  key: 'settings' | 'comment' | 'main' | 'deleted-content'
   minWidth: number
   minHeight: number
   maxWidth: number | undefined
@@ -11,6 +11,14 @@ export type WindowTypeInfo = {
 }
 
 export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
+  if (route.key === 'deleted-content')
+    return {
+      key: 'deleted-content',
+      minWidth: 960,
+      minHeight: 720,
+      maxWidth: undefined,
+      maxHeight: undefined,
+    } as const
   if (route.key === 'settings')
     return {
       key: 'settings',

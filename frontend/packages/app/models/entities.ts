@@ -1,9 +1,16 @@
 import {
+  HMDeletedEntity,
   HMEntityContent,
   UnpackedHypermediaId,
+  hmDeletedEntity,
   unpackHmId,
 } from '@mintter/shared'
-import {UseMutationOptions, useMutation} from '@tanstack/react-query'
+import {
+  UseMutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {
@@ -61,6 +68,62 @@ export function useDeleteEntity(
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.ENTITY_CITATIONS])
       invalidate([queryKeys.SEARCH])
+      opts?.onSuccess?.(result, variables, context)
+    },
+  })
+}
+
+export function useDeletedContent(
+  opts?: UseQueryOptions<unknown, unknown, HMDeletedEntity[]>,
+) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    ...opts,
+    queryFn: async () => {
+      const deleted = await grpcClient.entities.listDeletedEntities({})
+      return deleted.deletedEntities.map((d) => hmDeletedEntity(d))
+    },
+    queryKey: [queryKeys.DELETED],
+  })
+}
+
+export function useUndeleteEntity(
+  opts?: UseMutationOptions<void, unknown, {id: string}>,
+) {
+  const deleteRecent = useDeleteRecent()
+  const invalidate = useQueryInvalidator()
+  const grpcClient = useGRPCClient()
+  return useMutation({
+    ...opts,
+    mutationFn: async ({id}: {id: string}) => {
+      await deleteRecent.mutateAsync(id)
+      await grpcClient.entities.undeleteEntity({id})
+    },
+    onSuccess: (result: void, variables: {id: string}, context) => {
+      const hmId = unpackHmId(variables.id)
+      if (hmId?.type === 'd') {
+        invalidate([queryKeys.GET_PUBLICATION, variables.id])
+        invalidate([queryKeys.GET_ACCOUNT_PUBLICATIONS])
+        invalidate([queryKeys.GET_PUBLICATION_LIST])
+      } else if (hmId?.type === 'a') {
+        invalidate([queryKeys.GET_ALL_ACCOUNTS])
+        invalidate([queryKeys.GET_ACCOUNT, hmId.eid])
+      } else if (hmId?.type === 'c') {
+        invalidate([queryKeys.COMMENT, variables.id])
+        invalidate([queryKeys.PUBLICATION_COMMENTS])
+      } else if (hmId?.type === 'g') {
+        invalidate([queryKeys.GET_GROUP, variables.id])
+        invalidate([queryKeys.GET_GROUPS])
+        invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT])
+        invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
+      }
+      invalidate([queryKeys.FEED])
+      invalidate([queryKeys.FEED_LATEST_EVENT])
+      invalidate([queryKeys.RESOURCE_FEED])
+      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
+      invalidate([queryKeys.ENTITY_CITATIONS])
+      invalidate([queryKeys.SEARCH])
+      invalidate([queryKeys.DELETED])
       opts?.onSuccess?.(result, variables, context)
     },
   })

@@ -112,6 +112,16 @@ export function createAppMenu() {
             })
           },
         },
+        {
+          id: 'route_deleted_content',
+          label: 'Review Deleted Content',
+          // accelerator: 'CmdOrCtrl+9',
+          click: () => {
+            openRoute({
+              key: 'deleted-content',
+            })
+          },
+        },
         {type: 'separator'},
         {role: 'resetZoom'},
         {role: 'zoomIn'},

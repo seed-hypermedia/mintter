@@ -249,6 +249,13 @@ export type HMGroup = {
   siteInfo?: HMGroupSiteInfo
 }
 
+export type HMDeletedEntity = {
+  id?: string
+  deleteTime?: HMTimestamp
+  deletedReason?: string
+  metadata?: string
+}
+
 export type HMEntity =
   | {
       type: 'a'

@@ -1,5 +1,5 @@
 import {TitleBarProps} from '@mintter/app/components/titlebar'
-import {TitlebarWrapper, View, XStack} from '@mintter/ui'
+import {TitleText, TitlebarWrapper, View, XStack} from '@mintter/ui'
 import {
   NavMenuButton,
   NavigationButtons,
@@ -9,7 +9,18 @@ import {Title} from './titlebar-title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper />
+    return (
+      <TitlebarWrapper>
+        <XStack>
+          <View
+            width={72} // this width to stay away from the macOS window traffic lights
+          />
+          <TitleText marginHorizontal="$4" fontWeight="bold">
+            {props.cleanTitle}
+          </TitleText>
+        </XStack>
+      </TitlebarWrapper>
+    )
   }
 
   return (

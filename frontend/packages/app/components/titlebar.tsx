@@ -7,6 +7,7 @@ var TitleBarWindowsLinux = lazy(() => import('./titlebar-windows-linux'))
 
 export interface TitleBarProps {
   clean?: boolean
+  cleanTitle?: string
 }
 
 export function TitleBar(props: TitleBarProps) {

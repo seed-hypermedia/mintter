@@ -5,6 +5,7 @@ import {
   Group,
   HMAccount,
   HMChangeInfo,
+  HMDeletedEntity,
   HMDocument,
   HMGroup,
   HMLink,
@@ -12,6 +13,7 @@ import {
   MttLink,
   Publication,
 } from '@mintter/shared'
+import {DeletedEntity} from './client/.generated/entities/v1alpha/entities_pb'
 
 export function hmPublication(
   input?: Publication | null,
@@ -48,4 +50,10 @@ export function hmLink(input?: MttLink): HMLink | null {
   if (!input) return null
   if (typeof input.toJson != 'function') return null
   return input.toJson() as HMLink
+}
+
+export function hmDeletedEntity(input: DeletedEntity): HMDeletedEntity | null {
+  if (!input) return null
+  if (typeof input.toJson != 'function') return null
+  return input.toJson() as HMDeletedEntity
 }
