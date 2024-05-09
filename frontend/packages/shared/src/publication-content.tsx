@@ -251,6 +251,13 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
     : {}
 }
 
+function getFocusedBlocks(blocks: HMBlockNode[], blockId?: string) {
+  if (!blockId) return blocks
+  const focused = getBlockNodeById(blocks, blockId)
+  if (focused) return [focused]
+  return null
+}
+
 export function PublicationContent({
   publication,
   focusBlockId,
@@ -275,18 +282,10 @@ export function PublicationContent({
     allBlocks[0]?.block?.text &&
     allBlocks[0]?.block?.text === publication.document?.title
   const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
-  const focusedBlocks = focusBlockId
-    ? getBlockNodeById(displayableBlocks, focusBlockId)
-    : displayableBlocks
+  const focusedBlocks = getFocusedBlocks(displayableBlocks, focusBlockId)
+  console.log({displayableBlocks, focusedBlocks, focusBlockId})
   const displayBlocks = maxBlockCount
-    ? clipContentBlocks(
-        Array.isArray(focusedBlocks)
-          ? focusedBlocks
-          : focusedBlocks
-          ? [focusedBlocks]
-          : undefined,
-        maxBlockCount,
-      )
+    ? clipContentBlocks(focusedBlocks || [], maxBlockCount)
     : focusedBlocks
   return (
     <YStack
