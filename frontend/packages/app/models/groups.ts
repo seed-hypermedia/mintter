@@ -641,7 +641,9 @@ export function useCurrentDocumentGroups(
     referencedGroupIds.add(item.groupId)
   })
   const groupsToQuery = [...referencedGroupIds]
-  const groupsContentQuery = useGroupsContent(groupsToQuery)
+  const groupsContentQuery = useGroupsContent(
+    groupsToQuery.map((groupId) => ({id: groupId})),
+  )
   return {
     ...docGroupsQuery,
     data: docGroupsQuery.data?.filter((item) => {
