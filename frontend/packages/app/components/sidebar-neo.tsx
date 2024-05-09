@@ -499,7 +499,7 @@ function SidebarEmbedOutlineItem({
               ) {
                 navigate({
                   ...destRoute,
-                  focusBlockId: childBlockId + '+',
+                  focusBlockId: childBlockId,
                   context: getRouteContext(route, blockId),
                 })
               } else navigate(destRoute)
