@@ -31,7 +31,8 @@ import {useFavorites} from '../models/favorites'
 import {useGroup} from '../models/groups'
 import {useDocumentDrafts, usePublicationVariant} from '../models/publication'
 import {focusDraftBlock} from '../src/draft-focusing'
-import {getRouteKey, useNavRoute} from '../utils/navigation'
+import {appRouteOfId, getRouteKey, useNavRoute} from '../utils/navigation'
+import {getRouteContext} from '../utils/route-context'
 import {BaseAccountRoute, BaseEntityRoute, NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {
@@ -166,7 +167,12 @@ function getBlockHeadings(
       if (!blockId) return null
       const theseHeadings = [
         ...parentHeadings,
-        {id: blockNode.block.id, text: blockNode.block.text},
+        {
+          id: blockNode.block.id,
+          text: blockNode.block.text,
+          embedId:
+            blockNode.block.type === 'embed' ? blockNode.block.ref : null,
+        },
       ]
       if (blockNode.block.id === blockId) {
         blockHeadings = theseHeadings
@@ -179,7 +185,9 @@ function getBlockHeadings(
     })
   }
   findBlock(children, [])
-  return blockHeadings as null | {id: string; text: string}[]
+  return blockHeadings as
+    | null
+    | {id: string; text: string; embedId: null | string}[]
 }
 
 function getItemDetails(
@@ -308,22 +316,25 @@ function ContextItems({
         }
       />
       {showBlockContext &&
-        info.headings?.map((heading, headingIndex) => (
-          <SidebarItem
-            key={heading.id}
-            icon={Hash}
-            active={
-              active &&
-              !!info.headings &&
-              headingIndex === info.headings.length - 1
-            }
-            title={heading.text}
-            onPress={() => {
-              if (route.key === 'draft') return
-              onNavigate({...route, blockId: heading.id})
-            }}
-          />
-        ))}
+        info.headings?.map((heading, headingIndex) => {
+          if (heading.embedId) return null
+          return (
+            <SidebarItem
+              key={heading.id}
+              icon={Hash}
+              active={
+                active &&
+                !!info.headings &&
+                headingIndex === info.headings.length - 1
+              }
+              title={heading.text}
+              onPress={() => {
+                if (route.key === 'draft') return
+                onNavigate({...route, blockId: heading.id})
+              }}
+            />
+          )
+        })}
     </>
   )
 }
@@ -446,8 +457,10 @@ function SidebarEmbedOutlineItem({
   onActivateBlock: (blockId: string) => void
   onFocusBlock: ((blockId: string) => void) | null
 }) {
+  const route = useNavRoute()
   const [collapse, setCollapse] = useState(true)
   const loadedEntity = useEntityContent(id)
+  const navigate = useNavigate()
   if (loadedEntity === undefined)
     return <SidebarItem indented={indent} icon={() => <Spinner />} />
   const doc = loadedEntity?.document
@@ -476,7 +489,21 @@ function SidebarEmbedOutlineItem({
           <SidebarOutline
             activeBlock={activeBlock}
             onActivateBlock={onActivateBlock}
-            onFocusBlock={onFocusBlock}
+            onFocusBlock={(childBlockId) => {
+              const destRoute = appRouteOfId(id)
+              if (!destRoute) return
+              if (
+                destRoute.key === 'publication' ||
+                destRoute.key === 'group' ||
+                destRoute.key === 'account'
+              ) {
+                navigate({
+                  ...destRoute,
+                  focusBlockId: childBlockId + '+',
+                  context: getRouteContext(route, blockId),
+                })
+              } else navigate(destRoute)
+            }}
             nodes={singleBlockNode ? [singleBlockNode] : doc.children}
             indent={indent}
           />
