@@ -276,10 +276,17 @@ export function PublicationContent({
     allBlocks[0]?.block?.text === publication.document?.title
   const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
   const focusedBlocks = focusBlockId
-    ? [getBlockNodeById(displayableBlocks, focusBlockId)]
+    ? getBlockNodeById(displayableBlocks, focusBlockId)
     : displayableBlocks
   const displayBlocks = maxBlockCount
-    ? clipContentBlocks(focusedBlocks, maxBlockCount)
+    ? clipContentBlocks(
+        Array.isArray(focusedBlocks)
+          ? focusedBlocks
+          : focusedBlocks
+          ? [focusedBlocks]
+          : undefined,
+        maxBlockCount,
+      )
     : focusedBlocks
   return (
     <YStack
