@@ -215,7 +215,8 @@ export function createAutoCompletePlugin<N extends string, T>(args: {
           if (
             resolved &&
             resolved.nodeBefore == null &&
-            resolved.nodeAfter?.type.name == 'inline-embed'
+            resolved.nodeAfter?.type.name == 'inline-embed' &&
+            event.code == `Key${event.key.toUpperCase()}`
           ) {
             // the cursor is collapsed and before the first node of a paragraph that is a 'inline-embed'
             view.dispatch(view.state.tr.insertText(event.key))
