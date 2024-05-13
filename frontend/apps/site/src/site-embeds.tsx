@@ -135,13 +135,11 @@ function EmbedWrapper({
     if (wrapperRef.current) {
       observeSize(wrapperRef.current, (rect) => {
         wrapperRect.current = rect
-        console.log('OBSERVER', wrapperRect.current)
       })
     }
     if (sideannotationRef.current) {
       observeSize(sideannotationRef.current, (rect) => {
         sideRect.current = rect
-        console.log('OBSERVER SIDE', sideRect.current)
       })
     }
 
@@ -191,12 +189,14 @@ function EmbedWrapper({
         // overflow="hidden"
         // borderRadius={layoutUnit / 4}
       >
-        {props.children && viewType == 'content'}
-        <EmbedSideAnnotation
-          ref={sideannotationRef}
-          hmId={props.hmRef}
-          sidePos={sidePos}
-        />
+        {props.children}
+        {viewType == 'content' ? (
+          <EmbedSideAnnotation
+            ref={sideannotationRef}
+            hmId={props.hmRef}
+            sidePos={sidePos}
+          />
+        ) : null}
       </YStack>
     </NextLink>
   )
