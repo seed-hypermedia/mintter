@@ -25,6 +25,7 @@ import {
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
+  ButtonText,
   FileWarning,
   SizableText,
   Spinner,
@@ -69,7 +70,7 @@ export function SitePublicationContentProvider({
         Group: EmbedGroup,
         Publication: EmbedPublication,
         Comment: EmbedComment,
-        Inline: SiteInlineEmbed,
+        Inline: InlineEmbed,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -469,7 +470,22 @@ function stripHMLinkPrefix(link: string) {
   return link.replace(/^hm:\//, '')
 }
 
-export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
+export function InlineEmbed(props: InlineEmbedComponentProps) {
+  if (props?.type == 'a') {
+    return <AccountInlineEmbed {...props} />
+  } else if (props?.type == 'd') {
+    return <PublicationInlineEmbed {...props} />
+  } else if (props?.type == 'g') {
+    return <GroupInlineEmbed {...props} />
+  } else {
+    console.error('Inline Embed Error', JSON.stringify(props))
+    return <InlineEmbedButton href="">??</InlineEmbedButton>
+  }
+}
+
+// ----
+
+export function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   const accountId = props?.type == 'a' ? props.eid : undefined
   const accountQuery = trpc.account.get.useQuery({accountId})
   const account = accountQuery.data?.account
@@ -492,6 +508,47 @@ export function SiteInlineEmbed(props: InlineEmbedComponentProps) {
     </Link>
   )
 }
+
+function GroupInlineEmbed(props: InlineEmbedComponentProps) {
+  const groupId = props?.type == 'g' ? props.qid : undefined
+  if (!groupId) throw new Error('Invalid props at GroupInlineEmbed (groupId)')
+  const groupQuery = trpc.group.get.useQuery({
+    groupId,
+    version: props?.version || undefined,
+  })
+  return (
+    <InlineEmbedButton
+      href={`/g/${groupId}${props?.version ? `?v=${props.version}` : ''}`}
+    >
+      {(groupQuery &&
+        groupQuery.status == 'success' &&
+        groupQuery.data?.group?.title) ||
+        `${groupId?.slice(0, 5) + '...' + groupId?.slice(-5)}`}
+    </InlineEmbedButton>
+  )
+}
+
+function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
+  const pubId = props?.type == 'd' ? props.qid : undefined
+  if (!pubId) throw new Error('Invalid props at PublicationInlineEmbed (pubId)')
+  const pubQuery = trpc.publication.get.useQuery({
+    documentId: pubId,
+    versionId: props?.version || undefined,
+  })
+
+  return (
+    <InlineEmbedButton
+      href={`/d/${pubId}${props?.version ? `?v=${props.version}` : ''}`}
+    >
+      {(pubQuery &&
+        pubQuery.status == 'success' &&
+        pubQuery.data?.publication?.document?.title) ||
+        `${pubId?.slice(0, 5) + '...' + pubId?.slice(-5)}`}
+    </InlineEmbedButton>
+  )
+}
+
+// ----
 
 function observeSize(element: HTMLDivElement, callback: (r: DOMRect) => void) {
   const ro = new ResizeObserver(() => {
@@ -575,3 +632,18 @@ const EmbedSideAnnotation = forwardRef<
     </YStack>
   )
 })
+
+function InlineEmbedButton({children, href}: {children: string; href: string}) {
+  return (
+    <Link href={href} style={{all: 'unset'}}>
+      <ButtonText
+        textDecorationColor={'$mint11'}
+        color="$mint11"
+        className="hm-link"
+        fontSize="$5"
+      >
+        {children}
+      </ButtonText>
+    </Link>
+  )
+}
