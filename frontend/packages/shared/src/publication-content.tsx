@@ -452,6 +452,7 @@ export function BlockNodeContent({
   childrenType = 'group',
   isFirstChild = false,
   expanded = true,
+  embedDepth = 1,
   parentBlockId,
   ...props
 }: {
@@ -504,9 +505,7 @@ export function BlockNodeContent({
           start={blockNode.block?.attributes?.start}
           index={index}
           parentBlockId={blockNode.block?.id || null}
-          embedDepth={
-            props.embedDepth ? props.embedDepth + 1 : props.embedDepth
-          }
+          embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
         />
       ))
     : null
