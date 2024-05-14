@@ -58,7 +58,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 	var cursorBlobID int64 = math.MaxInt32
 	var err error
 	if req.PageToken != "" {
-		pageTokenBytes, _ := base64.StdEncoding.DecodeString(req.PageToken)
+		pageTokenBytes, err := base64.StdEncoding.DecodeString(req.PageToken)
 		if err != nil {
 			return nil, fmt.Errorf("Token encoding not valid: %w", err)
 		}
@@ -153,7 +153,7 @@ func (srv *Server) ListEvents(ctx context.Context, req *activity.ListEventsReque
 		joinLinksStr         = "JOIN " + storage.ResourceLinks.String() + " ON " + storage.StructuralBlobsID.String() + "=" + storage.ResourceLinksSource.String()
 		leftjoinResourcesStr = "LEFT JOIN " + storage.Resources.String() + " ON " + storage.StructuralBlobsResource.String() + "=" + storage.ResourcesID.String()
 
-		pageTokenStr = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) ORDER BY " + storage.BlobsID.String() + " desc limit :page_size"
+		pageTokenStr = storage.BlobsID.String() + " <= :idx AND (" + storage.ResourcesIRI.String() + " NOT IN (SELECT " + storage.DraftsViewResource.String() + " from " + storage.DraftsView.String() + ") OR " + storage.ResourcesIRI.String() + " IS NULL) AND " + storage.BlobsSize.String() + ">0 ORDER BY " + storage.BlobsID.String() + " desc limit :page_size"
 	)
 
 	var getEventsStr = fmt.Sprintf(`
