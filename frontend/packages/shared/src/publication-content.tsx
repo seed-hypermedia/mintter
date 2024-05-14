@@ -1072,6 +1072,10 @@ function BlockContentImage({
       {...blockStyles}
       {...props}
       className="block-content block-image"
+      data-content-type="image"
+      data-url={`ipfs://${cid}`}
+      data-alt={block?.attributes?.alt}
+      data-width={block.attributes?.width}
       paddingVertical="$3"
       gap="$2"
       ai="center"
@@ -1113,6 +1117,9 @@ function BlockContentVideo({
       className="block-content block-video"
       paddingVertical="$3"
       gap="$2"
+      data-content-type="video"
+      data-url={ref}
+      data-name={block.attributes?.name}
       paddingBottom="56.25%"
       position="relative"
       height={0}
@@ -1753,6 +1760,10 @@ export function BlockContentFile({
       overflow="hidden"
       f={1}
       className="block-content block-file"
+      data-content-type="file"
+      data-url={block.ref}
+      data-name={block.attributes?.name}
+      data-size={block.attributes?.size}
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
@@ -1945,6 +1956,8 @@ export function BlockContentXPost({
       width="100%"
       marginHorizontal={(-1 * layoutUnit) / 2}
       className="x-post-container"
+      data-content-type="web-embed"
+      data-url={block.ref}
       onPress={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -2007,11 +2020,17 @@ export function BlockContentCode({
       borderRadius={layoutUnit / 4}
       padding={layoutUnit / 2}
       overflow="hidden"
+      data-content-type="codeBlock"
       width="100%"
       {...debugStyles(debug, 'blue')}
       marginHorizontal={(-1 * layoutUnit) / 2}
     >
-      <XStack tag="pre" flex="unset" overflow="auto">
+      <XStack
+        tag="pre"
+        className={'language-' + language}
+        flex="unset"
+        overflow="auto"
+      >
         <Text
           tag="code"
           whiteSpace="pre"
@@ -2055,6 +2074,7 @@ export function BlockContentMath({
       backgroundColor="$color4"
       borderWidth={1}
       borderRadius={layoutUnit / 4}
+      data-content-type="math"
       padding={layoutUnit / 2}
       overflow="hidden"
       marginHorizontal={(-1 * layoutUnit) / 2}

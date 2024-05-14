@@ -144,6 +144,9 @@ function EmbedWrapper({
       userSelect="none"
       {...blockStyles}
       className="block-embed"
+      data-content-type="embed"
+      data-url={hmRef}
+      data-view={viewType}
       backgroundColor={
         isHighlight
           ? routeParams?.blockRef == unpackRef?.blockRef
