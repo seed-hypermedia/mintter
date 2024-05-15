@@ -283,7 +283,6 @@ export function PublicationContent({
     allBlocks[0]?.block?.text === publication.document?.title
   const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
   const focusedBlocks = getFocusedBlocks(displayableBlocks, focusBlockId)
-  console.log({displayableBlocks, focusedBlocks, focusBlockId})
   const displayBlocks = maxBlockCount
     ? clipContentBlocks(focusedBlocks || [], maxBlockCount)
     : focusedBlocks

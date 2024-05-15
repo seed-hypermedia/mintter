@@ -468,43 +468,62 @@ function SidebarEmbedOutlineItem({
     id.blockRef && doc?.children
       ? getBlockNodeById(doc.children, id.blockRef)
       : null
-  if (singleBlockNode) return null
   const info = loadedEntity ? getItemDetails(loadedEntity) : null
+  const title = singleBlockNode
+    ? singleBlockNode.block.text
+    : info?.title || 'Untitled Embed'
+  const nodes = singleBlockNode ? singleBlockNode.children : doc?.children
+  const canCollapse = !!nodes?.length
+  const destRoute = appRouteOfId(id)
   if (doc && info)
     return (
       <>
         <SidebarItem
           indented={indent}
-          title={info?.title || 'Untitled Embed'}
+          title={title}
           icon={info?.icon}
-          isCollapsed={collapse}
-          onSetCollapsed={setCollapse}
+          isCollapsed={canCollapse ? collapse : undefined}
+          onSetCollapsed={canCollapse ? setCollapse : undefined}
           active={activeBlock === blockId}
           activeBgColor={'$yellow4'}
           onPress={() => {
             onActivateBlock(blockId)
           }}
+          rightHover={[
+            destRoute ? (
+              <FocusButton
+                key="focus"
+                onPress={() => {
+                  if (!destRoute) return
+                  navigate(destRoute)
+                }}
+              />
+            ) : null,
+          ]}
         />
         {collapse ? null : (
           <SidebarOutline
             activeBlock={activeBlock}
             onActivateBlock={onActivateBlock}
-            onFocusBlock={(childBlockId) => {
-              const destRoute = appRouteOfId(id)
-              if (!destRoute) return
-              if (
-                destRoute.key === 'publication' ||
-                destRoute.key === 'group' ||
-                destRoute.key === 'account'
-              ) {
-                navigate({
-                  ...destRoute,
-                  focusBlockId: childBlockId,
-                  context: getRouteContext(route, blockId),
-                })
-              } else navigate(destRoute)
-            }}
-            nodes={singleBlockNode ? [singleBlockNode] : doc.children}
+            onFocusBlock={
+              destRoute
+                ? (childBlockId) => {
+                    if (!destRoute) return
+                    if (
+                      destRoute.key === 'publication' ||
+                      destRoute.key === 'group' ||
+                      destRoute.key === 'account'
+                    ) {
+                      navigate({
+                        ...destRoute,
+                        focusBlockId: childBlockId,
+                        context: getRouteContext(route, blockId),
+                      })
+                    } else navigate(destRoute)
+                  }
+                : null
+            }
+            nodes={nodes}
             indent={indent}
           />
         )}
