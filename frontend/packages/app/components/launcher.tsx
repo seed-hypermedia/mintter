@@ -8,6 +8,7 @@ import {
   HYPERMEDIA_SCHEME,
   hmIdWithVersion,
   isHypermediaScheme,
+  parseCustomURL,
   parseFragment,
   unpackHmId,
 } from '@mintter/shared'
@@ -93,15 +94,15 @@ function useURLHandler() {
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
-      const fragment = parseFragment(httpSearch)
+      const parsedUrl = parseCustomURL(httpSearch)
+      const fragment = parseFragment(parsedUrl?.fragment || '')
       const fullHmId = hmIdWithVersion(
         result?.hmId,
         result?.hmVersion,
         fragment?.blockId,
       )
-      console.log('fullHmId', fullHmId)
       if (!fullHmId) throw new Error('Failed to fetch web link')
-      const queried = await resolveHmUrl(fullHmId)
+      const queried = await resolveHmUrl(result?.hmUrl || fullHmId)
       if (queried?.navRoute) {
         return queried?.navRoute
       }
