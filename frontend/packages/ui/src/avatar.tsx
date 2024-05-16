@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {useMemo} from 'react'
-import {Avatar, SizableText, XStack} from 'tamagui'
+import {SizableText, XStack} from 'tamagui'
 
 export type UIAvatarProps = {
   url?: string
@@ -11,6 +11,18 @@ export type UIAvatarProps = {
   onPress?: () => void
 }
 
+let colors = [
+  'blue',
+  'gray',
+  'green',
+  'orange',
+  'pink',
+  'purple',
+  'red',
+  'yellow',
+  'mint',
+]
+
 export function UIAvatar({
   url,
   id,
@@ -19,47 +31,45 @@ export function UIAvatar({
   color,
   onPress,
 }: UIAvatarProps) {
-  let avatarColor = useMemo(
-    () => (id ? getRandomColor(id) : color ? color : '$blue8'),
-    [id, color],
-  )
+  let avatarColor = useMemo(() => {
+    if (color) return color
+    let idx = Math.floor(Math.random() * colors.length)
+    return `$${colors[idx]}6`
+  }, [id, color])
 
-  function clampNumber(value: number, min: number, max: number): number {
-    return Math.min(Math.max(value, min), max)
-  }
-
-  let textSize = clampNumber(size / 2, 10, 56)
+  let text = label ? label[0] : id ? id[0] : '?'
 
   let avatar = (
-    <Avatar circular size={size} alignItems="center" justifyContent="center">
+    <XStack
+      width={size}
+      height={size}
+      borderRadius={size}
+      overflow="hidden"
+      backgroundColor={avatarColor}
+      alignItems="center"
+      justifyContent="center"
+      position="relative"
+    >
       {url ? (
-        <Avatar.Image
-          source={{
-            uri: url,
-            width: size,
-            height: size,
-          }}
+        <img
+          src={url}
+          style={{minWidth: '100%', minHeight: '100%', objectFit: 'cover'}}
         />
-      ) : null}
-      <Avatar.Fallback
-        delayMs={600}
-        backgroundColor={color || avatarColor}
-        alignItems="center"
-        justifyContent="center"
-      >
+      ) : (
         <SizableText
+          fontWeight="600"
+          fontSize={size * 0.55}
+          display="block"
           width={size / 2}
+          height={size / 2}
+          lineHeight={size / 2}
           textAlign="center"
-          fontFamily="$body"
-          textTransform="capitalize"
-          fontWeight="700"
-          fontSize={textSize}
-          color="black"
+          color="$color"
         >
-          {label ? label[0] : id ? id[0] : '?'}
+          {text.toUpperCase()}
         </SizableText>
-      </Avatar.Fallback>
-    </Avatar>
+      )}
+    </XStack>
   )
 
   if (onPress) {
