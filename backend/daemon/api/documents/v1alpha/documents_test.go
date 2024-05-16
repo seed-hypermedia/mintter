@@ -553,6 +553,82 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 	}
 }
 
+func TestMerge(t *testing.T) {
+	t.Skip("Not ready yet")
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draftTarget, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	draftTarget = updateDraft(ctx, t, api, draftTarget.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draftTarget)
+	targetDoc, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draftTarget.Id})
+	require.NoError(t, err)
+	require.NotNil(t, targetDoc)
+
+	if diff := cmp.Diff(draftTarget, targetDoc.Document, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Document{}, "PublishTime")); diff != "" {
+		t.Log(diff)
+		t.Fatal("targetDoc doc must match its final draft")
+	}
+
+	draftSource, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: targetDoc.Document.Id,
+	})
+	require.NoError(t, err)
+
+	require.True(t, draftSource.UpdateTime.AsTime().After(targetDoc.Document.UpdateTime.AsTime()), "draft update time must be greater than previous publication")
+
+	draftSource = updateDraft(ctx, t, api, draftSource.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b2",
+			Type: "statement",
+			Text: "Hello updated!",
+		}}},
+	})
+
+	sourceDoc, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draftSource.Id})
+	require.NoError(t, err)
+	require.NotNil(t, sourceDoc)
+
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 0)
+
+	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 1)
+
+	sourceDoc.Document.Children = nil
+
+	testutil.StructsEqual(sourceDoc, pubs.Publications[0]).
+		IgnoreFields(documents.Document{}, "Version", "PreviousVersion"). // Listed pubs don't have those fields
+		IgnoreFields(documents.Publication{}, "Version").
+		Compare(t, "publication in the list must be the same as published")
+
+	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
+		SourceDocumentId:      sourceDoc.Document.Id,
+		SourceDocumentVersion: sourceDoc.Document.Version,
+		TargetDocumentId:      targetDoc.Document.Id,
+		TargetDocumentVersion: targetDoc.Document.Version,
+	})
+	require.NoError(t, err)
+	require.Equal(t, targetDoc.Document.Id, mergedPub.Id)
+	require.Equal(t, targetDoc.Document.Version, mergedPub.PreviousVersion)
+
+}
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()

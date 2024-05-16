@@ -532,3 +532,89 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "documents/v1alpha/documents.proto",
 }
+
+// MergeClient is the client API for Merge service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type MergeClient interface {
+	// Gets a single publication.
+	MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error)
+}
+
+type mergeClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewMergeClient(cc grpc.ClientConnInterface) MergeClient {
+	return &mergeClient{cc}
+}
+
+func (c *mergeClient) MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error) {
+	out := new(Publication)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Merge/MergeChanges", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MergeServer is the server API for Merge service.
+// All implementations should embed UnimplementedMergeServer
+// for forward compatibility
+type MergeServer interface {
+	// Gets a single publication.
+	MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error)
+}
+
+// UnimplementedMergeServer should be embedded to have forward compatible implementations.
+type UnimplementedMergeServer struct {
+}
+
+func (UnimplementedMergeServer) MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MergeChanges not implemented")
+}
+
+// UnsafeMergeServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MergeServer will
+// result in compilation errors.
+type UnsafeMergeServer interface {
+	mustEmbedUnimplementedMergeServer()
+}
+
+func RegisterMergeServer(s grpc.ServiceRegistrar, srv MergeServer) {
+	s.RegisterService(&Merge_ServiceDesc, srv)
+}
+
+func _Merge_MergeChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MergeChangesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MergeServer).MergeChanges(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Merge/MergeChanges",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MergeServer).MergeChanges(ctx, req.(*MergeChangesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Merge_ServiceDesc is the grpc.ServiceDesc for Merge service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Merge_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "com.mintter.documents.v1alpha.Merge",
+	HandlerType: (*MergeServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "MergeChanges",
+			Handler:    _Merge_MergeChanges_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "documents/v1alpha/documents.proto",
+}

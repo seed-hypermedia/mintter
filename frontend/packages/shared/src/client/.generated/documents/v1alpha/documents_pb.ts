@@ -869,6 +869,71 @@ export class ListAccountPublicationsRequest extends Message<ListAccountPublicati
 }
 
 /**
+ * Request for merging changes in a document.
+ *
+ * @generated from message com.mintter.documents.v1alpha.MergeChangesRequest
+ */
+export class MergeChangesRequest extends Message<MergeChangesRequest> {
+  /**
+   * Required. ID of the document containing the changes to merge.
+   *
+   * @generated from field: string source_document_id = 1;
+   */
+  sourceDocumentId = "";
+
+  /**
+   * Required. Version of the document containing the changes to merge.
+   *
+   * @generated from field: string source_document_version = 2;
+   */
+  sourceDocumentVersion = "";
+
+  /**
+   * Required. ID of the base document to merge into.
+   *
+   * @generated from field: string target_document_id = 3;
+   */
+  targetDocumentId = "";
+
+  /**
+   * Optional. Version of the base document to merge into.
+   *
+   * @generated from field: string target_document_version = 4;
+   */
+  targetDocumentVersion = "";
+
+  constructor(data?: PartialMessage<MergeChangesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.MergeChangesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "source_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "source_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "target_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "target_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MergeChangesRequest {
+    return new MergeChangesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MergeChangesRequest {
+    return new MergeChangesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MergeChangesRequest {
+    return new MergeChangesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MergeChangesRequest | PlainMessage<MergeChangesRequest> | undefined, b: MergeChangesRequest | PlainMessage<MergeChangesRequest> | undefined): boolean {
+    return proto3.util.equals(MergeChangesRequest, a, b);
+  }
+}
+
+/**
  * State of the document after publication.
  * Deprecated: use the Document message instead,
  * it has all the same fields.

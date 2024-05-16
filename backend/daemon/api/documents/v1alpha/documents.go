@@ -947,6 +947,11 @@ func (api *Server) ListAccountPublications(ctx context.Context, in *documents.Li
 	return out, nil
 }
 
+// MergeChanges implements the corresponding gRPC method.
+func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesRequest) (*documents.Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "Merge functionality is not implemented yet")
+}
+
 func (api *Server) getMe() (core.Identity, error) {
 	me, ok := api.me.Get()
 	if !ok {

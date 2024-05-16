@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, MergeChangesRequest, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -144,6 +144,28 @@ export const Publications = {
       name: "ListAccountPublications",
       I: ListAccountPublicationsRequest,
       O: ListPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+  }
+} as const;
+
+/**
+ * Publications service provides access to published documents.
+ *
+ * @generated from service com.mintter.documents.v1alpha.Merge
+ */
+export const Merge = {
+  typeName: "com.mintter.documents.v1alpha.Merge",
+  methods: {
+    /**
+     * Gets a single publication.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Merge.MergeChanges
+     */
+    mergeChanges: {
+      name: "MergeChanges",
+      I: MergeChangesRequest,
+      O: Publication,
       kind: MethodKind.Unary,
     },
   }
