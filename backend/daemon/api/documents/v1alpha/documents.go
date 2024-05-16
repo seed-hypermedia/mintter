@@ -954,76 +954,43 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 		return nil, err
 	}
 
-	if in.TargetDocumentId == "" {
-		return nil, fmt.Errorf("Target ID is mandatory")
-	}
-	eid := hyper.EntityID(in.TargetDocumentId)
-
-	source, err := hyper.Version(in.SourceDocumentVersion).Parse()
-	if err != nil {
-		return nil, err
+	if len(in.Versions) < 2 {
+		return nil, fmt.Errorf("At least two versions are necessary for merging")
 	}
 
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
-		ExistingDocumentId: in.TargetDocumentId,
-		Version:            in.TargetDocumentVersion,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if doc.Id != eid.String() {
-		return nil, fmt.Errorf("Internal error. Draft entity and doc don't match")
-	}
-	entity, err := api.blobs.LoadEntity(ctx, eid)
-	if err != nil {
-		return nil, err
-	}
-	ch, err := api.blobs.GetDraft(ctx, eid)
-	if err != nil {
-		return nil, err
-	}
-
-OUTER:
-	for _, dep := range source {
-		for _, alreadyDep := range ch.Deps {
-			if dep == alreadyDep {
-				continue OUTER
-			}
+	allHeads := []cid.Cid{}
+	for _, version := range in.Versions {
+		heads, err := hyper.Version(version).Parse()
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "unable to parse version %s: %v", version, err)
 		}
-		ch.Deps = append(ch.Deps, dep)
+		allHeads = append(allHeads, heads...)
 	}
 
+	entity, err := api.blobs.LoadEntityFromHeads(ctx, hyper.EntityID(in.Id), allHeads...)
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		return nil, fmt.Errorf("void entity after applying all versions")
+	}
 	del, err := api.getDelegation(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{
-		// TODO(juligasa): Remove this and add in terra.go NewChange if deps>1 and no patch don't error since its a merge
-		"isDraft": true,
-	}, hyper.WithDeps(ch.Deps), hyper.WithAction(hyper.ActionUpdate))
+	hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, nil, hyper.WithAction(hyper.ActionUpdate))
 
 	if err != nil {
 		return nil, err
 	}
-	/*
-		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-			DocumentId: eid.String(),
-			Changes:    hb.Decoded,
-		})
-		if err != nil {
-			return nil, err
-		}*/
-	if err := api.blobs.SaveDraftBlob(ctx, eid, hb); err != nil {
+
+	if err := api.blobs.SaveDraftBlob(ctx, entity.ID(), hb); err != nil {
 		return nil, err
 	}
 
 	return api.GetDraft(ctx, &documents.GetDraftRequest{
-		DocumentId: eid.String(),
+		DocumentId: entity.ID().String(),
 	})
-
-	//return nil, status.Errorf(codes.Unimplemented, "Merge functionality is not implemented yet"+c.String())
-
 }
 
 func (api *Server) getMe() (core.Identity, error) {

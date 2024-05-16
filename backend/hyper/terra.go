@@ -170,7 +170,7 @@ func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Timestamp, signer core.KeyPa
 		deps = nil
 	}
 
-	if len(patch) == 0 {
+	if len(patch) == 0 && len(deps) == 1 {
 		return hb, fmt.Errorf("new changes must have a patch: nothing to update")
 	}
 
