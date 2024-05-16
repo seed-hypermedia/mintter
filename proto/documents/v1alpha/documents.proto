@@ -220,6 +220,31 @@ message ListAccountPublicationsRequest {
   string account_id = 3;
 }
 
+
+// === Merge Service ===
+
+// Publications service provides access to published documents.
+service Merge {
+  // Gets a single publication.
+  rpc MergeChanges(MergeChangesRequest) returns (Publication);
+}
+
+// Request for merging changes in a document.
+message MergeChangesRequest {
+  // Required. ID of the document containing the changes to merge.
+  string source_document_id = 1;
+
+  // Required. Version of the document containing the changes to merge.
+  string source_document_version = 2;
+
+  // Required. ID of the base document to merge into.
+  string target_document_id = 3;
+
+  // Optional. Version of the base document to merge into.
+  string target_document_version = 4;
+  
+}
+
 // === Types ===
 
 // State of the document after publication.
