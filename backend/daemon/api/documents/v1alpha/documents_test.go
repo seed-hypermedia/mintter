@@ -554,7 +554,7 @@ func TestAPIPublishDraft_E2E(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
-	t.Skip("Not ready yet")
+	//t.Skip("Not ready yet")
 	t.Parallel()
 
 	api := newTestDocsAPI(t, "alice")
@@ -619,15 +619,13 @@ func TestMerge(t *testing.T) {
 		Compare(t, "publication in the list must be the same as published")
 
 	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
-		SourceDocumentId:      sourceDoc.Document.Id,
 		SourceDocumentVersion: sourceDoc.Document.Version,
 		TargetDocumentId:      targetDoc.Document.Id,
 		TargetDocumentVersion: targetDoc.Document.Version,
 	})
 	require.NoError(t, err)
 	require.Equal(t, targetDoc.Document.Id, mergedPub.Id)
-	require.Equal(t, targetDoc.Document.Version, mergedPub.PreviousVersion)
-
+	require.Equal(t, sourceDoc.Document.Version, mergedPub.PreviousVersion)
 }
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")

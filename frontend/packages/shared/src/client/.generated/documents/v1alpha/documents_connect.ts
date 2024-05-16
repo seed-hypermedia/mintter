@@ -150,7 +150,7 @@ export const Publications = {
 } as const;
 
 /**
- * Publications service provides access to published documents.
+ * Merge service provides access to merge documents.
  *
  * @generated from service com.mintter.documents.v1alpha.Merge
  */
@@ -158,7 +158,7 @@ export const Merge = {
   typeName: "com.mintter.documents.v1alpha.Merge",
   methods: {
     /**
-     * Gets a single publication.
+     * Merge changes.
      *
      * @generated from rpc com.mintter.documents.v1alpha.Merge.MergeChanges
      */
