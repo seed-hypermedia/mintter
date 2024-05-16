@@ -392,6 +392,13 @@ func WithAction(action string) ChangeOption {
 	}
 }
 
+// WithDeps sets the depts field of the change.
+func WithDeps(deps []cid.Cid) ChangeOption {
+	return func(c *Change) {
+		c.Deps = deps
+	}
+}
+
 // WithMessage sets the message field of the change.
 func WithMessage(msg string) ChangeOption {
 	return func(c *Change) {

@@ -537,7 +537,7 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MergeClient interface {
-	// Gets a single publication.
+	// Merge changes.
 	MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error)
 }
 
@@ -562,7 +562,7 @@ func (c *mergeClient) MergeChanges(ctx context.Context, in *MergeChangesRequest,
 // All implementations should embed UnimplementedMergeServer
 // for forward compatibility
 type MergeServer interface {
-	// Gets a single publication.
+	// Merge changes.
 	MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error)
 }
 

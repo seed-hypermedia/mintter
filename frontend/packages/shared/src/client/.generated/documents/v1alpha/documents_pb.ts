@@ -875,30 +875,23 @@ export class ListAccountPublicationsRequest extends Message<ListAccountPublicati
  */
 export class MergeChangesRequest extends Message<MergeChangesRequest> {
   /**
-   * Required. ID of the document containing the changes to merge.
-   *
-   * @generated from field: string source_document_id = 1;
-   */
-  sourceDocumentId = "";
-
-  /**
    * Required. Version of the document containing the changes to merge.
    *
-   * @generated from field: string source_document_version = 2;
+   * @generated from field: string source_document_version = 1;
    */
   sourceDocumentVersion = "";
 
   /**
    * Required. ID of the base document to merge into.
    *
-   * @generated from field: string target_document_id = 3;
+   * @generated from field: string target_document_id = 2;
    */
   targetDocumentId = "";
 
   /**
    * Optional. Version of the base document to merge into.
    *
-   * @generated from field: string target_document_version = 4;
+   * @generated from field: string target_document_version = 3;
    */
   targetDocumentVersion = "";
 
@@ -910,10 +903,9 @@ export class MergeChangesRequest extends Message<MergeChangesRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.mintter.documents.v1alpha.MergeChangesRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "source_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "source_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "target_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "target_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "source_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "target_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "target_document_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MergeChangesRequest {
