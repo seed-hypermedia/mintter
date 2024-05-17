@@ -875,14 +875,14 @@ export class ListAccountPublicationsRequest extends Message<ListAccountPublicati
  */
 export class MergeChangesRequest extends Message<MergeChangesRequest> {
   /**
-   * Document ID of the resulting document.
+   * Required. Document ID from which versions are going to be taken.
    *
    * @generated from field: string id = 1;
    */
   id = "";
 
   /**
-   * Required. Versions to be merged into the document ID provided.
+   * Required. Versions to be merged.
    *
    * @generated from field: repeated string versions = 2;
    */
