@@ -231,10 +231,10 @@ service Merge {
 
 // Request for merging changes in a document.
 message MergeChangesRequest {
-  // Document ID of the resulting document.
+  // Required. Document ID from which versions are going to be taken.
   string id = 1;  
 
-  // Required. Versions to be merged into the document ID provided.
+  // Required. Versions to be merged.
   repeated string versions = 2;  
 }
 

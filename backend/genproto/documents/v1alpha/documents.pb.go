@@ -1004,9 +1004,9 @@ type MergeChangesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Document ID of the resulting document.
+	// Required. Document ID from which versions are going to be taken.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Required. Versions to be merged into the document ID provided.
+	// Required. Versions to be merged.
 	Versions []string `protobuf:"bytes,2,rep,name=versions,proto3" json:"versions,omitempty"`
 }
 

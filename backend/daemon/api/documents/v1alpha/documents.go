@@ -958,6 +958,10 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 		return nil, fmt.Errorf("At least two versions are necessary for merging")
 	}
 
+	if in.Id == "" {
+		return nil, fmt.Errorf("Document Id is a mandatory field")
+	}
+
 	allHeads := []cid.Cid{}
 	for _, version := range in.Versions {
 		heads, err := hyper.Version(version).Parse()
@@ -971,9 +975,11 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 	if err != nil {
 		return nil, err
 	}
+
 	if entity == nil {
-		return nil, fmt.Errorf("void entity after applying all versions")
+		return nil, fmt.Errorf("Error merging. Are all the versions coming from the same document?")
 	}
+
 	del, err := api.getDelegation(ctx)
 	if err != nil {
 		return nil, err
