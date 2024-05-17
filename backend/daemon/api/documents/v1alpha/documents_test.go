@@ -575,7 +575,7 @@ func TestMerge(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
 	require.NoError(t, err)
 	updated2 := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Second Doc"}},
@@ -591,8 +591,9 @@ func TestMerge(t *testing.T) {
 		DocumentId: updated2.Id,
 	})
 	require.NoError(t, err)
-
+	require.Equal(t, pub1.Document.Id, pub2.Document.Id)
 	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
+		Id:       pub1.Document.Id,
 		Versions: []string{pub1.Version, pub2.Version},
 	})
 	require.NoError(t, err)
