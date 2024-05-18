@@ -210,12 +210,16 @@ function EmbedWrapper({
   )
 }
 
-function observeSize(element: HTMLDivElement, callback: (r: DOMRect) => void) {
+export function observeSize(
+  element: HTMLDivElement,
+  callback: (r: DOMRect) => void,
+) {
   const ro = new ResizeObserver(() => {
     const r = element.getBoundingClientRect()
     callback(r)
   })
   ro.observe(element)
+  return () => ro.disconnect()
 }
 
 const EmbedSideAnnotation = forwardRef<

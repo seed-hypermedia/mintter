@@ -4,6 +4,7 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {getDocumentTitle} from '@mintter/shared'
 import {
   Book,
+  ButtonText,
   Contact,
   ErrorIcon,
   FontSizeTokens,
@@ -12,10 +13,12 @@ import {
   Spinner,
   TitleText,
   XStack,
+  styled,
 } from '@mintter/ui'
 import {Sparkles, Star} from '@tamagui/lucide-icons'
-import {useEffect} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {useAccount} from '../models/accounts'
+import {useEntitiesContent, useEntityRoutes} from '../models/entities'
 import {useGroup} from '../models/groups'
 import {useFixedDraftTitle} from '../pages/draft'
 import {
@@ -26,6 +29,9 @@ import {
   NavRoute,
   PublicationRoute,
 } from '../utils/routes'
+import {useNavigate} from '../utils/useNavigate'
+import {observeSize} from './app-embeds'
+import {getItemDetails} from './sidebar-neo'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -88,29 +94,13 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'group') {
-    return (
-      <>
-        <GroupTitle route={route} />
-      </>
-    )
-  }
-  if (route.key === 'account') {
-    return (
-      <>
-        <AccountProfileTitle route={route} size={size} />
-      </>
-    )
-  }
-  if (route.key === 'publication') {
-    return (
-      <>
-        {/* <PageContextButton />
-        <Slash /> */}
-        <PublicationTitle route={route} />
-        {/* <VersionContext route={route} /> */}
-      </>
-    )
+
+  if (
+    route.key === 'group' ||
+    route.key === 'account' ||
+    route.key === 'publication'
+  ) {
+    return <BreadcrumbTitle route={route} />
   }
   if (route.key === 'draft') {
     return (
@@ -124,13 +114,134 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   return null
 }
 
-function AccountProfileTitle({
+function BreadcrumbTitle({
   route,
-  size,
 }: {
-  route: AccountRoute
-  size?: FontSizeTokens
+  route: PublicationRoute | GroupRoute | AccountRoute
 }) {
+  const entityRoutes = useEntityRoutes(route)
+  const entityContents = useEntitiesContent(entityRoutes)
+
+  const routeDetails = useMemo(
+    () =>
+      entityRoutes.map((route, routeIndex) => {
+        if (route.key === 'draft') return null // draft should not appear in context
+        const details = getItemDetails(
+          entityContents?.find((c) => c.route === route)?.entity,
+          route.blockId,
+        )
+        if (!details) return null
+        return {
+          ...details,
+          route: {
+            ...route,
+            context: [...entityRoutes.slice(0, routeIndex)],
+          },
+          onWidth: (width) => {
+            // console.log('width of el', route, width)
+          },
+        }
+      }),
+    [entityRoutes, entityContents],
+  )
+  const container = useRef(null)
+  useEffect(() => {
+    if (!container.current) return
+    return observeSize(container.current, ({width}) => {
+      // console.log('width of container', width)
+    })
+  }, [])
+  return (
+    <XStack gap="$2" f={1} marginRight={'$4'} ref={container}>
+      {routeDetails.map((details, detailsIndex) => {
+        if (!details) return null
+        return (
+          <>
+            <BreadcrumbItem
+              details={details}
+              isActive={detailsIndex === routeDetails.length - 1}
+              onWidth={details.onWidth}
+            />
+            {detailsIndex < routeDetails.length - 1 ? (
+              <BreadcrumbSeparator />
+            ) : null}
+          </>
+        )
+      })}
+    </XStack>
+  )
+}
+function BreadcrumbSeparator() {
+  return (
+    <TitleText size="$4" color="$color10">
+      {' / '}
+    </TitleText>
+  )
+}
+
+const TitleEllipsisLength = 20
+
+function BreadcrumbItem({
+  details,
+  isActive,
+  onWidth,
+}: {
+  details: ReturnType<typeof getItemDetails> & {route: NavRoute}
+  isActive: boolean
+  onWidth: (width: number) => void
+}) {
+  const navigate = useNavigate()
+  const titleEl = useRef(null)
+  useEffect(() => {
+    if (!titleEl.current) return
+    return observeSize(titleEl.current, (a) => {
+      onWidth(a.width)
+    })
+  }, [])
+  if (!details?.title) return null
+  if (isActive) {
+    return (
+      <TitleText ref={titleEl} fontWeight="bold">
+        {details.title}
+      </TitleText>
+    )
+  }
+  const ellipsizedTitle =
+    details.title.length > TitleEllipsisLength
+      ? `${details.title.slice(0, TitleEllipsisLength)}...`
+      : details.title
+  return (
+    <TitleTextButton
+      ref={titleEl}
+      className="no-window-drag"
+      onPress={() => {
+        navigate(details.route)
+      }}
+      fontWeight={isActive ? 'bold' : 'normal'}
+    >
+      {ellipsizedTitle}
+    </TitleTextButton>
+  )
+}
+
+export const TitleTextButton = styled(ButtonText, {
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  name: 'TitlebarLink',
+  color: '$color12',
+  fontSize: '$4',
+  userSelect: 'none',
+  padding: 0,
+  margin: 0,
+  textTransform: 'none',
+  cursor: 'pointer',
+  hoverStyle: {
+    textDecorationLine: 'underline',
+  },
+})
+
+function AccountProfileTitle({route}: {route: AccountRoute}) {
   const account = useAccount(route.accountId)
   let windowLabel = 'Profile'
   if (route.tab === 'documents') {
@@ -145,11 +256,7 @@ function AccountProfileTitle({
     : `Account ${windowLabel}`
   useWindowTitle(title)
 
-  return (
-    <TitleText data-testid="titlebar-title" size={size}>
-      {title}
-    </TitleText>
-  )
+  return <TitleText>{title}</TitleText>
 }
 
 function GroupTitle({route}: {route: GroupRoute | GroupFeedRoute}) {

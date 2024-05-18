@@ -18,7 +18,7 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useCallback, useEffect, useMemo, useState} from 'react'
+import {ReactNode, memo, useCallback, useMemo, useState} from 'react'
 import {Button, SizableText, Spinner, View} from 'tamagui'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {
@@ -88,10 +88,10 @@ export function SidebarNeo() {
     setCollapseMe(isMyAccountActive ? false : true)
     setCollapseStandalone(isMyAccountActive ? true : false)
   }, [])
-  useEffect(() => {
-    if (isMyAccountActive) setCollapseMe(false)
-    else setCollapseStandalone(false)
-  }, [isMyAccountActive])
+  // useEffect(() => {
+  //   if (isMyAccountActive) setCollapseMe(false)
+  //   else setCollapseStandalone(false)
+  // }, [isMyAccountActive])
   if (isMyAccountActive) {
     // the active route is under myAccount section
     myAccountSection = (
@@ -190,7 +190,7 @@ function getBlockHeadings(
     | {id: string; text: string; embedId: null | string}[]
 }
 
-function getItemDetails(
+export function getItemDetails(
   entity: HMEntityContent | undefined,
   blockId?: string,
   myAccount?: HMAccount,
