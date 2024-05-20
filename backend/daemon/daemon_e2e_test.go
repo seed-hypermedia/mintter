@@ -651,8 +651,8 @@ func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
-func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string, DocumentId string, DocumentVersion string) *documents.Publication {
-	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: DocumentId, Version: DocumentVersion})
+func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string, DocumentID string, DocumentVersion string) *documents.Publication {
+	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: DocumentID, Version: DocumentVersion})
 	require.NoError(t, err)
 	ann := []*documents.Annotation{}
 	if link != "" {
