@@ -977,7 +977,7 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 	}
 
 	if entity == nil {
-		return nil, fmt.Errorf("Error merging. Are all the versions coming from the same document?")
+		return nil, fmt.Errorf("nothing to merge, aborting")
 	}
 
 	del, err := api.getDelegation(ctx)
