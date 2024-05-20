@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"context"
+	"math/rand"
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
@@ -127,7 +128,7 @@ func TestDaemonPushPublication(t *testing.T) {
 	alice := makeTestApp(t, "alice", cfg, true)
 	ctx := context.Background()
 
-	pub := publishDocument(t, ctx, alice, "")
+	pub := publishDocument(t, ctx, alice, "", "", "")
 	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
 		Url:        ipfs.TestGateway,
@@ -138,6 +139,60 @@ func TestDaemonPushPublication(t *testing.T) {
 		Url:        "https://gabo.es/",
 	})
 	require.Error(t, err)
+}
+
+func TestMergeE2E(t *testing.T) {
+	t.Parallel()
+	acfg := makeTestConfig(t)
+	bcfg := makeTestConfig(t)
+
+	acfg.Syncing.WarmupDuration = 1 * time.Millisecond
+	bcfg.Syncing.WarmupDuration = 1 * time.Millisecond
+
+	acfg.Syncing.Interval = 150 * time.Millisecond
+	bcfg.Syncing.Interval = 150 * time.Millisecond
+
+	acfg.Syncing.RefreshInterval = 50 * time.Millisecond
+	bcfg.Syncing.RefreshInterval = 50 * time.Millisecond
+
+	alice := makeTestApp(t, "alice", acfg, true)
+	bob := makeTestApp(t, "bob", bcfg, true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+
+	time.Sleep(200 * time.Millisecond)
+
+	initialVersion := publishDocument(t, ctx, alice, "", "", "")
+	secondVersion := publishDocument(t, ctx, alice, "", initialVersion.Document.Id, initialVersion.Version)
+	time.Sleep(200 * time.Millisecond)
+
+	// so Bob gets Alice's document
+	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	forkedVersion := publishDocument(t, ctx, bob, "", initialVersion.Document.Id, initialVersion.Version)
+
+	time.Sleep(200 * time.Millisecond)
+
+	// so Alice gets Bobs's changes
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+	mergedPub, err := alice.RPC.Documents.MergeChanges(ctx, &documents.MergeChangesRequest{
+		Id:       initialVersion.Document.Id,
+		Versions: []string{secondVersion.Version, forkedVersion.Version},
+	})
+	require.NoError(t, err)
+	require.Contains(t, mergedPub.PreviousVersion, secondVersion.Version)
+	require.Contains(t, mergedPub.PreviousVersion, forkedVersion.Version)
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
@@ -168,7 +223,7 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, alice.Net.MustGet().Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
 	alice.Net.MustGet().Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
 
-	pub := publishDocument(t, ctx, alice, "")
+	pub := publishDocument(t, ctx, alice, "", "", "")
 
 	time.Sleep(time.Second)
 
@@ -199,8 +254,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
 	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
 
-	pub := publishDocument(t, ctx, alice, "")
-	linkedDoc := publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id)
+	pub := publishDocument(t, ctx, alice, "", "", "")
+	linkedDoc := publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id, "", "")
 	comment, err := bob.RPC.Documents.CreateComment(ctx, &documents.CreateCommentRequest{
 		Target:         pub.Document.Id + "?v=" + pub.Version,
 		RepliedComment: "",
@@ -268,7 +323,7 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	require.Equal(t, reason, lst.DeletedEntities[0].DeletedReason)
 
 	// bob creates another document that should get to Alice
-	BobsPub := publishDocument(t, ctx, bob, "")
+	BobsPub := publishDocument(t, ctx, bob, "", "", "")
 	// Even if we sync we shouldn't get the document back
 	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
@@ -596,8 +651,8 @@ func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
-func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string) *documents.Publication {
-	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
+func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string, DocumentId string, DocumentVersion string) *documents.Publication {
+	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: DocumentId, Version: DocumentVersion})
 	require.NoError(t, err)
 	ann := []*documents.Annotation{}
 	if link != "" {
@@ -609,6 +664,13 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App, link str
 		},
 		)
 	}
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const length = 10
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+
 	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
@@ -617,7 +679,7 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App, link str
 			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 				Id:          "b1",
 				Type:        "paragraph",
-				Text:        "Hello world!",
+				Text:        "Random string here [" + string(b) + "]",
 				Annotations: ann,
 			}}},
 		},
