@@ -610,12 +610,11 @@ func TestMerge(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, pub1.Document.Id, pub3.Document.Id)
-	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
+	_, err = api.MergeChanges(ctx, &documents.MergeChangesRequest{
 		Id:       pub1.Document.Id,
 		Versions: []string{pub1.Version, pub3.Version},
 	})
-	require.NoError(t, err)
-	require.Equal(t, updated3.Version, mergedPub.PreviousVersion)
+	require.Error(t, err)
 }
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
