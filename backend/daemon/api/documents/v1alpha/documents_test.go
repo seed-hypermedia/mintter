@@ -592,12 +592,30 @@ func TestMerge(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, pub1.Document.Id, pub2.Document.Id)
-	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
-		Id:       pub1.Document.Id,
-		Versions: []string{pub1.Version, pub2.Version},
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
+	require.NoError(t, err)
+	updated3 := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Linked with the first"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Some content",
+		}}},
 	})
 	require.NoError(t, err)
-	require.Equal(t, updated2.Version, mergedPub.PreviousVersion)
+	pub3, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{
+		DocumentId: updated3.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub1.Document.Id, pub3.Document.Id)
+	mergedPub, err := api.MergeChanges(ctx, &documents.MergeChangesRequest{
+		Id:       pub1.Document.Id,
+		Versions: []string{pub1.Version, pub3.Version},
+	})
+	require.NoError(t, err)
+	require.Equal(t, updated3.Version, mergedPub.PreviousVersion)
 }
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
