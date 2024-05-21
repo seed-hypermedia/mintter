@@ -598,7 +598,6 @@ export function BlockNodeContent({
     >
       <XStack
         padding={isEmbed ? 0 : layoutUnit / 3}
-        alignItems="baseline"
         {...headingStyles}
         {...debugStyles(debug, 'red')}
         group="blocknode"

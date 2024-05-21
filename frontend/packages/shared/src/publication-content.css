@@ -35,16 +35,9 @@
   display: none !important;
 }
 
-.blocknode-content {
-  display: list-item !important
-}
-
-ul.blocknode-list {
-  list-style-type: disc;
-}
-
-ol.blocknode-list {
-  list-style-type: decimal;
+[data-list-type='ul'] .blocknode-content,
+[data-list-type='ol'] .blocknode-content {
+  display: list-item !important;
 }
 
 .blocknode-list[data-list-level='1'] {
@@ -54,17 +47,21 @@ ol.blocknode-list {
 .blocknode-list[data-list-type='ul'] {
   margin-left: 1em;
   list-style-type: disc;
+  list-style-position: outside;
 }
 
 .blocknode-list[data-list-level='2'] {
   list-style-type: circle;
+  list-style-position: outside;
 }
 
 .blocknode-list[data-list-level='3'] {
   list-style-type: square;
+  list-style-position: outside;
 }
 
 .blocknode-list[data-list-type='ol'] {
   margin-left: 1em;
   list-style-type: decimal;
+  list-style-position: outside;
 }
