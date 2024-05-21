@@ -247,6 +247,45 @@ func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err e
 	return ch, nil
 }
 
+// PublishBlob publishes a blob.
+func (bs *Storage) PublishBlob(ctx context.Context, c cid.Cid) (cid.Cid, error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return cid.Undef, err
+	}
+	defer release()
+
+	var out cid.Cid
+	if err := sqlitex.WithTx(conn, func() error {
+		newID, err := allocateBlobID(conn)
+		if err != nil {
+			return err
+		}
+
+		res, err := hypersql.BlobsGet(conn, c.Hash())
+		if err != nil {
+			return err
+		}
+
+		if err := sqlitex.Exec(conn, qBlobsTouch(), nil, newID, res.BlobsID); err != nil {
+			return err
+		}
+
+		out = cid.NewCidV1(uint64(res.BlobsCodec), res.BlobsMultihash)
+
+		return nil
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return cid.Undef, fmt.Errorf("BUG: got draft without CID")
+	}
+
+	return out, nil
+}
+
+// PublishDraft publishes a draft.
 func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {

@@ -948,7 +948,7 @@ func (api *Server) ListAccountPublications(ctx context.Context, in *documents.Li
 }
 
 // MergeChanges implements the corresponding gRPC method. It merges changes and publishes them.
-func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesRequest) (*documents.Document, error) {
+func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesRequest) (*documents.Publication, error) {
 	me, err := api.getMe()
 	if err != nil {
 		return nil, err
@@ -990,13 +990,27 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 		return nil, err
 	}
 
-	if err := api.blobs.SaveDraftBlob(ctx, entity.ID(), hb); err != nil {
+	if err := api.blobs.SaveBlob(ctx, hb); err != nil {
 		return nil, err
 	}
 
-	return api.GetDraft(ctx, &documents.GetDraftRequest{
+	oid, err := api.blobs.PublishBlob(ctx, hb.CID)
+	if err != nil {
+		return nil, err
+	}
+
+	if api.disc != nil {
+		if err := api.disc.ProvideCID(oid); err != nil {
+			return nil, err
+		}
+	}
+
+	return api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: entity.ID().String(),
+		Version:    hb.CID.String(),
+		LocalOnly:  true,
 	})
+
 }
 
 func (api *Server) getMe() (core.Identity, error) {

@@ -191,8 +191,8 @@ func TestMergeE2E(t *testing.T) {
 		Versions: []string{secondVersion.Version, forkedVersion.Version},
 	})
 	require.NoError(t, err)
-	require.Contains(t, mergedPub.PreviousVersion, secondVersion.Version)
-	require.Contains(t, mergedPub.PreviousVersion, forkedVersion.Version)
+	require.Contains(t, mergedPub.Document.PreviousVersion, secondVersion.Version)
+	require.Contains(t, mergedPub.Document.PreviousVersion, forkedVersion.Version)
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
