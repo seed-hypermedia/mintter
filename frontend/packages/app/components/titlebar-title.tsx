@@ -9,6 +9,7 @@ import {
   ErrorIcon,
   FontSizeTokens,
   Home,
+  Select,
   SizableText,
   Spinner,
   TitleText,
@@ -16,7 +17,7 @@ import {
   styled,
 } from '@mintter/ui'
 import {Sparkles, Star} from '@tamagui/lucide-icons'
-import {useEffect, useMemo, useRef} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {useAccount} from '../models/accounts'
 import {useEntitiesContent, useEntityRoutes} from '../models/entities'
 import {useGroup} from '../models/groups'
@@ -30,7 +31,7 @@ import {
   PublicationRoute,
 } from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
-import {observeSize} from './app-embeds'
+import {useSizeObserver} from './app-embeds'
 import {getItemDetails} from './sidebar-neo'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
@@ -114,6 +115,11 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   return null
 }
 
+type CrumbDetails = ReturnType<typeof getItemDetails> & {
+  route: NavRoute
+  onSize: (rect: DOMRect) => void
+}
+
 function BreadcrumbTitle({
   route,
 }: {
@@ -121,8 +127,46 @@ function BreadcrumbTitle({
 }) {
   const entityRoutes = useEntityRoutes(route)
   const entityContents = useEntitiesContent(entityRoutes)
-
-  const routeDetails = useMemo(
+  const [collapsedCount, setCollapsedCount] = useState(0)
+  const collapsableItemsWidths = useRef<number[]>([])
+  const widthInfo = useRef({} as Record<string, number>)
+  useEffect(() => {
+    collapsableItemsWidths.current = []
+  }, [entityRoutes])
+  function updateWidths() {
+    const containerWidth = widthInfo.current.container
+    const spacerWidth = 16
+    const ellipsisWidth = 15
+    const firstItemWidth = widthInfo.current['r-0']
+    const lastItemWidth = widthInfo.current[`r-${entityRoutes.length - 1}`]
+    const fixedItemWidth = firstItemWidth + lastItemWidth + spacerWidth
+    for (let i = 1; i < entityRoutes.length - 1; i++) {
+      const w = widthInfo.current[`r-${i}`]
+      if (w) {
+        collapsableItemsWidths.current[i] = w
+      }
+    }
+    const desiredWidth = collapsableItemsWidths.current.reduce((acc, w) => {
+      if (!w) return acc
+      return acc + w + spacerWidth
+    }, 0)
+    let usableWidth = desiredWidth
+    const maxCollapseCount = entityRoutes.length - 2
+    let newCollapseCount = 0
+    while (
+      usableWidth +
+        fixedItemWidth +
+        (newCollapseCount ? spacerWidth + ellipsisWidth : 0) >
+        containerWidth &&
+      newCollapseCount < maxCollapseCount
+    ) {
+      usableWidth -=
+        collapsableItemsWidths.current[1 + newCollapseCount] + spacerWidth
+      newCollapseCount++
+    }
+    setCollapsedCount(newCollapseCount)
+  }
+  const crumbDetails: (CrumbDetails | null)[] = useMemo(
     () =>
       entityRoutes.map((route, routeIndex) => {
         if (route.key === 'draft') return null // draft should not appear in context
@@ -137,40 +181,98 @@ function BreadcrumbTitle({
             ...route,
             context: [...entityRoutes.slice(0, routeIndex)],
           },
-          onWidth: (width) => {
-            // console.log('width of el', route, width)
+          onSize: ({width}: DOMRect) => {
+            if (width) widthInfo.current[`r-${routeIndex}`] = width
+            updateWidths()
           },
         }
       }),
     [entityRoutes, entityContents],
   )
-  const container = useRef(null)
-  useEffect(() => {
-    if (!container.current) return
-    return observeSize(container.current, ({width}) => {
-      // console.log('width of container', width)
+  const containerObserverRef = useSizeObserver(({width}) => {
+    widthInfo.current.container = width
+    updateWidths()
+  })
+
+  const activeItem = crumbDetails[crumbDetails.length - 1]
+  const firstInactiveDetail =
+    crumbDetails[0] === activeItem ? null : crumbDetails[0]
+  if (!activeItem) return null
+  const firstItem = firstInactiveDetail ? (
+    <BreadcrumbItem
+      details={firstInactiveDetail}
+      onSize={firstInactiveDetail.onSize}
+    />
+  ) : null
+
+  const remainderItems = crumbDetails
+    .slice(collapsedCount + 1, -1)
+    .map((details) => {
+      if (!details) return null
+      return <BreadcrumbItem details={details} onSize={details.onSize} />
     })
-  }, [])
+  const displayItems = [firstItem]
+  if (collapsedCount) {
+    displayItems.push(
+      <BreadcrumbEllipsis
+        crumbDetails={crumbDetails}
+        collapsedCount={collapsedCount}
+      />,
+    )
+  }
+  displayItems.push(...remainderItems)
+  displayItems.push(
+    <BreadcrumbItem details={activeItem} isActive onSize={activeItem.onSize} />,
+  )
   return (
-    <XStack gap="$2" f={1} marginRight={'$4'} ref={container}>
-      {routeDetails.map((details, detailsIndex) => {
-        if (!details) return null
-        return (
-          <>
-            <BreadcrumbItem
-              details={details}
-              isActive={detailsIndex === routeDetails.length - 1}
-              onWidth={details.onWidth}
-            />
-            {detailsIndex < routeDetails.length - 1 ? (
-              <BreadcrumbSeparator />
-            ) : null}
-          </>
-        )
-      })}
+    <XStack
+      f={1}
+      marginRight={'$4'}
+      height={20}
+      overflow="hidden"
+      ref={containerObserverRef}
+    >
+      <XStack position="absolute" gap="$2" f={1} marginRight={'$4'}>
+        {displayItems.map((item, itemIndex) => {
+          if (!item) return null
+          return (
+            <>
+              {item}
+              {itemIndex < displayItems.length - 1 ? (
+                <BreadcrumbSeparator />
+              ) : null}
+            </>
+          )
+        })}
+      </XStack>
     </XStack>
   )
 }
+
+function BreadcrumbEllipsis({
+  crumbDetails,
+  collapsedCount,
+}: {
+  crumbDetails: (CrumbDetails | null)[]
+  collapsedCount: number
+}) {
+  return <TitleTextButton onPress={() => {}}>...</TitleTextButton>
+  return (
+    <Select>
+      <Select.Trigger>
+        <TitleTextButton onPress={() => {}}>...</TitleTextButton>
+      </Select.Trigger>
+      <Select.Content zIndex={200000}>
+        <Select.Viewport>
+          <Select.Item value={'1'} index={0}>
+            <Select.ItemText>Hello?!</Select.ItemText>
+          </Select.Item>
+        </Select.Viewport>
+      </Select.Content>
+    </Select>
+  )
+}
+
 function BreadcrumbSeparator() {
   return (
     <TitleText size="$4" color="$color10">
@@ -184,24 +286,18 @@ const TitleEllipsisLength = 20
 function BreadcrumbItem({
   details,
   isActive,
-  onWidth,
+  onSize,
 }: {
   details: ReturnType<typeof getItemDetails> & {route: NavRoute}
-  isActive: boolean
-  onWidth: (width: number) => void
+  isActive?: boolean
+  onSize: (rect: DOMRect) => void
 }) {
   const navigate = useNavigate()
-  const titleEl = useRef(null)
-  useEffect(() => {
-    if (!titleEl.current) return
-    return observeSize(titleEl.current, (a) => {
-      onWidth(a.width)
-    })
-  }, [])
+  const observerRef = useSizeObserver(onSize)
   if (!details?.title) return null
   if (isActive) {
     return (
-      <TitleText ref={titleEl} fontWeight="bold">
+      <TitleText ref={observerRef} fontWeight="bold">
         {details.title}
       </TitleText>
     )
@@ -212,7 +308,7 @@ function BreadcrumbItem({
       : details.title
   return (
     <TitleTextButton
-      ref={titleEl}
+      ref={observerRef}
       className="no-window-drag"
       onPress={() => {
         navigate(details.route)

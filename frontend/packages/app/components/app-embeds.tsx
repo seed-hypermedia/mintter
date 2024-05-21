@@ -211,7 +211,7 @@ function EmbedWrapper({
 }
 
 export function observeSize(
-  element: HTMLDivElement,
+  element: HTMLElement,
   callback: (r: DOMRect) => void,
 ) {
   const ro = new ResizeObserver(() => {
@@ -220,6 +220,15 @@ export function observeSize(
   })
   ro.observe(element)
   return () => ro.disconnect()
+}
+
+export function useSizeObserver(onRect: (rect: DOMRect) => void) {
+  const widthObserver = useRef<null | (() => void)>(null)
+  return (el: HTMLElement | null) => {
+    if (!el) return
+    widthObserver.current?.()
+    widthObserver.current = observeSize(el, onRect)
+  }
 }
 
 const EmbedSideAnnotation = forwardRef<
