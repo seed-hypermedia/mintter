@@ -34,3 +34,37 @@
 .feed-item-container .embed-side-annotation {
   display: none !important;
 }
+
+.blocknode-content {
+  display: list-item !important
+}
+
+ul.blocknode-list {
+  list-style-type: disc;
+}
+
+ol.blocknode-list {
+  list-style-type: decimal;
+}
+
+.blocknode-list[data-list-level='1'] {
+  margin-left: 2em !important;
+}
+
+.blocknode-list[data-list-type='ul'] {
+  margin-left: 1em;
+  list-style-type: disc;
+}
+
+.blocknode-list[data-list-level='2'] {
+  list-style-type: circle;
+}
+
+.blocknode-list[data-list-level='3'] {
+  list-style-type: square;
+}
+
+.blocknode-list[data-list-type='ol'] {
+  margin-left: 1em;
+  list-style-type: decimal;
+}

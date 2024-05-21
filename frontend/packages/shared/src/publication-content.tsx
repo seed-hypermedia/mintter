@@ -368,7 +368,9 @@ export function BlocksContent({
             key={bn.block?.id}
             blockNode={bn}
             depth={1}
-            childrenType="group"
+            childrenType={bn.block.attributes?.childrenType}
+            start={bn.block.attributes?.start}
+            listLevel={bn.block.attributes?.listLevel}
             index={idx}
           />
         ))}
@@ -380,74 +382,87 @@ export function BlockNodeList({
   children,
   childrenType = 'group',
   start,
+  listLevel,
   ...props
 }: YStackProps & {
   childrenType?: HMBlockChildrenType
-  start?: any
+  start?: string | number
+  listLevel?: string | number
 }) {
   return (
-    <YStack className="blocknode-list" {...props} width="100%">
+    <YStack
+      tag={childrenType !== 'group' ? childrenType : undefined}
+      start={start}
+      className="blocknode-list"
+      data-node-type="blockGroup"
+      data-list-type={childrenType}
+      data-list-level={listLevel}
+      {...props}
+      width="100%"
+    >
       {children}
     </YStack>
   )
 }
 
-function BlockNodeMarker({
-  block,
-  childrenType,
-  index = 0,
-  start = '1',
-}: {
-  block: Block
-  childrenType?: string
-  start?: string
-  index?: number
-  headingTextStyles: TextProps
-}) {
-  const {layoutUnit, textUnit, debug} = usePublicationContentContext()
-  let styles = useMemo(
-    () =>
-      childrenType == 'ol'
-        ? ({
-            position: 'absolute',
-            right: layoutUnit / 4,
-            marginTop: layoutUnit / 7,
-            fontSize: textUnit * 0.7,
-          } satisfies SizableTextProps)
-        : {},
-    [childrenType, textUnit, layoutUnit],
-  )
-  let marker
+// function BlockNodeMarker({
+//   block,
+//   childrenType,
+//   index = 0,
+//   start = '1',
+// }: {
+//   block: Block
+//   childrenType?: string
+//   start?: string
+//   index?: number
+//   headingTextStyles: TextProps
+// }) {
+//   const {layoutUnit, textUnit, debug} = usePublicationContentContext()
+//   let styles = useMemo(
+//     () =>
+//       childrenType == 'ol'
+//         ? ({
+//             position: 'absolute',
+//             right: layoutUnit / 4,
+//             marginTop: layoutUnit / 7,
+//             fontSize: textUnit * 0.7,
+//           } satisfies SizableTextProps)
+//         : {},
+//     [childrenType, textUnit, layoutUnit],
+//   )
+//   let marker
 
-  if (childrenType == 'ol') {
-    marker = `${index + Number(start)}.`
-  }
+//   if (childrenType == 'ol') {
+//     marker = `${index + Number(start)}.`
+//   }
 
-  if (childrenType == 'ul') {
-    marker = '•'
-  }
+//   if (childrenType == 'ul') {
+//     marker = '•'
+//   }
 
-  if (!marker) return null
+//   if (!marker) return null
 
-  return (
-    <XStack
-      flex={0}
-      width={layoutUnit}
-      height={textUnit * 1.5}
-      alignItems="center"
-      justifyContent="flex-start"
-      {...debugStyles(debug, 'green')}
-    >
-      <Text {...styles} fontFamily="$body" userSelect="none" opacity={0.7}>
-        {marker}
-      </Text>
-    </XStack>
-  )
-}
+//   return (
+//     <XStack
+//       flex={0}
+//       width={layoutUnit}
+//       height={textUnit * 1.5}
+//       alignItems="center"
+//       justifyContent="flex-start"
+//       {...debugStyles(debug, 'green')}
+//     >
+//       <Text {...styles} fontFamily="$body" userSelect="none" opacity={0.7}>
+//         {marker}
+//       </Text>
+//     </XStack>
+//   )
+// }
 
 export function BlockNodeContent({
   blockNode,
   depth = 1,
+  start,
+  listLevel,
   childrenType = 'group',
   isFirstChild = false,
   expanded = true,
@@ -460,6 +475,7 @@ export function BlockNodeContent({
   index: number
   depth?: number
   start?: string | number
+  listLevel?: string
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
   expanded?: boolean
@@ -500,8 +516,9 @@ export function BlockNodeContent({
           depth={depth + 1}
           isFirstChild={index == 0}
           blockNode={bn}
-          childrenType={blockNode.block!.attributes?.childrenType}
-          start={blockNode.block?.attributes?.start}
+          childrenType={bn.block!.attributes?.childrenType}
+          start={bn.block!.attributes?.start}
+          listLevel={bn.block!.attributes?.listLevel}
           index={index}
           parentBlockId={blockNode.block?.id || null}
           embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
@@ -573,7 +590,7 @@ export function BlockNodeContent({
       borderWidth={1}
       borderRadius={layoutUnit / 4}
       bg={isHighlight ? '$yellow3' : '$backgroundTransparent'}
-
+      data-node-type="blockContainer"
       // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
       // onHoverOut={() =>
       //   props.embedDepth ? undefined : hoverProps.onHoverOut()
@@ -621,12 +638,12 @@ export function BlockNodeContent({
           </Tooltip>
         ) : null}
 
-        <BlockNodeMarker
+        {/* <BlockNodeMarker
           block={blockNode.block!}
           childrenType={childrenType}
           index={props.index}
           start={props.start}
-        />
+        /> */}
         <BlockContent
           block={blockNode.block!}
           depth={depth}
@@ -754,7 +771,8 @@ export function BlockNodeContent({
         <BlockNodeList
           paddingLeft={blockNode.block?.type != 'heading' ? layoutUnit : 0}
           childrenType={childrenType as HMBlockChildrenType}
-          start={props.start}
+          start={start}
+          listLevel={listLevel}
           display="block"
         >
           {bnChildren}
