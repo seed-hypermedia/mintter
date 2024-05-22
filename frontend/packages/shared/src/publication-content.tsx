@@ -286,6 +286,24 @@ export function PublicationContent({
   const displayBlocks = maxBlockCount
     ? clipContentBlocks(focusedBlocks || [], maxBlockCount)
     : focusedBlocks
+
+  useEffect(() => {
+    function handleSelectAll(event: KeyboardEvent) {
+      if (event.key == 'a' && event.metaKey) {
+        event.preventDefault()
+        if (wrapper.current) {
+          window.getSelection()?.selectAllChildren(wrapper.current)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleSelectAll)
+
+    return () => {
+      window.removeEventListener('keydown', handleSelectAll)
+    }
+  }, [])
+
   return (
     <YStack
       ref={wrapper}
@@ -300,6 +318,7 @@ export function PublicationContent({
         zIndex={99999}
         position="absolute"
         elevation="$4"
+        userSelect="none"
       >
         {onCopyBlock ? (
           <Tooltip content="Copy Block Range">
@@ -622,6 +641,7 @@ export function BlockNodeContent({
                 e.stopPropagation()
                 handleBlockNodeToggle()
               }}
+              userSelect="none"
               position="absolute"
               zIndex="$5"
               left={0}
@@ -652,6 +672,7 @@ export function BlockNodeContent({
         {bnChildren && !_expanded ? (
           <Tooltip content="This block is collapsed. you can expand it and see its children">
             <Button
+              userSelect="none"
               marginHorizontal={layoutUnit / 4}
               size="$1"
               alignSelf="center"
@@ -683,6 +704,7 @@ export function BlockNodeContent({
               delay={800}
             >
               <Button
+                userSelect="none"
                 size="$2"
                 chromeless
                 padding={layoutUnit / 4}
@@ -704,6 +726,7 @@ export function BlockNodeContent({
               {onCopyBlock ? (
                 <Tooltip content="Copy block reference" delay={800}>
                   <Button
+                    userSelect="none"
                     size="$2"
                     opacity={hover ? 1 : 0}
                     padding={layoutUnit / 4}
@@ -723,6 +746,7 @@ export function BlockNodeContent({
               {onReplyBlock ? (
                 <Tooltip content="Reply to block" delay={800}>
                   <Button
+                    userSelect="none"
                     size="$2"
                     opacity={hover ? 1 : 0}
                     padding={layoutUnit / 4}
@@ -744,6 +768,7 @@ export function BlockNodeContent({
               {onBlockComment ? (
                 <Tooltip content="Comment on this block" delay={800}>
                   <Button
+                    userSelect="none"
                     size="$2"
                     opacity={hover ? 1 : 0}
                     padding={layoutUnit / 4}
