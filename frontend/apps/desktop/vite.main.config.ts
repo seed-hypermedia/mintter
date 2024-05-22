@@ -1,5 +1,6 @@
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
+import react from '@vitejs/plugin-react'
 import {defineConfig} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 
@@ -26,10 +27,30 @@ const extensions = [
   '.mjs',
 ]
 
+const ReactCompilerConfig = {}
+
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const plugins = [
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
+      },
+    }),
+    tsConfigPaths(),
+  ]
+  if (command == 'build')
+    plugins.push(
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: 'mintter',
+        project: 'electron',
+        telemetry: false,
+      }),
+    )
+  plugins.push(_tamaguiPlugin)
   return {
     define: {
       __SENTRY_DSN__: JSON.stringify(process.env.VITE_DESKTOP_SENTRY_DSN),
@@ -58,19 +79,7 @@ export default defineConfig(({command, mode}) => {
       mainFields: ['module', 'jsnext:main', 'jsnext'],
       extensions,
     },
-    plugins:
-      command == 'build'
-        ? [
-            tsConfigPaths(),
-            sentryVitePlugin({
-              authToken: process.env.SENTRY_AUTH_TOKEN,
-              org: 'mintter',
-              project: 'electron',
-              telemetry: false,
-            }),
-            _tamaguiPlugin,
-          ]
-        : [tsConfigPaths(), _tamaguiPlugin],
+    plugins,
     alias: {
       'react-native': 'react-native-web',
     },
