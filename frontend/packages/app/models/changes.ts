@@ -77,6 +77,7 @@ export function useEntityTimeline(entityId?: string) {
         allChanges,
         authorVersions: rawTimeline.authorVersions,
         timelineEntries,
+        heads: rawTimeline.heads,
       }
     },
     queryKey: [queryKeys.ENTITY_TIMELINE, entityId],

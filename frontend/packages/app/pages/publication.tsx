@@ -23,7 +23,7 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {History, MessageSquare} from '@tamagui/lucide-icons'
+import {History, Merge, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
 import {ReactNode, useCallback, useEffect, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -37,6 +37,7 @@ import {useAppDialog} from '../components/dialog'
 import {FavoriteButton} from '../components/favoriting'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
+import {EntitySuggestedChangesAccessory} from '../components/suggested-changes'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
@@ -119,6 +120,8 @@ export default function PublicationPage() {
       )
     } else if (accessoryKey == 'citations') {
       accessory = <EntityCitationsAccessory entityId={docId} />
+    } else if (accessoryKey == 'suggested-changes') {
+      accessory = <EntitySuggestedChangesAccessory entityId={docId} />
     } else if (
       accessoryKey == 'comments' &&
       id &&
@@ -240,6 +243,8 @@ export default function PublicationPage() {
               />
             ) : null}
 
+            <PublicationSuggestedChangesButton />
+
             <PublicationCommentaryButton />
           </Footer>
         </CitationsProvider>
@@ -255,7 +260,7 @@ export default function PublicationPage() {
 function PublicationCommentaryButton() {
   const route = useNavRoute()
   if (route.key !== 'publication')
-    throw new Error('Publication page expects publication actor')
+    throw new Error('Publication page expects publication route')
 
   const docId = route?.documentId ? unpackHmId(route?.documentId) : null
   const accessory = route?.accessory
@@ -278,6 +283,25 @@ function PublicationCommentaryButton() {
         if (route.accessory?.key === 'comments')
           return replace({...route, accessory: null})
         replace({...route, accessory: {key: 'comments'}})
+      }}
+    />
+  )
+}
+
+function PublicationSuggestedChangesButton() {
+  const replace = useNavigate('replace')
+  const route = useNavRoute()
+  if (route.key !== 'publication')
+    throw new Error('Publication page expects publication route')
+
+  return (
+    <FooterButton
+      label={`Suggested Changes`}
+      icon={Merge}
+      onPress={() => {
+        if (route.accessory?.key === 'suggested-changes')
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'suggested-changes'}})
       }}
     />
   )

@@ -36,6 +36,13 @@ export type PublicationCitationsAccessory = z.infer<
   typeof entityCitationsAccessorySchema
 >
 
+export const publicationSuggestedChangesAccessorySchema = z.object({
+  key: z.literal('suggested-changes'),
+})
+export type PublicationSuggestedChangesAccessory = z.infer<
+  typeof publicationSuggestedChangesAccessorySchema
+>
+
 export const publicationCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
 })
@@ -65,6 +72,7 @@ export const basePublicationRouteSchema = z.object({
       entityVersionsAccessorySchema,
       entityCitationsAccessorySchema,
       publicationCommentsAccessorySchema,
+      publicationSuggestedChangesAccessorySchema,
     ])
     .nullable()
     .optional(),
