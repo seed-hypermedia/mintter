@@ -414,7 +414,7 @@ export function BlockNodeList({
       start={start}
       className="blocknode-list"
       data-node-type="blockGroup"
-      data-list-type={childrenType}
+      data-list-type={childrenType !== 'group' ? childrenType : undefined}
       data-list-level={listLevel}
       {...props}
       width="100%"
@@ -620,6 +620,9 @@ export function BlockNodeContent({
         {...headingStyles}
         {...debugStyles(debug, 'red')}
         group="blocknode"
+        className={
+          blockNode.block!.type === 'heading' ? 'blocknode-content-heading' : ''
+        }
       >
         {bnChildren ? (
           <Tooltip
