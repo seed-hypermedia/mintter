@@ -4,20 +4,23 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {getDocumentTitle} from '@mintter/shared'
 import {
   Book,
+  Button,
   ButtonText,
   Contact,
   ErrorIcon,
   FontSizeTokens,
   Home,
-  Select,
+  Popover,
   SizableText,
   Spinner,
   TitleText,
   XStack,
+  YStack,
   styled,
 } from '@mintter/ui'
 import {Sparkles, Star} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useRef, useState} from 'react'
+import {AiOutlineEllipsis} from 'react-icons/ai'
 import {useAccount} from '../models/accounts'
 import {useEntitiesContent, useEntityRoutes} from '../models/entities'
 import {useGroup} from '../models/groups'
@@ -256,20 +259,36 @@ function BreadcrumbEllipsis({
   crumbDetails: (CrumbDetails | null)[]
   collapsedCount: number
 }) {
-  return <TitleTextButton onPress={() => {}}>...</TitleTextButton>
+  const navigate = useNavigate()
+  // return <TitleTextButton onPress={() => {}}>...</TitleTextButton>
   return (
-    <Select>
-      <Select.Trigger>
-        <TitleTextButton onPress={() => {}}>...</TitleTextButton>
-      </Select.Trigger>
-      <Select.Content zIndex={200000}>
-        <Select.Viewport>
-          <Select.Item value={'1'} index={0}>
-            <Select.ItemText>Hello?!</Select.ItemText>
-          </Select.Item>
-        </Select.Viewport>
-      </Select.Content>
-    </Select>
+    <Popover>
+      <Popover.Trigger className="no-window-drag">
+        <Button
+          size="$1"
+          icon={AiOutlineEllipsis}
+          chromeless
+          backgroundColor="$colorTransparent"
+        ></Button>
+      </Popover.Trigger>
+      <Popover.Content bg="$backgroundStrong">
+        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+        <YStack space="$3">
+          {crumbDetails.slice(1, 1 + collapsedCount).map((crumb) => {
+            if (!crumb) return null
+            return (
+              <TitleTextButton
+                onPress={() => {
+                  navigate(crumb.route)
+                }}
+              >
+                {crumb?.title}
+              </TitleTextButton>
+            )
+          })}
+        </YStack>
+      </Popover.Content>
+    </Popover>
   )
 }
 
