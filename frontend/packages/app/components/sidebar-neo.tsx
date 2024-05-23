@@ -18,7 +18,7 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useCallback, useMemo, useState} from 'react'
+import {ReactNode, memo, useCallback, useEffect, useMemo, useState} from 'react'
 import {Button, SizableText, Spinner, View} from 'tamagui'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {
@@ -88,10 +88,15 @@ export function SidebarNeo() {
     setCollapseMe(isMyAccountActive ? false : true)
     setCollapseStandalone(isMyAccountActive ? true : false)
   }, [])
-  // useEffect(() => {
-  //   if (isMyAccountActive) setCollapseMe(false)
-  //   else setCollapseStandalone(false)
-  // }, [isMyAccountActive])
+  useEffect(() => {
+    if (isMyAccountActive) {
+      setCollapseMe(false)
+      setCollapseStandalone(true)
+    } else {
+      setCollapseMe(true)
+      setCollapseStandalone(false)
+    }
+  }, [isMyAccountActive])
   if (isMyAccountActive) {
     // the active route is under myAccount section
     myAccountSection = (
@@ -282,7 +287,6 @@ function ContextItems({
   onSetCollapsed,
   route,
   onNavigate,
-  showBlockContext,
 }: {
   info: ReturnType<typeof getItemDetails>
   active?: boolean
@@ -290,15 +294,17 @@ function ContextItems({
   onSetCollapsed?: (collapse: boolean) => void
   route: BaseEntityRoute
   onNavigate: (route: NavRoute) => void
-  showBlockContext?: boolean
 }) {
   if (!info) return null
+  const collapsedProps = {
+    isCollapsed,
+    onSetCollapsed,
+  }
   return (
     <>
       <SidebarItem
         active={active && !info.headings?.length}
-        isCollapsed={isCollapsed}
-        onSetCollapsed={onSetCollapsed}
+        {...(info.headings?.length ? {} : collapsedProps)}
         title={info.title}
         icon={info.icon}
         onPress={() => {
@@ -315,26 +321,32 @@ function ContextItems({
           )
         }
       />
-      {showBlockContext &&
-        info.headings?.map((heading, headingIndex) => {
-          if (heading.embedId) return null
-          return (
-            <SidebarItem
-              key={heading.id}
-              icon={Hash}
-              active={
-                active &&
-                !!info.headings &&
-                headingIndex === info.headings.length - 1
-              }
-              title={heading.text}
-              onPress={() => {
-                if (route.key === 'draft') return
-                onNavigate({...route, blockId: heading.id})
-              }}
-            />
-          )
-        })}
+      {info.headings?.map((heading, headingIndex) => {
+        const isLast =
+          !!info.headings && headingIndex === info.headings.length - 1
+        if (heading.embedId) return null
+        return (
+          <SidebarItem
+            key={heading.id}
+            icon={Hash}
+            active={
+              active &&
+              !!info.headings &&
+              headingIndex === info.headings.length - 1
+            }
+            {...(isLast ? collapsedProps : {})}
+            title={heading.text}
+            onPress={() => {
+              if (route.key === 'draft') return
+              console.log('hahhahahaaaaaaa', {
+                headingId: heading.id,
+                route,
+              })
+              onNavigate({...route, focusBlockId: heading.id})
+            }}
+          />
+        )
+      })}
     </>
   )
 }
@@ -376,6 +388,10 @@ function RouteSection({
           thisRouteFocusBlockId,
         )?.children
       : thisRouteEntity?.entity?.document?.children
+  const outlineNodes = focusedNodes?.filter(
+    (node) => node.block.type === 'heading' || node.block.type === 'embed',
+  )
+  const canCollapse = !!outlineNodes?.length
   const onActivateBlock = useCallback(
     (blockId) => {
       if (!thisRoute) return
@@ -414,7 +430,6 @@ function RouteSection({
             info={info}
             route={contextRoute}
             onNavigate={onNavigate}
-            showBlockContext
           />
         )
       })}
@@ -426,14 +441,13 @@ function RouteSection({
           active={active}
           isCollapsed={collapse}
           onSetCollapsed={setCollapse}
-          showBlockContext
         />
       )}
       {collapse || !thisRoute ? null : (
         <SidebarOutline
           indent={1}
           activeBlock={thisRouteBlockId}
-          nodes={focusedNodes}
+          nodes={outlineNodes}
           onActivateBlock={onActivateBlock}
           onFocusBlock={onFocusBlock}
         />
@@ -472,8 +486,13 @@ function SidebarEmbedOutlineItem({
   const title = singleBlockNode
     ? singleBlockNode.block.text
     : info?.title || 'Untitled Embed'
-  const nodes = singleBlockNode ? singleBlockNode.children : doc?.children
-  const canCollapse = !!nodes?.length
+  const childrenNodes = singleBlockNode
+    ? singleBlockNode.children
+    : doc?.children
+  const outlineNodes = childrenNodes?.filter(
+    (node) => node.block.type === 'heading' || node.block.type === 'embed',
+  )
+  const canCollapse = !!outlineNodes?.length
   const destRoute = appRouteOfId(id)
   if (doc && info)
     return (
@@ -495,7 +514,16 @@ function SidebarEmbedOutlineItem({
                 key="focus"
                 onPress={() => {
                   if (!destRoute) return
-                  navigate(destRoute)
+                  if (
+                    destRoute.key === 'publication' ||
+                    destRoute.key === 'group' ||
+                    destRoute.key === 'account'
+                  ) {
+                    navigate({
+                      ...destRoute,
+                      context: getRouteContext(route, blockId),
+                    })
+                  } else navigate(destRoute)
                 }}
               />
             ) : null,
@@ -523,7 +551,7 @@ function SidebarEmbedOutlineItem({
                   }
                 : null
             }
-            nodes={nodes}
+            nodes={outlineNodes}
             indent={indent}
           />
         )}

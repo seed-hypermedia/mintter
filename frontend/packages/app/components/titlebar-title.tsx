@@ -118,7 +118,8 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   return null
 }
 
-type CrumbDetails = ReturnType<typeof getItemDetails> & {
+type CrumbDetails = {
+  title?: string
   route: NavRoute
   onSize: (rect: DOMRect) => void
 }
@@ -171,25 +172,40 @@ function BreadcrumbTitle({
   }
   const crumbDetails: (CrumbDetails | null)[] = useMemo(
     () =>
-      entityRoutes.map((route, routeIndex) => {
+      entityRoutes.flatMap((route, routeIndex) => {
         if (route.key === 'draft') return null // draft should not appear in context
         const details = getItemDetails(
           entityContents?.find((c) => c.route === route)?.entity,
           route.blockId,
         )
         if (!details) return null
-        return {
-          ...details,
-          route: {
-            ...route,
-            context: [...entityRoutes.slice(0, routeIndex)],
+        return [
+          {
+            title: details.title,
+            route: {
+              ...route,
+              context: [...entityRoutes.slice(0, routeIndex)],
+            },
+            onSize: ({width}: DOMRect) => {
+              if (width) widthInfo.current[`r-${routeIndex}`] = width
+              updateWidths()
+            },
           },
-          onSize: ({width}: DOMRect) => {
-            if (width) widthInfo.current[`r-${routeIndex}`] = width
-            updateWidths()
-          },
-        }
+          ...(details.headings
+            ?.filter((heading) => !!heading.text && !heading.embedId)
+            .map((heading) => {
+              return {
+                title: heading.text,
+                route: {
+                  ...route,
+                  focusBlockId: heading.id,
+                },
+                onSize: () => {},
+              }
+            }) || []),
+        ]
       }),
+
     [entityRoutes, entityContents],
   )
   const containerObserverRef = useSizeObserver(({width}) => {
@@ -307,7 +323,7 @@ function BreadcrumbItem({
   isActive,
   onSize,
 }: {
-  details: ReturnType<typeof getItemDetails> & {route: NavRoute}
+  details: CrumbDetails
   isActive?: boolean
   onSize: (rect: DOMRect) => void
 }) {

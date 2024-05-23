@@ -133,6 +133,16 @@ export function getEntityRoutes(route: NavRoute): BaseEntityRoute[] {
   if (route.key === 'publication') {
     const {context, ...baseRoute} = route
     if (context) return [...context, baseRoute]
+    const firstVariant = route.variants?.[0]
+    if (firstVariant?.key === 'group') {
+      return [
+        {
+          key: 'group',
+          groupId: firstVariant.groupId,
+        },
+        baseRoute,
+      ]
+    }
     return [baseRoute]
   }
   if (route.key === 'group') {
