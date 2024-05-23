@@ -714,7 +714,10 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   const accountQuery = useAccount(accountId)
   const navigate = useNavigate()
   return (
-    <InlineEmbedButton onPress={() => navigate({key: 'account', accountId})}>
+    <InlineEmbedButton
+      dataRef={props?.id}
+      onPress={() => navigate({key: 'account', accountId})}
+    >
       {(accountId &&
         accountQuery.status == 'success' &&
         `@${accountQuery.data?.profile?.alias}`) ||
@@ -729,7 +732,10 @@ function GroupInlineEmbed(props: InlineEmbedComponentProps) {
   const groupQuery = useGroup(groupId)
   const navigate = useNavigate()
   return (
-    <InlineEmbedButton onPress={() => navigate({key: 'group', groupId})}>
+    <InlineEmbedButton
+      dataRef={props?.id}
+      onPress={() => navigate({key: 'group', groupId})}
+    >
       {(groupQuery &&
         groupQuery.status == 'success' &&
         groupQuery.data?.title) ||
@@ -748,6 +754,7 @@ function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
   const navigate = useNavigate()
   return (
     <InlineEmbedButton
+      dataRef={props?.id}
       onPress={() =>
         navigate({
           key: 'publication',
@@ -766,9 +773,11 @@ function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
 
 function InlineEmbedButton({
   children,
+  dataRef,
   onPress,
 }: {
   children: string
+  dataRef: string
   onPress?: () => void
 }) {
   return (
@@ -790,6 +799,7 @@ function InlineEmbedButton({
         color="$mint11"
         className="hm-link"
         fontSize="$5"
+        data-inline-embed={dataRef}
       >
         {children}
       </ButtonText>
