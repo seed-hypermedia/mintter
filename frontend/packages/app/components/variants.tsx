@@ -637,15 +637,24 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           baseVersion={route.versionId}
         />
       )}
-      <MergeChangesButton route={route} />
+      <MergeChangesButton
+        route={route}
+        variantVersion={publication.data?.variantVersion}
+      />
       {renameDialog.content}
     </>
   )
 }
 
-function MergeChangesButton({route}: {route: PublicationRoute}) {
+function MergeChangesButton({
+  route,
+  variantVersion,
+}: {
+  route: PublicationRoute
+  variantVersion?: string
+}) {
   const merge = useMergeChanges(route.documentId)
-  if (!route.selectedMergeChanges?.length) {
+  if (!route.selectedMergeChanges?.length || !variantVersion) {
     return null
   }
   return (
@@ -653,7 +662,7 @@ function MergeChangesButton({route}: {route: PublicationRoute}) {
       theme="green"
       onPress={() => {
         if (route.selectedMergeChanges) {
-          merge.mutate(route.selectedMergeChanges)
+          merge.mutate([variantVersion, ...route.selectedMergeChanges])
         }
       }}
       size="$2"
