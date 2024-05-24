@@ -54,12 +54,12 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {ArrowRight, Book, Pencil, Upload} from '@tamagui/lucide-icons'
+import {ArrowRight, Book, Merge, Pencil, Upload} from '@tamagui/lucide-icons'
 import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useAccount} from '../models/accounts'
-import {useEntityTimeline} from '../models/changes'
+import {useEntityTimeline, useMergeChanges} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
@@ -637,8 +637,30 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           baseVersion={route.versionId}
         />
       )}
+      <MergeChangesButton route={route} />
       {renameDialog.content}
     </>
+  )
+}
+
+function MergeChangesButton({route}: {route: PublicationRoute}) {
+  const merge = useMergeChanges(route.documentId)
+  if (!route.selectedMergeChanges?.length) {
+    return null
+  }
+  return (
+    <Button
+      theme="green"
+      onPress={() => {
+        if (route.selectedMergeChanges) {
+          merge.mutate(route.selectedMergeChanges)
+        }
+      }}
+      size="$2"
+      icon={Merge}
+    >
+      Merge Changes
+    </Button>
   )
 }
 

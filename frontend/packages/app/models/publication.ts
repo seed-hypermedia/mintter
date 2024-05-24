@@ -19,11 +19,13 @@ export function usePublicationVariant({
   versionId,
   variants,
   latest,
+  mergeChanges,
   ...options
 }: UseQueryOptions<Publication> & {
   documentId?: string
   versionId?: string
   variants?: undefined | PublicationVariant[]
+  mergeChanges?: string[]
   latest?: boolean
 }) {
   const groupVariants = variants?.filter((v) => v.key === 'group') as
@@ -102,6 +104,18 @@ export function usePublicationVariant({
       enabled: options.enabled !== false && !!queryDocumentId,
     },
   )
+  const mergedPubQuery = usePublication(
+    {
+      id: queryDocumentId,
+      version: `${pubQuery.data?.version}.${mergeChanges?.join('.')}`,
+    },
+    {
+      enabled:
+        options.enabled !== false &&
+        !!mergeChanges?.length &&
+        !!pubQuery.data?.version,
+    },
+  )
   let defaultVariantVersion: undefined | string = undefined
   if (!variants) {
     const authorVersion = timelineQuery.data?.authorVersions.find(
@@ -114,7 +128,7 @@ export function usePublicationVariant({
   return {
     ...pubQuery,
     data: {
-      publication: pubQuery.data,
+      publication: !!mergeChanges?.length ? mergedPubQuery.data : pubQuery.data,
       variantVersion,
     },
   }

@@ -1,7 +1,8 @@
 import {Change, HTTP_PORT} from '@mintter/shared'
-import {useQueries, useQuery} from '@tanstack/react-query'
+import {useMutation, useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
-import {useGRPCClient} from '../app-context'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import {useAccounts} from './accounts'
 import {queryKeys} from './query-keys'
 
 export function useDocHistory(docId?: string, variantVersion?: string) {
@@ -82,6 +83,119 @@ export function useEntityTimeline(entityId?: string) {
     },
     queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
     enabled: !!entityId,
+  })
+}
+
+export function useSuggestedChanges(docId?: string, variantVersion?: string) {
+  const timeline = useEntityTimeline(docId)
+  const {suggestedChanges, authorIds, alreadyMerged} = useMemo(() => {
+    const alreadyMerged = new Set<string>()
+    if (!variantVersion) return {}
+    function collectAlreadyMerged(changeId: string) {
+      alreadyMerged.add(changeId)
+      const change = timeline.data?.allChanges[changeId]
+      change?.deps.forEach(collectAlreadyMerged)
+    }
+    variantVersion.split('.').forEach(collectAlreadyMerged)
+    const allDisplayHeads = new Set<string>()
+    timeline.data?.heads.forEach((head) => {
+      if (alreadyMerged.has(head)) return
+      allDisplayHeads.add(head)
+    })
+    timeline.data?.authorVersions.forEach((authorVersion) => {
+      authorVersion.heads.forEach((head) => {
+        if (alreadyMerged.has(head)) return
+        allDisplayHeads.add(head)
+      })
+    })
+    const unmergedAuthorHeadChanges = [...allDisplayHeads]
+      .map((changeId) => {
+        return timeline.data?.allChanges[changeId]
+      })
+      .filter(Boolean)
+    const authorIds = new Set<string>()
+    unmergedAuthorHeadChanges.forEach((head) => {
+      if (head) authorIds.add(head.change.author)
+    })
+    const suggestedChanges = unmergedAuthorHeadChanges?.map((change) => {
+      if (!change) return null
+      const flatDeps: TimelineChange[] = []
+      const walkDeps = new Set(
+        change.deps
+          .map((depChangeId) => {
+            if (alreadyMerged.has(depChangeId)) return null
+            const depChange = timeline.data?.allChanges[depChangeId]
+            if (depChange) flatDeps.push(depChange)
+            return depChange
+          })
+          .filter(Boolean) as TimelineChange[],
+      )
+      while (walkDeps.size) {
+        walkDeps.forEach((depChange) => {
+          depChange.deps.forEach((depChangeId) => {
+            if (alreadyMerged.has(depChangeId)) return
+            const depChange = timeline.data?.allChanges[depChangeId]
+            if (depChange) {
+              flatDeps.push(depChange)
+              walkDeps.add(depChange)
+            }
+          })
+          walkDeps.delete(depChange)
+        })
+      }
+      flatDeps.forEach((depChange) => {
+        if (depChange) authorIds.add(depChange.change.author)
+      })
+      return {
+        ...change,
+        flatDeps,
+      }
+    })
+    return {authorIds: [...authorIds], suggestedChanges, alreadyMerged}
+  }, [docId, variantVersion, timeline.data])
+  const authors = useAccounts(authorIds || [])
+  const suggestedChangesWithAuthors = suggestedChanges?.map((change) => {
+    if (!change) return null
+    return {
+      ...change,
+      flatDeps: change.flatDeps.map((depChange) => {
+        return {
+          ...depChange,
+          author: authors.find(
+            (author) => author.data?.id === depChange.change.author,
+          )?.data,
+        }
+      }),
+      author: authors.find((author) => author.data?.id === change.change.author)
+        ?.data,
+    }
+  })
+  return {
+    suggested: suggestedChangesWithAuthors,
+    alreadyMerged,
+    allChanges: timeline.data?.allChanges,
+  }
+}
+
+export function useMergeChanges(documentId: string) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async (versions: string[]) => {
+      await grpcClient.merge.mergeChanges({
+        id: documentId,
+        versions,
+      })
+    },
+    onSuccess: () => {
+      invalidate([queryKeys.GET_PUBLICATION, documentId])
+      invalidate([queryKeys.GET_ACCOUNT_PUBLICATIONS])
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
+      invalidate([queryKeys.FEED_LATEST_EVENT])
+      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
+      invalidate([queryKeys.ENTITY_TIMELINE, documentId])
+      invalidate([queryKeys.ENTITY_CITATIONS])
+    },
   })
 }
 

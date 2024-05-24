@@ -57,6 +57,7 @@ export const basePublicationRouteSchema = z.object({
   variants: z.array(publicationVariantSchema).optional(),
   blockId: z.string().optional(),
   focusBlockId: z.string().optional(),
+  selectedMergeChanges: z.array(z.string()).optional(),
   blockRange: z
     .object({
       start: z.number().optional(),

@@ -65,6 +65,7 @@ export default function PublicationPage() {
     documentId: docId,
     versionId: route.versionId,
     variants: route.variants,
+    mergeChanges: route.selectedMergeChanges,
   })
 
   const mentions = useEntityMentions(
@@ -121,7 +122,12 @@ export default function PublicationPage() {
     } else if (accessoryKey == 'citations') {
       accessory = <EntityCitationsAccessory entityId={docId} />
     } else if (accessoryKey == 'suggested-changes') {
-      accessory = <EntitySuggestedChangesAccessory entityId={docId} />
+      accessory = (
+        <EntitySuggestedChangesAccessory
+          variantVersion={publication.data.variantVersion}
+          entityId={docId}
+        />
+      )
     } else if (
       accessoryKey == 'comments' &&
       id &&
@@ -300,7 +306,11 @@ function PublicationSuggestedChangesButton() {
       icon={Merge}
       onPress={() => {
         if (route.accessory?.key === 'suggested-changes')
-          return replace({...route, accessory: null})
+          return replace({
+            ...route,
+            accessory: null,
+            selectedMergeChanges: undefined,
+          })
         replace({...route, accessory: {key: 'suggested-changes'}})
       }}
     />
