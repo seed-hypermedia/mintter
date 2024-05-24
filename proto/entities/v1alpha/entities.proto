@@ -48,6 +48,10 @@ message GetChangeRequest {
 message GetEntityTimelineRequest {
   // The entity ID to get the timeline for.
   string id = 1;
+
+  // Flag to include draft changes in the timeline,
+  // otherwise they are omitted by default.
+  bool include_drafts = 2;
 }
 
 // Request to discover an entity.
@@ -84,6 +88,9 @@ message Change {
 
   // Indicates whether this changes comes from a trusted peer of ours.
   bool is_trusted = 5;
+
+  // Indicates whether this change is a draft.
+  bool is_draft = 7;
 }
 
 // The timeline of an entity.
@@ -145,7 +152,7 @@ message Entity {
 }
 
 // Publication that has been deleted
-message DeletedEntity { 
+message DeletedEntity {
   // EID of the deleted entity.
   string id = 1;
 
@@ -192,13 +199,12 @@ message ListDeletedEntitiesRequest {
 
   // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
-
 }
 
 // Response with list of deleted entities.
 message ListDeletedEntitiesResponse {
   // List of deleted entities.
-  repeated DeletedEntity deleted_entities= 1;
+  repeated DeletedEntity deleted_entities = 1;
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
