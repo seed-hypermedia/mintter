@@ -180,9 +180,13 @@ export function useDeleteDraft(
       await grpcClient.drafts.deleteDraft({documentId})
     },
     onSuccess: (response, documentId, context) => {
-      invalidate([queryKeys.GET_DRAFT_LIST])
-      invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
-      queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+      setTimeout(() => {
+        invalidate([queryKeys.GET_DRAFT_LIST])
+        invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+        invalidate([queryKeys.ENTITY_TIMELINE, documentId])
+        invalidate([queryKeys.EDITOR_DRAFT, documentId])
+        queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+      }, 200)
       opts?.onSuccess?.(response, documentId, context)
     },
   })
@@ -608,6 +612,7 @@ export function queryDraft({
         let serverDraft = await grpcClient.drafts.getDraft({
           documentId,
         })
+
         // const doc = serverDraft
         const doc = serverDraft ? hmDocument(serverDraft) : null
 
@@ -622,7 +627,6 @@ export function queryDraft({
           key: 'getDraftError',
           value: JSON.stringify(error),
         })
-
         return null
       }
     },
@@ -949,7 +953,6 @@ export function useDraftEditor({
         })
       }
     }
-    /* eslint-disable */
   }, [backendDraft.status])
 
   useEffect(() => {
