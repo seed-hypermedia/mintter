@@ -162,6 +162,7 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 				authorID    = stmt.ColumnInt64(5)
 				authorBytes = stmt.ColumnBytesUnsafe(6)
 				deps        = stmt.ColumnText(7)
+				isDraft     = stmt.ColumnInt(8)
 			)
 
 			idLong := cid.NewCidV1(uint64(codec), hash).String()
@@ -188,6 +189,7 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 				Author:     author,
 				CreateTime: timestamppb.New(hlc.Timestamp(ts).Time()),
 				IsTrusted:  isTrusted > 0,
+				IsDraft:    isDraft > 0,
 			}
 
 			if deps == "" {
@@ -226,7 +228,7 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 
 			authorHeads.Put(idLong)
 			return nil
-		}, edb.ResourcesID); err != nil {
+		}, edb.ResourcesID, in.IncludeDrafts); err != nil {
 			return err
 		}
 
@@ -272,7 +274,8 @@ var qGetEntityTimeline = dqb.Str(`
 		trusted_accounts.id > 0 AS is_trusted,
 		public_keys.id AS author_id,
 		public_keys.principal AS author,
-		group_concat(change_deps.parent, ' ') AS deps
+		group_concat(change_deps.parent, ' ') AS deps,
+		drafts.blob IS NOT NULL AS is_draft
 	FROM structural_blobs
 	JOIN blobs INDEXED BY blobs_metadata ON blobs.id = structural_blobs.id
 	JOIN public_keys ON public_keys.id = structural_blobs.author
@@ -282,7 +285,7 @@ var qGetEntityTimeline = dqb.Str(`
 	WHERE structural_blobs.resource IS NOT NULL
 		AND structural_blobs.type = 'Change'
 		AND structural_blobs.resource = :resource
-		AND drafts.blob IS NULL
+		AND is_draft <= :include_drafts
 	GROUP BY change_deps.child
 	ORDER BY structural_blobs.ts
 `)

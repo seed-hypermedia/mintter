@@ -85,6 +85,9 @@ func TestEntityTimeline(t *testing.T) {
 
 	e := hyper.NewEntity("fake-obj")
 
+	//   c1 — c2
+	//  /  \
+	// c3  c4
 	c1, err := e.CreateChange(e.NextTimestamp(), alice.Account, aliceDelegation, map[string]any{
 		"name": "Alice",
 	})
@@ -110,7 +113,7 @@ func TestEntityTimeline(t *testing.T) {
 		"lastName": "Liddell",
 	})
 	require.NoError(t, err)
-	require.NoError(t, blobs.SaveBlob(ctx, c4))
+	require.NoError(t, blobs.SaveDraftBlob(ctx, e.ID(), c4))
 	require.NoError(t, e.ApplyChange(c4.CID, c4.Decoded.(hyper.Change)))
 
 	want := &entities.EntityTimeline{
@@ -144,6 +147,7 @@ func TestEntityTimeline(t *testing.T) {
 				CreateTime: timestamppb.New(c4.Decoded.(hyper.Change).HLCTime.Time()),
 				Deps:       []string{c1.CID.String()},
 				IsTrusted:  true,
+				IsDraft:    true,
 			},
 		},
 		Roots:         []string{c1.CID.String()},
@@ -165,8 +169,59 @@ func TestEntityTimeline(t *testing.T) {
 		},
 	}
 
-	timeline, err := api.GetEntityTimeline(ctx, &entities.GetEntityTimelineRequest{Id: string(e.ID())})
+	timeline, err := api.GetEntityTimeline(ctx, &entities.GetEntityTimelineRequest{Id: string(e.ID()), IncludeDrafts: true})
 	require.NoError(t, err)
+	testutil.ProtoEqual(t, want, timeline, "timeline with drafts must match")
 
-	testutil.ProtoEqual(t, want, timeline, "timeline must match")
+	// Now without drafts.
+	{
+		want := &entities.EntityTimeline{
+			Id:    string(e.ID()),
+			Owner: alice.Account.String(),
+			Changes: map[string]*entities.Change{
+				c1.CID.String(): {
+					Id:         c1.CID.String(),
+					Author:     alice.Account.String(),
+					CreateTime: timestamppb.New(c1.Decoded.(hyper.Change).HLCTime.Time()),
+					Children:   []string{c2.CID.String(), c3.CID.String()},
+					IsTrusted:  true,
+				},
+				c2.CID.String(): {
+					Id:         c2.CID.String(),
+					Author:     alice.Account.String(),
+					CreateTime: timestamppb.New(c2.Decoded.(hyper.Change).HLCTime.Time()),
+					Deps:       []string{c1.CID.String()},
+					IsTrusted:  true,
+				},
+				c3.CID.String(): {
+					Id:         c3.CID.String(),
+					Author:     bob.Account.String(),
+					CreateTime: timestamppb.New(c3.Decoded.(hyper.Change).HLCTime.Time()),
+					Deps:       []string{c1.CID.String()},
+					IsTrusted:  true,
+				},
+			},
+			Roots:         []string{c1.CID.String()},
+			ChangesByTime: []string{c1.CID.String(), c2.CID.String(), c3.CID.String()},
+			Heads:         []string{c2.CID.String(), c3.CID.String()},
+			AuthorVersions: []*entities.AuthorVersion{
+				{
+					Author:      alice.Account.String(),
+					Heads:       []string{c2.CID.String()},
+					Version:     strings.Join([]string{c2.CID.String()}, "."),
+					VersionTime: timestamppb.New(c2.Decoded.(hyper.Change).HLCTime.Time()),
+				},
+				{
+					Author:      bob.Account.String(),
+					Heads:       []string{c3.CID.String()},
+					Version:     c3.CID.String(),
+					VersionTime: timestamppb.New(c3.Decoded.(hyper.Change).HLCTime.Time()),
+				},
+			},
+		}
+
+		timeline, err := api.GetEntityTimeline(ctx, &entities.GetEntityTimelineRequest{Id: string(e.ID()), IncludeDrafts: false})
+		require.NoError(t, err)
+		testutil.ProtoEqual(t, want, timeline, "timeline without drafts must match")
+	}
 }

@@ -60,6 +60,14 @@ export class GetEntityTimelineRequest extends Message<GetEntityTimelineRequest> 
    */
   id = "";
 
+  /**
+   * Flag to include draft changes in the timeline,
+   * otherwise they are omitted by default.
+   *
+   * @generated from field: bool include_drafts = 2;
+   */
+  includeDrafts = false;
+
   constructor(data?: PartialMessage<GetEntityTimelineRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -69,6 +77,7 @@ export class GetEntityTimelineRequest extends Message<GetEntityTimelineRequest> 
   static readonly typeName = "com.mintter.entities.v1alpha.GetEntityTimelineRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "include_drafts", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetEntityTimelineRequest {
@@ -221,6 +230,13 @@ export class Change extends Message<Change> {
    */
   isTrusted = false;
 
+  /**
+   * Indicates whether this change is a draft.
+   *
+   * @generated from field: bool is_draft = 7;
+   */
+  isDraft = false;
+
   constructor(data?: PartialMessage<Change>) {
     super();
     proto3.util.initPartial(data, this);
@@ -235,6 +251,7 @@ export class Change extends Message<Change> {
     { no: 4, name: "deps", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 6, name: "children", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 5, name: "is_trusted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 7, name: "is_draft", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Change {
