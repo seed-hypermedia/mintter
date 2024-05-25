@@ -477,9 +477,9 @@ export function useFullReferenceUrl(route: NavRoute): {
     const groupExactVersion = groupRoute?.version || group?.data?.version
     const baseUrl = group.data?.siteInfo?.baseUrl
     if (baseUrl) {
-      const url = groupExactVersion
-        ? `${baseUrl}/?v=${groupExactVersion}`
-        : baseUrl
+      let url = baseUrl + '/'
+      if (groupExactVersion) url += `?v=${groupExactVersion}`
+      if (groupRoute.focusBlockId) url += `#${groupRoute.focusBlockId}`
       return {
         label: 'Site',
         url,
@@ -495,6 +495,7 @@ export function useFullReferenceUrl(route: NavRoute): {
       url: createPublicWebHmUrl('g', groupId.eid, {
         hostname: hostname || null,
         version: groupExactVersion || group.data?.version || null,
+        blockRef: groupRoute.focusBlockId || null,
       }),
       content: copyDialogContent,
       onCopy: () => {
@@ -502,6 +503,7 @@ export function useFullReferenceUrl(route: NavRoute): {
           ...groupId,
           hostname: hostname || null,
           version: groupExactVersion || group.data?.version || null,
+          blockRef: groupRoute.focusBlockId || null,
         })
       },
     }
@@ -534,10 +536,10 @@ export function useFullReferenceUrl(route: NavRoute): {
             blockId?: string | undefined,
             blockRange?: BlockRange | ExpandedBlockRange | null,
           ) => {
-            console.log('=== COPY BLOCK', blockId)
+            const copyBlockId = blockId || pubRoute.focusBlockId
             copyUrlToClipboardWithFeedback(
-              blockId
-                ? `${sitePrettyUrl}#${blockId}${serializeBlockRange(
+              copyBlockId
+                ? `${sitePrettyUrl}#${copyBlockId}${serializeBlockRange(
                     blockRange,
                   )}`
                 : sitePrettyUrl,
@@ -600,7 +602,7 @@ export function useFullReferenceUrl(route: NavRoute): {
           ...docId,
           hostname: hostname || null,
           version: pub.data?.publication?.version || null,
-          blockRef: blockId || null,
+          blockRef: blockId || pubRoute.focusBlockId || null,
           blockRange,
           variants: pubRoute.variants,
         })
@@ -620,6 +622,7 @@ export function useFullReferenceUrl(route: NavRoute): {
         onCopyPublic({
           ...accountId,
           hostname: gwUrl.data || null,
+          blockRef: route.focusBlockId || null,
         })
       },
     }
