@@ -22,6 +22,7 @@ func (s Server) Register(srv *grpc.Server) {
 	documents.RegisterPublicationsServer(srv, s.Documents)
 	documents.RegisterChangesServer(srv, s.Documents)
 	documents.RegisterCommentsServer(srv, s.Documents)
+	documents.RegisterMergeServer(srv, s.Documents)
 
 	activity.RegisterActivityFeedServer(srv, s.Activity)
 	networking.RegisterNetworkingServer(srv, s.Networking)

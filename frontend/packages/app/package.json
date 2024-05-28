@@ -19,6 +19,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@hookform/resolvers": "3.3.1",
     "@juggle/resize-observer": "3.4.0",
+    "@manuscripts/prosemirror-recreate-steps": "^0.1.4",
     "@mintter/shared": "*",
     "@mintter/ui": "*",
     "@radix-ui/react-dropdown-menu": "2.0.5",

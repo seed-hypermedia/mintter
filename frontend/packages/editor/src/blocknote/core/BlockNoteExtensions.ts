@@ -3,6 +3,7 @@ import {Extensions, extensions} from '@tiptap/core'
 
 import {BlockNoteEditor} from './BlockNoteEditor'
 
+import {DiffExtension} from '@/diffExtension'
 import {LocalMediaPastePlugin} from '@/handle-local-media-paste-plugin'
 import {createInlineEmbedNode} from '@/mentions-plugin'
 import Link from '@/tiptap-extension-link'
@@ -98,6 +99,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     BackgroundColorExtension,
     TextAlignmentExtension,
     LocalMediaPastePlugin,
+    DiffExtension,
     // nodes
     Doc,
     BlockGroup.configure({

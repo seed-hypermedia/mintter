@@ -1,5 +1,6 @@
 export * from './BlockNoteEditor'
 export * from './BlockNoteExtensions'
+export * from './api/nodeConversions/nodeConversions'
 export * from './extensions/Blocks/api/block'
 export * from './extensions/Blocks/api/blockTypes'
 export * from './extensions/Blocks/api/defaultBlocks'

@@ -9,6 +9,10 @@ export const defaultProps = {
     default: 'left' as const,
     values: ['left', 'center', 'right', 'justify'] as const,
   },
+  diff: {
+    default: 'null' as const,
+    values: ['deleted', 'added', 'updated', 'null'] as const,
+  },
 } satisfies PropSchema
 
 export type DefaultProps = typeof defaultProps

@@ -29,6 +29,7 @@ var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 var Explore = lazy(() => import('@mintter/app/pages/explore'))
 var Favorites = lazy(() => import('@mintter/app/pages/favorites'))
 var DeletedContent = lazy(() => import('@mintter/app/pages/deleted-content'))
+var DraftRebase = lazy(() => import('@mintter/app/pages/draft-rebase'))
 
 export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
@@ -145,6 +146,11 @@ function getPageComponent(navRoute: NavRoute) {
     case 'favorites':
       return {
         PageComponent: Favorites,
+        Fallback: BaseLoading,
+      }
+    case 'draft-rebase':
+      return {
+        PageComponent: DraftRebase,
         Fallback: BaseLoading,
       }
     default:

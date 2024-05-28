@@ -9,6 +9,7 @@ import {
   Drafts,
   Entities,
   Groups,
+  Merge,
   Networking,
   Publications,
   Website,
@@ -27,6 +28,7 @@ export type GRPCClient = {
   networking: PromiseClient<typeof Networking>
   website: PromiseClient<typeof Website>
   activityFeed: PromiseClient<typeof ActivityFeed>
+  merge: PromiseClient<typeof Merge>
 }
 
 export function createGRPCClient(transport: any): GRPCClient {
@@ -43,5 +45,6 @@ export function createGRPCClient(transport: any): GRPCClient {
     entities: createPromiseClient(Entities, transport),
     website: createPromiseClient(Website, transport),
     activityFeed: createPromiseClient(ActivityFeed, transport),
+    merge: createPromiseClient(Merge, transport),
   } as const
 }

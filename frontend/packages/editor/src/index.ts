@@ -1,5 +1,7 @@
 export * from './blocknote'
 export * from './editor'
+export * from './editor-builder'
+export * from './editor-types'
 export * from './embed-block'
 export * from './file'
 export * from './heading-component-plugin'

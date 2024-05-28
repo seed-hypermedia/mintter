@@ -13,21 +13,22 @@ import {
 } from './blocknote'
 import {HMBlockSchema} from './schema'
 
-export const MathBlock = createReactBlockSpec({
-  type: 'math',
-  propSchema: {
-    ...defaultProps,
-  },
-  containsInlineContent: true,
-  // @ts-ignore
-  render: ({
-    block,
-    editor,
-  }: {
-    block: Block<HMBlockSchema>
-    editor: BlockNoteEditor<HMBlockSchema>
-  }) => Render(block, editor),
-})
+export const MathBlock = (type: 'equation' | 'math') =>
+  createReactBlockSpec({
+    type,
+    propSchema: {
+      ...defaultProps,
+    },
+    containsInlineContent: true,
+    // @ts-ignore
+    render: ({
+      block,
+      editor,
+    }: {
+      block: Block<HMBlockSchema>
+      editor: BlockNoteEditor<HMBlockSchema>
+    }) => Render(block, editor),
+  })
 
 const Render = (
   block: Block<HMBlockSchema>,

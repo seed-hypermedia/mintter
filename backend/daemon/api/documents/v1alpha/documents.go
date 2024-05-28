@@ -1010,7 +1010,52 @@ func (api *Server) MergeChanges(ctx context.Context, in *documents.MergeChangesR
 		Version:    hb.CID.String(),
 		LocalOnly:  true,
 	})
+}
 
+// RebaseChanges implements the corresponding gRPC method.
+func (api *Server) RebaseChanges(ctx context.Context, in *documents.RebaseChangesRequest) (*documents.Document, error) {
+	me, err := api.getMe()
+	if err != nil {
+		return nil, err
+	}
+
+	del, err := api.getDelegation(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	allHeads := []cid.Cid{}
+	draft, err := api.blobs.LoadDraft(ctx, hyper.EntityID(in.BaseDraftId))
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Could not load draft with provided ID [%s]: %v", in.BaseDraftId, err)
+	}
+
+	for _, version := range in.Versions {
+		heads, err := hyper.Version(version).Parse()
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "unable to parse version %s: %v", version, err)
+		}
+		allHeads = append(allHeads, heads...)
+	}
+	entity, err := api.blobs.LoadEntityFromHeads(ctx, hyper.EntityID(in.BaseDraftId), allHeads...)
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		return nil, fmt.Errorf("nothing to rebase, aborting")
+	}
+
+	_, err = entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, draft.Change.Patch)
+	if err != nil {
+		return nil, err
+	}
+
+	mut, err := docmodel.New(entity, me.DeviceKey(), del)
+	if err != nil {
+		return nil, err
+	}
+
+	return mut.Hydrate(ctx, api.blobs)
 }
 
 func (api *Server) getMe() (core.Identity, error) {

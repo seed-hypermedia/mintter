@@ -1,3 +1,4 @@
+import {EditorInlineContent} from '@mintter/editor'
 import type {
   Account,
   ChangeInfo,
@@ -113,17 +114,8 @@ export type PartialLink = Omit<HMInlineContentLink, 'content'> & {
   content: string | HMInlineContentLink['content']
 }
 
-export type HMInlineContent =
-  | HMInlineContentText
-  | HMInlineContentLink
-  | HMInlineContentEmbed
+export type HMInlineContent = EditorInlineContent
 export type PartialInlineContent = HMInlineContentText | PartialLink
-export type HMBlockProps<T = unknown> = {
-  childrenType?: HMBlockChildrenType
-  start?: string
-  textAlignment?: string
-  defaultOpen?: true
-} & T
 
 export type HMAnnotations = Array<HMTextAnnotation>
 
@@ -152,7 +144,7 @@ export type HMBlockCode = HMBlockBase & {
 
 export type HMBlockHeading = HMBlockBase & {
   type: 'heading'
-  attributes: HMBlockBase['attributes'] & {}
+  attributes: HMBlockBase['attributes']
 }
 
 export type HMBlockMath = HMBlockBase & {
@@ -237,6 +229,8 @@ export type HMDocument = {
   createTime?: HMTimestamp
   updateTime?: HMTimestamp
   publishTime?: HMTimestamp
+  version?: string
+  previousVersion?: string
 }
 
 export type HMGroup = {
