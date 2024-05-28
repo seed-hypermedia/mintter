@@ -402,7 +402,6 @@ ol > [data-node-type='block-outer']::marker {
   padding: 0.75rem 1rem;
 }
 
-
 .hljs-comment,
 .hljs-quote {
   color: var(--gray10);
@@ -453,4 +452,13 @@ ol > [data-node-type='block-outer']::marker {
 
 .hljs-strong {
   font-weight: 700;
+}
+
+[data-diff='deleted'] {
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+[data-diff='added'],
+[data-diff='updated'] {
+  background-color: rgba(0, 255, 0, 0.2);
 }

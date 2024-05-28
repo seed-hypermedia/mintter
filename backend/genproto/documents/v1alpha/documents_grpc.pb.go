@@ -537,8 +537,10 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MergeClient interface {
-	// Merge changes.
+	// Merge changes and publishes.
 	MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error)
+	// Rebase changes
+	RebaseChanges(ctx context.Context, in *RebaseChangesRequest, opts ...grpc.CallOption) (*Document, error)
 }
 
 type mergeClient struct {
@@ -558,12 +560,23 @@ func (c *mergeClient) MergeChanges(ctx context.Context, in *MergeChangesRequest,
 	return out, nil
 }
 
+func (c *mergeClient) RebaseChanges(ctx context.Context, in *RebaseChangesRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Merge/RebaseChanges", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MergeServer is the server API for Merge service.
 // All implementations should embed UnimplementedMergeServer
 // for forward compatibility
 type MergeServer interface {
-	// Merge changes.
+	// Merge changes and publishes.
 	MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error)
+	// Rebase changes
+	RebaseChanges(context.Context, *RebaseChangesRequest) (*Document, error)
 }
 
 // UnimplementedMergeServer should be embedded to have forward compatible implementations.
@@ -572,6 +585,9 @@ type UnimplementedMergeServer struct {
 
 func (UnimplementedMergeServer) MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MergeChanges not implemented")
+}
+func (UnimplementedMergeServer) RebaseChanges(context.Context, *RebaseChangesRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RebaseChanges not implemented")
 }
 
 // UnsafeMergeServer may be embedded to opt out of forward compatibility for this service.
@@ -603,6 +619,24 @@ func _Merge_MergeChanges_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Merge_RebaseChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RebaseChangesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MergeServer).RebaseChanges(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Merge/RebaseChanges",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MergeServer).RebaseChanges(ctx, req.(*RebaseChangesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Merge_ServiceDesc is the grpc.ServiceDesc for Merge service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -613,6 +647,10 @@ var Merge_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MergeChanges",
 			Handler:    _Merge_MergeChanges_Handler,
+		},
+		{
+			MethodName: "RebaseChanges",
+			Handler:    _Merge_RebaseChanges_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

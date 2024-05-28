@@ -163,6 +163,13 @@ export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 export const deletedContentRouteSchema = z.object({
   key: z.literal('deleted-content'),
 })
+
+export const draftRebaseRouteSchema = z.object({
+  key: z.literal('draft-rebase'),
+  documentId: z.string(),
+  sourceVersion: z.string(),
+  targetVersion: z.string(),
+})
 export type DeletedContentRoute = z.infer<typeof deletedContentRouteSchema>
 
 export const draftRouteSchema = baseDraftRouteSchema.extend({
@@ -184,6 +191,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   groupRouteSchema,
   publicationRouteSchema,
   draftRouteSchema,
+  draftRebaseRouteSchema,
   commentRouteSchema,
   commentDraftRouteSchema,
   exploreRouteSchema,

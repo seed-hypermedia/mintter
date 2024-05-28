@@ -193,6 +193,68 @@ func TestMergeE2E(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, mergedPub.Document.PreviousVersion, secondVersion.Version)
 	require.Contains(t, mergedPub.Document.PreviousVersion, forkedVersion.Version)
+	require.Contains(t, mergedPub.Document.Editors, bob.Storage.Identity().MustGet().Account().String())
+	require.Contains(t, mergedPub.Document.Editors, alice.Storage.Identity().MustGet().Account().String())
+}
+
+func TestRebaseE2E(t *testing.T) {
+	t.Parallel()
+	acfg := makeTestConfig(t)
+	bcfg := makeTestConfig(t)
+
+	acfg.Syncing.WarmupDuration = 1 * time.Millisecond
+	bcfg.Syncing.WarmupDuration = 1 * time.Millisecond
+
+	acfg.Syncing.Interval = 150 * time.Millisecond
+	bcfg.Syncing.Interval = 150 * time.Millisecond
+
+	acfg.Syncing.RefreshInterval = 50 * time.Millisecond
+	bcfg.Syncing.RefreshInterval = 50 * time.Millisecond
+
+	alice := makeTestApp(t, "alice", acfg, true)
+	bob := makeTestApp(t, "bob", bcfg, true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+
+	time.Sleep(200 * time.Millisecond)
+
+	initialVersion := publishDocument(t, ctx, alice, "", "", "")
+	time.Sleep(200 * time.Millisecond)
+
+	// so Bob gets Alice's document
+	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+
+	version1 := publishDocument(t, ctx, bob, "", initialVersion.Document.Id, initialVersion.Version)
+	version2 := publishDocument(t, ctx, bob, "", initialVersion.Document.Id, initialVersion.Version)
+	time.Sleep(200 * time.Millisecond)
+
+	// so Alice gets Bobs's changes
+	_, err = alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(200 * time.Millisecond)
+	draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: initialVersion.Document.Id,
+		Version:            initialVersion.Version,
+	})
+	require.NoError(t, err)
+	rebasedDoc, err := alice.RPC.Documents.RebaseChanges(ctx, &documents.RebaseChangesRequest{
+		BaseDraftId: draft.Id,
+		Versions:    []string{version1.Version, version2.Version},
+	})
+	require.NoError(t, err)
+	require.Contains(t, rebasedDoc.PreviousVersion, version1.Version)
+	require.Contains(t, rebasedDoc.PreviousVersion, version2.Version)
+	require.Contains(t, rebasedDoc.Editors, bob.Storage.Identity().MustGet().Account().String())
+	require.Contains(t, rebasedDoc.Editors, alice.Storage.Identity().MustGet().Account().String())
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {

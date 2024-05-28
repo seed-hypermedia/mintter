@@ -65,7 +65,9 @@ function annotationStyle(a: Annotation): HMStyles {
   return {}
 }
 
-export function toHMInlineContent(block: HMBlock): Array<HMInlineContent> {
+export function toHMInlineContent(
+  block: Partial<HMBlock>,
+): Array<HMInlineContent> {
   const linkEmbedAndRangeAnnotations = block.annotations?.filter(
     (a) => a.type == 'link' || a.type == 'inline-embed' || a.type == 'range',
   )

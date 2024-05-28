@@ -140,16 +140,12 @@ export default function AccountPage() {
 
 function MainAccountPage() {
   const route = useNavRoute()
-  const replace = useNavigate('replace')
+
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
   const myAccount = useMyAccount()
-  const connectedCount = account.devices?.filter((device) => device.isConnected)
-    .length
-  const isConnected = !!connectedCount
   const isMe = myAccount.data?.id === accountId
-  const accountEntityUrl = createHmId('a', accountId)
   const {data: groups} = useAccountGroups(
     route.tab === 'groups' ? accountId : undefined,
   )

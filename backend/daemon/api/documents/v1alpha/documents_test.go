@@ -616,6 +616,68 @@ func TestMerge(t *testing.T) {
 	})
 	require.Error(t, err)
 }
+
+func TestRebase(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Fisrt Doc"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world 1!",
+		}}},
+	})
+	require.NoError(t, err)
+	pub1, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{
+		DocumentId: updated.Id,
+	})
+	require.NoError(t, err)
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
+	require.NoError(t, err)
+	updated2 := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Second Doc"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world 2!",
+		}}},
+	})
+	require.NoError(t, err)
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{
+		DocumentId: updated2.Id,
+	})
+	require.NoError(t, err)
+	require.Equal(t, pub1.Document.Id, pub2.Document.Id)
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
+	require.NoError(t, err)
+	updated3 := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Linked with the first"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Some content",
+		}}},
+	})
+	require.NoError(t, err)
+
+	doc, err := api.RebaseChanges(ctx, &documents.RebaseChangesRequest{
+		BaseDraftId: updated3.Id,
+		Versions:    []string{pub1.Version, pub2.Version},
+	})
+	require.NoError(t, err)
+	require.Equal(t, updated3.Id, doc.Id)
+}
+
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()

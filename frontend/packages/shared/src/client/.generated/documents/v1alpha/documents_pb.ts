@@ -918,6 +918,55 @@ export class MergeChangesRequest extends Message<MergeChangesRequest> {
 }
 
 /**
+ * Request for rebasing changes in a document.
+ *
+ * @generated from message com.mintter.documents.v1alpha.RebaseChangesRequest
+ */
+export class RebaseChangesRequest extends Message<RebaseChangesRequest> {
+  /**
+   * Required. Draft ID to be rebased.
+   *
+   * @generated from field: string base_draft_id = 1;
+   */
+  baseDraftId = "";
+
+  /**
+   * Required. Versions to be applied applied on top of the base document.
+   *
+   * @generated from field: repeated string versions = 3;
+   */
+  versions: string[] = [];
+
+  constructor(data?: PartialMessage<RebaseChangesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.RebaseChangesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "base_draft_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "versions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RebaseChangesRequest {
+    return new RebaseChangesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RebaseChangesRequest {
+    return new RebaseChangesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RebaseChangesRequest {
+    return new RebaseChangesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: RebaseChangesRequest | PlainMessage<RebaseChangesRequest> | undefined, b: RebaseChangesRequest | PlainMessage<RebaseChangesRequest> | undefined): boolean {
+    return proto3.util.equals(RebaseChangesRequest, a, b);
+  }
+}
+
+/**
  * State of the document after publication.
  * Deprecated: use the Document message instead,
  * it has all the same fields.

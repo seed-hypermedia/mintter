@@ -46,7 +46,7 @@ import {Extension, findParentNode} from '@tiptap/core'
 import {NodeSelection} from '@tiptap/pm/state'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
-import {useEffect, useMemo, useRef} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
@@ -961,6 +961,56 @@ export function useDraftEditor({
     }
   }, [inlineMentionsData])
 
+  useEffect(() => {
+    function handleSelectAll(event: KeyboardEvent) {
+      if (event.key == 'a' && event.metaKey) {
+        if (editor) {
+          event.preventDefault()
+          editor._tiptapEditor.commands.focus()
+          editor._tiptapEditor.commands.selectAll()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleSelectAll)
+
+    return () => {
+      window.removeEventListener('keydown', handleSelectAll)
+    }
+  }, [])
+
+  function handleFocusAtMousePos(event) {
+    let ttEditor = (editor as BlockNoteEditor)._tiptapEditor
+    let editorView = ttEditor.view
+    let editorRect = editorView.dom.getBoundingClientRect()
+    let centerEditor = editorRect.left + editorRect.width / 2
+
+    const pos = editorView.posAtCoords({
+      left: editorRect.left + 1,
+      top: event.clientY + editorView.dom.offsetTop,
+    })
+
+    if (pos) {
+      let node = editorView.state.doc.nodeAt(pos.pos)
+
+      let sel = Selection.near(
+        editorView.state.doc.resolve(
+          event.clientX < centerEditor ? pos.pos : pos.pos + node.nodeSize - 1,
+        ),
+      )
+
+      ttEditor.commands.focus()
+      ttEditor.commands.setTextSelection(sel)
+    } else {
+      if (event.clientY > editorRect.top) {
+        // this is needed because if the user clicks on one of the sides of the title we don't want to jump to the bottom of the document to focus the document.
+        // if the window is scrolled and the title is not visible this will not matter because a block will be at its place so the normal focus should work.
+        ttEditor.commands.focus()
+        ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
+      }
+    }
+  }
+
   async function updateDraft({editor, blocksMap, draft, title}) {
     let currentEditorBlocks = [...editor.topLevelBlocks]
     let {changes, touchedBlocks} = compareBlocksWithMap(
@@ -1032,6 +1082,7 @@ export function useDraftEditor({
     editor,
     editorStream,
     draftStatusActor,
+    handleFocusAtMousePos,
   }
 }
 
@@ -1469,4 +1520,60 @@ export function useAccountPublications(accountId?: string | undefined) {
       }
     },
   })
+}
+
+export function useDraftRebase({
+  shouldCheck,
+  draft,
+}: {
+  shouldCheck: boolean
+  draft: HMDocument | null | undefined
+}) {
+  const grpcClient = useGRPCClient()
+  const [rebase, setRebase] = useState<boolean>(false)
+  const [newVersion, selectNewVersion] = useState<string>('')
+
+  useEffect(() => {
+    const INTERVAL = 10000
+    var interval
+    if (draft && shouldCheck) {
+      interval = setInterval(checkForRebase, INTERVAL)
+      checkForRebase()
+    }
+
+    async function checkForRebase() {
+      if (!draft?.previousVersion) {
+        return
+      }
+
+      const latestDoc = await grpcClient.publications.getPublication({
+        documentId: draft!.id,
+      })
+
+      const prevVersion = draft.previousVersion.split('.')
+      const latestVersion = latestDoc.version.split('.')
+      /**
+       * When I ask the backend for a publication without a version, it will respond
+       * with the latest version for that particular owner and also combined with my latest changes if those are not deps from the owner.
+       * this means that I need to check the latest version of the document with the previowVersion that my draft have
+       */
+      if (latestVersion && !_.isEqual(latestVersion, prevVersion)) {
+        setRebase(true)
+        selectNewVersion(
+          latestVersion.length > 1 ? latestVersion.join('.') : latestVersion[0],
+        )
+      }
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [shouldCheck])
+
+  return {
+    shouldRebase: rebase,
+    newVersion,
+  }
 }

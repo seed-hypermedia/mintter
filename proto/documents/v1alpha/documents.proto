@@ -225,8 +225,11 @@ message ListAccountPublicationsRequest {
 
 // Merge service provides access to merge documents.
 service Merge {
-  // Merge changes.
+  // Merge changes and publishes.
   rpc MergeChanges(MergeChangesRequest) returns (Publication);
+
+  // Rebase changes
+  rpc RebaseChanges(RebaseChangesRequest) returns (Document);
 }
 
 // Request for merging changes in a document.
@@ -236,6 +239,15 @@ message MergeChangesRequest {
 
   // Required. Versions to be merged.
   repeated string versions = 2;  
+}
+
+// Request for rebasing changes in a document.
+message RebaseChangesRequest {
+  // Required. Draft ID to be rebased.
+  string base_draft_id = 1;  
+
+  // Required. Versions to be applied applied on top of the base document.
+  repeated string versions = 3;  
 }
 
 // === Types ===

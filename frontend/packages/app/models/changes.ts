@@ -1,5 +1,10 @@
 import {Change, HTTP_PORT} from '@mintter/shared'
-import {useMutation, useQueries, useQuery} from '@tanstack/react-query'
+import {
+  UseQueryOptions,
+  useMutation,
+  useQueries,
+  useQuery,
+} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useAccounts} from './accounts'
@@ -52,12 +57,17 @@ export type TimelineChange = {
   id: string
 }
 
-export function useEntityTimeline(entityId?: string) {
+export function useEntityTimeline(
+  entityId?: string,
+  includeDrafts: boolean = false,
+  opts?: UseQueryOptions<any>,
+) {
   const grpcClient = useGRPCClient()
   return useQuery({
     queryFn: async () => {
       const rawTimeline = await grpcClient.entities.getEntityTimeline({
         id: entityId || '',
+        includeDrafts,
       })
       const timelineEntries = Object.entries(rawTimeline.changes)
       const allChanges: Record<string, TimelineChange> = {}
@@ -75,14 +85,19 @@ export function useEntityTimeline(entityId?: string) {
         })
       })
       return {
+        changes: rawTimeline.changes,
         allChanges,
         authorVersions: rawTimeline.authorVersions,
         timelineEntries,
+        changesByTime: rawTimeline.changesByTime,
         heads: rawTimeline.heads,
+        owner: rawTimeline.owner,
+        roots: rawTimeline.roots,
       }
     },
-    queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
+    queryKey: [queryKeys.ENTITY_TIMELINE, entityId, includeDrafts],
     enabled: !!entityId,
+    ...opts,
   })
 }
 

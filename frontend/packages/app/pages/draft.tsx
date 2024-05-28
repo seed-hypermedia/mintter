@@ -8,7 +8,9 @@ import {
 } from '@mintter/editor'
 import {
   BlockRange,
+  Change,
   ExpandedBlockRange,
+  HMDocument,
   StateStream,
   blockStyles,
   createPublicWebHmUrl,
@@ -21,6 +23,7 @@ import {
 import {
   Button,
   ErrorIcon,
+  FileWarning,
   Input,
   SizableText,
   Theme,
@@ -30,19 +33,30 @@ import {
   copyUrlToClipboardWithFeedback,
   useStream,
 } from '@mintter/ui'
-import {Selection} from '@tiptap/pm/state'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {ColorTokens} from 'tamagui'
 import {ActorRefFrom} from 'xstate'
+import {useGRPCClient} from '../app-context'
+import {Avatar} from '../components/avatar'
 import {MainWrapper} from '../components/main-wrapper'
-import {useMyAccount} from '../models/accounts'
-import {useDraftEditor} from '../models/documents'
+import {useAccount, useMyAccount} from '../models/accounts'
+import {useChange, useEntityTimeline} from '../models/changes'
+import {
+  compareDraftWithMap,
+  createBlocksMap,
+  extractDeletes,
+  useDraft,
+  useDraftEditor,
+  useDraftRebase,
+} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useGroup} from '../models/groups'
 import {subscribeDraftFocus} from '../src/draft-focusing'
+import {getAvatarUrl} from '../utils/account-url'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -57,11 +71,13 @@ import {AppPublicationContentProvider} from './publication-content-provider'
 export default function DraftPage() {
   let route = useNavRoute()
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
-
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
   const hasCreatedDraft = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [rebaseError, setRebaseError] = useState('')
+  const grpcClient = useGRPCClient()
+
   useEffect(() => {
     if (documentId === undefined) {
       if (hasCreatedDraft.current) return
@@ -76,24 +92,11 @@ export default function DraftPage() {
     documentId: route.draftId,
     route,
   })
-
-  useEffect(() => {
-    function handleSelectAll(event: KeyboardEvent) {
-      if (event.key == 'a' && event.metaKey) {
-        if (data.editor) {
-          event.preventDefault()
-          data.editor._tiptapEditor.commands.focus()
-          data.editor._tiptapEditor.commands.selectAll()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleSelectAll)
-
-    return () => {
-      window.removeEventListener('keydown', handleSelectAll)
-    }
-  }, [])
+  const {shouldRebase, newVersion} = useDraftRebase({
+    shouldCheck:
+      (data.draft?.previousVersion && data.state.matches('ready')) || false,
+    draft: data.draft,
+  })
 
   useEffect(() => {
     return subscribeDraftFocus(documentId, (blockId: string) => {
@@ -109,36 +112,64 @@ export default function DraftPage() {
 
   const fixedTitle = useFixedDraftTitle(route)
 
-  function handleFocusAtMousePos(event) {
-    let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
-    let editorView = ttEditor.view
-    let editorRect = editorView.dom.getBoundingClientRect()
-    let centerEditor = editorRect.left + editorRect.width / 2
+  const draftTimeline = useDraftTimeline({
+    documentId,
+    previousVersion: data.draft?.previousVersion,
+  })
 
-    const pos = editorView.posAtCoords({
-      left: editorRect.left + 1,
-      top: event.clientY + editorView.dom.offsetTop,
+  async function autoRebase() {
+    const prevPub = await grpcClient.publications.getPublication({
+      documentId,
+      version: data.draft?.previousVersion,
     })
 
-    if (pos) {
-      let node = editorView.state.doc.nodeAt(pos.pos)
+    const prevBlocksMap = prevPub.document?.children.length
+      ? createBlocksMap(prevPub.document?.children, '')
+      : {}
 
-      let sel = Selection.near(
-        editorView.state.doc.resolve(
-          event.clientX < centerEditor ? pos.pos : pos.pos + node.nodeSize - 1,
-        ),
-      )
+    const result = data.draft?.children
+      ? compareDraftWithMap({}, data.draft.children, '')
+      : {changes: [], touchedBlocks: []}
+    const deletedBlocks = extractDeletes(prevBlocksMap, result.touchedBlocks)
 
-      ttEditor.commands.focus()
-      ttEditor.commands.setTextSelection(sel)
-    } else {
-      if (event.clientY > editorRect.top) {
-        // this is needed because if the user clicks on one of the sides of the title we don't want to jump to the bottom of the document to focus the document.
-        // if the window is scrolled and the title is not visible this will not matter because a block will be at its place so the normal focus should work.
-        ttEditor.commands.focus()
-        ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
-      }
+    try {
+      await grpcClient.drafts.deleteDraft({
+        documentId,
+      })
+      await grpcClient.drafts.createDraft({
+        existingDocumentId: documentId,
+        version: newVersion,
+      })
+
+      await grpcClient.drafts.updateDraft({
+        documentId: documentId,
+        changes: [...result.changes, ...deletedBlocks],
+      })
+      window.location.reload()
+    } catch (error) {
+      await grpcClient.drafts.deleteDraft({
+        documentId,
+      })
+      await grpcClient.drafts.createDraft({
+        existingDocumentId: documentId,
+        version: data.draft?.previousVersion,
+      })
+      await grpcClient.drafts.updateDraft({
+        documentId: documentId,
+        changes: [...result.changes, ...deletedBlocks],
+      })
+      console.error('----- ERROR ------', error)
+      setRebaseError(JSON.stringify(error))
     }
+  }
+
+  async function testNewApi() {
+    const rebaseDemo = await grpcClient.merge.rebaseChanges({
+      baseDraftId: documentId,
+      versions: [newVersion],
+    })
+
+    console.log(`== ~ testNewApi ~ rebaseDemo:`, rebaseDemo)
   }
 
   if (data.state.matches('ready')) {
@@ -148,7 +179,6 @@ export default function DraftPage() {
         onReset={() => window.location.reload()}
       >
         <MainWrapper
-          onPress={handleFocusAtMousePos}
           // @ts-ignore
           onDragStart={(event) => {
             setIsDragging(true)
@@ -274,132 +304,204 @@ export default function DraftPage() {
             return false
           }}
         >
-          <AppPublicationContentProvider
-            disableEmbedClick
-            onCopyBlock={(
-              blockId: string,
-              blockRange: BlockRange | ExpandedBlockRange | undefined,
-            ) => {
-              if (route.key != 'draft')
-                throw new Error('DraftPage must have draft route')
-              if (!route.draftId)
-                throw new Error('draft route draftId is missing')
-              const id = unpackDocId(route.draftId)
-              if (!id?.eid)
-                throw new Error('eid could not be extracted from draft route')
-              copyUrlToClipboardWithFeedback(
-                createPublicWebHmUrl('d', id.eid, {
-                  blockRef: blockId,
-                  blockRange,
-                  hostname: gwUrl.data,
-                }),
-                'Block',
-              )
-            }}
-          >
-            {data.state.matches({ready: 'saveError'}) ? (
-              <XStack padding="$4" position="sticky" top={0} zIndex={100}>
+          <XStack>
+            <YStack f={1} onPress={data.handleFocusAtMousePos}>
+              {shouldRebase ? (
                 <XStack
-                  flex={1}
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderRadius="$3"
-                  backgroundColor="$red4"
-                  alignItems="center"
-                  gap="$4"
-                  borderColor="$color6"
-                  borderWidth={1}
+                  padding="$4"
+                  top={0}
+                  zIndex={100}
+                  style={{position: 'sticky'}}
                 >
-                  <XStack flexGrow={0} flexShrink={0}>
-                    <ErrorIcon color="$red11" size={12} />
-                  </XStack>
-                  <XStack flex={1}>
-                    <SizableText color="$red11">
-                      Oh No! Your draft is in a corrupt state. Need to restore
-                      or reset :(
-                    </SizableText>
-                  </XStack>
-                  <YStack
-                    gap="$2"
-                    ai="center"
-                    $gtSm={{
-                      flexDirection: 'row',
-                    }}
+                  <XStack
+                    theme="yellow"
+                    flex={1}
+                    paddingHorizontal="$4"
+                    paddingVertical="$2"
+                    borderRadius="$3"
+                    backgroundColor="$background"
+                    alignItems="center"
+                    gap="$4"
+                    borderColor="$color6"
+                    borderWidth={1}
                   >
-                    {data.state.context.restoreTries == 0 ? (
-                      <Tooltip content="This will remove all the current changes you made to the draft and will try to restore the last saved draft">
-                        <Button
-                          // backgroundColor="$red5"
-                          // color="$red11"
-                          // borderColor="$red7"
-                          // hoverStyle={{
-                          //   backgroundColor: '$red11',
-                          //   color: '$red1',
-                          //   borderColor: '$red7',
-                          // }}
-                          size="$2"
-                          onPress={() => data.send({type: 'RESTORE.DRAFT'})}
-                          $sm={{
-                            alignSelf: 'stretch',
-                          }}
-                        >
-                          Restore to previous saved state
-                        </Button>
-                      </Tooltip>
-                    ) : (
-                      <SizableText size="$2" fontWeight="600" color="$red11">
-                        Restore failed
+                    <XStack flexGrow={0} flexShrink={0}>
+                      <FileWarning color="$color10" size={12} />
+                    </XStack>
+                    <XStack flex={1}>
+                      <SizableText color="$color11">
+                        A new version of this document was found. do you want to
+                        base your changes on this new version?
                       </SizableText>
-                    )}
-                    <Tooltip content="It will remove all the changes made to this draft and reset to the original state of it. If it was an Empty draft, it will delete all its content. IF you started from another document, it will reset to that document state.">
+                    </XStack>
+                    <YStack
+                      gap="$2"
+                      ai="center"
+                      $gtSm={{
+                        flexDirection: 'row',
+                      }}
+                    >
                       <Button
-                        // backgroundColor="$red5"
-                        // color="$red11"
-                        // borderColor="$red7"
-                        // hoverStyle={{
-                        //   backgroundColor: '$red11',
-                        //   color: '$red1',
-                        //   borderColor: '$red7',
-                        // }}
                         $sm={{
                           alignSelf: 'stretch',
                         }}
                         size="$2"
-                        onPress={() => data.send({type: 'RESET.DRAFT'})}
+                        // onPress={
+                        //   () =>
+                        //     navigate({
+                        //       key: 'draft-rebase',
+                        //       documentId,
+                        //       sourceVersion: data.draft!.previousVersion!,
+                        //       targetVersion: newVersion,
+                        //     })
+                        // }
+                        onPress={autoRebase}
                       >
-                        Reset to the initial state
+                        Rebase and Review
                       </Button>
-                    </Tooltip>
-                  </YStack>
+                    </YStack>
+                  </XStack>
                 </XStack>
-              </XStack>
-            ) : null}
-            <YStack
-              id="editor-title"
-              onPress={(e) => {
-                e.stopPropagation()
-              }}
-              // style={{border: '1px solid green'}}
-            >
-              <DraftTitleInput
-                fixedTitle={fixedTitle}
-                draftActor={data.actor}
-                onEnter={() => {
-                  data.editor?._tiptapEditor?.commands?.focus?.('start')
-                }}
-              />
-            </YStack>
-            <HMEditorContainer>
-              {data.state.context.draft &&
-              data.editor &&
-              data.editor.topLevelBlocks.length ? (
-                <HyperMediaEditorView
-                  editable={!data.state.matches({ready: 'saveError'})}
-                  editor={data.editor}
-                />
               ) : null}
-            </HMEditorContainer>
-          </AppPublicationContentProvider>
+              <AppPublicationContentProvider
+                disableEmbedClick
+                onCopyBlock={(
+                  blockId: string,
+                  blockRange: BlockRange | ExpandedBlockRange | undefined,
+                ) => {
+                  if (route.key != 'draft')
+                    throw new Error('DraftPage must have draft route')
+                  if (!route.draftId)
+                    throw new Error('draft route draftId is missing')
+                  const id = unpackDocId(route.draftId)
+                  if (!id?.eid)
+                    throw new Error(
+                      'eid could not be extracted from draft route',
+                    )
+                  copyUrlToClipboardWithFeedback(
+                    createPublicWebHmUrl('d', id.eid, {
+                      blockRef: blockId,
+                      blockRange,
+                      hostname: gwUrl.data,
+                    }),
+                    'Block',
+                  )
+                }}
+              >
+                {data.state.matches({ready: 'saveError'}) ? (
+                  <XStack padding="$4" position="sticky" top={0} zIndex={100}>
+                    <XStack
+                      flex={1}
+                      paddingHorizontal="$4"
+                      paddingVertical="$2"
+                      borderRadius="$3"
+                      backgroundColor="$red4"
+                      alignItems="center"
+                      gap="$4"
+                      borderColor="$color6"
+                      borderWidth={1}
+                    >
+                      <XStack flexGrow={0} flexShrink={0}>
+                        <ErrorIcon color="$red11" size={12} />
+                      </XStack>
+                      <XStack flex={1}>
+                        <SizableText color="$red11">
+                          Oh No! Your draft is in a corrupt state. Need to
+                          restore or reset :(
+                        </SizableText>
+                      </XStack>
+                      <YStack
+                        gap="$2"
+                        ai="center"
+                        $gtSm={{
+                          flexDirection: 'row',
+                        }}
+                      >
+                        {data.state.context.restoreTries == 0 ? (
+                          <Tooltip content="This will remove all the current changes you made to the draft and will try to restore the last saved draft">
+                            <Button
+                              // backgroundColor="$red5"
+                              // color="$red11"
+                              // borderColor="$red7"
+                              // hoverStyle={{
+                              //   backgroundColor: '$red11',
+                              //   color: '$red1',
+                              //   borderColor: '$red7',
+                              // }}
+                              size="$2"
+                              onPress={() => data.send({type: 'RESTORE.DRAFT'})}
+                              $sm={{
+                                alignSelf: 'stretch',
+                              }}
+                            >
+                              Restore to previous saved state
+                            </Button>
+                          </Tooltip>
+                        ) : (
+                          <SizableText
+                            size="$2"
+                            fontWeight="600"
+                            color="$red11"
+                          >
+                            Restore failed
+                          </SizableText>
+                        )}
+                        <Tooltip content="It will remove all the changes made to this draft and reset to the original state of it. If it was an Empty draft, it will delete all its content. IF you started from another document, it will reset to that document state.">
+                          <Button
+                            // backgroundColor="$red5"
+                            // color="$red11"
+                            // borderColor="$red7"
+                            // hoverStyle={{
+                            //   backgroundColor: '$red11',
+                            //   color: '$red1',
+                            //   borderColor: '$red7',
+                            // }}
+                            $sm={{
+                              alignSelf: 'stretch',
+                            }}
+                            size="$2"
+                            onPress={() => data.send({type: 'RESET.DRAFT'})}
+                          >
+                            Reset to the initial state
+                          </Button>
+                        </Tooltip>
+                      </YStack>
+                    </XStack>
+                  </XStack>
+                ) : null}
+                <YStack
+                  id="editor-title"
+                  onPress={(e) => {
+                    e.stopPropagation()
+                  }}
+                  // style={{border: '1px solid green'}}
+                >
+                  <DraftTitleInput
+                    fixedTitle={fixedTitle}
+                    draftActor={data.actor}
+                    onEnter={() => {
+                      data.editor?._tiptapEditor?.commands?.focus?.('start')
+                    }}
+                  />
+                </YStack>
+                <HMEditorContainer>
+                  {data.state.context.draft &&
+                  data.editor &&
+                  data.editor.topLevelBlocks.length ? (
+                    <HyperMediaEditorView
+                      editable={!data.state.matches({ready: 'saveError'})}
+                      editor={data.editor}
+                    />
+                  ) : null}
+                </HMEditorContainer>
+              </AppPublicationContentProvider>
+            </YStack>
+            <DraftTimeline
+              draft={data.draft}
+              timeline={draftTimeline.timeline}
+              previousVersion={data.draft?.previousVersion}
+            />
+          </XStack>
           {documentId ? (
             <DraftDevTools
               draftId={documentId}
@@ -491,14 +593,16 @@ export function useFixedDraftTitle(route: DraftRoute) {
   return fixedTitle
 }
 
-function DraftTitleInput({
+export function DraftTitleInput({
   fixedTitle,
   onEnter,
   draftActor,
+  disabled = false,
 }: {
   fixedTitle?: string
   onEnter: () => void
   draftActor: ActorRefFrom<typeof draftMachine>
+  disabled?: boolean
 }) {
   const {textUnit, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
@@ -512,7 +616,7 @@ function DraftTitleInput({
     const target = input.current
     if (!target) return
     applyTitleResize(target)
-  }, [])
+  }, [input.current])
 
   useEffect(() => {
     if (fixedTitle) return
@@ -526,20 +630,24 @@ function DraftTitleInput({
   }, [title, fixedTitle])
 
   useEffect(() => {
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+
     function handleResize() {
       // handle the resize size of the title, responsive size may be changed
       const target = input.current
       if (!target) return
       applyTitleResize(target)
     }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
+  }, [input.current])
 
   return (
     <XStack
+      flex="none"
       {...blockStyles}
       marginBottom={layoutUnit}
       paddingBottom={layoutUnit / 2}
@@ -549,9 +657,9 @@ function DraftTitleInput({
       {...headingMarginStyles}
     >
       <Input
+        disabled={disabled}
         // we use multiline so that we can avoid horizontal scrolling for long titles
         multiline
-        // @ts-expect-error this will only work on web, where multiline TextInput is a HTMLTextAreaElement
         ref={input}
         onKeyPress={(e) => {
           if (e.nativeEvent.key == 'Enter') {
@@ -569,7 +677,6 @@ function DraftTitleInput({
         fontWeight="bold"
         fontFamily="$body"
         onChange={(e) => {
-          // @ts-expect-error
           applyTitleResize(e.target as HTMLTextAreaElement)
         }}
         outlineColor="transparent"
@@ -658,5 +765,260 @@ function DraftError({
         </Button>
       </YStack>
     </Theme>
+  )
+}
+
+type DraftTimeline = Array<
+  (Change & {currentDraft: boolean}) | (HMDocument & {currentDraft: boolean})
+>
+
+function useDraftTimeline({
+  documentId,
+  previousVersion,
+}: {
+  documentId?: string
+  previousVersion?: string
+}) {
+  const [timeline, setTimeline] = useState<DraftTimeline>([])
+  const {data: draft} = useDraft({
+    documentId,
+  })
+  const {data} = useEntityTimeline(documentId, false, {
+    refetchInterval: 10_000,
+  })
+
+  useEffect(() => {
+    if (previousVersion) {
+      if (
+        data &&
+        previousVersion &&
+        data.changesByTime.length &&
+        draft?.version
+      ) {
+        const prevVersions = previousVersion.split('.')
+
+        const slice = processTimeline({
+          timeline: data.changesByTime.reverse(),
+          previousVersions: prevVersions,
+          draft: draft.version,
+        })
+
+        console.log(`== ~ useEffect ~ slice:`, slice)
+
+        // TODO: change this when Burdi updates the timeline call with the flag to add the current draft
+        const changes = slice.map((id) => {
+          if (id === draft.version) {
+            return {...draft, currentDraft: true}
+          } else {
+            return {
+              ...data.changes[id],
+              currentDraft: false,
+            }
+          }
+        })
+
+        setTimeline(changes)
+      }
+    }
+  }, [documentId, previousVersion, data])
+
+  return {
+    timeline,
+  }
+
+  function processTimeline({
+    timeline,
+    previousVersions,
+    draft,
+  }: {
+    timeline: Array<string>
+    previousVersions: Array<string>
+    draft: string
+  }): Array<string> {
+    const indexes: number[] = []
+
+    // Find indexes of all elements in previousVersions from the timeline
+    for (const version of previousVersions) {
+      const index = timeline.indexOf(version)
+      if (index !== -1) {
+        indexes.push(index)
+      }
+    }
+
+    // If no elements from previousVersions are found in the timeline, return the original timeline
+    if (indexes.length === 0) {
+      return timeline
+    }
+
+    // Find the smallest and largest indexes
+    const smallestIndex = Math.min(...indexes)
+    const largestIndex = Math.max(...indexes)
+
+    // Insert the draft item before the smallest index
+    const updatedTimeline = [...timeline]
+    updatedTimeline.splice(smallestIndex, 0, draft)
+
+    // Slice the timeline up to and including the largest index found
+    const timelineSlice = updatedTimeline.slice(0, largestIndex + 2) // +2 to account for the insertion of draft
+
+    return timelineSlice
+  }
+}
+
+function DraftTimeline({
+  draft,
+  timeline,
+  previousVersion,
+}: {
+  draft?: HMDocument
+  timeline: DraftTimeline
+  previousVersion?: string
+}) {
+  const prevVersions = previousVersion?.split('.')
+  if (!draft) return null
+
+  return (
+    <YStack
+      f="none"
+      width={320}
+      borderLeftColor="$color7"
+      borderLeftWidth={1}
+      minHeight="100%"
+    >
+      <XStack
+        p="$2"
+        paddingHorizontal="$3"
+        borderBottomColor="$color7"
+        borderBottomWidth={1}
+      >
+        <SizableText size="$4" fontWeight="800">
+          Timeline
+        </SizableText>
+      </XStack>
+      {timeline.length ? (
+        timeline.map((item) => {
+          if (item.currentDraft) {
+            return <DraftTimelineItem key={draft.version} data={draft} />
+          } else {
+            return (
+              <DraftChangeItem
+                data={item as Change}
+                key={item.id}
+                isPrevious={
+                  prevVersions?.includes((item as Change).id) || false
+                }
+              />
+            )
+          }
+        })
+      ) : (
+        <SizableText>...</SizableText>
+      )}
+    </YStack>
+  )
+}
+
+function DraftTimelineItem({data, ...props}) {
+  const {data: author} = useAccount(data.author)
+  return (
+    <XStack
+      gap="$2"
+      p="$2"
+      paddingHorizontal="$3"
+      borderBottomColor="$color7"
+      borderBottomWidth={1}
+      {...props}
+    >
+      <XStack flex="none" flexShrink={0} flexGrow={0}>
+        <Avatar
+          size={24}
+          url={getAvatarUrl(author?.profile?.avatar)}
+          id={data.author}
+          label={author?.profile?.alias}
+        />
+      </XStack>
+      <YStack f={1}>
+        <XStack gap="$2">
+          <SizableText fontWeight="600">{author?.profile?.alias}</SizableText>
+          <XStack f={1} ai="center">
+            <ItemLabel color="blue" label="DRAFT" />
+          </XStack>
+        </XStack>
+
+        <SizableText size="$1">
+          {formattedDateMedium(data?.createTime)}
+        </SizableText>
+      </YStack>
+    </XStack>
+  )
+}
+
+function DraftChangeItem({
+  data,
+  isPrevious = false,
+  ...props
+}: {
+  data: Change
+  isPrevious: boolean
+}) {
+  const {data: change} = useChange(data.id)
+  const {data: author} = useAccount(data.author)
+
+  return (
+    <XStack
+      gap="$2"
+      p="$2"
+      paddingHorizontal="$3"
+      borderBottomColor="$color7"
+      borderBottomWidth={1}
+      {...props}
+    >
+      <XStack flex="none" flexShrink={0} flexGrow={0}>
+        <Avatar
+          size={24}
+          url={getAvatarUrl(author?.profile?.avatar)}
+          id={data.author}
+          label={author?.profile?.alias}
+        />
+      </XStack>
+      <YStack f={1}>
+        <XStack gap="$2">
+          <SizableText fontWeight="600">{author?.profile?.alias}</SizableText>
+          <XStack f={1} ai="center">
+            <ItemLabel
+              color={isPrevious ? 'green' : 'yellow'}
+              label={isPrevious ? 'DEP' : 'NEW'}
+            />
+          </XStack>
+        </XStack>
+
+        <SizableText size="$1">
+          {formattedDateMedium(change?.createTime)}
+        </SizableText>
+      </YStack>
+    </XStack>
+  )
+}
+
+function ItemLabel({label, color}: {label: string; color: ColorTokens}) {
+  return (
+    <XStack
+      paddingHorizontal={4}
+      bg={`$${color}5`}
+      w="auto"
+      overflow="hidden"
+      borderRadius="$2"
+      borderWidth={1}
+      borderColor={`$${color}7`}
+    >
+      <SizableText
+        fontSize={8}
+        lineHeight={12}
+        fontWeight="600"
+        textAlign="center"
+      >
+        {label}
+      </SizableText>
+    </XStack>
   )
 }

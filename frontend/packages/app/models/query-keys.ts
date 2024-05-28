@@ -35,7 +35,7 @@ export const queryKeys = {
   GET_HOST_GROUP: 'GET_HOST_GROUP', // , hostname: string
 
   // entities
-  ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string
+  ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string, includeDrafts: boolean
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //

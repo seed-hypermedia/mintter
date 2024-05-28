@@ -121,8 +121,6 @@ export function inlineContentToNodes(
     } else if (content.type === 'text') {
       nodes.push(...styledTextArrayToNodes([content], schema))
     } else if (content.type == 'inline-embed') {
-      console.log('== INLINE EMBED', content)
-      console.log(`== ~ schema:`, schema)
       nodes.push(
         schema.nodes['inline-embed'].create({
           ref: content.ref,

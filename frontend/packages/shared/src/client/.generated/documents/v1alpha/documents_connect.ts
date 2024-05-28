@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, MergeChangesRequest, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, MergeChangesRequest, Publication, PublishDraftRequest, PushPublicationRequest, RebaseChangesRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -158,7 +158,7 @@ export const Merge = {
   typeName: "com.mintter.documents.v1alpha.Merge",
   methods: {
     /**
-     * Merge changes.
+     * Merge changes and publishes.
      *
      * @generated from rpc com.mintter.documents.v1alpha.Merge.MergeChanges
      */
@@ -166,6 +166,17 @@ export const Merge = {
       name: "MergeChanges",
       I: MergeChangesRequest,
       O: Publication,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Rebase changes
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Merge.RebaseChanges
+     */
+    rebaseChanges: {
+      name: "RebaseChanges",
+      I: RebaseChangesRequest,
+      O: Document,
       kind: MethodKind.Unary,
     },
   }

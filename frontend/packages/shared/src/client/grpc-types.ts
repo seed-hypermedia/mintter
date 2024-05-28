@@ -84,6 +84,7 @@ export type {
 export * from './.generated/activity/v1alpha/activity_connect'
 export * from './.generated/activity/v1alpha/activity_pb'
 export {Event as ActivityEvent} from './.generated/activity/v1alpha/activity_pb'
+export {Merge} from './.generated/documents/v1alpha/documents_connect'
 
 export {
   Accounts,
