@@ -13,6 +13,7 @@ import {
   propsToAttributes,
   render,
 } from '@/blocknote/core'
+import {TagParseRule} from '@tiptap/pm/model'
 import {
   NodeViewContent,
   NodeViewProps,
@@ -27,16 +28,29 @@ export type ReactBlockConfig<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 > = Omit<
-  BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>,
+  BlockConfig<Type, PSchema, ContainsInlineContent, BSchema, BParseRules>,
   'render'
 > & {
   render: FC<{
     block: Parameters<
-      BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>['render']
+      BlockConfig<
+        Type,
+        PSchema,
+        ContainsInlineContent,
+        BSchema,
+        BParseRules
+      >['render']
     >[0]
     editor: Parameters<
-      BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>['render']
+      BlockConfig<
+        Type,
+        PSchema,
+        ContainsInlineContent,
+        BSchema,
+        BParseRules
+      >['render']
     >[1]
   }>
 }
@@ -76,8 +90,15 @@ export function createReactBlockSpec<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 >(
-  blockConfig: ReactBlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+  blockConfig: ReactBlockConfig<
+    BType,
+    PSchema,
+    ContainsInlineContent,
+    BSchema,
+    BParseRules
+  >,
 ): BlockSpec<BType, PSchema> {
   const node = createTipTapBlock<
     BType,

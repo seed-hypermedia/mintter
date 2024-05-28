@@ -2119,6 +2119,7 @@ export function BlockContentMath({
       borderWidth={1}
       borderRadius={layoutUnit / 4}
       data-content-type="math"
+      data-content={block.text}
       padding={layoutUnit / 2}
       overflow="hidden"
       marginHorizontal={(-1 * layoutUnit) / 2}

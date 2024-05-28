@@ -1,5 +1,6 @@
 /** Define the main block types **/
 import {Node, NodeConfig} from '@tiptap/core'
+import {ParseRule} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../../BlockNoteEditor'
 import {DefaultBlockSchema} from './defaultBlocks'
 import {InlineContent, PartialInlineContent} from './inlineContentTypes'
@@ -84,6 +85,7 @@ export type BlockConfig<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends ParseRule[],
 > = {
   // Attributes to define block in the API as well as a TipTap node.
   type: Type
@@ -115,6 +117,8 @@ export type BlockConfig<
     : {
         dom: HTMLElement
       }
+
+  parseHTML?: BParseRules
 }
 
 // Defines a single block spec, which includes the props that the block has and

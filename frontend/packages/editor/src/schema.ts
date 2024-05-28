@@ -9,7 +9,6 @@ import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {HMHeadingBlockContent} from './heading-component-plugin'
 import {ImageBlock} from './image'
-import {ImagePlaceholder} from './image-placeholder'
 import {MathBlock} from './math'
 import {NostrBlock} from './nostr'
 import CodeBlockLowlight from './tiptap-extension-code-block'
@@ -24,14 +23,6 @@ export const hmBlockSchema: BlockSchema = {
     node: HMHeadingBlockContent,
   },
   image: ImageBlock,
-  imagePlaceholder: {
-    propSchema: {
-      ...defaultProps,
-      src: {default: ''},
-      title: {default: ''},
-    },
-    node: ImagePlaceholder,
-  },
   codeBlock: {
     propSchema: {
       ...defaultProps,

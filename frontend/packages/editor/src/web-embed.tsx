@@ -1,5 +1,6 @@
 import {useOpenUrl} from '@mintter/app/open-url'
 import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@mintter/ui'
+import {Fragment} from '@tiptap/pm/model'
 import {
   QuotedTweet,
   TweetBody,
@@ -42,6 +43,16 @@ export const WebEmbed = createReactBlockSpec({
     block: Block<HMBlockSchema>
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
+
+  parseHTML: [
+    {
+      tag: 'div[data-content-type=web-embed]',
+      priority: 1000,
+      getContent: (_node, _schema) => {
+        return Fragment.empty
+      },
+    },
+  ],
 })
 
 const Render = (

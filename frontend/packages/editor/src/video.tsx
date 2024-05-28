@@ -50,6 +50,21 @@ export const VideoBlock = createReactBlockSpec({
     block: Block<HMBlockSchema>
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
+
+  parseHTML: [
+    {
+      tag: 'video[src]',
+      getAttrs: (element) => {
+        return {src: element.getAttribute('src')}
+      },
+    },
+    {
+      tag: 'iframe',
+      getAttrs: (element) => {
+        return {src: element.getAttribute('src')}
+      },
+    },
+  ],
 })
 
 const Render = (
