@@ -8,9 +8,7 @@ import {
 } from '@mintter/editor'
 import {
   BlockRange,
-  Change,
   ExpandedBlockRange,
-  HMDocument,
   StateStream,
   blockStyles,
   createPublicWebHmUrl,
@@ -23,7 +21,6 @@ import {
 import {
   Button,
   ErrorIcon,
-  FileWarning,
   Input,
   SizableText,
   Theme,
@@ -36,27 +33,21 @@ import {
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {ColorTokens} from 'tamagui'
 import {ActorRefFrom} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {Avatar} from '../components/avatar'
 import {MainWrapper} from '../components/main-wrapper'
-import {useAccount, useMyAccount} from '../models/accounts'
-import {useChange, useEntityTimeline} from '../models/changes'
+import {useMyAccount} from '../models/accounts'
 import {
   compareDraftWithMap,
   createBlocksMap,
   extractDeletes,
-  useDraft,
   useDraftEditor,
-  useDraftRebase,
 } from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useGroup} from '../models/groups'
 import {subscribeDraftFocus} from '../src/draft-focusing'
-import {getAvatarUrl} from '../utils/account-url'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -66,10 +57,12 @@ import {
 } from '../utils/media-drag'
 import {useOpenDraft} from '../utils/open-draft'
 import {DraftRoute} from '../utils/routes'
+import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftPage() {
   let route = useNavRoute()
+  const navigate = useNavigate('push')
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
@@ -92,11 +85,11 @@ export default function DraftPage() {
     documentId: route.draftId,
     route,
   })
-  const {shouldRebase, newVersion} = useDraftRebase({
-    shouldCheck:
-      (data.draft?.previousVersion && data.state.matches('ready')) || false,
-    draft: data.draft,
-  })
+  // const {shouldRebase, newVersion} = useDraftRebase({
+  //   shouldCheck:
+  //     (data.draft?.previousVersion && data.state.matches('ready')) || false,
+  //   draft: data.draft,
+  // })
 
   useEffect(() => {
     return subscribeDraftFocus(documentId, (blockId: string) => {
@@ -112,10 +105,10 @@ export default function DraftPage() {
 
   const fixedTitle = useFixedDraftTitle(route)
 
-  const draftTimeline = useDraftTimeline({
-    documentId,
-    previousVersion: data.draft?.previousVersion,
-  })
+  // const draftTimeline = useDraftTimeline({
+  //   documentId,
+  //   previousVersion: data.draft?.previousVersion,
+  // })
 
   async function autoRebase() {
     const prevPub = await grpcClient.publications.getPublication({
@@ -306,7 +299,7 @@ export default function DraftPage() {
         >
           <XStack>
             <YStack f={1} onPress={data.handleFocusAtMousePos}>
-              {shouldRebase ? (
+              {/* {shouldRebase ? (
                 <XStack
                   padding="$4"
                   top={0}
@@ -346,23 +339,22 @@ export default function DraftPage() {
                           alignSelf: 'stretch',
                         }}
                         size="$2"
-                        // onPress={
-                        //   () =>
-                        //     navigate({
-                        //       key: 'draft-rebase',
-                        //       documentId,
-                        //       sourceVersion: data.draft!.previousVersion!,
-                        //       targetVersion: newVersion,
-                        //     })
-                        // }
-                        onPress={autoRebase}
+                        onPress={() =>
+                          navigate({
+                            key: 'draft-rebase',
+                            documentId,
+                            sourceVersion: data.draft!.previousVersion!,
+                            targetVersion: newVersion,
+                          })
+                        }
+                        // onPress={autoRebase}
                       >
                         Rebase and Review
                       </Button>
                     </YStack>
                   </XStack>
                 </XStack>
-              ) : null}
+              ) : null} */}
               <AppPublicationContentProvider
                 disableEmbedClick
                 onCopyBlock={(
@@ -496,11 +488,6 @@ export default function DraftPage() {
                 </HMEditorContainer>
               </AppPublicationContentProvider>
             </YStack>
-            <DraftTimeline
-              draft={data.draft}
-              timeline={draftTimeline.timeline}
-              previousVersion={data.draft?.previousVersion}
-            />
           </XStack>
           {documentId ? (
             <DraftDevTools
@@ -765,260 +752,5 @@ function DraftError({
         </Button>
       </YStack>
     </Theme>
-  )
-}
-
-type DraftTimeline = Array<
-  (Change & {currentDraft: boolean}) | (HMDocument & {currentDraft: boolean})
->
-
-function useDraftTimeline({
-  documentId,
-  previousVersion,
-}: {
-  documentId?: string
-  previousVersion?: string
-}) {
-  const [timeline, setTimeline] = useState<DraftTimeline>([])
-  const {data: draft} = useDraft({
-    documentId,
-  })
-  const {data} = useEntityTimeline(documentId, false, {
-    refetchInterval: 10_000,
-  })
-
-  useEffect(() => {
-    if (previousVersion) {
-      if (
-        data &&
-        previousVersion &&
-        data.changesByTime.length &&
-        draft?.version
-      ) {
-        const prevVersions = previousVersion.split('.')
-
-        const slice = processTimeline({
-          timeline: data.changesByTime.reverse(),
-          previousVersions: prevVersions,
-          draft: draft.version,
-        })
-
-        console.log(`== ~ useEffect ~ slice:`, slice)
-
-        // TODO: change this when Burdi updates the timeline call with the flag to add the current draft
-        const changes = slice.map((id) => {
-          if (id === draft.version) {
-            return {...draft, currentDraft: true}
-          } else {
-            return {
-              ...data.changes[id],
-              currentDraft: false,
-            }
-          }
-        })
-
-        setTimeline(changes)
-      }
-    }
-  }, [documentId, previousVersion, data])
-
-  return {
-    timeline,
-  }
-
-  function processTimeline({
-    timeline,
-    previousVersions,
-    draft,
-  }: {
-    timeline: Array<string>
-    previousVersions: Array<string>
-    draft: string
-  }): Array<string> {
-    const indexes: number[] = []
-
-    // Find indexes of all elements in previousVersions from the timeline
-    for (const version of previousVersions) {
-      const index = timeline.indexOf(version)
-      if (index !== -1) {
-        indexes.push(index)
-      }
-    }
-
-    // If no elements from previousVersions are found in the timeline, return the original timeline
-    if (indexes.length === 0) {
-      return timeline
-    }
-
-    // Find the smallest and largest indexes
-    const smallestIndex = Math.min(...indexes)
-    const largestIndex = Math.max(...indexes)
-
-    // Insert the draft item before the smallest index
-    const updatedTimeline = [...timeline]
-    updatedTimeline.splice(smallestIndex, 0, draft)
-
-    // Slice the timeline up to and including the largest index found
-    const timelineSlice = updatedTimeline.slice(0, largestIndex + 2) // +2 to account for the insertion of draft
-
-    return timelineSlice
-  }
-}
-
-function DraftTimeline({
-  draft,
-  timeline,
-  previousVersion,
-}: {
-  draft?: HMDocument
-  timeline: DraftTimeline
-  previousVersion?: string
-}) {
-  const prevVersions = previousVersion?.split('.')
-  if (!draft) return null
-
-  return (
-    <YStack
-      f="none"
-      width={320}
-      borderLeftColor="$color7"
-      borderLeftWidth={1}
-      minHeight="100%"
-    >
-      <XStack
-        p="$2"
-        paddingHorizontal="$3"
-        borderBottomColor="$color7"
-        borderBottomWidth={1}
-      >
-        <SizableText size="$4" fontWeight="800">
-          Timeline
-        </SizableText>
-      </XStack>
-      {timeline.length ? (
-        timeline.map((item) => {
-          if (item.currentDraft) {
-            return <DraftTimelineItem key={draft.version} data={draft} />
-          } else {
-            return (
-              <DraftChangeItem
-                data={item as Change}
-                key={item.id}
-                isPrevious={
-                  prevVersions?.includes((item as Change).id) || false
-                }
-              />
-            )
-          }
-        })
-      ) : (
-        <SizableText>...</SizableText>
-      )}
-    </YStack>
-  )
-}
-
-function DraftTimelineItem({data, ...props}) {
-  const {data: author} = useAccount(data.author)
-  return (
-    <XStack
-      gap="$2"
-      p="$2"
-      paddingHorizontal="$3"
-      borderBottomColor="$color7"
-      borderBottomWidth={1}
-      {...props}
-    >
-      <XStack flex="none" flexShrink={0} flexGrow={0}>
-        <Avatar
-          size={24}
-          url={getAvatarUrl(author?.profile?.avatar)}
-          id={data.author}
-          label={author?.profile?.alias}
-        />
-      </XStack>
-      <YStack f={1}>
-        <XStack gap="$2">
-          <SizableText fontWeight="600">{author?.profile?.alias}</SizableText>
-          <XStack f={1} ai="center">
-            <ItemLabel color="blue" label="DRAFT" />
-          </XStack>
-        </XStack>
-
-        <SizableText size="$1">
-          {formattedDateMedium(data?.createTime)}
-        </SizableText>
-      </YStack>
-    </XStack>
-  )
-}
-
-function DraftChangeItem({
-  data,
-  isPrevious = false,
-  ...props
-}: {
-  data: Change
-  isPrevious: boolean
-}) {
-  const {data: change} = useChange(data.id)
-  const {data: author} = useAccount(data.author)
-
-  return (
-    <XStack
-      gap="$2"
-      p="$2"
-      paddingHorizontal="$3"
-      borderBottomColor="$color7"
-      borderBottomWidth={1}
-      {...props}
-    >
-      <XStack flex="none" flexShrink={0} flexGrow={0}>
-        <Avatar
-          size={24}
-          url={getAvatarUrl(author?.profile?.avatar)}
-          id={data.author}
-          label={author?.profile?.alias}
-        />
-      </XStack>
-      <YStack f={1}>
-        <XStack gap="$2">
-          <SizableText fontWeight="600">{author?.profile?.alias}</SizableText>
-          <XStack f={1} ai="center">
-            <ItemLabel
-              color={isPrevious ? 'green' : 'yellow'}
-              label={isPrevious ? 'DEP' : 'NEW'}
-            />
-          </XStack>
-        </XStack>
-
-        <SizableText size="$1">
-          {formattedDateMedium(change?.createTime)}
-        </SizableText>
-      </YStack>
-    </XStack>
-  )
-}
-
-function ItemLabel({label, color}: {label: string; color: ColorTokens}) {
-  return (
-    <XStack
-      paddingHorizontal={4}
-      bg={`$${color}5`}
-      w="auto"
-      overflow="hidden"
-      borderRadius="$2"
-      borderWidth={1}
-      borderColor={`$${color}7`}
-    >
-      <SizableText
-        fontSize={8}
-        lineHeight={12}
-        fontWeight="600"
-        textAlign="center"
-      >
-        {label}
-      </SizableText>
-    </XStack>
   )
 }
