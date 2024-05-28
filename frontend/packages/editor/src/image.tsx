@@ -44,6 +44,16 @@ export const ImageBlock = createReactBlockSpec({
     block: Block<HMBlockSchema>
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
+
+  parseHTML: [
+    {
+      tag: 'img[src]',
+      getAttrs: (element) => {
+        return {src: element.getAttribute('src'), width: element.style.width}
+      },
+      node: 'image',
+    },
+  ],
 })
 
 const Render = (
@@ -65,7 +75,6 @@ const Render = (
         reason: 'Error fetching the image.',
       })
         .then((imageData) => {
-          console.log(imageData)
           setLoading(false)
           if (imageData?.cid) {
             if (!imageData.type.includes('image')) {

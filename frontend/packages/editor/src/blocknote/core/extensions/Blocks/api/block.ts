@@ -1,4 +1,5 @@
 import {Attribute, Node} from '@tiptap/core'
+import {TagParseRule} from '@tiptap/pm/model'
 import {BlockNoteDOMAttributes, BlockNoteEditor} from '../../..'
 import {mergeCSSClasses} from '../../../shared/utils'
 import styles from '../nodes/Block.module.css'
@@ -22,9 +23,10 @@ export function propsToAttributes<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema, BParseRules>,
     'render'
   >,
 ) {
@@ -58,17 +60,24 @@ export function parse<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema, BParseRules>,
     'render'
   >,
 ) {
-  return [
-    {
-      tag: 'div[data-content-type=' + blockConfig.type + ']',
-    },
-  ]
+  const rules: TagParseRule[] = []
+  if (blockConfig.parseHTML && blockConfig.parseHTML.length > 0) {
+    blockConfig.parseHTML.forEach((rule) => {
+      rules.push(rule)
+    })
+  }
+  rules.push({
+    tag: 'div[data-content-type=' + blockConfig.type + ']',
+    priority: 999,
+  })
+  return rules
 }
 
 // Function that uses the 'render' function of a blockConfig to create a
@@ -79,9 +88,10 @@ export function render<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema, BParseRules>,
     'render'
   >,
   HTMLAttributes: Record<string, any>,
@@ -122,8 +132,15 @@ export function createBlockSpec<
   PSchema extends PropSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema,
+  BParseRules extends TagParseRule[],
 >(
-  blockConfig: BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+  blockConfig: BlockConfig<
+    BType,
+    PSchema,
+    ContainsInlineContent,
+    BSchema,
+    BParseRules
+  >,
 ): BlockSpec<BType, PSchema> {
   const node = createTipTapBlock<
     BType,

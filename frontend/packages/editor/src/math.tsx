@@ -1,4 +1,5 @@
 import {Separator, SizableText, TextArea, XStack, YStack} from '@mintter/ui'
+import {Fragment} from '@tiptap/pm/model'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import {NodeSelection} from 'prosemirror-state'
@@ -28,6 +29,25 @@ export const MathBlock = (type: 'equation' | 'math') =>
       block: Block<HMBlockSchema>
       editor: BlockNoteEditor<HMBlockSchema>
     }) => Render(block, editor),
+
+    parseHTML: [
+      {
+        tag: 'div[data-content-type=math]',
+        priority: 1000,
+        getContent: (node, schema) => {
+          const element = node instanceof HTMLElement ? node : null
+          const content = element?.getAttribute('data-content')
+
+          if (content) {
+            const textNode = schema.text(content)
+            const fragment = Fragment.from(textNode)
+            return fragment
+          }
+
+          return Fragment.empty
+        },
+      },
+    ],
   })
 
 const Render = (

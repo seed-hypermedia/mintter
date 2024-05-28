@@ -28,6 +28,7 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
+import {Fragment} from '@tiptap/pm/model'
 import {forwardRef, useCallback, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Block, BlockNoteEditor, HMBlockSchema} from '.'
@@ -64,6 +65,16 @@ export const EmbedBlock = createReactBlockSpec({
     block: Block<HMBlockSchema>
     editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
+
+  parseHTML: [
+    {
+      tag: 'div[data-content-type=embed]',
+      priority: 1000,
+      getContent: (_node, _schema) => {
+        return Fragment.empty
+      },
+    },
+  ],
 })
 
 const Render = (
