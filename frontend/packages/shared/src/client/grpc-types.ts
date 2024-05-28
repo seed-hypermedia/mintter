@@ -7,7 +7,6 @@ import {Groups} from './.generated/groups/v1alpha/groups_connect'
 
 import {
   Drafts,
-  Merge,
   Publications,
 } from './.generated/documents/v1alpha/documents_connect'
 import {Document} from './.generated/documents/v1alpha/documents_pb'
@@ -96,7 +95,6 @@ export {
   Drafts,
   Entities,
   Groups,
-  Merge,
   Networking,
   Publications,
 }
