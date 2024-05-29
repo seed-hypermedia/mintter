@@ -44,7 +44,8 @@ import {
 
 type IconDefinition = React.FC<{size: any; color: any}>
 
-export function SidebarNeo() {
+export const SidebarNeo = memo(_SidebarNeo)
+function _SidebarNeo() {
   const route = useNavRoute()
   const [collapseFavorites, setCollapseFavorites] = useState(true)
   const [collapseStandalone, setCollapseStandalone] = useState(false)
@@ -456,7 +457,8 @@ function RouteSection({
   )
 }
 
-function SidebarEmbedOutlineItem({
+const SidebarEmbedOutlineItem = memo(_SidebarEmbedOutlineItem)
+function _SidebarEmbedOutlineItem({
   indent,
   id,
   blockId,
