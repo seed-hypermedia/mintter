@@ -206,7 +206,9 @@ export default function PublicationPage() {
                       <PublicationContent
                         ref={rangeRef}
                         publication={publication.data?.publication}
-                        focusBlockId={route.focusBlockId}
+                        focusBlockId={
+                          route?.isBlockFocused ? route.blockId : undefined
+                        }
                       />
                     </>
                   ) : null}

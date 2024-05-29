@@ -176,7 +176,7 @@ function BreadcrumbTitle({
         if (route.key === 'draft') return null // draft should not appear in context
         const details = getItemDetails(
           entityContents?.find((c) => c.route === route)?.entity,
-          route.focusBlockId,
+          route.blockId,
         )
         if (!details) return null
         return [
@@ -184,7 +184,8 @@ function BreadcrumbTitle({
             title: details.title,
             route: {
               ...route,
-              focusBlockId: undefined,
+              blockId: undefined,
+              isBlockFocused: undefined,
               context: [...entityRoutes.slice(0, routeIndex)],
             },
             onSize: ({width}: DOMRect) => {
@@ -199,7 +200,8 @@ function BreadcrumbTitle({
                 title: heading.text,
                 route: {
                   ...route,
-                  focusBlockId: heading.id,
+                  blockId: heading.id,
+                  isBlockFocused: true,
                 },
                 onSize: () => {},
               }

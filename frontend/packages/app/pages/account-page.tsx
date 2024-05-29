@@ -488,7 +488,9 @@ function ProfileDoc({}: {}) {
       >
         <PublicationContent
           publication={pubDataWithHeading}
-          focusBlockId={accountRoute?.focusBlockId}
+          focusBlockId={
+            accountRoute?.isBlockFocused ? accountRoute.blockId : undefined
+          }
         />
       </AppPublicationContentProvider>
     </PageContainer>

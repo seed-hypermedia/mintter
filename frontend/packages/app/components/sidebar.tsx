@@ -390,19 +390,22 @@ function useNavigateBlock(fromRoute: NavRoute) {
       navigate({
         ...destRoute,
         context,
-        focusBlockId: blockId,
+        blockId: blockId,
+        isBlockFocused: true,
       })
     } else if (destRoute?.key === 'group') {
       navigate({
         ...destRoute,
         context,
-        focusBlockId: blockId,
+        blockId: blockId,
+        isBlockFocused: true,
       })
     } else if (destRoute?.key === 'account') {
       navigate({
         ...destRoute,
         context,
-        focusBlockId: blockId,
+        blockId: blockId,
+        isBlockFocused: true,
       })
     } else if (destRoute) {
       navigate(destRoute)
@@ -501,7 +504,7 @@ function AccountContextItem({
         title={account.data?.profile?.alias || 'Unknown Account'}
         icon={Contact}
         onPress={() => {
-          navigate({...route, blockId: undefined, focusBlockId: undefined})
+          navigate({...route, blockId: undefined, isBlockFocused: undefined})
         }}
       />
       {useIntermediateContext(
@@ -594,8 +597,8 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const {outlineContent, isBlockActive, isBlockFocused} = activeDocOutline(
     docOutline,
-    route.blockId,
-    route.focusBlockId,
+    route.isBlockFocused ? undefined : route.blockId,
+    route.isBlockFocused ? route.blockId : undefined,
     pubEmbeds,
     navigateBlock,
     focusBlock,
@@ -611,9 +614,12 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
           <SidebarGroupItem
             active={isRootActive}
             onPress={() => {
-              console.log('onPress')
               if (!isRootActive) {
-                replace({...route, blockId: undefined, focusBlockId: undefined})
+                replace({
+                  ...route,
+                  blockId: undefined,
+                  isBlockFocused: undefined,
+                })
               }
             }}
             title={account.data?.profile?.alias}
@@ -656,8 +662,8 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   const {navigateBlock, focusBlock} = useNavigateBlock(route)
   const {outlineContent, isBlockActive} = activeDocOutline(
     outline,
-    route.blockId,
-    route.focusBlockId,
+    route.isBlockFocused ? undefined : route.blockId,
+    route.isBlockFocused ? route.blockId : undefined,
     pubEmbeds,
     navigateBlock,
     focusBlock,
@@ -698,43 +704,6 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   )
 }
 
-// function useOutlineFocus(
-//   children: HMBlockNode[],
-//   focusBlockId: string | undefined,
-// ): {
-//   focusedChildren: HMBlockNode[]
-//   focusContext: ReactNode
-// } {
-//   let foundBlockPath = findBlockPath(children, focusBlockId)
-//   console.log('foundBlockPath', foundBlockPath)
-// }
-
-// function findBlockPath(
-//   children: HMBlockNode[],
-//   blockId: string,
-//   parentPath?: string[],
-// ): null | string[] {
-//   let foundBlockPath: string[] = []
-//   children.find((node) => {
-//     if (node.block.id === blockId) {
-//       foundBlockPath = [...(parentPath || []), blockId]
-//       return true
-//     }
-//     if (node.children?.length) {
-//       const childPath = findBlockPath(
-//         node.children,
-//         blockId,
-//         parentPath ? [...parentPath, node.block.id] : [node.block.id],
-//       )
-//       if (childPath) {
-//         foundBlockPath = childPath
-//         return true
-//       }
-//     }
-//     return false
-//   })
-// }
-
 function GroupRouteOutline({route}: {route: GroupRoute}) {
   const activeRoute = useNavRoute()
   const group = useGroup(route.groupId, route.version)
@@ -756,8 +725,8 @@ function GroupRouteOutline({route}: {route: GroupRoute}) {
   const {outlineContent: frontPubOutlineContent, isBlockActive} =
     activeDocOutline(
       frontDocOutline,
-      route.blockId,
-      route.focusBlockId,
+      route.isBlockFocused ? undefined : route.blockId,
+      route.isBlockFocused ? route.blockId : undefined,
       frontPubEmbeds,
       navigateBlock,
       focusBlock,

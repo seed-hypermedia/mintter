@@ -944,7 +944,9 @@ function FrontPublicationDisplay({
       >
         <PublicationContent
           publication={pubWithHeading}
-          focusBlockId={groupRoute?.focusBlockId}
+          focusBlockId={
+            groupRoute?.isBlockFocused ? groupRoute.blockId : undefined
+          }
         />
       </AppPublicationContentProvider>
     </YStack>

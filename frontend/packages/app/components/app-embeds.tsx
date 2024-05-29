@@ -191,7 +191,7 @@ function EmbedWrapper({
                   })
                 }
               } else {
-                open(hmRef)
+                open(hmRef, parentBlockId)
               }
             }
           : undefined
@@ -473,7 +473,10 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
                 documentId,
                 variants: props.variants || undefined,
                 versionId: props.version || undefined,
-                context: getRouteContext(route),
+                context: getRouteContext(
+                  route,
+                  props.parentBlockId || undefined,
+                ),
               })
             }}
           >

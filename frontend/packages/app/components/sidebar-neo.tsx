@@ -309,7 +309,7 @@ function ContextItems({
         icon={info.icon}
         onPress={() => {
           if (route.key === 'draft') return
-          onNavigate({...route, blockId: undefined, focusBlockId: undefined})
+          onNavigate({...route, blockId: undefined, isBlockFocused: undefined})
         }}
         iconAfter={
           info.isDraft ? (
@@ -338,11 +338,7 @@ function ContextItems({
             title={heading.text}
             onPress={() => {
               if (route.key === 'draft') return
-              console.log('hahhahahaaaaaaa', {
-                headingId: heading.id,
-                route,
-              })
-              onNavigate({...route, focusBlockId: heading.id})
+              onNavigate({...route, blockId: heading.id, isBlockFocused: true})
             }}
           />
         )
@@ -374,7 +370,11 @@ function RouteSection({
   const thisRouteBlockId =
     thisRoute?.key === 'draft' ? undefined : thisRoute?.blockId
   const thisRouteFocusBlockId =
-    thisRoute?.key === 'draft' ? undefined : thisRoute?.focusBlockId
+    thisRoute?.key === 'draft'
+      ? undefined
+      : thisRoute?.isBlockFocused
+      ? thisRoute?.blockId
+      : undefined
   const myAccount = useMyAccount()
   const thisRouteDetails = getItemDetails(
     thisRouteEntity?.entity,
@@ -403,7 +403,7 @@ function RouteSection({
         focusDraftBlock(thisRoute.draftId, blockId)
         return
       }
-      onNavigate({...thisRoute, blockId}, shouldReplace)
+      onNavigate({...thisRoute, blockId, isBlockFocused: false}, shouldReplace)
     },
     [thisRoute, activeRoute],
   )
@@ -413,7 +413,7 @@ function RouteSection({
       return null
     }
     return (blockId) => {
-      onNavigate({...thisRoute, focusBlockId: blockId})
+      onNavigate({...thisRoute, blockId, isBlockFocused: true})
     }
   }, [onNavigate, thisRoute])
   return (
@@ -544,7 +544,8 @@ function SidebarEmbedOutlineItem({
                     ) {
                       navigate({
                         ...destRoute,
-                        focusBlockId: childBlockId,
+                        blockId: childBlockId,
+                        isBlockFocused: true,
                         context: getRouteContext(route, blockId),
                       })
                     } else navigate(destRoute)

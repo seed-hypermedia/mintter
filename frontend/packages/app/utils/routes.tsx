@@ -49,7 +49,7 @@ export const basePublicationRouteSchema = z.object({
   versionId: z.string().optional(),
   variants: z.array(publicationVariantSchema).optional(),
   blockId: z.string().optional(),
-  focusBlockId: z.string().optional(),
+  isBlockFocused: z.boolean().optional(),
   blockRange: z
     .object({
       start: z.number().optional(),
@@ -76,7 +76,7 @@ export const baseGroupRouteSchema = z.object({
   groupId: z.string(),
   version: z.string().optional(),
   blockId: z.string().optional(),
-  focusBlockId: z.string().optional(),
+  isBlockFocused: z.boolean().optional(),
   accessory: z
     .discriminatedUnion('key', [entityVersionsAccessorySchema])
     .nullable()
@@ -88,7 +88,7 @@ export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
   accountId: z.string(),
   blockId: z.string().optional(),
-  focusBlockId: z.string().optional(),
+  isBlockFocused: z.boolean().optional(),
   accessory: z
     .discriminatedUnion('key', [entityCitationsAccessorySchema])
     .nullable()

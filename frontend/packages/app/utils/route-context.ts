@@ -37,8 +37,8 @@ export function getRouteContext(
 export function useOpenInContext() {
   const route = useNavRoute()
   const navigate = useNavigate()
-  const context = getRouteContext(route)
-  return (hmUrl) => {
+  return (hmUrl, parentBlockId) => {
+    const context = getRouteContext(route, parentBlockId)
     const id = unpackHmId(hmUrl)
     if (!id) return
     if (id.type == 'd') {
