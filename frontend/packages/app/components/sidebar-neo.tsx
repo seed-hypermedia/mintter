@@ -72,22 +72,22 @@ export function SidebarNeo() {
   const entityContents = useEntitiesContent(
     myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
   )
-  const handleNavigate = useCallback(function handleNavigate(
-    route: NavRoute,
-    doReplace?: boolean,
-  ) {
-    if (doReplace) replace(route)
-    else navigate(route)
-    const destEntityRoutes = getEntityRoutes(route)
-    const firstEntityRoute = destEntityRoutes[0]
-    const isMyAccountActive =
-      firstEntityRoute &&
-      firstEntityRoute.key === 'account' &&
-      firstEntityRoute.accountId === myAccount.data?.id
-    setCollapseFavorites(true)
-    setCollapseMe(isMyAccountActive ? false : true)
-    setCollapseStandalone(isMyAccountActive ? true : false)
-  }, [])
+  const handleNavigate = useCallback(
+    function handleNavigate(route: NavRoute, doReplace?: boolean) {
+      if (doReplace) replace(route)
+      else navigate(route)
+      const destEntityRoutes = getEntityRoutes(route)
+      const firstEntityRoute = destEntityRoutes[0]
+      const isMyAccountActive =
+        firstEntityRoute &&
+        firstEntityRoute.key === 'account' &&
+        firstEntityRoute.accountId === myAccount.data?.id
+      setCollapseFavorites(true)
+      setCollapseMe(isMyAccountActive ? false : true)
+      setCollapseStandalone(isMyAccountActive ? true : false)
+    },
+    [myAccount.data?.id],
+  )
   useEffect(() => {
     if (isMyAccountActive) {
       setCollapseMe(false)
@@ -439,7 +439,7 @@ function RouteSection({
           route={thisRoute}
           onNavigate={onNavigate}
           active={active}
-          isCollapsed={collapse}
+          isCollapsed={canCollapse ? collapse : undefined}
           onSetCollapsed={setCollapse}
         />
       )}
