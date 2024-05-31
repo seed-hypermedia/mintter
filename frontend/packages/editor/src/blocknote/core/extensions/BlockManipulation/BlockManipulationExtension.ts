@@ -3,7 +3,12 @@ import {Extension} from '@tiptap/core'
 import {ResolvedPos} from '@tiptap/pm/model'
 import {EditorView} from '@tiptap/pm/view'
 import {Node} from 'prosemirror-model'
-import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
+import {
+  NodeSelection,
+  Plugin,
+  PluginKey,
+  TextSelection,
+} from 'prosemirror-state'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 
 export const BlockManipulationExtension = Extension.create({
@@ -196,6 +201,34 @@ export const BlockManipulationExtension = Extension.create({
                 ) {
                   const selection = NodeSelection.create(state.doc, prevNodePos)
                   view.dispatch(state.tr.setSelection(selection))
+                  return true
+                }
+              } else {
+                const blockInfo = getBlockInfoFromPos(
+                  state.doc,
+                  state.selection.from,
+                )!
+                if (
+                  [
+                    'image',
+                    'file',
+                    'embed',
+                    'video',
+                    'web-embed',
+                    'equation',
+                    'math',
+                  ].includes(blockInfo.contentType.name)
+                ) {
+                  const newBlock =
+                    state.schema.nodes['blockContainer'].createAndFill()!
+                  let tr = state.tr.insert(1, newBlock)
+                  view.dispatch(tr)
+
+                  tr = view.state.tr.setSelection(
+                    TextSelection.create(view.state.doc, 1),
+                  )
+                  tr = tr.scrollIntoView()
+                  view.dispatch(tr)
                   return true
                 }
               }
