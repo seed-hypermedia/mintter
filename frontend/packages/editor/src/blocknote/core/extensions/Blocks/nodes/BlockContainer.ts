@@ -262,6 +262,7 @@ declare module '@tiptap/core' {
         listType: HMBlockChildrenType,
         tab: boolean,
         start?: string,
+        isSank?: boolean,
       ) => ReturnType
     }
   }
@@ -717,7 +718,7 @@ export const BlockContainer = Node.create<{
         },
       // Updates a block group at a given position.
       UpdateGroup:
-        (posInBlock, listType, tab, start) =>
+        (posInBlock, listType, tab, start, isSank = false) =>
         ({state, dispatch}) => {
           // Find block group, block container and depth it is at
           const {
@@ -730,6 +731,8 @@ export const BlockContainer = Node.create<{
             posInBlock < 0 ? state.selection.from : posInBlock,
             state,
           )
+
+          if (isSank && group.attrs.listType === listType) return true
 
           // Change group type to div
           if (
@@ -785,7 +788,7 @@ export const BlockContainer = Node.create<{
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, tab, start)
+                .UpdateGroup(-1, listType, tab, start, true)
                 .run()
 
               return true
@@ -805,7 +808,7 @@ export const BlockContainer = Node.create<{
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, tab, start)
+                .UpdateGroup(-1, listType, tab, start, true)
                 .run()
 
               return true
