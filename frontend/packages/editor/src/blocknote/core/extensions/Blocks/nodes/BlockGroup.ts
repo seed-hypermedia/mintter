@@ -58,7 +58,8 @@ export const BlockGroup = Node.create<{
         },
       }),
       new InputRule({
-        find: new RegExp(`^[0-9]*\\.\\s$`),
+        // ^\d+\.\s
+        find: new RegExp(/^\d+\.\s/),
         handler: ({state, chain, range}) => {
           chain()
             .UpdateGroup(
@@ -73,7 +74,6 @@ export const BlockGroup = Node.create<{
       }),
     ]
   },
-
   parseHTML() {
     return [
       {
