@@ -24,6 +24,7 @@ export const LinkMenuPositioner = <
   editor: BlockNoteEditor<BSchema>
   linkMenu?: FC<LinkMenuProps<BSchema>>
 }) => {
+  const [placement, setPlacement] = useState('bottom-start')
   const [show, setShow] = useState<boolean>(false)
   const [ref, setRef] = useState<string>('')
   const [items, setItems] = useState<LinkMenuItem<BSchema>[]>([])
@@ -56,9 +57,38 @@ export const LinkMenuPositioner = <
         return undefined
       }
 
-      return () => referencePos.current!
+      const boundingRect = referencePos.current!
+      const newRect = {
+        top: boundingRect.top,
+        right: boundingRect.right,
+        bottom: boundingRect.bottom,
+        left: boundingRect.left,
+        width: boundingRect.width,
+        height: boundingRect.height,
+      }
+      if (
+        boundingRect.bottom > window.innerHeight ||
+        window.innerHeight / boundingRect.bottom < 1.2
+      ) {
+        setPlacement('top-start')
+        switch (items.length) {
+          case 4:
+            newRect.top = window.innerHeight / 1.25
+            break
+          case 2:
+            newRect.top = window.innerHeight / 1.14
+            break
+          case 1:
+          default:
+            break
+        }
+      } else {
+        setPlacement('bottom-start')
+      }
+
+      return () => newRect as DOMRect
     },
-    [referencePos.current], // eslint-disable-line
+    [referencePos.current, items], // eslint-disable-line
   )
 
   const linkMenuElement = useMemo(
@@ -94,7 +124,8 @@ export const LinkMenuPositioner = <
       interactive={true}
       visible={show}
       animation={'fade'}
-      placement={'bottom-start'}
+      // @ts-ignore
+      placement={placement}
     />
   )
 }
