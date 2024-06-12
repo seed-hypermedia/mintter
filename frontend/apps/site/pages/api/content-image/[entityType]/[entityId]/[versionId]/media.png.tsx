@@ -10,18 +10,18 @@ import {
   getCIDFromIPFSUrl,
   toHMInlineContent,
 } from '@mintter/shared'
-import {readFileSync} from 'fs'
-import {NextApiRequest, NextApiResponse} from 'next'
-import {join} from 'path'
+import { readFileSync } from 'fs'
+import { NextApiRequest, NextApiResponse } from 'next'
+import { join } from 'path'
 import satori from 'satori'
-import {OG_IMAGE_SIZE} from 'server/content-image-meta'
-import {setAllowAnyHostGetCORS} from 'server/cors'
-import {serverHelpers} from 'server/ssr-helpers'
+import { OG_IMAGE_SIZE } from 'server/content-image-meta'
+import { setAllowAnyHostGetCORS } from 'server/cors'
+import { serverHelpers } from 'server/ssr-helpers'
 import svg2img from 'svg2img'
 
-import {InlineContent} from '@mintter/editor'
-import {HMAccount} from '@mintter/shared'
-import {ReactElement} from 'react'
+import { InlineContent } from '@mintter/editor'
+import { HMAccount } from '@mintter/shared'
+import { ReactElement } from 'react'
 
 function loadFont(fileName: string) {
   const path = join(process.cwd(), 'font', fileName)
@@ -38,18 +38,18 @@ const avatarLayout: React.CSSProperties = {
 function InlineContent({
   content,
   fontWeight = 'normal',
-  fontSize = 24,
+  fontSize = 38,
 }: {
   content: InlineContent[]
   fontWeight?: 'bold' | 'normal'
   fontSize?: number
 }) {
   return (
-    <span style={{fontSize: 32}}>
+    <span style={{ fontSize, fontWeight }}>
       {content.map((item, index) => {
         if (item.type === 'link')
           return (
-            <span key={index} style={{color: '#000055', marginLeft: 4}}>
+            <span key={index} style={{ color: '#000055', marginLeft: 4 }}>
               <InlineContent content={item.content} />
             </span>
           )
@@ -70,7 +70,7 @@ function ParagraphBlockDisplay({
   childrenType,
 }: {
   block: HMBlock
-  childrenType: HMBlockChildrenType
+  childrenType: HMBlockChildrenType | undefined
 }) {
   const inlineContent = toHMInlineContent(block)
   return (
@@ -80,7 +80,7 @@ function ParagraphBlockDisplay({
         marginTop: 8,
       }}
     >
-      <InlineContent content={inlineContent} fontSize={24} />
+      <InlineContent content={inlineContent} fontSize={32} />
     </div>
   )
 }
@@ -90,7 +90,7 @@ function HeadingBlockDisplay({
   childrenType,
 }: {
   block: HMBlock
-  childrenType: HMBlockChildrenType
+  childrenType: HMBlockChildrenType | undefined
 }) {
   const inlineContent = toHMInlineContent(block)
   return (
@@ -100,14 +100,14 @@ function HeadingBlockDisplay({
         marginTop: 8,
       }}
     >
-      <InlineContent content={inlineContent} fontSize={64} fontWeight="bold" />
+      <InlineContent content={inlineContent} fontSize={48} fontWeight="bold" />
     </div>
   )
 }
-function ImageBlockDisplay({block}: {block: HMBlockImage}) {
+function ImageBlockDisplay({ block }: { block: HMBlockImage }) {
   return (
     <img
-      style={{borderRadius: 8}}
+      style={{ borderRadius: 8 }}
       src={`${IPFS_RESOURCE_PREFIX}${getCIDFromIPFSUrl(block.ref)}`}
     />
   )
@@ -117,8 +117,9 @@ function BlockDisplay({
   childrenType,
 }: {
   block: HMBlock
-  childrenType: HMBlockChildrenType
+  childrenType: HMBlockChildrenType | undefined
 }) {
+  console.log('hello', childrenType, block.type)
   if (block.type === 'paragraph')
     return <ParagraphBlockDisplay block={block} childrenType={childrenType} />
   if (block.type === 'heading')
@@ -137,14 +138,17 @@ function BlockNodeDisplay({
   blockNode: HMBlockNode
 }) {
   return (
-    <div style={{display: 'flex', marginBottom: 20}}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       {blockNode.block && (
         <BlockDisplay
           block={blockNode.block}
           childrenType={blockNode.block.attributes?.childrenType}
         />
       )}
-      <div style={{display: 'flex', marginLeft: 20, flexDirection: 'column'}}>
+      <div style={{ display: 'flex', marginLeft: 20, flexDirection: 'column' }}>
         {blockNode.children?.map((child, index) => {
           if (!child.block) return null
           return (
@@ -168,7 +172,7 @@ function TitleMembersCard({
   children,
 }: {
   title: string
-  accounts: {account: HMAccount | null}[]
+  accounts: { account: HMAccount | null }[]
   children: React.ReactNode
 }) {
   return (
@@ -181,10 +185,10 @@ function TitleMembersCard({
         backgroundColor: BG_COLOR,
       }}
     >
-      <div style={{padding: 60, display: 'flex', flexDirection: 'column'}}>
+      <div style={{ padding: 60, display: 'flex', flexDirection: 'column' }}>
         {title && (
-          <div style={{display: 'flex', marginBottom: 20}}>
-            <span style={{fontSize: 72, fontWeight: 'bold'}}>{title}</span>
+          <div style={{ display: 'flex', marginBottom: 20 }}>
+            <span style={{ fontSize: 72, fontWeight: 'bold' }}>{title}</span>
           </div>
         )}
         {children}
@@ -229,7 +233,7 @@ function TitleMembersCard({
                     ...avatarLayout,
                   }}
                 >
-                  <span style={{fontSize: 50, position: 'relative', bottom: 6}}>
+                  <span style={{ fontSize: 50, position: 'relative', bottom: 6 }}>
                     {accountLetter}
                   </span>
                 </div>
@@ -260,7 +264,7 @@ function GroupCard({
   members,
 }: {
   group: HMGroup
-  members: {account: HMAccount | null}[]
+  members: { account: HMAccount | null }[]
 }) {
   return (
     <TitleMembersCard title={group.title || ''} accounts={members}>
@@ -274,7 +278,7 @@ function PublicationCard({
   editors,
 }: {
   publication: HMPublication
-  editors: {account: HMAccount | null}[]
+  editors: { account: HMAccount | null }[]
 }) {
   const clippedContent = clipContentBlocks(
     publication.document?.children,
@@ -309,7 +313,7 @@ export default async function mediaHandler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const {entityType, entityId, versionId} = req.query
+  const { entityType, entityId, versionId } = req.query
   if (!entityId) throw new Error('Missing entityId')
   if (!versionId) throw new Error('Missing versionId')
   const helpers = serverHelpers({})
@@ -321,20 +325,20 @@ export default async function mediaHandler(
       versionId: String(versionId),
     })
     if (!pub?.publication?.document) throw new Error('Publication not found')
-    const {publication} = pub
+    const { publication } = pub
     const editors = await Promise.all(
       (publication.document?.editors || []).map(async (editorId) => {
-        return await helpers.account.get.fetch({accountId: editorId})
+        return await helpers.account.get.fetch({ accountId: editorId })
       }),
     )
     content = <PublicationCard publication={publication} editors={editors} />
   } else if (entityType === 'g') {
     const groupId = createHmId(entityType, String(entityId))
-    const group = await helpers.group.get.fetch({groupId})
-    const groupMembers = await helpers.group.listMembers.fetch({groupId})
+    const group = await helpers.group.get.fetch({ groupId })
+    const groupMembers = await helpers.group.listMembers.fetch({ groupId })
     const groupMembersAccounts = await Promise.all(
       groupMembers.map(async (membership) => {
-        return await helpers.account.get.fetch({accountId: membership.account})
+        return await helpers.account.get.fetch({ accountId: membership.account })
       }),
     )
 
