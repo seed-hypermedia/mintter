@@ -3,16 +3,14 @@ import {AppData} from './types'
 export class HomePage {
   readonly appData: AppData
   alias: string
-  bio: string
 
-  constructor(data: AppData, alias = 'testAlias', bio = 'test bio') {
+  constructor(data: AppData, alias = 'testAlias') {
     this.appData = data
     this.alias = alias
-    this.bio = bio
   }
 
   async goto() {
-    await this.appData.appWindow.waitForSelector('#btw-new-account')
+    await this.appData.appWindow.waitForSelector('#btn-new-account')
     await this.appData.appWindow
       .getByRole('button', {
         name: 'Create a new Account',
@@ -29,7 +27,6 @@ export class HomePage {
     await this.appData.appWindow.locator('#btn-next').click()
     await this.appData.appWindow.waitForTimeout(10)
     await this.appData.appWindow.locator('#alias').fill(this.alias)
-    await this.appData.appWindow.locator('#bio').fill(this.bio)
     await this.appData.appWindow.locator('#btn-next').click()
     await this.appData.appWindow.locator('#btn-next').click()
     await this.appData.appWindow.waitForTimeout(10)

@@ -5,22 +5,17 @@ permissions:
 
 on:
   push:
-    # disabling this job until we can make tests run without relying on external services
     branches: [none]
   # push:
   #   branches:
-  #     - main
-  #     - e2e
-  #     - release/*
+  #     - hm24
   #   paths:
   #     - frontend/*
   #     - ".github/workflows/test-desktop.yml"
 
   # pull_request:
   #   branches:
-  #     - main
-  #     - e2e
-  #     - release/*
+  #     - hm24
   #   paths:
   #     - frontend/*
   #     - ".github/workflows/test-desktop.yml"

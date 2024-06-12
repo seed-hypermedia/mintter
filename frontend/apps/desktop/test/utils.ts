@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import log from 'loglevel'
 import os from 'os'
 import * as path from 'path'
+import {ElectronAppInfo} from './types'
 
 /**
  * Find the latest build and start monokle app for testing
@@ -62,6 +63,9 @@ export async function startApp() {
   // await appWindow.screenshot({
   //   path: getRecordingPath(appInfo.platform, 'initial-screen.png'),
   // });
+  await electronApp.on('window', () => {
+    console.log('-- helloooo')
+  })
   return {
     getWindow: async () => await electronApp.firstWindow(),
     appInfo,

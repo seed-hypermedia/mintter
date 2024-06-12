@@ -37,11 +37,8 @@ test('Onboarding With recovery phrase', async ({onboardingPage}) => {
 
   await test.step('Profile data', async () => {
     let elAlias = appWindow.locator('#alias')
-    let elBio = appWindow.locator('#bio')
     let elNextBtn = await appWindow.locator('#btn-next')
-
     await elAlias.fill('testAlias')
-    await elBio.fill('test bio')
 
     await elNextBtn.click()
   })

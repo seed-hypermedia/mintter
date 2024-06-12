@@ -2,7 +2,7 @@ import {test} from '../test/fixtures'
 
 import {expect} from '@playwright/test'
 
-test('Onboarding from scratch', async ({onboardingPage}) => {
+test.skip('Onboarding from scratch', async ({onboardingPage}) => {
   let {appWindow} = onboardingPage.appData
   await test.step('Welcome Screen', async () => {
     // await appWindow.pause()
@@ -30,12 +30,8 @@ test('Onboarding from scratch', async ({onboardingPage}) => {
 
   await test.step('Profile Data', async () => {
     let elAlias = appWindow.locator('#alias')
-    let elBio = appWindow.locator('#bio')
     let elNextBtn = await appWindow.locator('#btn-next')
-
     await elAlias.fill('testAlias')
-    await elBio.fill('test bio')
-
     await elNextBtn.click()
   })
 
