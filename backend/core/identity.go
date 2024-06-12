@@ -45,13 +45,15 @@ func AccountFromMnemonic(m []string, passphrase string) (KeyPair, error) {
 	return AccountFromSeed(seed)
 }
 
-// AccountDerivationPath value according to SLIP-10 and BIP-44.
-// 109116116 is the concatenation of Unicode code point values for letters mtt - stands for Mintter.
-const AccountDerivationPath = "m/44'/109116116'/0'"
+// keyDerivationPath value according to SLIP-10 and BIP-44.
+// 104109 is the concatenation of Unicode code point values for 'hm' - stands for Hypermedia.
+// The first zero segment can be incremented to derive multiple accounts eventually.
+// PR to add our derivation code to SLIP-44: https://github.com/satoshilabs/slips/pull/1742.
+const keyDerivationPath = "m/44'/104109'/0'/0/0"
 
 // AccountFromSeed creates an account key pair from a previously generated entropy.
 func AccountFromSeed(rand []byte) (KeyPair, error) {
-	slipSeed, err := slip10.DeriveForPath(AccountDerivationPath, rand)
+	slipSeed, err := slip10.DeriveForPath(keyDerivationPath, rand)
 	if err != nil {
 		return KeyPair{}, err
 	}

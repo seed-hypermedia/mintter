@@ -46,6 +46,11 @@ import (
 
 const protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 
+const (
+	protocolPrefix  = "/hypermedia/"
+	protocolVersion = "0.4.0"
+)
+
 var userAgent = "mintter/<dev>"
 
 // GatewayClient is the bridge to talk to the gateway.
@@ -160,7 +165,7 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 		testnetSuffix = "-" + cfg.TestnetName
 	}
 
-	protoInfo := newProtocolInfo("/hypermedia/", "0.3.0"+testnetSuffix)
+	protoInfo := newProtocolInfo(protocolPrefix, protocolVersion+testnetSuffix)
 
 	client := newClient(me, host, protoInfo.ID)
 	clean.Add(client)
