@@ -49,7 +49,7 @@ func AccountFromMnemonic(m []string, passphrase string) (KeyPair, error) {
 // 104109 is the concatenation of Unicode code point values for 'hm' - stands for Hypermedia.
 // The first zero segment can be incremented to derive multiple accounts eventually.
 // PR to add our derivation code to SLIP-44: https://github.com/satoshilabs/slips/pull/1742.
-const keyDerivationPath = "m/44'/104109'/0'/0/0"
+const keyDerivationPath = "m/44'/104109'/0'"
 
 // AccountFromSeed creates an account key pair from a previously generated entropy.
 func AccountFromSeed(rand []byte) (KeyPair, error) {
