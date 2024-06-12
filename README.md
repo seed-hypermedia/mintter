@@ -69,8 +69,12 @@ either deploy a site on a production server or run it locally in dev mode
 ### Deploy a Group Site
 
 To deploy a group into a site, make sure you have a domain name and
-a server with at least 1GB RAM and 512MB free space in root partition. Run the
-following command in the server:
+a server with the following requirements:
+1. At least 2GB RAM
+2. Al least 512MB free space in root partition. 
+3. Port 56000 open so the p2p connections can reach the server.
+
+After checking that, run the following command in the server:
 
 ```shell
 sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com
