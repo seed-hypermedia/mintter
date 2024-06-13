@@ -4,7 +4,7 @@ let
   please = buildGoModule rec {
     pname = "please";
     version = "16.17.1";
-    vendorSha256 = "0q7sr7rvl9794s03lj7i28q9hyc6smx56hz810q7ph2qm25s3c9z";
+    vendorHash = "sha256:0q7sr7rvl9794s03lj7i28q9hyc6smx56hz810q7ph2qm25s3c9z";
 
     src = fetchFromGitHub {
       owner = "thought-machine";

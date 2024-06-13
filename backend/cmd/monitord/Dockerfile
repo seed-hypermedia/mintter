@@ -1,5 +1,5 @@
 # Build from the root with `docker build -t monitord . -f ./backend/cmd/monitord/Dockerfile`.
-FROM golang:1.20.4-alpine AS builder
+FROM golang:1.22.3-alpine AS builder
 WORKDIR /code
 COPY go.mod go.sum ./
 COPY third_party ./third_party
