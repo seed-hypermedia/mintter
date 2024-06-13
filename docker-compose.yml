@@ -31,8 +31,6 @@ services:
       - minttersite
     networks:
       - internal_network
-    ports:
-      - "${MTT_SITE_LOCAL_PORT:-3000}:${MTT_SITE_LOCAL_PORT:-3000}"
     restart: unless-stopped
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
