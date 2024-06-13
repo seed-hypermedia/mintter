@@ -76,7 +76,7 @@
     "loglevel": "1.8.1",
     "react-devtools": "4.28.0",
     "react-error-boundary": "4.0.11",
-    "tamagui": "1.100.3",
+    "tamagui": "1.90.2",
     "vite": "4.4.9",
     "vite-tsconfig-paths": "4.2.0",
     "xvfb-maybe": "0.2.1"
