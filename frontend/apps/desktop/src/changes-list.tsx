@@ -1,6 +1,25 @@
+import {AccessoryContainer} from '@mintter/app/components/accessory-sidebar'
+import {AccountLinkAvatar} from '@mintter/app/components/account-link-avatar'
+import {useAppDialog} from '@mintter/app/components/dialog'
+import {
+  MenuItemType,
+  OptionsDropdown,
+} from '@mintter/app/components/options-dropdown'
+import appError from '@mintter/app/errors'
 import {useAccount} from '@mintter/app/models/accounts'
-import {TimelineChange} from '@mintter/app/models/changes'
+import {TimelineChange, useDocHistory} from '@mintter/app/models/changes'
+import {useGatewayUrl} from '@mintter/app/models/gateway-settings'
+import {
+  useDocumentGroups,
+  useGroup,
+  useGroupContent,
+  useMyGroups,
+  usePublishDocToGroup,
+} from '@mintter/app/models/groups'
+import {useNavRoute} from '@mintter/app/utils/navigation'
+import {NavRoute} from '@mintter/app/utils/routes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {
   Change,
   GroupVariant,
@@ -28,23 +47,6 @@ import {
 } from '@mintter/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext} from 'react'
-import appError from '../errors'
-import {useDocHistory} from '../models/changes'
-import {useGatewayUrl} from '../models/gateway-settings'
-import {
-  useDocumentGroups,
-  useGroup,
-  useGroupContent,
-  useMyGroups,
-  usePublishDocToGroup,
-} from '../models/groups'
-import {useOpenUrl} from '../open-url'
-import {useNavRoute} from '../utils/navigation'
-import {NavRoute} from '../utils/routes'
-import {AccessoryContainer} from './accessory-sidebar'
-import {AccountLinkAvatar} from './account-link-avatar'
-import {useAppDialog} from './dialog'
-import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
 export function EntityVersionsAccessory({
   id,

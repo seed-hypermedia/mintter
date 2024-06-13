@@ -4,6 +4,7 @@ import Footer, {FooterButton} from '@mintter/app/components/footer'
 import {useEntityMentions} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {EntityVersionsAccessory} from '@mintter/desktop/src/changes-list'
 import {
   Publication,
   PublicationContent,
@@ -29,7 +30,6 @@ import {ReactNode, useCallback, useEffect, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AccessoryLayout} from '../components/accessory-sidebar'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
-import {EntityVersionsAccessory} from '../components/changes-list'
 import {EntityCitationsAccessory} from '../components/citations'
 import {EntityCommentsAccessory} from '../components/comments'
 import {PushToGatewayDialog} from '../components/copy-gateway-reference'

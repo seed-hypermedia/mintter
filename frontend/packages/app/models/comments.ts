@@ -1,6 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
-import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
   BlockNoteEditor,

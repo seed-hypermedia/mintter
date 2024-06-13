@@ -1,3 +1,4 @@
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {Account, API_FILE_URL, PeerInfo} from '@mintter/shared'
 import {
   ArrowUpRight,
@@ -26,7 +27,6 @@ import {
   useIsOnline,
   usePeers,
 } from '../models/networking'
-import {useOpenUrl} from '../open-url'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
 import {useAppDialog} from './dialog'

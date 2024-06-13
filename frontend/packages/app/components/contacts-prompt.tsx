@@ -1,3 +1,4 @@
+import {AccessURLRow} from '@mintter/desktop/src/url'
 import {HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@mintter/shared'
 import {Button, Spinner, TextArea, XStack, toast} from '@mintter/ui'
 import {UserPlus} from '@tamagui/lucide-icons'
@@ -15,7 +16,6 @@ import {
   DialogTitle,
   useAppDialog,
 } from './dialog'
-import {AccessURLRow} from './url'
 
 function AddConnectionButton(props: ComponentProps<typeof Button>) {
   return (

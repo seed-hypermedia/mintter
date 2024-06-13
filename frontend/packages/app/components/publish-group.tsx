@@ -1,3 +1,4 @@
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {
   Button,
   ButtonText,
@@ -11,7 +12,6 @@ import {
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'
 import {usePublishGroupToSite} from '../models/groups'
-import {useOpenUrl} from '../open-url'
 import {useNavigate} from '../utils/useNavigate'
 import {DialogDescription, DialogTitle, useAppDialog} from './dialog'
 

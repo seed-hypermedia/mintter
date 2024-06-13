@@ -25,7 +25,7 @@
     "skipLibCheck": true,
     "sourceMap": false,
     "strictNullChecks": true,
-    "target": "es2020",
+    "target": "ESNext",
     "types": ["node"],
     "lib": ["dom", "esnext"],
     "plugins": [

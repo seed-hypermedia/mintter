@@ -1,6 +1,8 @@
 import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
+import {EntityVersionsAccessory} from '@mintter/desktop/src/changes-list'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {
   API_FILE_URL,
   Account,
@@ -56,7 +58,6 @@ import {AccessoryLayout} from '../components/accessory-sidebar'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
 import {Avatar} from '../components/avatar'
-import {EntityVersionsAccessory} from '../components/changes-list'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
 import {FavoriteButton} from '../components/favoriting'
@@ -80,7 +81,6 @@ import {
   useGroupMembers,
   useRemoveDocFromGroup,
 } from '../models/groups'
-import {useOpenUrl} from '../open-url'
 import {AddToCategoryDialog} from '../src/add-to-category-dialog'
 import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {useNavRoute} from '../utils/navigation'

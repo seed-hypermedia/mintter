@@ -8,6 +8,7 @@
   "types": "./types/index",
   "main": "src/index.tsx",
   "module:jsx": "src",
+  "type": "module",
   "files": [
     "types",
     "dist"

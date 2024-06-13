@@ -67,7 +67,7 @@
     "@electron-forge/shared-types": "6.4.2",
     "@mintter/prettier": "*",
     "@playwright/test": "1.40.1",
-    "@tamagui/vite-plugin": "latest",
+    "@tamagui/vite-plugin": "1.90.2",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",

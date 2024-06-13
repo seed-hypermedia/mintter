@@ -1,4 +1,3 @@
-import {useOpenUrl} from '@mintter/app/open-url'
 import {
   Button,
   Copy,
@@ -11,6 +10,7 @@ import {
   toast,
 } from '@mintter/ui'
 import {ComponentProps, FC, useState} from 'react'
+import {useOpenUrl} from './open-url'
 
 export function AccessURLRow({
   url,

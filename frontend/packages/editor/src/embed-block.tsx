@@ -1,7 +1,7 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {useGatewayUrlStream} from '@mintter/app/models/gateway-settings'
 import {fetchWebLink} from '@mintter/app/models/web-links'
-import {useOpenUrl} from '@mintter/app/open-url'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {
   BlockContentEmbed,
   createHmDocLink,

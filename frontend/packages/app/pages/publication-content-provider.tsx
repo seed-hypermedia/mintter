@@ -1,4 +1,5 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
   API_FILE_URL,
@@ -20,7 +21,6 @@ import {
 } from '../components/app-embeds'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {useExperiments} from '../models/experiments'
-import {useOpenUrl} from '../open-url'
 
 export function AppPublicationContentProvider({
   children,

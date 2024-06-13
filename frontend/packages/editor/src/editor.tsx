@@ -1,5 +1,5 @@
 import {HyperDocsEditor} from '@mintter/app/models/documents'
-import {useOpenUrl} from '@mintter/app/open-url'
+import {useOpenUrl} from '@mintter/desktop/src/open-url'
 import {YStack} from '@mintter/ui'
 import {
   BlockNoteView,
