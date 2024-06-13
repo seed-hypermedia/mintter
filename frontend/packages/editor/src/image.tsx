@@ -1,4 +1,3 @@
-import {trpc} from '@mintter/desktop/src/trpc'
 import {getCIDFromIPFSUrl, usePublicationContentContext} from '@mintter/shared'
 import {ResizeHandle, useTheme} from '@mintter/ui'
 import {useEffect, useState} from 'react'
@@ -61,7 +60,7 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const theme = useTheme()
-  const upload = trpc.webImporting.importWebFile.useMutation()
+  const {importWebFile} = usePublicationContentContext()
 
   const submitImage = (
     url: string,
@@ -69,9 +68,10 @@ const Render = (
     setFileName: any,
     setLoading: any,
   ) => {
+    console.log('--- importWebFile', importWebFile)
     if (isValidUrl(url)) {
       setLoading(true)
-      timeoutPromise(upload.mutateAsync(url), 5000, {
+      timeoutPromise(importWebFile.mutateAsync(url), 5000, {
         reason: 'Error fetching the image.',
       })
         .then((imageData) => {

@@ -2,7 +2,6 @@ import {createStyles, Menu} from '@mantine/core'
 import * as _ from 'lodash'
 
 import {BlockSchema} from '@/blocknote/core'
-import {trpc} from '@mintter/desktop/src/trpc'
 import {SlashMenuItem} from './SlashMenuItem'
 import {SlashMenuProps} from './SlashMenuPositioner'
 
@@ -16,7 +15,7 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
   let index = 0
 
   const groups = _.groupBy(props.filteredItems, (i) => i.group)
-  const showNostr = trpc.experiments.get.useQuery().data?.nostr
+  // const showNostr = trpc.experiments.get.useQuery().data?.nostr
 
   _.forEach(groups, (groupedItems) => {
     renderedItems.push(
@@ -26,19 +25,19 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
     )
 
     for (const item of groupedItems) {
-      if (item.name !== 'Nostr' || showNostr) {
-        renderedItems.push(
-          <SlashMenuItem
-            key={item.name}
-            name={item.name}
-            icon={item.icon}
-            hint={item.hint}
-            shortcut={item.shortcut}
-            isSelected={props.keyboardHoveredItemIndex === index}
-            set={() => props.itemCallback(item)}
-          />,
-        )
-      }
+      // if (item.name !== 'Nostr' || showNostr) {
+      renderedItems.push(
+        <SlashMenuItem
+          key={item.name}
+          name={item.name}
+          icon={item.icon}
+          hint={item.hint}
+          shortcut={item.shortcut}
+          isSelected={props.keyboardHoveredItemIndex === index}
+          set={() => props.itemCallback(item)}
+        />,
+      )
+      // }
       index++
     }
   })

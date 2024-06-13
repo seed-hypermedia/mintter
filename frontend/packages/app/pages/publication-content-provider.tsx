@@ -1,4 +1,5 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {
   API_FILE_URL,
   BlockRange,
@@ -30,11 +31,13 @@ export function AppPublicationContentProvider({
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
   const experiments = useExperiments()
+  const importWebFile = trpc.webImporting.importWebFile.useMutation()
   return (
     <>
       <PublicationContentProvider
         showDevMenu={experiments.data?.pubContentDevMenu}
         layoutUnit={contentLayoutUnit}
+        importWebFile={importWebFile}
         textUnit={contentTextUnit}
         debug={false}
         entityComponents={{

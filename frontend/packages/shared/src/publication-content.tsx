@@ -47,6 +47,7 @@ import {
   Spinner,
   Text,
   TextProps,
+  Theme,
   Tooltip,
   UIAvatar,
   Undo2,
@@ -126,6 +127,7 @@ export type PublicationContentContextValue = {
     version?: string
     blockRef?: string
   }
+  importWebFile?: any
 }
 
 export const publicationContentContext =
@@ -980,33 +982,35 @@ export function PublicationHeading({
   let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
 
   return (
-    <YStack
-      paddingHorizontal={layoutUnit / 3}
-      $gtMd={{paddingHorizontal: layoutUnit / 2}}
-      group="header"
-    >
+    <Theme name="subtle">
       <YStack
-        padding={layoutUnit / 3}
-        // marginBottom={layoutUnit}
-        paddingBottom={layoutUnit / 2}
-        // {...headingMarginStyles}
+        paddingHorizontal={layoutUnit / 3}
+        $gtMd={{paddingHorizontal: layoutUnit / 2}}
+        group="header"
       >
-        <XStack>
-          <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
-            <Text
-              className="content-inline"
-              fontFamily={'$body'}
-              tag="h1"
-              {...headingTextStyles}
-              maxWidth="95%"
-            >
-              {children}
-            </Text>
-          </YStack>
-          {right}
-        </XStack>
+        <YStack
+          padding={layoutUnit / 3}
+          // marginBottom={layoutUnit}
+          paddingBottom={layoutUnit / 2}
+          // {...headingMarginStyles}
+        >
+          <XStack>
+            <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
+              <Text
+                className="content-inline"
+                fontFamily={'$body'}
+                tag="h1"
+                {...headingTextStyles}
+                maxWidth="95%"
+              >
+                {children}
+              </Text>
+            </YStack>
+            {right}
+          </XStack>
+        </YStack>
       </YStack>
-    </YStack>
+    </Theme>
   )
 }
 

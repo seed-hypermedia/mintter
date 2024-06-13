@@ -39,6 +39,7 @@ export interface LinkOptions {
    * @returns - True if the url is valid, false otherwise.
    */
   validate?: (url: string) => boolean
+  checkWebUrl: (url: string) => Promise<any>
 }
 
 declare module '@tiptap/core' {
@@ -105,6 +106,7 @@ export const Link = Mark.create<LinkOptions>({
         class: 'link',
       },
       validate: undefined,
+      checkWebUrl: () => Promise.resolve(),
     }
   },
 
@@ -201,6 +203,7 @@ export const Link = Mark.create<LinkOptions>({
         editor: this.editor,
         type: this.type,
         linkOnPaste: this.options.linkOnPaste,
+        checkWebUrl: this.options.checkWebUrl,
       }),
     )
 

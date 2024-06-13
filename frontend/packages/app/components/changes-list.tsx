@@ -20,6 +20,7 @@ import {
   DialogTitle,
   SizableText,
   Spinner,
+  Theme,
   XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
@@ -70,49 +71,55 @@ export function EntityVersionsAccessory({
   if (!id) return null
   return (
     <>
-      <AccessoryContainer title="Variant History">
-        <PostToGroup.Provider
-          value={
-            groupVariant && docId && isInPostableContext
-              ? (changeId) => {
-                  postToGroup.open({groupVariant, changeId, docId})
-                }
-              : null
-          }
-        >
-          <YStack
-            paddingHorizontal="$4"
-            paddingVertical="$2"
-            paddingBottom="$6"
-            borderBottomColor="$borderColor"
-            borderBottomWidth={1}
+      <Theme name="subtle">
+        <AccessoryContainer title="Variant History">
+          <PostToGroup.Provider
+            value={
+              groupVariant && docId && isInPostableContext
+                ? (changeId) => {
+                    postToGroup.open({groupVariant, changeId, docId})
+                  }
+                : null
+            }
           >
-            {changes.map((item, index) => {
-              const activeGroups = currentGroups.data?.filter((groupEntry) => {
-                const docId = unpackDocId(groupEntry.rawUrl)
-                return (
-                  item && !!docId?.version && item.change.id === docId?.version
+            <YStack
+              paddingHorizontal="$4"
+              paddingVertical="$2"
+              paddingBottom="$6"
+              borderBottomColor="$borderColor"
+              borderBottomWidth={1}
+            >
+              {changes.map((item, index) => {
+                const activeGroups = currentGroups.data?.filter(
+                  (groupEntry) => {
+                    const docId = unpackDocId(groupEntry.rawUrl)
+                    return (
+                      item &&
+                      !!docId?.version &&
+                      item.change.id === docId?.version
+                    )
+                  },
                 )
-              })
 
-              console.log(`== ~ activeGroups ~ activeGroups:`, activeGroups)
-              const change = item?.change
-              if (!change) return null
-              return (
-                <ChangeItem
-                  prevListedChange={changes[index - 1]}
-                  entityId={id.id}
-                  key={change.id}
-                  change={change}
-                  activeGroups={activeGroups}
-                  activeVersion={activeVersion}
-                />
-              )
-            })}
-          </YStack>
-        </PostToGroup.Provider>
-      </AccessoryContainer>
-      {postToGroup.content}
+                console.log(`== ~ activeGroups ~ activeGroups:`, activeGroups)
+                const change = item?.change
+                if (!change) return null
+                return (
+                  <ChangeItem
+                    prevListedChange={changes[index - 1]}
+                    entityId={id.id}
+                    key={change.id}
+                    change={change}
+                    activeGroups={activeGroups}
+                    activeVersion={activeVersion}
+                  />
+                )
+              })}
+            </YStack>
+          </PostToGroup.Provider>
+        </AccessoryContainer>
+        {postToGroup.content}
+      </Theme>
     </>
   )
 }

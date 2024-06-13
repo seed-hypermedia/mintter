@@ -1,5 +1,7 @@
-import {client} from '@mintter/desktop/src/trpc'
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
+import {
+  API_FILE_UPLOAD_URL,
+  usePublicationContentContext,
+} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -67,6 +69,7 @@ export const MediaRender: React.FC<RenderProps> = ({
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
   const hasSrc = !!block.props.src
+  const {importWebFile} = usePublicationContentContext()
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
@@ -89,18 +92,16 @@ export const MediaRender: React.FC<RenderProps> = ({
     if (!uploading && hasSrc) {
       setUploading(true)
 
-      client.webImporting.importWebFile
-        .mutate(block.props.src)
-        .then(({cid, size}) => {
-          setUploading(false)
-          editor.updateBlock(block, {
-            props: {
-              url: `ipfs://${cid}`,
-              size: size.toString(),
-              src: '',
-            },
-          })
+      importWebFile.mutateAsync(block.props.src).then(({cid, size}) => {
+        setUploading(false)
+        editor.updateBlock(block, {
+          props: {
+            url: `ipfs://${cid}`,
+            size: size.toString(),
+            src: '',
+          },
         })
+      })
     }
   }, [hasSrc, block, uploading, editor])
 

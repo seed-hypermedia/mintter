@@ -649,9 +649,11 @@ export function queryDraft({
 export function useDraftEditor({
   documentId,
   route,
+  checkWebUrl,
 }: {
   documentId?: string
   route: NavRoute
+  checkWebUrl: any
 }) {
   const grpcClient = useGRPCClient()
   const openUrl = useOpenUrl()
@@ -664,6 +666,7 @@ export function useDraftEditor({
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
+  const showNostr = trpc.experiments.get.useQuery().data?.nostr
 
   // fetch draft
   const backendDraft = useDraft({
@@ -903,6 +906,7 @@ export function useDraftEditor({
       grpcClient,
       gwUrl,
       openUrl,
+      checkWebUrl: checkWebUrl.mutate,
     },
     onMentionsQuery: (query: string) => {
       inlineMentionsQuery(query)
@@ -913,7 +917,9 @@ export function useDraftEditor({
     //   handleMaybeReady()
     // },
     blockSchema: hmBlockSchema,
-    slashMenuItems,
+    slashMenuItems: !showNostr
+      ? slashMenuItems.filter((item) => item.name != 'Nostr')
+      : slashMenuItems,
     _tiptapOptions: {
       extensions: [
         Extension.create({

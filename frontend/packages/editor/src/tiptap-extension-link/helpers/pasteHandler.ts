@@ -2,7 +2,6 @@ import {getLinkMenuItems} from '@/blocknote/core'
 import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
-import {client} from '@mintter/desktop/src/trpc'
 import {
   GRPCClient,
   StateStream,
@@ -29,6 +28,7 @@ type PasteHandlerOptions = {
   type: MarkType
   linkOnPaste?: boolean
   gwUrl: StateStream<string>
+  checkWebUrl: (url: string) => Promise<any>
 }
 
 export function pasteHandler(options: PasteHandlerOptions): Plugin {
@@ -374,8 +374,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                 .catch((err) => {
                   console.log(err)
                 })
-              const mediaPromise = client.webImporting.checkWebUrl
-                .mutate(link.href)
+              const mediaPromise = options
+                .checkWebUrl(link.href)
                 .then((response) => {
                   if (response && response.contentType) {
                     let type = response.contentType.split('/')[0]

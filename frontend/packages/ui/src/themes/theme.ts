@@ -42,13 +42,13 @@ const themesBuilder = createThemeBuilder()
     },
   })
   .addChildThemes({
-    orange: colorThemeDefinition('orange'),
+    // orange: colorThemeDefinition('orange'),
     yellow: colorThemeDefinition('yellow'),
     green: colorThemeDefinition('green'),
     blue: colorThemeDefinition('blue'),
     mint: colorThemeDefinition('mint'),
-    purple: colorThemeDefinition('purple'),
-    pink: colorThemeDefinition('pink'),
+    // purple: colorThemeDefinition('purple'),
+    // pink: colorThemeDefinition('pink'),
     red: colorThemeDefinition('red'),
   })
 // .addChildThemes({

@@ -57,12 +57,10 @@ import {
 } from '../utils/media-drag'
 import {useOpenDraft} from '../utils/open-draft'
 import {DraftRoute} from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftPage() {
   let route = useNavRoute()
-  const navigate = useNavigate('push')
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
@@ -70,6 +68,7 @@ export default function DraftPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [rebaseError, setRebaseError] = useState('')
   const grpcClient = useGRPCClient()
+  const importWebFile = trpc.webImporting.importWebFile.useMutation()
 
   useEffect(() => {
     if (documentId === undefined) {
@@ -84,6 +83,7 @@ export default function DraftPage() {
   let data = useDraftEditor({
     documentId: route.draftId,
     route,
+    checkWebUrl: trpc.webImporting.checkWebUrl,
   })
   // const {shouldRebase, newVersion} = useDraftRebase({
   //   shouldCheck:
@@ -379,6 +379,7 @@ export default function DraftPage() {
                     'Block',
                   )
                 }}
+                importWebFile={importWebFile}
               >
                 {data.state.matches({ready: 'saveError'}) ? (
                   <XStack padding="$4" position="sticky" top={0} zIndex={100}>

@@ -187,6 +187,8 @@ export function usePublicationCommentGroups(
 
 export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
   const route = useNavRoute()
+  const checkWebUrl = trpc.webImporting.checkWebUrl.useMutation()
+  const showNostr = trpc.experiments.get.useQuery().data?.nostr
   if (route.key !== 'comment-draft')
     throw new Error('useCommentEditor must be used in comment route')
   if (!route.commentId)
@@ -256,6 +258,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       grpcClient,
       openUrl,
       gwUrl,
+      checkWebUrl: checkWebUrl.mutate,
     },
 
     onEditorReady: (e) => {
@@ -263,7 +266,9 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       initDraft()
     },
     blockSchema: hmBlockSchema,
-    slashMenuItems,
+    slashMenuItems: !showNostr
+      ? slashMenuItems.filter((item) => item.name != 'Nostr')
+      : slashMenuItems,
     onMentionsQuery: (query: string) => {
       inlineMentionsQuery(query)
     },
