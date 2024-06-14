@@ -37,7 +37,7 @@ const (
 	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
 	// SigningMessage is the fixed message to sign. The server must have the same message.
-	SigningMessage = "sign in into seed lndhub"
+	SigningMessage = "sign in into mintter lndhub"
 )
 
 type httpRequest struct {

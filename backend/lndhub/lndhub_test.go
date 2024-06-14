@@ -56,7 +56,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	login := pubkey.Principal().String()
-	passwordBytes, err := priv.Sign([]byte(SigninMessage))
+	passwordBytes, err := priv.Sign([]byte(SigningMessage))
 	password := hex.EncodeToString(passwordBytes)
 	require.NoError(t, err)
 	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))

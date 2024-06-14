@@ -151,7 +151,7 @@ func makeTestService(t *testing.T, name string) *Service {
 	require.NoError(t, err)
 	defer release()
 
-	signature, err := u.Account.Sign([]byte(lndhub.SigninMessage))
+	signature, err := u.Account.Sign([]byte(lndhub.SigningMessage))
 	require.NoError(t, err)
 
 	require.NoError(t, lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)))
