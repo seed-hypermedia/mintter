@@ -101,12 +101,12 @@ type Mutation {
   exportWallet(input: ExportWalletInput!): ExportWalletPayload!
 
   """
-  Import wallet to use it in mintter.
+  Import wallet to use it in seed.
   """
   importWallet(input: ImportWalletInput!): ImportWalletPayload!
 
   """
-  Request an invoice from a user. The user can be either a Mintter Account ID or a ln address.
+  Request an invoice from a user. The user can be either a Seed Account ID or a ln address.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
 
@@ -237,7 +237,7 @@ Input for requesting an invoice.
 """
 input RequestInvoiceInput {
   """
-  Mintter Account ID or lnaddress we want the invoice from. Can be ourselves.
+  Seed Account ID or lnaddress we want the invoice from. Can be ourselves.
   """
   user: String!
 

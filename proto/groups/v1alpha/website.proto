@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package com.mintter.groups.v1alpha;
+package com.seed.groups.v1alpha;
 
-option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
+option go_package = "seed/backend/genproto/groups/v1alpha;groups";
 
 // API service exposed by the website server.
 // It's exposed as gRPC over Libp2p.
@@ -67,6 +67,6 @@ message PeerInfo {
   // in order to use it with libp2p AddrInfo API.
   repeated string addrs = 2;
 
-  // Mintter Account ID of the site.
+  // Seed Account ID of the site.
   string account_id = 3;
 }

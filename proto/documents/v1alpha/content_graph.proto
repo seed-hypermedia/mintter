@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package com.mintter.documents.v1alpha;
+package com.seed.documents.v1alpha;
 
-option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
+option go_package = "seed/backend/genproto/documents/v1alpha;documents";
 
 // Content graph service provides access to citations (backlinks).
 service ContentGraph {

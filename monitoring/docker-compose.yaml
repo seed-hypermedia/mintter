@@ -1,4 +1,4 @@
-name: mintter-monitoring
+name: seed-monitoring
 services:
   prometheus:
     image: prom/prometheus:latest

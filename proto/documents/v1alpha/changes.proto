@@ -2,13 +2,13 @@
 
 syntax = "proto3";
 
-package com.mintter.documents.v1alpha;
+package com.seed.documents.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
+option go_package = "seed/backend/genproto/documents/v1alpha;documents";
 
-// Changes service provides information about the atomic version controlled changes of Mintter objects.
+// Changes service provides information about the atomic version controlled changes of Seed objects.
 service Changes {
   // Returns information about a single change.
   rpc GetChangeInfo(GetChangeInfoRequest) returns (ChangeInfo);
@@ -25,7 +25,7 @@ message GetChangeInfoRequest {
 
 // Request to list changes.
 message ListChangesRequest {
-  // Required. ID of the Mintter object to list changes for.
+  // Required. ID of the Seed object to list changes for.
   string document_id = 1;
 
   // Optional. Number of results per page.

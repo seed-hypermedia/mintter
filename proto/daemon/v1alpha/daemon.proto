@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package com.mintter.daemon.v1alpha;
+package com.seed.daemon.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "mintter/backend/genproto/daemon/v1alpha;daemon";
+option go_package = "seed/backend/genproto/daemon/v1alpha;daemon";
 
-// Daemon API encapsulates main functionality of the Mintter daemon.
+// Daemon API encapsulates main functionality of the Seed daemon.
 service Daemon {
-  // Generates a set of mnemonic words used to derive Mintter Account Key, and the underlying
-  // mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
+  // Generates a set of mnemonic words used to derive Seed Account Key, and the underlying
+  // seed lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
   // mnemonic of 12-24 human-readable english words.
   // The seed could be reconstructed given these words and the passphrase.
   rpc GenMnemonic(GenMnemonicRequest) returns (GenMnemonicResponse);
@@ -22,7 +22,7 @@ service Daemon {
   // Get generic information about the running node.
   rpc GetInfo(GetInfoRequest) returns (Info);
 
-  // Force-trigger periodic background sync of Mintter objects.
+  // Force-trigger periodic background sync of Seed objects.
   rpc ForceSync(ForceSyncRequest) returns (google.protobuf.Empty);
 }
 

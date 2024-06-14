@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package com.mintter.entities.v1alpha;
+package com.seed.entities.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
 import "google/protobuf/empty.proto";
 
-option go_package = "mintter/backend/genproto/entities/v1alpha;entities";
+option go_package = "seed/backend/genproto/entities/v1alpha;entities";
 
 // Provides functionality to query information about Hypermedia Entities.
 service Entities {

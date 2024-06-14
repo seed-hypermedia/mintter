@@ -157,7 +157,7 @@ type Payments struct {
 
 // Input for requesting an invoice.
 type RequestInvoiceInput struct {
-	// Mintter Account ID or lnaddress we want the invoice from. Can be ourselves.
+	// Seed Account ID or lnaddress we want the invoice from. Can be ourselves.
 	User string `json:"user"`
 	// Amount in Satoshis the invoice should be created for.
 	AmountSats model.Satoshis `json:"amountSats"`

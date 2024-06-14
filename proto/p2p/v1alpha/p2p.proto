@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package com.mintter.p2p.v1alpha;
+package com.seed.p2p.v1alpha;
 
-option go_package = "mintter/backend/genproto/p2p/v1alpha;p2p";
+option go_package = "seed/backend/genproto/p2p/v1alpha;p2p";
 
-// Mintter P2P API.
+// Seed P2P API.
 service P2P {
-  // Handshake gets called whenever two Mintter peers connect to each other.
+  // Handshake gets called whenever two Seed peers connect to each other.
   // No matter who initiates the connect, this will make sure both peers exchange their information.
   rpc Handshake(HandshakeInfo) returns (HandshakeInfo);
 

@@ -1,6 +1,6 @@
 ## Local Monitoring
 
-This is a simple local monitoring setup for the running Mintter application.
+This is a simple local monitoring setup for the running Seed application.
 
 It's currently WIP, and will change quite a bit.
 

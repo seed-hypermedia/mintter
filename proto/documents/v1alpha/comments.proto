@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package com.mintter.documents.v1alpha;
+package com.seed.documents.v1alpha;
 
 import "documents/v1alpha/documents.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
+option go_package = "seed/backend/genproto/documents/v1alpha;documents";
 
 // Comments service allows users to add comments to documents.
 service Comments {

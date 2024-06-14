@@ -1,4 +1,4 @@
-## Mintter Protobuf Definitions
+## Seed Protobuf Definitions
 
 This is a unified place where our Protobuf definitions are stored.
 

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package com.mintter.networking.v1alpha;
+package com.seed.networking.v1alpha;
 
-option go_package = "mintter/backend/genproto/networking/v1alpha;networking";
+option go_package = "seed/backend/genproto/networking/v1alpha;networking";
 
-// Networking API service of the Mintter daemon.
+// Networking API service of the Seed daemon.
 service Networking {
   // Lookup details about a known peer.
   rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
@@ -27,7 +27,7 @@ message ListPeersRequest {}
 
 // Various details about a list of peers.
 message ListPeersResponse {
-  // List of known Mintter peers.
+  // List of known Hyper Media peers.
   repeated PeerInfo peers = 1;
 }
 

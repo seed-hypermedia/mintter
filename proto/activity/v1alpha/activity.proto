@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package com.mintter.activity.v1alpha;
+package com.seed.activity.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "mintter/backend/genproto/activity/v1alpha;activity";
+option go_package = "seed/backend/genproto/activity/v1alpha;activity";
 
 // ActivityFeed service provides information about the recent activity events happened in the system.
 service ActivityFeed {

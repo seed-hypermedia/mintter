@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package com.mintter.accounts.v1alpha;
+package com.seed.accounts.v1alpha;
 
-option go_package = "mintter/backend/genproto/accounts/v1alpha;accounts";
+option go_package = "seed/backend/genproto/accounts/v1alpha;accounts";
 
 // Accounts API service.
 service Accounts {
@@ -45,7 +45,7 @@ message ListAccountsResponse {
 }
 
 message Account {
-  // Mintter Account ID.
+  // Hyper Media Account ID.
   string id = 1;
 
   // Profile information of this account.

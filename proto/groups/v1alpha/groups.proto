@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package com.mintter.groups.v1alpha;
+package com.seed.groups.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
+option go_package = "seed/backend/genproto/groups/v1alpha;groups";
 
 // Groups service exposes the functionality for managing group entities.
 // This API uses fully-qualified EID as group IDs in all the requests.

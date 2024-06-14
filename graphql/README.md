@@ -1,6 +1,6 @@
-# Mintter Daemon GraphQL API
+# Seed Daemon GraphQL API
 
-This is the schema of the GraphQL API exposed by the Mintter Daemon.
+This is the schema of the GraphQL API exposed by the Seed Daemon.
 
 It contains some Go-specific directives, and eventually we might want to split
 the schema into different files, so it's easier to work with.
