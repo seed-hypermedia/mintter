@@ -68,7 +68,7 @@ services:
     profiles:
       - metrics
     depends_on:
-      - minttersite
+      - seed-site
     networks:
       - internal_network
     extra_hosts:
