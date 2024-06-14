@@ -14,7 +14,7 @@ You must have the C toolchain installed globally on your machine. It can be `gcc
 
 > checkout the [Nix](./nix.md) documentation for more context
 
-Nix is a package manger for Unix-like systems, which is very strict about isolating packages. It will not mess around with your existing system packages. Ideally Nix would be the only piece of software needed to build Mintter, but unfortunately some OpenGL packages, and some system libraries don't work quite well. We still leverage Nix to manage other tools and runtimes required to work with Mintter.
+Nix is a package manger for Unix-like systems, which is very strict about isolating packages. It will not mess around with your existing system packages. Ideally Nix would be the only piece of software needed to build Seed, but unfortunately some OpenGL packages, and some system libraries don't work quite well. We still leverage Nix to manage other tools and runtimes required to work with Seed.
 
 So, install Nix by following the [official documentation](https://nixos.org/download.html) for your system.
 
@@ -82,7 +82,7 @@ To run the app, by default it will run on the test network:
 You can also run against the production network:
 
 ```
-MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
+SEED_P2P_TESTNET_NAME="" ./dev run-desktop
 ```
 
 ## Web App Builds
@@ -99,13 +99,13 @@ Frontend: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
 You can start the daemon go daemon with:
 
 ```
-go run ./backend/cmd/mintter-site -data-dir=~/.mttsite -p2p.port=59000 --http.port=59001 -p2p.no-relay -grpc.port=59002 http://127.0.0.1:59001
+go run ./backend/cmd/seed-site -data-dir=~/.mttsite -p2p.port=59000 --http.port=59001 -p2p.no-relay -grpc.port=59002 http://127.0.0.1:59001
 ```
 
 
 ### 2. Start the Frontend Web App
 
-In the Mintter directory, start by running `yarn`. Then:
+In the Seed directory, start by running `yarn`. Then:
 
 ```
 HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site
@@ -116,7 +116,7 @@ HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000
 Run the daemon:
 
 ```
-MINTTER_P2P_TESTNET_NAME="dev" go run ./backend/cmd/mintter-site -data-dir=~/.mttgateway -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay -syncing.allow-push -syncing.no-discovery=false "http://localhost:3300"
+SEED_P2P_TESTNET_NAME="dev" go run ./backend/cmd/seed-site -data-dir=~/.mttgateway -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay -syncing.allow-push -syncing.no-discovery=false "http://localhost:3300"
 ```
 
 Simultaneously run the Frontend:

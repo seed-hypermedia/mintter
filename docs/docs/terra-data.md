@@ -33,7 +33,7 @@ This Blob includes the following data, (with the JSON_CBOR encoding):
 
 ```
 {
-    "type": "mintter:KeyDelegation",
+    "type": "seed:KeyDelegation",
     ...
 ```
 

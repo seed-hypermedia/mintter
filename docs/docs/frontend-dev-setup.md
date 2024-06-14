@@ -42,7 +42,7 @@ yarn install
 
 ## Introduction
 
-The Mintter Frontend architecture is based on a [yarn](https://yarnpkg.com) workspace. All the frontend code can be found inside the [`./frontend`](../../frontend) folder. The app is using a monorepo structure inspired by the [Create Tamagui App template](https://tamagui.dev/docs/guides/create-tamagui-app).
+The Seed Frontend architecture is based on a [yarn](https://yarnpkg.com) workspace. All the frontend code can be found inside the [`./frontend`](../../frontend) folder. The app is using a monorepo structure inspired by the [Create Tamagui App template](https://tamagui.dev/docs/guides/create-tamagui-app).
 
 - all the apps packages are inside the [`apps`](../../frontend/apps) folder.
 - all the scoped packages that are reused inside each app are in the [`packages`](../../frontend/packages) folder.
@@ -71,7 +71,7 @@ After this is correct, you should run `yarn install` (or `yarn`) to start the de
 
 ## ./dev scripts
 
-Because Mintter uses multiple tools with multiple languages, we set a file with all the local scripts you can run to setup, build, validate and test the project.
+Because Seed uses multiple tools with multiple languages, we set a file with all the local scripts you can run to setup, build, validate and test the project.
 
 ## Desktop app
 

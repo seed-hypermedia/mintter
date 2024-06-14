@@ -59,4 +59,4 @@ The following are real example links:
 
 ## Web Links
 
-> Note: The Mintter application uses the emerging ["Aer" protocol](./hyperdocs-aer) to convert HTTPS URLs to `hm://` links automatically under the hood
+> Note: The Seed application uses the emerging ["Aer" protocol](./hyperdocs-aer) to convert HTTPS URLs to `hm://` links automatically under the hood

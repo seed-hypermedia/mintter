@@ -30,9 +30,9 @@ After spending a few years with Please we realized that it has one fundamental p
 
 We want to have a superb DX on all the platforms, such that you only need to install one or two tools, run a single command to build/test everything, never have to rebuild things twice, or wait long minutes until your build finishes. We want that on Windows too. So at some point we'll probably switch from Please to Bazel or Buck2 for building, and switch from Nix to Pixi for managing our tools. But refactoring the build system didn't become important enough yet, compared to other things we're trying to build at this time.
 
-## Mintter Specifics
+## Seed Specifics
 
-All the devs at Mintter use macOS or Linux for development, so most of the scripts, tools, and conveniences only work these. We want to improve the DX on Windows, but we can't invest the time in that just yet.
+All the devs at Seed use macOS or Linux for development, so most of the scripts, tools, and conveniences only work these. We want to improve the DX on Windows, but we can't invest the time in that just yet.
 
 We do build *for* Windows *on* Windows in CI though, so building everything on Windows is entirely possible, just not as convenient as on Unix-based systems.
 
