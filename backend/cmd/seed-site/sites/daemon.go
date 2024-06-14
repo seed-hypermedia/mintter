@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/config"
-	"mintter/backend/core"
-	"mintter/backend/daemon"
-	"mintter/backend/daemon/storage"
-	accounts "mintter/backend/genproto/accounts/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/colx"
-	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/libp2px"
 	"net/url"
+	"seed/backend/config"
+	"seed/backend/core"
+	"seed/backend/daemon"
+	"seed/backend/daemon/storage"
+	accounts "seed/backend/genproto/accounts/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/colx"
+	"seed/backend/pkg/future"
+	"seed/backend/pkg/libp2px"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/multiformats/go-multiaddr"
@@ -97,7 +97,7 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 
 	if _, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
 		Alias: address,
-		Bio:   "Hypermedia Site. Powered by Mintter.",
+		Bio:   "Hypermedia Site. Powered by Seed.",
 	}); err != nil {
 		return nil, fmt.Errorf("failed to update profile: %w", err)
 	}

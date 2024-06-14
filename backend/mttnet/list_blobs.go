@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/pkg/dqb"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"

@@ -2,15 +2,15 @@ package networking
 
 import (
 	"context"
-	"mintter/backend/config"
-	"mintter/backend/core/coretest"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	networking "mintter/backend/genproto/networking/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
+	"seed/backend/config"
+	"seed/backend/core/coretest"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	networking "seed/backend/genproto/networking/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/future"
 	"testing"
 	"time"
 
@@ -36,7 +36,7 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 
 func makeTestServer(t *testing.T, u coretest.Tester) *Server {
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 

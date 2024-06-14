@@ -3,10 +3,10 @@ package hyper
 import (
 	"encoding/json"
 	"fmt"
-	"mintter/backend/core"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
-	"mintter/backend/pkg/maybe"
+	"seed/backend/core"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/ipfs"
+	"seed/backend/pkg/maybe"
 	"time"
 
 	"crawshaw.io/sqlite"

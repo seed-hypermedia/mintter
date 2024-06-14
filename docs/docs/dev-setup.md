@@ -89,7 +89,7 @@ MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
 
 You can build docker images for different modules of the system.
 
-Daemon: `docker build -t mintterd . -f ./backend/cmd/mintterd/Dockerfile`
+Daemon: `docker build -t seed-daemon . -f ./backend/cmd/seed/Dockerfile`
 Frontend: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
 
 ## Dev: Run Site

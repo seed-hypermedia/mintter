@@ -1,9 +1,9 @@
-import {join} from "path";
-import {execFileSync, spawn} from "child_process";
-import {cwd} from "process";
-import {homedir, platform} from "os";
-import {existsSync} from "fs";
+import { execFileSync, spawn } from "child_process";
+import { existsSync } from "fs";
 import pkg from "fs-extra";
+import { homedir, platform } from "os";
+import { join } from "path";
+import { cwd } from "process";
 const {mkdirpSync, moveSync} = pkg;
 const home = homedir();
 
@@ -13,7 +13,7 @@ if (platform() !== "darwin") {
   );
 }
 
-const mintterDir = join(home, "Library", "Application Support", "Mintter.dev");
+const seedDir = join(home, "Library", "Application Support", "Seed.dev");
 const mintterSiteDir = join(
   home,
   "Library",
@@ -36,9 +36,9 @@ function getFormattedDateTime() {
 
 const nowLabel = getFormattedDateTime();
 
-if (existsSync(mintterDir)) {
+if (existsSync(seedDir)) {
   console.log(`Mintter App Exists. Moving to MintterArchive`);
-  moveSync(mintterDir, join(mintterArchive, `Mintter.dev.${nowLabel}`));
+  moveSync(seedDir, join(mintterArchive, `Mintter.dev.${nowLabel}`));
 }
 if (existsSync(mintterSiteDir)) {
   console.log(`Mintter Site Exists. Moving to MintterArchive`);
@@ -99,7 +99,7 @@ setTimeout(() => {
   execFileSync("open", [`http://localhost:${BASE_PORT + 4}`]);
 }, 2_000);
 
-// console.log({mintterDir, time: `${getFormattedDateTime()}`});
+// console.log({seedDir, time: `${getFormattedDateTime()}`});
 
 console.log(`==============
 farm, image, almost, ignore, adapt, host, broom, oil, minute, food, combine, hospital

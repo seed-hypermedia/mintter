@@ -10,10 +10,10 @@ import (
 	_ "expvar"
 	_ "net/http/pprof"
 
-	"mintter/backend/config"
-	"mintter/backend/daemon"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/logging"
+	"seed/backend/config"
+	"seed/backend/daemon"
+	"seed/backend/daemon/storage"
+	"seed/backend/logging"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/getsentry/sentry-go"
@@ -24,12 +24,12 @@ import (
 )
 
 func main() {
-	const envVarPrefix = "MINTTER"
+	const envVarPrefix = "SEED"
 
 	mainutil.Run(func() error {
 		ctx := mainutil.TrapSignals()
 
-		fs := flag.NewFlagSet("mintterd", flag.ExitOnError)
+		fs := flag.NewFlagSet("seed-daemon", flag.ExitOnError)
 
 		cfg := config.Default()
 		cfg.BindFlags(fs)
@@ -61,7 +61,7 @@ func main() {
 			return err
 		}
 
-		log := logging.New("mintterd", cfg.LogLevel)
+		log := logging.New("seedd", cfg.LogLevel)
 		if err := sentry.Init(sentry.ClientOptions{}); err != nil {
 			log.Debug("SentryInitError", zap.Error(err))
 		} else {

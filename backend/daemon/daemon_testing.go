@@ -2,11 +2,11 @@ package daemon
 
 import (
 	"context"
-	"mintter/backend/config"
-	"mintter/backend/core/coretest"
-	accounts "mintter/backend/daemon/api/accounts/v1alpha"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/testutil"
+	"seed/backend/config"
+	"seed/backend/core/coretest"
+	accounts "seed/backend/daemon/api/accounts/v1alpha"
+	"seed/backend/daemon/storage"
+	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"

@@ -3,9 +3,9 @@ package hyper
 import (
 	"context"
 	"fmt"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
-	"mintter/backend/pkg/dqb"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/ipfs"
+	"seed/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -21,7 +21,7 @@ import (
 
 var (
 	mCallsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "mintter_ipfs_blockstore_calls_total",
+		Name: "seed_ipfs_blockstore_calls_total",
 		Help: "The total of method calls on the IPFS' Blockstore public interface.",
 	}, []string{"method"})
 )

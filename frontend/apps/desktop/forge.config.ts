@@ -1,10 +1,10 @@
-import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
-import {MakerRpm} from '@electron-forge/maker-rpm'
-import {MakerSquirrel} from '@electron-forge/maker-squirrel'
-import {MakerZIP} from '@electron-forge/maker-zip'
-import type {ForgeConfig} from '@electron-forge/shared-types'
+import { MakerDeb, MakerDebConfig } from '@electron-forge/maker-deb'
+import { MakerRpm } from '@electron-forge/maker-rpm'
+import { MakerSquirrel } from '@electron-forge/maker-squirrel'
+import { MakerZIP } from '@electron-forge/maker-zip'
+import type { ForgeConfig } from '@electron-forge/shared-types'
 // import {MakerRpm} from '@electron-forge/maker-rpm'
-import {VitePlugin} from '@electron-forge/plugin-vite'
+import { VitePlugin } from '@electron-forge/plugin-vite'
 import path from 'node:path'
 import packageJson from './package.json'
 // import setLanguages from 'electron-packager-languages'
@@ -31,7 +31,7 @@ function getPlatformTriple() {
 const daemonBinaryPath = path.join(
   devProjectRoot,
   // TODO: parametrize this for each platform
-  `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
+  `plz-out/bin/backend/seed-daemon-${getPlatformTriple()}`,
 )
 
 let iconsPath = process.env.CI

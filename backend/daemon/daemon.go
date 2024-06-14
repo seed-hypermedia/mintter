@@ -1,4 +1,4 @@
-// Package daemon assembles everything to boot the mintterd program. It's like main, but made a separate package
+// Package daemon assembles everything to boot the seed-daemon program. It's like main, but made a separate package
 // to be importable and testable by other packages, because package main can't be imported.
 package daemon
 
@@ -11,19 +11,19 @@ import (
 	"strconv"
 	"time"
 
-	"mintter/backend/config"
-	"mintter/backend/core"
-	"mintter/backend/daemon/api"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/cleanup"
-	"mintter/backend/pkg/future"
-	"mintter/backend/syncing"
-	"mintter/backend/wallet"
+	"seed/backend/config"
+	"seed/backend/core"
+	"seed/backend/daemon/api"
+	"seed/backend/daemon/storage"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/cleanup"
+	"seed/backend/pkg/future"
+	"seed/backend/syncing"
+	"seed/backend/wallet"
 
-	groups "mintter/backend/genproto/groups/v1alpha"
+	groups "seed/backend/genproto/groups/v1alpha"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
@@ -37,7 +37,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// App is the main Mintter Daemon application, holding all of its dependencies
+// App is the main Seed Daemon application, holding all of its dependencies
 // which can be used for embedding the daemon in other apps or for testing.
 type App struct {
 	clean cleanup.Stack
@@ -64,7 +64,7 @@ type App struct {
 // Most of the complexity here is due to our lazy initialization
 // process. We need to startup every component and make it ready,
 // even though in the beginning we don't have some of the prerequisites
-// like the Mintter Account key. To mitigate this we're using futures
+// like the Seed Account key. To mitigate this we're using futures
 // which are resolved after the account is initialized.
 //
 // After Load returns without errors, the App is ready to use, although
@@ -73,7 +73,7 @@ type App struct {
 // To shut down the app gracefully cancel the provided context and call Wait().
 func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...interface{}) (a *App, err error) {
 	a = &App{
-		log:     logging.New("mintter/daemon", cfg.LogLevel),
+		log:     logging.New("seed/daemon", cfg.LogLevel),
 		Storage: r,
 	}
 	a.g, ctx = errgroup.WithContext(ctx)
@@ -113,7 +113,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		return nil, err
 	}
 
-	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", cfg.LogLevel))
+	a.Blobs = hyper.NewStorage(a.DB, logging.New("seed/hyper", cfg.LogLevel))
 	if err := a.Blobs.MaybeReindex(ctx); err != nil {
 		return nil, fmt.Errorf("failed to reindex database: %w", err)
 	}
@@ -130,7 +130,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		return nil, err
 	}
 
-	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", cfg.LogLevel), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
+	a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
 	extraHTTPHandlers := []GenericHandler{}
 	for _, extra := range extraOpts {
@@ -158,7 +158,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 			e = offline.Exchange(bs)
 		}
 
-		files := mttnet.NewFileManager(logging.New("mintter/file-manager", cfg.LogLevel), bs, e, n.Provider())
+		files := mttnet.NewFileManager(logging.New("seed/file-manager", cfg.LogLevel), bs, e, n.Provider())
 		if err := fm.fm.Resolve(files); err != nil {
 			return err
 		}
@@ -294,7 +294,7 @@ func initNetwork(
 			return err
 		}
 
-		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", LogLevel), extraServers...)
+		n, err := mttnet.New(cfg, db, blobs, id, logging.New("seed/network", LogLevel), extraServers...)
 		if err != nil {
 			return err
 		}
@@ -355,7 +355,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(cfg, logging.New("mintter/syncing", LogLevel), id, db, blobs, node)
+		svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), id, db, blobs, node)
 		if cfg.NoPull {
 			close(done)
 		} else {

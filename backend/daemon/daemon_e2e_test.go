@@ -3,16 +3,16 @@ package daemon
 import (
 	"context"
 	"math/rand"
-	"mintter/backend/core"
-	accounts "mintter/backend/genproto/accounts/v1alpha"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	entities "mintter/backend/genproto/entities/v1alpha"
-	networking "mintter/backend/genproto/networking/v1alpha"
-	"mintter/backend/ipfs"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/must"
-	"mintter/backend/testutil"
+	"seed/backend/core"
+	accounts "seed/backend/genproto/accounts/v1alpha"
+	daemon "seed/backend/genproto/daemon/v1alpha"
+	documents "seed/backend/genproto/documents/v1alpha"
+	entities "seed/backend/genproto/entities/v1alpha"
+	networking "seed/backend/genproto/networking/v1alpha"
+	"seed/backend/ipfs"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/must"
+	"seed/backend/testutil"
 	"strconv"
 	"testing"
 	"time"
@@ -76,7 +76,7 @@ func TestDaemonSmoke(t *testing.T) {
 
 	profileUpdate := &accounts.Profile{
 		Alias:  "fulanito",
-		Bio:    "Mintter Tester",
+		Bio:    "Seed Tester",
 		Avatar: "bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu",
 	}
 
@@ -460,7 +460,7 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 }
 
 func TestBug_SyncHangs(t *testing.T) {
-	// See: https://github.com/mintterteam/mintter/issues/712.
+	// See: https://github.com/MintterHypermedia/mintter/issues/712.
 	t.Parallel()
 
 	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
@@ -492,7 +492,7 @@ func TestBug_SyncHangs(t *testing.T) {
 }
 
 func TestBug_PublicationsListInconsistent(t *testing.T) {
-	// See: https://github.com/mintterteam/mintter/issues/692.
+	// See: https://github.com/MintterHypermedia/mintter/issues/692.
 	// Although it turns out this bug may not be the daemon's issue.
 	t.Parallel()
 

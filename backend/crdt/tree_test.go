@@ -361,12 +361,12 @@ func BenchmarkSetNodePosition_Append(b *testing.B) {
 	/*
 		goos: darwin
 		goarch: amd64
-		pkg: mintter/backend/crdt
+		pkg: seed/backend/crdt
 		cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
 		BenchmarkTree
 		BenchmarkTree-12    	   32510	     36392 ns/op	   18861 B/op	      88 allocs/op
 		PASS
-		ok  	mintter/backend/crdt	1.870s
+		ok  	seed/backend/crdt	1.870s
 	*/
 }
 
@@ -395,11 +395,11 @@ func BenchmarkUndoRedo(b *testing.B) {
 	/*
 		goos: darwin
 		goarch: amd64
-		pkg: mintter/backend/crdt
+		pkg: seed/backend/crdt
 		cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
 		BenchmarkUndoRedo
 		BenchmarkUndoRedo-12    	   28086	     40951 ns/op	   18865 B/op	      88 allocs/op
 		PASS
-		ok  	mintter/backend/crdt	1.781s
+		ok  	seed/backend/crdt	1.781s
 	*/
 }

@@ -7,7 +7,7 @@ services:
     container_name: ${MTT_SITE_PROXY_CONTAINER_NAME:-PROXY}
     image: caddy:2.6.4
     depends_on:
-      - minttersite
+      - seed-site
     ports:
       - "80:80"
       - "443:443"
@@ -26,9 +26,9 @@ services:
 
   nextjs:
     container_name: ${MTT_SITE_NEXTJS_CONTAINER_NAME:-nextjs}
-    image: mintter/sitegw:${MTT_SITE_TAG:-latest}
+    image: seedhypermedia/gateway:${MTT_SITE_TAG:-latest}
     depends_on:
-      - minttersite
+      - seed-site
     networks:
       - internal_network
     ports:
@@ -37,14 +37,14 @@ services:
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
     environment:
-      - "HM_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
-      - "GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "SEED_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - "GRPC_HOST=http://seed-site:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
       - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 
-  minttersite:
-    image: mintter/mintter-site:${MTT_SITE_TAG:-latest}
+  seed-site:
+    image: seedhypermedia/site:${MTT_SITE_TAG:-latest}
     restart: unless-stopped
-    container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-minttersite}
+    container_name: ${SEED_SITE_DAEMON_CONTAINER_NAME:-seed-site}
     ports:
       - "56000:56000"
       - "56000:56000/udp"
@@ -59,7 +59,7 @@ services:
     command: >
       sh -c "rsync -a /monitoring/prometheus/ /exported_prometheus &&
              rsync -a /monitoring/grafana/ /exported_grafana && 
-             mintter-site -data-dir=/.mtt-site -lndhub.mainnet -p2p.port=56000 --http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001} -syncing.allow-push=${MTT_SITE_ALLOW_PUSH:-false} -grpc.port=56002 -syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true} -syncing.no-pull=${MTT_SITE_NO_PULL:-true} ${MTT_SITE_HOSTNAME:-http://nextjs}"
+             seed-site -data-dir=/.mtt-site -lndhub.mainnet -p2p.port=56000 --http.port=${SEED_SITE_BACKEND_GRPCWEB_PORT:-56001} -syncing.allow-push=${SEED_SITE_ALLOW_PUSH:-false} -grpc.port=56002 -syncing.no-discovery=${SEED_SITE_NO_DISCOVERY:-true} -syncing.no-pull=${SEED_SITE_NO_PULL:-true} ${SEED_SITE_HOSTNAME:-http://nextjs}"
 
   prometheus:
     image: prom/prometheus:latest

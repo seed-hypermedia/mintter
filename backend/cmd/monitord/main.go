@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"mintter/backend/cmd/monitord/server"
 	"os"
 	"os/signal"
+	"seed/backend/cmd/monitord/server"
 	"strconv"
 	"syscall"
 	"time"

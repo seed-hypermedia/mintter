@@ -3,9 +3,15 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@mintter/app/*": ["./frontend/packages/app/src/*"],
-      "@mintter/ui/*": ["./frontend/packages/ui/*"],
-      "@mintter/shared/*": ["./frontend/packages/shared/*"]
+      "@seed/app/*": [
+        "./frontend/packages/app/src/*"
+      ],
+      "@seed/ui/*": [
+        "./frontend/packages/ui/*"
+      ],
+      "@seed/shared/*": [
+        "./frontend/packages/shared/*"
+      ]
     },
     "plugins": [
       {

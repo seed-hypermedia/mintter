@@ -5,11 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
-	"mintter/backend/core"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/pkg/future"
-	"mintter/backend/wallet/walletsql"
 	"net/http"
+	"seed/backend/core"
+	"seed/backend/daemon/storage"
+	"seed/backend/pkg/future"
+	"seed/backend/wallet/walletsql"
 	"strings"
 	"testing"
 	"time"
@@ -28,7 +28,7 @@ const (
 )
 
 func TestCreate(t *testing.T) {
-	//t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
+	//t.Skip("Uncomment skip to run integration tests with seed lndhub.go")
 
 	const invoiceAmt = 12543
 	const invoiceMemo = "test invoice go"

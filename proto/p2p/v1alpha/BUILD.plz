@@ -1,4 +1,4 @@
-subinclude("//build/rules/mintter:defs")
+subinclude("//build/rules/seed:defs")
 
 mtt_proto_codegen(
     srcs = glob(["*.proto"]),

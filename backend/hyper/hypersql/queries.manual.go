@@ -2,8 +2,8 @@ package hypersql
 
 import (
 	"fmt"
-	"mintter/backend/pkg/dqb"
-	"mintter/backend/pkg/maybe"
+	"seed/backend/pkg/dqb"
+	"seed/backend/pkg/maybe"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"

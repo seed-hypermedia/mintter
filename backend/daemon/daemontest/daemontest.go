@@ -1,10 +1,10 @@
 package daemontest
 
 import (
-	"mintter/backend/core/coretest"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/testutil"
 	"os"
+	"seed/backend/core/coretest"
+	"seed/backend/daemon/storage"
+	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"

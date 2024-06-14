@@ -2,7 +2,7 @@ package qb
 
 import (
 	"fmt"
-	"mintter/backend/pkg/sqlitegen"
+	"seed/backend/pkg/sqlitegen"
 	"testing"
 )
 

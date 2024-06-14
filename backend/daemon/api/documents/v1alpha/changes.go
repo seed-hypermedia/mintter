@@ -3,9 +3,9 @@ package documents
 import (
 	"context"
 	"fmt"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/pkg/errutil"
+	documents "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/pkg/errutil"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"

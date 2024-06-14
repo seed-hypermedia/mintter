@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"mintter/backend/graphql"
-	"mintter/backend/hyper"
-	"mintter/backend/pkg/cleanup"
-	"mintter/backend/wallet"
 	"net"
 	"net/http"
 	"runtime/debug"
+	"seed/backend/graphql"
+	"seed/backend/hyper"
+	"seed/backend/pkg/cleanup"
+	"seed/backend/wallet"
 	"strconv"
 	"time"
 
@@ -258,13 +258,13 @@ func buildInfoHandler() http.Handler {
 
 var (
 	mInFlightGauge = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_http_requests_in_flight",
+		Name: "seed_http_requests_in_flight",
 		Help: "Number of HTTP requests currently being served.",
 	})
 
 	mCounter = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "mintter_http_requests_total",
+			Name: "seed_http_requests_total",
 			Help: "Total number of HTTP requests served.",
 		},
 		[]string{"code", "method"},
@@ -272,7 +272,7 @@ var (
 
 	mDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "mintter_http_request_duration_seconds",
+			Name:    "seed_http_request_duration_seconds",
 			Help:    "HTTP request latencies.",
 			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
 		},

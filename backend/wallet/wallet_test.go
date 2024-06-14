@@ -3,18 +3,18 @@ package wallet
 import (
 	"context"
 	"encoding/hex"
-	"mintter/backend/config"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/hyper"
-	"mintter/backend/lndhub"
-	"mintter/backend/lndhub/lndhubsql"
-	"mintter/backend/logging"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
-	"mintter/backend/wallet/walletsql"
+	"seed/backend/config"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	"seed/backend/hyper"
+	"seed/backend/lndhub"
+	"seed/backend/lndhub/lndhubsql"
+	"seed/backend/logging"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/future"
+	"seed/backend/wallet/walletsql"
 	"testing"
 	"time"
 
@@ -33,10 +33,10 @@ func TestModifyWallets(t *testing.T) {
 	var defaultWallet walletsql.Wallet
 	uri, err := alice.ExportWallet(ctx, "")
 	require.NoError(t, err)
-	mintterWallet, err := alice.InsertWallet(ctx, uri, "default")
+	seedWallet, err := alice.InsertWallet(ctx, uri, "default")
 	require.NoError(t, err)
 	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 2*time.Second)
-	require.Equal(t, mintterWallet, defaultWallet)
+	require.Equal(t, seedWallet, defaultWallet)
 	require.Eventually(t, func() bool {
 		conn, release, err := alice.pool.Conn(ctx)
 		require.NoError(t, err)
@@ -160,13 +160,13 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	t.Cleanup(cancel)
 
-	srv := New(ctx, logging.New("mintter/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly, false)
+	srv := New(ctx, logging.New("seed/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly, false)
 
 	return srv
 }
 
 func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 

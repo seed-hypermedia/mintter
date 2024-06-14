@@ -1,21 +1,21 @@
-// Package mttnet provides Mintter P2P network functionality.
+// Package mttnet provides Seed P2P network functionality.
 package mttnet
 
 import (
 	"context"
 	"fmt"
 	"io"
-	"mintter/backend/config"
-	"mintter/backend/core"
-	groups_proto "mintter/backend/genproto/groups/v1alpha"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
-	"mintter/backend/pkg/cleanup"
-	"mintter/backend/pkg/libp2px"
-	"mintter/backend/pkg/must"
 	"net/http"
+	"seed/backend/config"
+	"seed/backend/core"
+	groups_proto "seed/backend/genproto/groups/v1alpha"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/ipfs"
+	"seed/backend/pkg/cleanup"
+	"seed/backend/pkg/libp2px"
+	"seed/backend/pkg/must"
 	"strings"
 	"time"
 
@@ -44,14 +44,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
+const protocolSupportKey = "seed-support" // This is what we use as a key to protect the connection in ConnManager.
 
 const (
 	protocolPrefix  = "/hypermedia/"
 	protocolVersion = "0.4.0"
 )
 
-var userAgent = "mintter/<dev>"
+var userAgent = "seed/<dev>"
 
 // GatewayClient is the bridge to talk to the gateway.
 type GatewayClient interface {
@@ -71,10 +71,10 @@ type WebsiteClient interface {
 	PublishBlobs(context.Context, *groups_proto.PublishBlobsRequest, ...grpc.CallOption) (*groups_proto.PublishBlobsResponse, error)
 }
 
-// DefaultRelays bootstrap mintter-owned relays so they can reserve slots to do holepunch.
+// DefaultRelays bootstrap seed-owned relays so they can reserve slots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
-		// Mintter prod server
+		// Seed prod server
 		{
 			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
@@ -82,7 +82,7 @@ func DefaultRelays() []peer.AddrInfo {
 				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic-v1")),
 			},
 		},
-		// Mintter test server
+		// Seed test server
 		{
 			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
@@ -111,7 +111,7 @@ type rpcMux struct {
 	Node *Node
 }
 
-// Node is a Mintter P2P node.
+// Node is a Seed P2P node.
 type Node struct {
 	log      *zap.Logger
 	blobs    *hyper.Storage
@@ -373,7 +373,7 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	// Start Mintter protocol listener over libp2p.
+	// Start Hyper Media protocol listener over libp2p.
 	{
 		g.Go(func() error {
 			return n.grpc.Serve(lis)

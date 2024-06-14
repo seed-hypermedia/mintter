@@ -3,7 +3,7 @@ package syncing
 import (
 	"context"
 	"hash/fnv"
-	"mintter/backend/config"
+	"seed/backend/config"
 	"sync"
 	"time"
 

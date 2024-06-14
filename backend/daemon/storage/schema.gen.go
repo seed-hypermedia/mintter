@@ -3,7 +3,7 @@
 package storage
 
 import (
-	"mintter/backend/pkg/sqlitegen"
+	"seed/backend/pkg/sqlitegen"
 )
 
 // Table blob_links.

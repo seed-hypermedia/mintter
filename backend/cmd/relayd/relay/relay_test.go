@@ -2,10 +2,10 @@ package relay
 
 import (
 	"context"
-	"mintter/backend/core/coretest"
-	"mintter/backend/pkg/libp2px"
-	"mintter/backend/pkg/must"
 	"net"
+	"seed/backend/core/coretest"
+	"seed/backend/pkg/libp2px"
+	"seed/backend/pkg/must"
 	"testing"
 	"time"
 
@@ -73,7 +73,7 @@ func makePrivateHost(t *testing.T, relayInfo peer.AddrInfo, name string) host.Ho
 	tester := coretest.NewTester(name)
 
 	host, err := libp2p.New(
-		libp2p.UserAgent("mintter/testing/"+name),
+		libp2p.UserAgent("seed/testing/"+name),
 		libp2p.Identity(tester.Device.Wrapped()),
 		libp2p.ListenAddrStrings(libp2px.DefaultListenAddrs(freePort(t))...),
 		libp2p.EnableHolePunching(),

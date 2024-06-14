@@ -10,7 +10,7 @@ let
     rev = "e913ae340076bbb73d9f4d3d065c2bca7caafb16";
     sha256 = "sha256-Ds1QpobBX2yoUDx9ZruqVGJ/uQPgcXoYuobBguyKEh8=";
   };
-  mintterOverlay = import ./overlay.nix;
+  seedOverlay = import ./overlay.nix;
 in
 
 { 
@@ -21,7 +21,7 @@ in
 
 import nixpkgs {
   overlays = [
-    mintterOverlay
+    seedOverlay
   ];
   inherit system;
   config = config;

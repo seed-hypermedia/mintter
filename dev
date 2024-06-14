@@ -36,7 +36,7 @@ def main():
 
     cli = argparse.ArgumentParser(
         usage="./dev COMMAND [FLAGS...]",
-        description="CLI for developing Mintter. Provides commands for most common developer tasks in this project.",
+        description="CLI for developing Seed Hyper Media. Provides commands for most common developer tasks in this project.",
     )
 
     cmds = cli.add_subparsers(
@@ -78,34 +78,34 @@ def main():
     def run_desktop(args):
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
-        run("yarn workspace @mintter/ui generate")
-        run("plz build //backend:mintterd //:yarn")
+        run("yarn workspace @seed/ui generate")
+        run("plz build //backend:seed-daemon //:yarn")
 
-        testnet_var = "MINTTER_P2P_TESTNET_NAME"
+        testnet_var = "SEED_P2P_TESTNET_NAME"
         if testnet_var not in os.environ:
             os.environ[testnet_var] = "dev"
 
-        return run("VITE_DESKTOP_APPDATA=Mintter.dev yarn desktop", args=args)
+        return run("VITE_DESKTOP_APPDATA=Seed.dev yarn desktop", args=args)
 
     @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):
         run("./scripts/cleanup-frontend.sh")
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
-        run("plz build //backend:mintterd //:yarn")
+        run("plz build //backend:seed-daemon//:yarn")
 
-        testnet_var = "MINTTER_P2P_TESTNET_NAME"
+        testnet_var = "SEED_P2P_TESTNET_NAME"
         if testnet_var not in os.environ:
             os.environ[testnet_var] = "dev"
 
-        run("VITE_DESKTOP_APPDATA=Mintter.local yarn desktop:make")
+        run("VITE_DESKTOP_APPDATA=Seed.local yarn desktop:make")
 
     @cmd(cmds, "test-desktop", "Run frontend desktop tests.")
     def test_desktop(args):
-        run("yarn workspace @mintter/ui generate")
-        run("plz build //backend:mintterd //:yarn")
+        run("yarn workspace @seed/ui generate")
+        run("plz build //backend:seed-daemon //:yarn")
 
-        testnet_var = "MINTTER_P2P_TESTNET_NAME"
+        testnet_var = "SEED_P2P_TESTNET_NAME"
         if testnet_var not in os.environ:
             os.environ[testnet_var] = "dev"
 
@@ -138,17 +138,17 @@ def main():
     def frontend_validate(args):
         run("yarn validate")
 
-    @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
+    @cmd(cmds, "run-backend", "Build and run seed-daemon binary for the current platform.")
     def run_backend(args):
-        return run("plz run //backend:mintterd", args=args)
+        return run("plz run //backend:seed-daemon", args=args)
 
-    @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
+    @cmd(cmds, "build-backend", "Build seed-daemon binary for the current platform.")
     def build_backend(args):
-        return run("plz build //backend:mintterd")
+        return run("plz build //backend:seed-daemon")
 
-    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
+    @cmd(cmds, "run-gw-backend", "Build and run backend for seed web gateway.")
     def run_gateway(args):
-        return run("plz run //backend:minttergw", args=args)
+        return run("plz run //backend:seed-gateway", args=args)
 
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):

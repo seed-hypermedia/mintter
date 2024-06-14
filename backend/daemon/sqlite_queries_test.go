@@ -1,8 +1,8 @@
 package daemon
 
 import (
-	"mintter/backend/daemon/storage"
-	"mintter/backend/pkg/dqb"
+	"seed/backend/daemon/storage"
+	"seed/backend/pkg/dqb"
 	"testing"
 
 	"github.com/stretchr/testify/require"

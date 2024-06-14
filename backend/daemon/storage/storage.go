@@ -1,12 +1,12 @@
-// Package storage manages persistent storage of the Mintter daemon.
+// Package storage manages persistent storage of the Seed daemon.
 package storage
 
 import (
 	"fmt"
-	"mintter/backend/core"
-	"mintter/backend/logging"
-	"mintter/backend/pkg/future"
 	"path/filepath"
+	"seed/backend/core"
+	"seed/backend/logging"
+	"seed/backend/pkg/future"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ type Dir struct {
 // InitRepo initializes the storage directory.
 // Device can be nil in which case a random new device key will be generated.
 func InitRepo(dataDir string, device crypto.PrivKey, logLevel string) (r *Dir, err error) {
-	log := logging.New("mintter/repo", logLevel)
+	log := logging.New("seed/repo", logLevel)
 	if device == nil {
 		r, err = New(dataDir, log)
 	} else {
@@ -94,7 +94,7 @@ func (d *Dir) Migrate() error {
 	return nil
 }
 
-// Identity returns the lazy value for a Mintter identity.
+// Identity returns the lazy value for a Seed identity.
 func (d *Dir) Identity() *future.ReadOnly[core.Identity] {
 	return d.me.ReadOnly
 }

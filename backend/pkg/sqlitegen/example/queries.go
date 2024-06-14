@@ -2,9 +2,9 @@ package example
 
 import (
 	"io/ioutil"
-	"mintter/backend/pkg/sqlitegen"
-	"mintter/backend/pkg/sqlitegen/example/schema"
-	"mintter/backend/pkg/sqlitegen/qb"
+	"seed/backend/pkg/sqlitegen"
+	"seed/backend/pkg/sqlitegen/example/schema"
+	"seed/backend/pkg/sqlitegen/qb"
 )
 
 var _ = generateQueries

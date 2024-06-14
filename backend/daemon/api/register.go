@@ -1,13 +1,13 @@
 package api
 
 import (
-	accounts "mintter/backend/genproto/accounts/v1alpha"
-	activity "mintter/backend/genproto/activity/v1alpha"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	entities "mintter/backend/genproto/entities/v1alpha"
-	groups "mintter/backend/genproto/groups/v1alpha"
-	networking "mintter/backend/genproto/networking/v1alpha"
+	accounts "seed/backend/genproto/accounts/v1alpha"
+	activity "seed/backend/genproto/activity/v1alpha"
+	daemon "seed/backend/genproto/daemon/v1alpha"
+	documents "seed/backend/genproto/documents/v1alpha"
+	entities "seed/backend/genproto/entities/v1alpha"
+	groups "seed/backend/genproto/groups/v1alpha"
+	networking "seed/backend/genproto/networking/v1alpha"
 
 	"google.golang.org/grpc"
 )

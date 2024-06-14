@@ -11,8 +11,8 @@ def mtt_go_proto(name, srcs):
 $TOOLS_PROTOC -I proto \
 --plugin=protoc-gen-go=$TOOLS_PROTOC_GEN_GO \
 --plugin=protoc-gen-go-grpc=$TOOLS_PROTOC_GEN_GO_GRPC \
---go_out=module=mintter:$WORKSPACE \
---go-grpc_out=module=mintter,require_unimplemented_servers=false:$WORKSPACE \
+--go_out=module=seed:$WORKSPACE \
+--go-grpc_out=module=seed,require_unimplemented_servers=false:$WORKSPACE \
 $SRCS
 """,
         out_dir = "//" + package_name().replace("proto", "backend/genproto"),

@@ -3,20 +3,20 @@ package api
 import (
 	"context"
 	"fmt"
-	accounts "mintter/backend/daemon/api/accounts/v1alpha"
-	activity "mintter/backend/daemon/api/activity/v1alpha"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	documents "mintter/backend/daemon/api/documents/v1alpha"
-	entities "mintter/backend/daemon/api/entities/v1alpha"
-	groups "mintter/backend/daemon/api/groups/v1alpha"
-	networking "mintter/backend/daemon/api/networking/v1alpha"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
-	"mintter/backend/syncing"
-	"mintter/backend/wallet"
+	accounts "seed/backend/daemon/api/accounts/v1alpha"
+	activity "seed/backend/daemon/api/activity/v1alpha"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	documents "seed/backend/daemon/api/documents/v1alpha"
+	entities "seed/backend/daemon/api/entities/v1alpha"
+	groups "seed/backend/daemon/api/groups/v1alpha"
+	networking "seed/backend/daemon/api/networking/v1alpha"
+	"seed/backend/daemon/storage"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/future"
+	"seed/backend/syncing"
+	"seed/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -68,7 +68,7 @@ func New(
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(blobs, node),
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
-		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", LogLevel), groups.NewSQLiteDB(db), blobs, node),
+		Groups:     groups.NewServer(repo.Identity(), logging.New("seed/groups", LogLevel), groups.NewSQLiteDB(db), blobs, node),
 	}
 }
 
@@ -91,7 +91,7 @@ type lazyDiscoverer struct {
 	net  *future.ReadOnly[*mttnet.Node]
 }
 
-// DiscoverObject attempts to discover a given Mintter Object with an optional version specified.
+// DiscoverObject attempts to discover a given Seed Object with an optional version specified.
 // If no version is specified it tries to find whatever is possible.
 func (ld *lazyDiscoverer) DiscoverObject(ctx context.Context, obj hyper.EntityID, v hyper.Version) error {
 	svc, err := ld.sync.Await(ctx)

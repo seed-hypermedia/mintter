@@ -6,17 +6,17 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"mintter/backend/core"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/lndhub"
-	"mintter/backend/lndhub/lndhubsql"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
-	"mintter/backend/wallet/walletsql"
-	wallet "mintter/backend/wallet/walletsql"
 	"net/http"
 	"regexp"
+	"seed/backend/core"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/lndhub"
+	"seed/backend/lndhub/lndhubsql"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/future"
+	"seed/backend/wallet/walletsql"
+	wallet "seed/backend/wallet/walletsql"
 	"strings"
 
 	"crawshaw.io/sqlite"
@@ -135,7 +135,7 @@ type InvoiceRequest struct {
 func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principal, request InvoiceRequest) (string, error) {
 	net, ok := srv.net.Get()
 	if !ok {
-		srv.log.Debug("Trying to get remote invoicebut networking not ready yet")
+		srv.log.Debug("Trying to get remote invoice, but networking not ready yet")
 		return "", fmt.Errorf("network is not ready yet")
 	}
 
@@ -505,7 +505,7 @@ func (srv *Service) ListReceivednvoices(ctx context.Context, walletID string) ([
 	return invoices, nil
 }
 
-// RequestRemoteInvoice asks a remote peer to issue an invoice. The remote user can be either a lnaddres or a mintter account ID
+// RequestRemoteInvoice asks a remote peer to issue an invoice. The remote user can be either a lnaddres or a Seed account ID
 // First an lndhub invoice request is attempted. In it fails, then a P2P its used to transmit the invoice. In that case,
 // Any of the devices associated with the accountID can issue the invoice. The memo field is optional and can be left nil.
 func (srv *Service) RequestRemoteInvoice(ctx context.Context, remoteUser string, amountSats int64, memo *string) (string, error) {
@@ -638,10 +638,10 @@ func (srv *Service) GetLnAddress(ctx context.Context) (string, error) {
 	return lnaddress, nil
 }
 
-// ConfigureMintterLNDHub uses the account private key to generate credentials for the default
-// Mintter custodial LNDHub wallet.
-func (srv *Service) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
-	signature, err := acc.Sign([]byte(lndhub.SigninMessage))
+// ConfigureSeedLNDHub uses the account private key to generate credentials for the default
+// Seed custodial LNDHub wallet.
+func (srv *Service) ConfigureSeedLNDHub(ctx context.Context, acc core.KeyPair) error {
+	signature, err := acc.Sign([]byte(lndhub.SigningMessage))
 	if err != nil {
 		return err
 	}

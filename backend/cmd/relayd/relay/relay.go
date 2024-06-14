@@ -3,8 +3,8 @@ package relay
 import (
 	"encoding/hex"
 	"fmt"
-	"mintter/backend/pkg/libp2px"
-	"mintter/backend/pkg/must"
+	"seed/backend/pkg/libp2px"
+	"seed/backend/pkg/must"
 	"strconv"
 
 	"github.com/libp2p/go-libp2p"
@@ -71,7 +71,7 @@ func (r *Relay) Start() error {
 	}
 
 	opts := []libp2p.Option{
-		libp2p.UserAgent("MintterRelay/0.1"),
+		libp2p.UserAgent("HyperMediaRelay/0.1"),
 		libp2p.Identity(key),
 		libp2p.DisableRelay(),
 		libp2p.EnableRelayService(relay.WithResources(r.cfg.RelayV2.Resources)),

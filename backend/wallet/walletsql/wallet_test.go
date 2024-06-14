@@ -2,7 +2,7 @@ package walletsql
 
 import (
 	"context"
-	"mintter/backend/daemon/storage"
+	"seed/backend/daemon/storage"
 	"strings"
 	"testing"
 

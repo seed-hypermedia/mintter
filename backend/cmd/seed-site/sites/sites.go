@@ -1,4 +1,4 @@
-// Package sites implements mintter-site server.
+// Package sites implements seed-site server.
 package sites
 
 import (
@@ -8,14 +8,14 @@ import (
 	"errors"
 	"fmt"
 
-	"mintter/backend/daemon/storage"
-	groups "mintter/backend/genproto/groups/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/colx"
-	"mintter/backend/pkg/future"
 	"net/http"
+	"seed/backend/daemon/storage"
+	groups "seed/backend/genproto/groups/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/colx"
+	"seed/backend/pkg/future"
 	"sync"
 
 	"google.golang.org/grpc/codes"

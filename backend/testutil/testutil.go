@@ -39,7 +39,7 @@ func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
 func MakeRepoPath(t testing.TB) string {
 	t.Helper()
 
-	dir, err := os.MkdirTemp("", "mintter-repo-*")
+	dir, err := os.MkdirTemp("", "seed-repo-*")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {

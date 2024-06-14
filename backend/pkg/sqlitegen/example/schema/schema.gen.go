@@ -3,7 +3,7 @@
 package schema
 
 import (
-	"mintter/backend/pkg/sqlitegen"
+	"seed/backend/pkg/sqlitegen"
 )
 
 // Table users.

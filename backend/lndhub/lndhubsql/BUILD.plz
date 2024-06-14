@@ -3,7 +3,7 @@ subinclude("//build/rules/go:defs", "//build/rules/codegen:defs")
 # Generates SQLite queries for the lndhub package.
 # This could be defined inside the package itself,
 # but then the Go source files would need to be
-# exposed and depended on in the `mintterd` rule.
+# exposed and depended on in the `seed-daemon` rule.
 generated(
     name = "queries",
     srcs = ["queries.go"],

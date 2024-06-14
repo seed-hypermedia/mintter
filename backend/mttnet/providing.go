@@ -3,9 +3,9 @@ package mttnet
 import (
 	"context"
 	"math/rand"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/logging"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/logging"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -21,7 +21,7 @@ func makeProvidingStrategy(db *sqlitex.Pool, logLevel string) provider.KeyChanFu
 	// except those which are marked as draft changes.
 	// TODO(burdiyan): this is a temporary solution during the braking change.
 
-	log := logging.New("mintter/reprovider", logLevel)
+	log := logging.New("seed/reprovider", logLevel)
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer

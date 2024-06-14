@@ -64,7 +64,7 @@ jobs:
         if: matrix.config.os != 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }} ./backend/cmd/seed-daemon
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
@@ -73,7 +73,7 @@ jobs:
         if: matrix.config.os == 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }}.exe ./backend/cmd/seed-daemon
         env:
           GOOS: "windows"
           GOARCH: ${{ matrix.config.goarch }}
@@ -98,7 +98,7 @@ jobs:
           VITE_DESKTOP_P2P_PORT: "58000"
           VITE_DESKTOP_HTTP_PORT: "58001"
           VITE_DESKTOP_GRPC_PORT: "58002"
-          VITE_DESKTOP_DESKTOP_APPDATA: "Mintter.test"
+          VITE_DESKTOP_DESKTOP_APPDATA: "Seed.test"
           VITE_DESKTOP_HOSTNAME: "http://localhost"
 
       - name: Build, package and make (Win32)
@@ -115,7 +115,7 @@ jobs:
           VITE_DESKTOP_P2P_PORT: "58000"
           VITE_DESKTOP_HTTP_PORT: "58001"
           VITE_DESKTOP_GRPC_PORT: "58002"
-          VITE_DESKTOP_DESKTOP_APPDATA: "Mintter.test"
+          VITE_DESKTOP_DESKTOP_APPDATA: "Seed.test"
           VITE_DESKTOP_HOSTNAME: "http://localhost"
 
       - name: Validate code
@@ -126,7 +126,7 @@ jobs:
         run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npx playwright install
 
       - name: Run Tests
-        run: yarn workspace @mintter/desktop e2e
+        run: yarn workspace @seed/desktop e2e
         env:
           CI: "1"
 

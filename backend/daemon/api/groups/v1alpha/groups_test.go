@@ -2,16 +2,16 @@ package groups
 
 import (
 	"context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	groups "mintter/backend/genproto/groups/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
-	"mintter/backend/testutil"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	groups "seed/backend/genproto/groups/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/future"
+	"seed/backend/testutil"
 	"testing"
 	"time"
 
@@ -590,10 +590,10 @@ func newTestSrv(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	bs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 
 	node := future.New[*mttnet.Node]()
-	srv := NewServer(fut.ReadOnly, logging.New("mintter/groups", "debug"), NewSQLiteDB(db), bs, node.ReadOnly)
+	srv := NewServer(fut.ReadOnly, logging.New("seed/groups", "debug"), NewSQLiteDB(db), bs, node.ReadOnly)
 
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)

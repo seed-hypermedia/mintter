@@ -2,7 +2,7 @@ package documents
 
 import (
 	"context"
-	. "mintter/backend/genproto/documents/v1alpha" //nolint:revive
+	. "seed/backend/genproto/documents/v1alpha" //nolint:revive
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -257,7 +257,7 @@ func TestBug_MoveBockWithoutReplacement(t *testing.T) {
 func TestBug_BlockRevisionMustUpdate(t *testing.T) {
 	t.Parallel()
 
-	// See: https://github.com/mintterteam/mintter/issues/1301.
+	// See: https://github.com/MintterHypermedia/mintter/issues/1301.
 
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()

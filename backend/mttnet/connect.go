@@ -5,9 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
 	"strings"
 	"time"
 
@@ -28,7 +28,7 @@ import (
 
 var (
 	mConnectsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_connects_in_flight",
+		Name: "seed_connects_in_flight",
 		Help: "Number of connection attempts in progress.",
 	})
 )
@@ -86,7 +86,7 @@ func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err
 		return fmt.Errorf("failed to connect to peer %s: %w", info.ID, err)
 	}
 
-	if err := n.checkMintterProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
+	if err := n.checkHyperMediaProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
 		return err
 	}
 
@@ -112,7 +112,7 @@ func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err
 	return nil
 }
 
-func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string) (err error) {
+func (n *Node) checkHyperMediaProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
@@ -120,7 +120,7 @@ func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, des
 	if err := retry.Exponential(ctx, 50*time.Millisecond, func(ctx context.Context) error {
 		protos, err = n.p2p.Peerstore().GetProtocols(pid)
 		if err != nil {
-			return fmt.Errorf("failed to check mintter protocol version: %w", err)
+			return fmt.Errorf("failed to check Hyper Media protocol version: %w", err)
 		}
 
 		if len(protos) > 0 {
@@ -133,23 +133,23 @@ func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, des
 	}
 
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
-	var isMintter bool
+	var isSeed bool
 	for _, p := range protos {
 		version := strings.TrimPrefix(string(p), n.protocol.prefix)
 		if version == string(p) {
 			continue
 		}
-		isMintter = true
+		isSeed = true
 		if version == desiredVersion {
 			return nil
 		}
 	}
 
-	if isMintter {
-		return fmt.Errorf("peer with incompatible Mintter protocol version")
+	if isSeed {
+		return fmt.Errorf("peer with incompatible Seed protocol version")
 	}
 
-	return fmt.Errorf("not a Mintter peer")
+	return fmt.Errorf("not a Seed peer")
 }
 
 func (n *Node) verifyHandshake(ctx context.Context, pid peer.ID, pb *p2p.HandshakeInfo) error {
@@ -209,13 +209,13 @@ func (srv *rpcMux) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 
 	log := n.log.With(zap.String("peer", pid.String()))
 
-	if err := n.checkMintterProtocolVersion(ctx, pid, srv.Node.protocol.version); err != nil {
+	if err := n.checkHyperMediaProtocolVersion(ctx, pid, srv.Node.protocol.version); err != nil {
 		return nil, err
 	}
 
 	if err := n.verifyHandshake(ctx, pid, in); err != nil {
 		// TODO(burdiyan): implement blocking and disconnecting from bad peers.
-		log.Warn("FailedToVerifyIncomingMintterHandshake", zap.Error(err))
+		log.Warn("FailedToVerifyIncomingSeedHandshake", zap.Error(err))
 		return nil, fmt.Errorf("you gave me a bad handshake")
 	}
 

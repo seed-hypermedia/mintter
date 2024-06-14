@@ -1,14 +1,14 @@
-// Package daemon assembles everything to boot the mintterd program. It's like main, but made a separate package
+// Package daemon assembles everything to boot the seed-daemon program. It's like main, but made a separate package
 // to be importable and testable by other packages, because package main can't be imported.
 package daemon
 
 import (
 	context "context"
 	"fmt"
-	"mintter/backend/core"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/pkg/future"
+	"seed/backend/core"
+	daemon "seed/backend/genproto/daemon/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/pkg/future"
 	sync "sync"
 	"time"
 
@@ -28,7 +28,7 @@ type Repo interface {
 
 // Wallet is a subset of the wallet service used by this server.
 type Wallet interface {
-	ConfigureMintterLNDHub(context.Context, core.KeyPair) error
+	ConfigureSeedLNDHub(context.Context, core.KeyPair) error
 }
 
 // Server implements the Daemon gRPC API.
@@ -97,7 +97,7 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 		return err
 	}
 
-	if err := srv.wallet.ConfigureMintterLNDHub(ctx, acc); err != nil {
+	if err := srv.wallet.ConfigureSeedLNDHub(ctx, acc); err != nil {
 		return fmt.Errorf("failed to configure wallet when registering: %w", err)
 	}
 

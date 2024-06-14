@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/graphql/internal/model"
+	"seed/backend/graphql/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -1032,7 +1032,7 @@ func (ec *executionContext) field_Mutation_deleteWallet_args(ctx context.Context
 	var arg0 DeleteWalletInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNDeleteWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx, tmp)
+		arg0, err = ec.unmarshalNDeleteWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1047,7 +1047,7 @@ func (ec *executionContext) field_Mutation_exportWallet_args(ctx context.Context
 	var arg0 ExportWalletInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNExportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx, tmp)
+		arg0, err = ec.unmarshalNExportWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1062,7 +1062,7 @@ func (ec *executionContext) field_Mutation_importWallet_args(ctx context.Context
 	var arg0 ImportWalletInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNImportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletInput(ctx, tmp)
+		arg0, err = ec.unmarshalNImportWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1077,7 +1077,7 @@ func (ec *executionContext) field_Mutation_payInvoice_args(ctx context.Context, 
 	var arg0 PayInvoiceInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNPayInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx, tmp)
+		arg0, err = ec.unmarshalNPayInvoiceInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1092,7 +1092,7 @@ func (ec *executionContext) field_Mutation_requestInvoice_args(ctx context.Conte
 	var arg0 RequestInvoiceInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRequestInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoiceInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRequestInvoiceInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoiceInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1107,7 +1107,7 @@ func (ec *executionContext) field_Mutation_setDefaultWallet_args(ctx context.Con
 	var arg0 SetDefaultWalletInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSetDefaultWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx, tmp)
+		arg0, err = ec.unmarshalNSetDefaultWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1122,7 +1122,7 @@ func (ec *executionContext) field_Mutation_updateNickname_args(ctx context.Conte
 	var arg0 UpdateNicknameInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateNicknameInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateNicknameInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1137,7 +1137,7 @@ func (ec *executionContext) field_Mutation_updateWallet_args(ctx context.Context
 	var arg0 UpdateWalletInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1357,7 +1357,7 @@ func (ec *executionContext) _ImportWalletPayload_wallet(ctx context.Context, fie
 	}
 	res := resTmp.(LightningWallet)
 	fc.Result = res
-	return ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
+	return ec.marshalNLightningWallet2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ImportWalletPayload_wallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1647,7 +1647,7 @@ func (ec *executionContext) _Invoice_Amount(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(model.Satoshis)
 	fc.Result = res
-	return ec.marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
+	return ec.marshalNSatoshis2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Invoice_Amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1688,7 +1688,7 @@ func (ec *executionContext) _Invoice_Fee(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.Satoshis)
 	fc.Result = res
-	return ec.marshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
+	return ec.marshalOSatoshis2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Invoice_Fee(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2151,7 +2151,7 @@ func (ec *executionContext) _LndHubWallet_balanceSats(ctx context.Context, field
 	}
 	res := resTmp.(model.Satoshis)
 	fc.Result = res
-	return ec.marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
+	return ec.marshalNSatoshis2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_LndHubWallet_balanceSats(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2236,7 +2236,7 @@ func (ec *executionContext) _Me_wallets(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.([]LightningWallet)
 	fc.Result = res
-	return ec.marshalOLightningWallet2ᚕmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWalletᚄ(ctx, field.Selections, res)
+	return ec.marshalOLightningWallet2ᚕseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWalletᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Me_wallets(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2321,7 +2321,7 @@ func (ec *executionContext) _Mutation_setDefaultWallet(ctx context.Context, fiel
 	}
 	res := resTmp.(*SetDefaultWalletPayload)
 	fc.Result = res
-	return ec.marshalNSetDefaultWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx, field.Selections, res)
+	return ec.marshalNSetDefaultWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_setDefaultWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2380,7 +2380,7 @@ func (ec *executionContext) _Mutation_updateWallet(ctx context.Context, field gr
 	}
 	res := resTmp.(*UpdateWalletPayload)
 	fc.Result = res
-	return ec.marshalNUpdateWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx, field.Selections, res)
+	return ec.marshalNUpdateWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2439,7 +2439,7 @@ func (ec *executionContext) _Mutation_deleteWallet(ctx context.Context, field gr
 	}
 	res := resTmp.(*DeleteWalletPayload)
 	fc.Result = res
-	return ec.marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx, field.Selections, res)
+	return ec.marshalNDeleteWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2498,7 +2498,7 @@ func (ec *executionContext) _Mutation_exportWallet(ctx context.Context, field gr
 	}
 	res := resTmp.(*ExportWalletPayload)
 	fc.Result = res
-	return ec.marshalNExportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx, field.Selections, res)
+	return ec.marshalNExportWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_exportWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2557,7 +2557,7 @@ func (ec *executionContext) _Mutation_importWallet(ctx context.Context, field gr
 	}
 	res := resTmp.(*ImportWalletPayload)
 	fc.Result = res
-	return ec.marshalNImportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx, field.Selections, res)
+	return ec.marshalNImportWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_importWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2616,7 +2616,7 @@ func (ec *executionContext) _Mutation_requestInvoice(ctx context.Context, field 
 	}
 	res := resTmp.(*RequestInvoicePayload)
 	fc.Result = res
-	return ec.marshalNRequestInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx, field.Selections, res)
+	return ec.marshalNRequestInvoicePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_requestInvoice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2675,7 +2675,7 @@ func (ec *executionContext) _Mutation_payInvoice(ctx context.Context, field grap
 	}
 	res := resTmp.(*PayInvoicePayload)
 	fc.Result = res
-	return ec.marshalNPayInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx, field.Selections, res)
+	return ec.marshalNPayInvoicePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_payInvoice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2734,7 +2734,7 @@ func (ec *executionContext) _Mutation_updateNickname(ctx context.Context, field 
 	}
 	res := resTmp.(*UpdateNicknamePayload)
 	fc.Result = res
-	return ec.marshalNUpdateNicknamePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx, field.Selections, res)
+	return ec.marshalNUpdateNicknamePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateNickname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2834,7 +2834,7 @@ func (ec *executionContext) _Payments_sent(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*Invoice)
 	fc.Result = res
-	return ec.marshalOInvoice2ᚕᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, field.Selections, res)
+	return ec.marshalOInvoice2ᚕᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Payments_sent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2907,7 +2907,7 @@ func (ec *executionContext) _Payments_received(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*Invoice)
 	fc.Result = res
-	return ec.marshalOInvoice2ᚕᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, field.Selections, res)
+	return ec.marshalOInvoice2ᚕᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Payments_received(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2983,7 +2983,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*Me)
 	fc.Result = res
-	return ec.marshalNMe2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3033,7 +3033,7 @@ func (ec *executionContext) _Query_payments(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*Payments)
 	fc.Result = res
-	return ec.marshalNPayments2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx, field.Selections, res)
+	return ec.marshalNPayments2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_payments(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3223,7 +3223,7 @@ func (ec *executionContext) _RequestInvoicePayload_paymentRequest(ctx context.Co
 	}
 	res := resTmp.(model.LightningPaymentRequest)
 	fc.Result = res
-	return ec.marshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, field.Selections, res)
+	return ec.marshalNLightningPaymentRequest2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_RequestInvoicePayload_paymentRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3267,7 +3267,7 @@ func (ec *executionContext) _SetDefaultWalletPayload_wallet(ctx context.Context,
 	}
 	res := resTmp.(LightningWallet)
 	fc.Result = res
-	return ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
+	return ec.marshalNLightningWallet2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SetDefaultWalletPayload_wallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3355,7 +3355,7 @@ func (ec *executionContext) _UpdateWalletPayload_wallet(ctx context.Context, fie
 	}
 	res := resTmp.(LightningWallet)
 	fc.Result = res
-	return ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
+	return ec.marshalNLightningWallet2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UpdateWalletPayload_wallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5254,7 +5254,7 @@ func (ec *executionContext) unmarshalInputPayInvoiceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentRequest"))
-			it.PaymentRequest, err = ec.unmarshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, v)
+			it.PaymentRequest, err = ec.unmarshalNLightningPaymentRequest2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5262,7 +5262,7 @@ func (ec *executionContext) unmarshalInputPayInvoiceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountSats"))
-			it.AmountSats, err = ec.unmarshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
+			it.AmountSats, err = ec.unmarshalOSatoshis2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5306,7 +5306,7 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountSats"))
-			it.AmountSats, err = ec.unmarshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
+			it.AmountSats, err = ec.unmarshalNSatoshis2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6411,16 +6411,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDeleteWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx context.Context, v interface{}) (DeleteWalletInput, error) {
+func (ec *executionContext) unmarshalNDeleteWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx context.Context, v interface{}) (DeleteWalletInput, error) {
 	res, err := ec.unmarshalInputDeleteWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDeleteWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v DeleteWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNDeleteWalletPayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v DeleteWalletPayload) graphql.Marshaler {
 	return ec._DeleteWalletPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v *DeleteWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNDeleteWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v *DeleteWalletPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6430,16 +6430,16 @@ func (ec *executionContext) marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋg
 	return ec._DeleteWalletPayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNExportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx context.Context, v interface{}) (ExportWalletInput, error) {
+func (ec *executionContext) unmarshalNExportWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx context.Context, v interface{}) (ExportWalletInput, error) {
 	res, err := ec.unmarshalInputExportWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNExportWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v ExportWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNExportWalletPayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v ExportWalletPayload) graphql.Marshaler {
 	return ec._ExportWalletPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNExportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v *ExportWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNExportWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v *ExportWalletPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6464,16 +6464,16 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNImportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletInput(ctx context.Context, v interface{}) (ImportWalletInput, error) {
+func (ec *executionContext) unmarshalNImportWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletInput(ctx context.Context, v interface{}) (ImportWalletInput, error) {
 	res, err := ec.unmarshalInputImportWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNImportWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx context.Context, sel ast.SelectionSet, v ImportWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNImportWalletPayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx context.Context, sel ast.SelectionSet, v ImportWalletPayload) graphql.Marshaler {
 	return ec._ImportWalletPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNImportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx context.Context, sel ast.SelectionSet, v *ImportWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNImportWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐImportWalletPayload(ctx context.Context, sel ast.SelectionSet, v *ImportWalletPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6483,13 +6483,13 @@ func (ec *executionContext) marshalNImportWalletPayload2ᚖmintterᚋbackendᚋg
 	return ec._ImportWalletPayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, v interface{}) (model.LightningPaymentRequest, error) {
+func (ec *executionContext) unmarshalNLightningPaymentRequest2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, v interface{}) (model.LightningPaymentRequest, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.LightningPaymentRequest(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, sel ast.SelectionSet, v model.LightningPaymentRequest) graphql.Marshaler {
+func (ec *executionContext) marshalNLightningPaymentRequest2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, sel ast.SelectionSet, v model.LightningPaymentRequest) graphql.Marshaler {
 	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -6499,7 +6499,7 @@ func (ec *executionContext) marshalNLightningPaymentRequest2mintterᚋbackendᚋ
 	return res
 }
 
-func (ec *executionContext) marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx context.Context, sel ast.SelectionSet, v LightningWallet) graphql.Marshaler {
+func (ec *executionContext) marshalNLightningWallet2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx context.Context, sel ast.SelectionSet, v LightningWallet) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6509,11 +6509,11 @@ func (ec *executionContext) marshalNLightningWallet2mintterᚋbackendᚋgraphql�
 	return ec._LightningWallet(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMe2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx context.Context, sel ast.SelectionSet, v Me) graphql.Marshaler {
+func (ec *executionContext) marshalNMe2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx context.Context, sel ast.SelectionSet, v Me) graphql.Marshaler {
 	return ec._Me(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMe2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx context.Context, sel ast.SelectionSet, v *Me) graphql.Marshaler {
+func (ec *executionContext) marshalNMe2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐMe(ctx context.Context, sel ast.SelectionSet, v *Me) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6523,16 +6523,16 @@ func (ec *executionContext) marshalNMe2ᚖmintterᚋbackendᚋgraphqlᚋinternal
 	return ec._Me(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPayInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx context.Context, v interface{}) (PayInvoiceInput, error) {
+func (ec *executionContext) unmarshalNPayInvoiceInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx context.Context, v interface{}) (PayInvoiceInput, error) {
 	res, err := ec.unmarshalInputPayInvoiceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPayInvoicePayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v PayInvoicePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNPayInvoicePayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v PayInvoicePayload) graphql.Marshaler {
 	return ec._PayInvoicePayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPayInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v *PayInvoicePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNPayInvoicePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v *PayInvoicePayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6542,11 +6542,11 @@ func (ec *executionContext) marshalNPayInvoicePayload2ᚖmintterᚋbackendᚋgra
 	return ec._PayInvoicePayload(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPayments2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx context.Context, sel ast.SelectionSet, v Payments) graphql.Marshaler {
+func (ec *executionContext) marshalNPayments2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx context.Context, sel ast.SelectionSet, v Payments) graphql.Marshaler {
 	return ec._Payments(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPayments2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx context.Context, sel ast.SelectionSet, v *Payments) graphql.Marshaler {
+func (ec *executionContext) marshalNPayments2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayments(ctx context.Context, sel ast.SelectionSet, v *Payments) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6556,16 +6556,16 @@ func (ec *executionContext) marshalNPayments2ᚖmintterᚋbackendᚋgraphqlᚋin
 	return ec._Payments(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNRequestInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoiceInput(ctx context.Context, v interface{}) (RequestInvoiceInput, error) {
+func (ec *executionContext) unmarshalNRequestInvoiceInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoiceInput(ctx context.Context, v interface{}) (RequestInvoiceInput, error) {
 	res, err := ec.unmarshalInputRequestInvoiceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRequestInvoicePayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx context.Context, sel ast.SelectionSet, v RequestInvoicePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNRequestInvoicePayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx context.Context, sel ast.SelectionSet, v RequestInvoicePayload) graphql.Marshaler {
 	return ec._RequestInvoicePayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRequestInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx context.Context, sel ast.SelectionSet, v *RequestInvoicePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNRequestInvoicePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx context.Context, sel ast.SelectionSet, v *RequestInvoicePayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6575,26 +6575,26 @@ func (ec *executionContext) marshalNRequestInvoicePayload2ᚖmintterᚋbackend�
 	return ec._RequestInvoicePayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (model.Satoshis, error) {
+func (ec *executionContext) unmarshalNSatoshis2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (model.Satoshis, error) {
 	var res model.Satoshis
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v model.Satoshis) graphql.Marshaler {
+func (ec *executionContext) marshalNSatoshis2seedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v model.Satoshis) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNSetDefaultWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx context.Context, v interface{}) (SetDefaultWalletInput, error) {
+func (ec *executionContext) unmarshalNSetDefaultWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx context.Context, v interface{}) (SetDefaultWalletInput, error) {
 	res, err := ec.unmarshalInputSetDefaultWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSetDefaultWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v SetDefaultWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNSetDefaultWalletPayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v SetDefaultWalletPayload) graphql.Marshaler {
 	return ec._SetDefaultWalletPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSetDefaultWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v *SetDefaultWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNSetDefaultWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v *SetDefaultWalletPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6619,16 +6619,16 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNUpdateNicknameInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx context.Context, v interface{}) (UpdateNicknameInput, error) {
+func (ec *executionContext) unmarshalNUpdateNicknameInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx context.Context, v interface{}) (UpdateNicknameInput, error) {
 	res, err := ec.unmarshalInputUpdateNicknameInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUpdateNicknamePayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v UpdateNicknamePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpdateNicknamePayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v UpdateNicknamePayload) graphql.Marshaler {
 	return ec._UpdateNicknamePayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUpdateNicknamePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v *UpdateNicknamePayload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpdateNicknamePayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v *UpdateNicknamePayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6638,16 +6638,16 @@ func (ec *executionContext) marshalNUpdateNicknamePayload2ᚖmintterᚋbackend�
 	return ec._UpdateNicknamePayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUpdateWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx context.Context, v interface{}) (UpdateWalletInput, error) {
+func (ec *executionContext) unmarshalNUpdateWalletInput2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx context.Context, v interface{}) (UpdateWalletInput, error) {
 	res, err := ec.unmarshalInputUpdateWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUpdateWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v UpdateWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpdateWalletPayload2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v UpdateWalletPayload) graphql.Marshaler {
 	return ec._UpdateWalletPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUpdateWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v *UpdateWalletPayload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpdateWalletPayload2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v *UpdateWalletPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6952,7 +6952,7 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalOInvoice2ᚕᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx context.Context, sel ast.SelectionSet, v []*Invoice) graphql.Marshaler {
+func (ec *executionContext) marshalOInvoice2ᚕᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx context.Context, sel ast.SelectionSet, v []*Invoice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -6979,7 +6979,7 @@ func (ec *executionContext) marshalOInvoice2ᚕᚖmintterᚋbackendᚋgraphqlᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOInvoice2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, sel, v[i])
+			ret[i] = ec.marshalOInvoice2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6993,14 +6993,14 @@ func (ec *executionContext) marshalOInvoice2ᚕᚖmintterᚋbackendᚋgraphqlᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalOInvoice2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx context.Context, sel ast.SelectionSet, v *Invoice) graphql.Marshaler {
+func (ec *executionContext) marshalOInvoice2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐInvoice(ctx context.Context, sel ast.SelectionSet, v *Invoice) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Invoice(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOLightningWallet2ᚕmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWalletᚄ(ctx context.Context, sel ast.SelectionSet, v []LightningWallet) graphql.Marshaler {
+func (ec *executionContext) marshalOLightningWallet2ᚕseedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWalletᚄ(ctx context.Context, sel ast.SelectionSet, v []LightningWallet) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7027,7 +7027,7 @@ func (ec *executionContext) marshalOLightningWallet2ᚕmintterᚋbackendᚋgraph
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, sel, v[i])
+			ret[i] = ec.marshalNLightningWallet2seedᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7047,7 +7047,7 @@ func (ec *executionContext) marshalOLightningWallet2ᚕmintterᚋbackendᚋgraph
 	return ret
 }
 
-func (ec *executionContext) unmarshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (*model.Satoshis, error) {
+func (ec *executionContext) unmarshalOSatoshis2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (*model.Satoshis, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7056,7 +7056,7 @@ func (ec *executionContext) unmarshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v *model.Satoshis) graphql.Marshaler {
+func (ec *executionContext) marshalOSatoshis2ᚖseedᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v *model.Satoshis) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

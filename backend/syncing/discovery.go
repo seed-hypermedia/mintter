@@ -3,7 +3,7 @@ package syncing
 
 import (
 	"context"
-	"mintter/backend/hyper"
+	"seed/backend/hyper"
 	"sync"
 	"time"
 
@@ -15,7 +15,7 @@ import (
 
 const defaultDiscoveryTimeout = time.Second * 30
 
-// DiscoverObject attempts to discover a given Mintter Object with an optional version specified.
+// DiscoverObject attempts to discover a given Hyper Media Object with an optional version specified.
 // If no version is specified it tries to find whatever is possible.
 func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hyper.Version) error {
 	// TODO(burdiyan): if we know the version, there's no need to finding provider peers

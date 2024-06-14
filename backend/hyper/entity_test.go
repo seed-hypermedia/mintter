@@ -2,10 +2,10 @@ package hyper
 
 import (
 	"context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	"mintter/backend/ipfs"
-	"mintter/backend/logging"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	"seed/backend/ipfs"
+	"seed/backend/logging"
 	"testing"
 	"time"
 
@@ -56,7 +56,7 @@ func TestEntityMutation(t *testing.T) {
 	ctx := context.Background()
 
 	db := newTestSQLite(t)
-	blobs := NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := NewStorage(db, logging.New("seed/hyper", "debug"))
 
 	kd, err := NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now().Add(-1*time.Hour))
 	require.NoError(t, err)
@@ -100,7 +100,7 @@ func TestTrustedEntities(t *testing.T) {
 		ctx := context.Background()
 
 		db := newTestSQLite(t)
-		blobs := NewStorage(db, logging.New("mintter/hyper", "debug"))
+		blobs := NewStorage(db, logging.New("seed/hyper", "debug"))
 
 		kd, err := NewKeyDelegation(user.Account, user.Device.PublicKey, time.Now().Add(-1*time.Hour))
 		require.NoError(t, err)
@@ -236,7 +236,7 @@ func TestEntityMutation_Drafts(t *testing.T) {
 	ctx := context.Background()
 
 	db := newTestSQLite(t)
-	blobs := NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := NewStorage(db, logging.New("seed/hyper", "debug"))
 
 	kd, err := NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now().Add(-1*time.Hour))
 	require.NoError(t, err)

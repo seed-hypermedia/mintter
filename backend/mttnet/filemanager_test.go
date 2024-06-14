@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"io/ioutil"
 	"mime/multipart"
-	"mintter/backend/core/coretest"
-	"mintter/backend/ipfs"
-	"mintter/backend/logging"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"seed/backend/core/coretest"
+	"seed/backend/ipfs"
+	"seed/backend/logging"
 	"strconv"
 	"strings"
 	"testing"
@@ -132,7 +132,7 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 	providing, err := ipfs.NewProviderSystem(ds, n.Routing, bs.AllKeysChan)
 	require.NoError(t, err)
 
-	return NewFileManager(logging.New("mintter/ipfs", "debug"), bs, bitswap, providing)
+	return NewFileManager(logging.New("seed/ipfs", "debug"), bs, bitswap, providing)
 }
 
 // createFile0toBound creates a file with the number 0 to bound.

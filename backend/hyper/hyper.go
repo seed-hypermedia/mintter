@@ -1,15 +1,15 @@
-// Package hyper implements Mintter Hypermedia System.
+// Package hyper implements Seed Hypermedia System.
 package hyper
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/core"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
-	"mintter/backend/pkg/dqb"
-	"mintter/backend/pkg/must"
+	"seed/backend/core"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/ipfs"
+	"seed/backend/pkg/dqb"
+	"seed/backend/pkg/must"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -30,7 +30,7 @@ var (
 	ErrEntityNotFound = errors.New("entity not found")
 )
 
-// BlobType is a named type for Mintter Terra Blobs.
+// BlobType is a named type for Seed Terra Blobs.
 type BlobType string
 
 // Storage is an indexing blob storage.

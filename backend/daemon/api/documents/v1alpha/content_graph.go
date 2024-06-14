@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
+	documents "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"

@@ -2,8 +2,8 @@ package documents
 
 import (
 	"context"
-	. "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/testutil"
+	. "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"

@@ -3,7 +3,7 @@
 package generated
 
 import (
-	"mintter/backend/graphql/internal/model"
+	"seed/backend/graphql/internal/model"
 )
 
 // Common interface for Lightning wallets. We support different types.

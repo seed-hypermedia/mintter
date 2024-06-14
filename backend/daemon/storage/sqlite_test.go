@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"mintter/backend/pkg/sqlitedbg"
 	"os"
+	"seed/backend/pkg/sqlitedbg"
 	"testing"
 
 	"github.com/stretchr/testify/require"

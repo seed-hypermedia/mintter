@@ -2,9 +2,9 @@ package storage
 
 import (
 	"context"
-	"mintter/backend/daemon/storage/dbext"
-	"mintter/backend/testutil"
 	"path/filepath"
+	"seed/backend/daemon/storage/dbext"
+	"seed/backend/testutil"
 	"testing"
 	"time"
 

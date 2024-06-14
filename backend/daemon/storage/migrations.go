@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/core"
 	"os"
 	"path/filepath"
+	"seed/backend/core"
 	"strconv"
 
 	"crawshaw.io/sqlite"
@@ -24,8 +24,8 @@ Current data dir layout:
 │  ├─ db.sqlite
 ├─ keys/
 │  ├─ libp2p_id_ed25519
-│  ├─ mintter_id_ed25519.pub
-├─ mintterd.conf
+│  ├─ seed_id_ed25519.pub
+├─ seed-daemon.conf
 ├─ VERSION
 
 When making changes to database schema or directory layout,
@@ -472,7 +472,7 @@ const (
 	dbDir   = "db"
 
 	devicePrivateKeyPath = keysDir + "/libp2p_id_ed25519"
-	accountKeyPath       = keysDir + "/mintter_id_ed25519.pub"
+	accountKeyPath       = keysDir + "/seed_id_ed25519.pub"
 
 	versionFilename = "VERSION"
 )
@@ -526,7 +526,7 @@ func (d *Dir) init() (currentVersion string, err error) {
 func (d *Dir) migrate(currentVersion string) error {
 	desiredVersion := migrations[len(migrations)-1].Version
 	if currentVersion > desiredVersion {
-		return fmt.Errorf("OLD VERSION: you are running an old version of Mintter: your data dir version is %q and it can't be downgraded to %q", currentVersion, desiredVersion)
+		return fmt.Errorf("OLD VERSION: you are running an old version of Seed: your data dir version is %q and it can't be downgraded to %q", currentVersion, desiredVersion)
 	}
 
 	// Running migrations if necessary.
@@ -543,7 +543,7 @@ func (d *Dir) migrate(currentVersion string) error {
 			return +1
 		})
 		if !ok {
-			return fmt.Errorf("BREAKING CHANGE: this version of Mintter is incompatible with your existing data: remove your data directory located in %q", d.path)
+			return fmt.Errorf("BREAKING CHANGE: this version of Seed is incompatible with your existing data: remove your data directory located in %q", d.path)
 		}
 
 		pending := migrations[idx+1:]

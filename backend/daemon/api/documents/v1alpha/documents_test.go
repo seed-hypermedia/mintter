@@ -2,15 +2,15 @@ package documents
 
 import (
 	"context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/pkg/future"
-	"mintter/backend/testutil"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	documents "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/pkg/future"
+	"seed/backend/testutil"
 	"testing"
 	"time"
 
@@ -964,7 +964,7 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	require.NoError(t, fut.Resolve(u.Identity))
 
 	srv := NewServer(fut.ReadOnly, db, nil, nil, "debug")
-	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	bs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 

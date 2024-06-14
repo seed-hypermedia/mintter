@@ -3,11 +3,11 @@ package storage
 import (
 	"bytes"
 	"io"
-	"mintter/backend/pkg/must"
-	"mintter/backend/pkg/sqlitedbg"
-	"mintter/backend/pkg/sqlitegen"
 	"os"
 	"path/filepath"
+	"seed/backend/pkg/must"
+	"seed/backend/pkg/sqlitedbg"
+	"seed/backend/pkg/sqlitegen"
 	"strings"
 	"testing"
 
@@ -26,7 +26,7 @@ func TestMigrateMatchesFreshSchema(t *testing.T) {
 	// the resulting snapshot must be manually copied into the testdata directory (removing the previous snapshot first).
 
 	tmpDir := t.TempDir()
-	err := copyDir("./testdata/mintter-test-db-snapshot", tmpDir)
+	err := copyDir("./testdata/seed-test-db-snapshot", tmpDir)
 	require.NoError(t, err)
 
 	oldDir, err := New(tmpDir, zap.NewNop())

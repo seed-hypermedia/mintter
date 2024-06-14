@@ -3,9 +3,9 @@ package mttnet
 import (
 	"context"
 	"fmt"
-	"mintter/backend/core"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"net"
+	"seed/backend/core"
+	p2p "seed/backend/genproto/p2p/v1alpha"
 	"sync"
 	"time"
 
@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// Client manages libp2p client connection for the Mintter Protocol.
+// Client manages libp2p client connection for the Hyper Media Protocol.
 // We're using gRPC on top of libp2p streams, and the Client manages connections
 // and provides RPC client instances for a given remote peer.
 // Users are responsible to call Close() for graceful shutdown.

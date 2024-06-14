@@ -4,9 +4,9 @@ package config
 import (
 	"flag"
 	"fmt"
-	"mintter/backend/ipfs"
 	"os"
 	"path/filepath"
+	"seed/backend/ipfs"
 	"strings"
 	"time"
 
@@ -233,7 +233,7 @@ func EnsureConfigFile(repoPath string) (filename string, err error) {
 		return "", err
 	}
 
-	filename = filepath.Join(repoPath, "mintterd.conf")
+	filename = filepath.Join(repoPath, "seed-daemon.conf")
 
 	_, err = os.Lstat(filename)
 	if err == nil {
@@ -241,7 +241,7 @@ func EnsureConfigFile(repoPath string) (filename string, err error) {
 	}
 
 	if os.IsNotExist(err) {
-		if err := os.WriteFile(filename, []byte(`# Config file for the mintterd program.
+		if err := os.WriteFile(filename, []byte(`# Config file for the seed-daemon program.
 # You can set any CLI flags here, one per line with a space between key and value.
 `), 0600); err != nil {
 			return "", err

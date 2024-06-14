@@ -3,7 +3,7 @@ package main
 
 import (
 	"flag"
-	"mintter/backend/cmd/relayd/relay"
+	"seed/backend/cmd/relayd/relay"
 
 	"github.com/burdiyan/go/mainutil"
 	logging "github.com/ipfs/go-log/v2"
@@ -17,7 +17,7 @@ func run() error {
 	ctx := mainutil.TrapSignals()
 
 	var (
-		log      = logging.Logger("mintter/relay")
+		log      = logging.Logger("seed/relay")
 		cfgPath  = flag.String("config", "", "json configuration file; empty uses the default configuration")
 		loglevel = flag.String("loglevel", "info", "defines the log level {DEBUG | INFO(default) | WARN | ERROR | DPANIC | PANIC | FATAL}")
 	)

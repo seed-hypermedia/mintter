@@ -33,7 +33,7 @@ type sqliteCollector struct {
 func newSQLiteCollector() *sqliteCollector {
 	return &sqliteCollector{
 		prepares: prometheus.NewDesc(
-			"mintter_sqlite_queries_total",
+			"seed_sqlite_queries_total",
 			"Total number of queries executed.",
 			nil,
 			nil,

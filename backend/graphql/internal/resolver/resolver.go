@@ -2,8 +2,8 @@ package resolver
 
 import (
 	"context"
-	"mintter/backend/lndhub"
-	wallet "mintter/backend/wallet/walletsql"
+	"seed/backend/lndhub"
+	wallet "seed/backend/wallet/walletsql"
 )
 
 // This file will not be regenerated automatically.

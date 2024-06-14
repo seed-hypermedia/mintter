@@ -1,9 +1,9 @@
-// Package graphql exposes a GraphQL API from the Mintter Daemon.
+// Package graphql exposes a GraphQL API from the Seed Daemon.
 package graphql
 
 import (
-	"mintter/backend/graphql/internal/generated"
-	"mintter/backend/graphql/internal/resolver"
+	"seed/backend/graphql/internal/generated"
+	"seed/backend/graphql/internal/resolver"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 )

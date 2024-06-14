@@ -69,8 +69,8 @@ Take a look around `.github/workflows` directory (especially `.github/workflows/
 
 To build the desktop app:
 
-1. Create a directory `plz-out/bin/backend` which is where Electron build system expects the `mintterd` binary to be.
-2. Build `mintterd` with `go build -o plz-out/bin/backend/mintterd-<llvm-platform-triple> ./backend/cmd/mintterd`.
+1. Create a directory `plz-out/bin/backend` which is where Electron build system expects the `seed-daemon` binary to be.
+2. Build `seed-daemon` with `go build -o plz-out/bin/backend/seed-daemon-<llvm-platform-triple> ./backend/cmd/seed-daemon`.
     - Make sure `CGO_ENABLED=1` env variable is set.
     - The `llvm-platform-triple` depends on the platform you're on. See the values we use in CI here: https://github.com/MintterHypermedia/mintter/blob/d7582fed90840eae953a191b779ef5285b9c21b1/.github/workflows/desktop-release.yml#L63-L79.
     - On Windows add `.exe` to the output path.

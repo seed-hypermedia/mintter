@@ -1,6 +1,6 @@
-# Mintter Daemon GraphQL API Implementation
+# Seed Daemon GraphQL API Implementation
 
-This package implement the GraphQL API exposed by the Mintter daemon.
+This package implement the GraphQL API exposed by the Seed daemon.
 
 Some of the code here is generated with [gqlgen](https://github.com/99designs/gqlgen).
 

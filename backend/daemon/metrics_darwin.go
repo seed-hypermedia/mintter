@@ -4,7 +4,7 @@
 package daemon
 
 import (
-	"mintter/backend/pkg/darwinmetrics"
+	"seed/backend/pkg/darwinmetrics"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"

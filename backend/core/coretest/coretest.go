@@ -2,7 +2,7 @@
 package coretest
 
 import (
-	"mintter/backend/core"
+	"seed/backend/core"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 )

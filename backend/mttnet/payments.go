@@ -2,7 +2,7 @@ package mttnet
 
 import (
 	"context"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
+	p2p "seed/backend/genproto/p2p/v1alpha"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

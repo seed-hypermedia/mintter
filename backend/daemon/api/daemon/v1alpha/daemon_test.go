@@ -2,14 +2,14 @@ package daemon
 
 import (
 	context "context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	"mintter/backend/daemon/daemontest"
-	"mintter/backend/daemon/storage"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/testutil"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	"seed/backend/daemon/daemontest"
+	"seed/backend/daemon/storage"
+	daemon "seed/backend/genproto/daemon/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -92,7 +92,7 @@ func newTestServer(t *testing.T, name string) *Server {
 	repo := daemontest.MakeTestRepo(t, u)
 	db := storage.MakeTestDB(t)
 	wallet := new(mockedWallet)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 
 	return NewServer(repo, blobs, wallet, nil)
 }
@@ -100,6 +100,6 @@ func newTestServer(t *testing.T, name string) *Server {
 type mockedWallet struct {
 }
 
-func (w *mockedWallet) ConfigureMintterLNDHub(context.Context, core.KeyPair) error {
+func (w *mockedWallet) ConfigureSeedLNDHub(context.Context, core.KeyPair) error {
 	return nil
 }

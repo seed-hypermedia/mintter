@@ -2,16 +2,16 @@ package mttnet
 
 import (
 	"context"
-	"mintter/backend/config"
-	"mintter/backend/core/coretest"
-	accounts "mintter/backend/daemon/api/accounts/v1alpha"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/must"
+	"seed/backend/config"
+	"seed/backend/core/coretest"
+	accounts "seed/backend/daemon/api/accounts/v1alpha"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/pkg/future"
+	"seed/backend/pkg/must"
 	"testing"
 	"time"
 
@@ -43,7 +43,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 
 	db := storage.MakeTestDB(t)
 
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
@@ -52,7 +52,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	// cause major issues.
 	require.NoError(t, accounts.UpdateProfile(context.Background(), u.Identity, blobs, &accounts.Profile{
 		Alias: name,
-		Bio:   "Test Mintter user",
+		Bio:   "Test Seed user",
 	}))
 
 	cfg := config.Default().P2P

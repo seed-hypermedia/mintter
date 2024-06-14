@@ -3,7 +3,7 @@ package walletsql
 import (
 	"errors"
 	"fmt"
-	"mintter/backend/lndhub/lndhubsql"
+	"seed/backend/lndhub/lndhubsql"
 	"strings"
 
 	"crawshaw.io/sqlite"

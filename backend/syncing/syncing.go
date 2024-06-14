@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mintter/backend/config"
-	"mintter/backend/core"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/dqb"
+	"seed/backend/config"
+	"seed/backend/core"
+	p2p "seed/backend/genproto/p2p/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/mttnet"
+	"seed/backend/pkg/dqb"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -33,42 +33,42 @@ import (
 // TODO(burdiyan): refactor this to unify group syncing and normal periodic syncing.
 var (
 	MSyncingWantedBlobs = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "mintter_syncing_wanted_blobs",
+		Name: "seed_syncing_wanted_blobs",
 		Help: "Number of blobs we want to sync at this time. Same blob may be counted multiple times if it's wanted from multiple peers.",
 	}, []string{"package"})
 
 	mWantedBlobsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mintter_syncing_wanted_blobs_total",
+		Name: "seed_syncing_wanted_blobs_total",
 		Help: "The total number of blobs we wanted to sync from a single peer sync. Same blob may be counted multiple times if it's wanted from multiple peers.",
 	})
 
 	mSyncsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mintter_syncing_periodic_operations_total",
+		Name: "seed_syncing_periodic_operations_total",
 		Help: "The total number of periodic sync operations performed with peers (groups don't count).",
 	})
 
 	mSyncsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_syncing_operations_in_flight",
+		Name: "seed_syncing_operations_in_flight",
 		Help: "The number of periodic sync operations currently in-flight with peers (groups don't count).",
 	})
 
 	mSyncErrorsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mintter_syncing_periodic_errors_total",
+		Name: "seed_syncing_periodic_errors_total",
 		Help: "The total number of errors encountered during periodic sync operations with peers (groups don't count).",
 	})
 
 	mWorkers = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_syncing_workers",
+		Name: "seed_syncing_workers",
 		Help: "The number of active syncing workers.",
 	})
 
 	mConnectsInFlight = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "mintter_syncing_connects_in_flight",
+		Name: "seed_syncing_connects_in_flight",
 		Help: "Number of connection attempts in progress.",
 	})
 
 	mSyncingTickDuration = promauto.NewSummary(prometheus.SummaryOpts{
-		Name: "mintter_syncing_worker_tick_duration_seconds",
+		Name: "seed_syncing_worker_tick_duration_seconds",
 		Help: "Duration of a single worker tick.",
 		Objectives: map[float64]float64{
 			0.5:  0.05,
@@ -85,7 +85,7 @@ func init() {
 	MSyncingWantedBlobs.WithLabelValues("groups").Set(0)
 }
 
-// netDialFunc is a function of the Mintter P2P node that creates an instance
+// netDialFunc is a function of the Seed P2P node that creates an instance
 // of a P2P RPC client for a given remote Device ID.
 type netDialFunc func(context.Context, peer.ID) (p2p.P2PClient, error)
 
@@ -95,7 +95,7 @@ type bitswap interface {
 	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.AddrInfo
 }
 
-// Service manages syncing of Mintter objects among peers.
+// Service manages syncing of Seed objects among peers.
 type Service struct {
 	cfg     config.Syncing
 	log     *zap.Logger

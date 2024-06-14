@@ -1,6 +1,6 @@
-// Package crdt provides Mintter-specific CRDTs. These are not meant to be general-purpose CRDTs,
+// Package crdt provides Seed-specific CRDTs. These are not meant to be general-purpose CRDTs,
 // but still are generic enough and could be extended for some other use cases. In case of tradeoffs,
-// we favor Mintter-specific use cases.
+// we favor Seed-specific use cases.
 package crdt
 
 import "fmt"

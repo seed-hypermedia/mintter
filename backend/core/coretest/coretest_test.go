@@ -1,7 +1,7 @@
 package coretest
 
 import (
-	"mintter/backend/core"
+	"seed/backend/core"
 	"testing"
 
 	"github.com/libp2p/go-libp2p/core/peer"

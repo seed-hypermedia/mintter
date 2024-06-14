@@ -2,9 +2,9 @@ package walletsql
 
 import (
 	"io/ioutil"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/pkg/sqlitegen"
-	"mintter/backend/pkg/sqlitegen/qb"
+	"seed/backend/daemon/storage"
+	"seed/backend/pkg/sqlitegen"
+	"seed/backend/pkg/sqlitegen/qb"
 )
 
 var _ = generateQueries

@@ -3,11 +3,11 @@ package groups
 import (
 	"context"
 	"fmt"
-	groups "mintter/backend/genproto/groups/v1alpha"
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/pkg/dqb"
-	"mintter/backend/pkg/errutil"
+	groups "seed/backend/genproto/groups/v1alpha"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/pkg/dqb"
+	"seed/backend/pkg/errutil"
 	"time"
 
 	"crawshaw.io/sqlite"

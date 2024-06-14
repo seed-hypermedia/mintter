@@ -1,6 +1,6 @@
 package sites
 
-import "mintter/backend/config"
+import "seed/backend/config"
 
 // DefaultConfig for sites.
 func DefaultConfig() config.Config {

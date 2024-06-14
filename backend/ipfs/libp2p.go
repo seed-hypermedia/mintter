@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"mintter/backend/pkg/cleanup"
-	"mintter/backend/pkg/must"
+	"seed/backend/pkg/cleanup"
+	"seed/backend/pkg/must"
 
 	"github.com/ipfs/boxo/ipns"
 	"github.com/ipfs/go-datastore"
@@ -266,8 +266,8 @@ func (n *Libp2p) Close() error {
 	return n.clean.Close()
 }
 
-// buildResourceManager returns a resource manager given two sets of hard limits. for each protocol listed in ourProtocols (mintter protocols)
-// we apply the maximum limits of ourStreamsHardLimit. For their protocols (non mintter protocols) we apply the maximum limits of theirStreamsHardLimit
+// buildResourceManager returns a resource manager given two sets of hard limits. for each protocol listed in ourProtocols (seed protocols)
+// we apply the maximum limits of ourStreamsHardLimit. For their protocols (non seed protocols) we apply the maximum limits of theirStreamsHardLimit
 func buildResourceManager(ourProtocolLimits map[protocol.ID]rcmgr.LimitVal, theirProtocolLimits map[protocol.ID]rcmgr.LimitVal) (network.ResourceManager, error) {
 	scalingLimits := rcmgr.DefaultLimits
 

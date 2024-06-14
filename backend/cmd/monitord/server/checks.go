@@ -4,7 +4,7 @@ package server
 import (
 	"context"
 	"fmt"
-	groups "mintter/backend/daemon/api/groups/v1alpha"
+	groups "seed/backend/daemon/api/groups/v1alpha"
 	"time"
 
 	peer "github.com/libp2p/go-libp2p/core/peer"
@@ -55,7 +55,7 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 	return pingAvg, nil
 }
 
-func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
+func (s *Srv) checkSeedAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
 	resp, err := groups.GetSiteInfoHTTP(ctx, nil, hostname)
 	if err != nil {
 		return info, err

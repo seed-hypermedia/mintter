@@ -2,11 +2,11 @@ package activity
 
 import (
 	context "context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	"mintter/backend/daemon/storage"
-	activity "mintter/backend/genproto/activity/v1alpha"
-	"mintter/backend/pkg/future"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	"seed/backend/daemon/storage"
+	activity "seed/backend/genproto/activity/v1alpha"
+	"seed/backend/pkg/future"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -32,7 +32,7 @@ func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 	//repo := daemontest.MakeTestRepo(t, u)
 	db := storage.MakeTestDB(t)
-	//blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	//blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 

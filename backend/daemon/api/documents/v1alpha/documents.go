@@ -7,23 +7,23 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
-	"mintter/backend/core"
-	"mintter/backend/daemon/api/documents/v1alpha/docmodel"
-	groups "mintter/backend/daemon/api/groups/v1alpha"
-	"mintter/backend/daemon/apiutil"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	groups_proto "mintter/backend/genproto/groups/v1alpha"
-	"mintter/backend/hlc"
-	"mintter/backend/mttnet"
+	"seed/backend/core"
+	"seed/backend/daemon/api/documents/v1alpha/docmodel"
+	groups "seed/backend/daemon/api/groups/v1alpha"
+	"seed/backend/daemon/apiutil"
+	documents "seed/backend/genproto/documents/v1alpha"
+	groups_proto "seed/backend/genproto/groups/v1alpha"
+	"seed/backend/hlc"
+	"seed/backend/mttnet"
 	"strings"
 	"time"
 
-	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/logging"
-	"mintter/backend/pkg/colx"
-	"mintter/backend/pkg/dqb"
-	"mintter/backend/pkg/future"
+	"seed/backend/hyper"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/logging"
+	"seed/backend/pkg/colx"
+	"seed/backend/pkg/dqb"
+	"seed/backend/pkg/future"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -36,7 +36,7 @@ import (
 )
 
 // Discoverer is a subset of the syncing service that
-// is able to discover given Mintter objects, optionally specifying versions.
+// is able to discover given Hyper media objects, optionally specifying versions.
 type Discoverer interface {
 	DiscoverObject(context.Context, hyper.EntityID, hyper.Version) error
 	// TODO: this is here temporarily. Eventually we need to provide from the vcs
@@ -66,7 +66,7 @@ func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discov
 		db:       db,
 		me:       me,
 		disc:     disc,
-		blobs:    hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
+		blobs:    hyper.NewStorage(db, logging.New("seed/hyper", LogLevel)),
 		gwClient: gwClient,
 	}
 

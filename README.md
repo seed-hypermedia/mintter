@@ -1,14 +1,14 @@
-# Mintter
+# Seed
 
-Mintter is a decentralized knowledge collaboration application for open
+Seed is a decentralized knowledge collaboration application for open
 communities powered by a knowledge graph.
 
 You can read more about the product and why we are here on our website:
-https://mintter.com.
+https://seedhypermedia.com.
 
 ### Hypermedia Protocol
 
-Mintter supports the new [Hypermedia Web Protocol](https://hyper.media/). This
+Seed supports the new [Hypermedia Web Protocol](https://hyper.media/). This
 open protocol supports secure identities, version control, semantic documents, multimedia,
 and groups/organizations.
 
@@ -16,13 +16,13 @@ and groups/organizations.
 
 This repo includes:
 
-1. Mintter Desktop - app for writing, reading, and saving Hypermedia content
-2. Mintter Web Server - public web experience, a read-only portal of the Hypermedia network
+1. Seed Desktop - app for writing, reading, and saving Hypermedia content
+2. Seed Web Server - public web experience, a read-only portal of the Hypermedia network
 
 ## ⚠️ Stability
 
 This is alpha-quality software. Have a copy of anything valuable you put into
-Mintter.
+Seed.
 
 ## Dev Environment
 
@@ -46,7 +46,7 @@ installed.
 To run the dev build with the production network, use the following command:
 
 ```
-MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
+SEED_P2P_TESTNET_NAME="" ./dev run-desktop
 ```
 
 ## Frontend Testing
@@ -102,12 +102,12 @@ you need to redeploy the site from scratch. Note that old content will be availa
 the owner of the site is synced with the site at the moment of the replacement. On the server:
 
 ```shell
-docker stop minttersite
+docker stop seed-site
 mv ~/.mtt-site ~/.mtt-site.bak
-docker start minttersite
+docker start seed-site
 ```
-Get the new secret link from the command line after starting the `minttersite` container
-Now in the Mintter App, the Owner of the site can go to the group he/she wants to (re)deploy 
+Get the new secret link from the command line after starting the `seed-site` container
+Now in the Seed App, the Owner of the site can go to the group he/she wants to (re)deploy 
 and click on the three dots, and publish group to site. Enter the new secret and the old content
 should be now available in the new site. If there is no new content (A completely new group), then 
 the site will be empty ready to accept documents

@@ -67,7 +67,7 @@ jobs:
         with:
           push: true
           file: frontend/apps/site/Dockerfile
-          tags: mintter/sitegw:main
+          tags: seedhypermedia/gateway:main
           build-args: |
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             SITE_SENTRY_DSN=${{ secrets.SITE_SENTRY_DSN }}
@@ -77,7 +77,7 @@ jobs:
         with:
           push: true
           file: frontend/apps/site/Dockerfile
-          tags: mintter/sitegw:rc
+          tags: seedhypermedia/gateway:rc
           build-args: |
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             SITE_SENTRY_DSN=${{ secrets.SITE_SENTRY_DSN }}
@@ -87,12 +87,12 @@ jobs:
         with:
           push: true
           file: frontend/apps/site/Dockerfile
-          tags: mintter/sitegw:latest
+          tags: seedhypermedia/gateway:latest
           build-args: |
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             SITE_SENTRY_DSN=${{ secrets.SITE_SENTRY_DSN }}
 
-      - name: Build and push edge mintter-site
+      - name: Build and push edge seed-site
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v4
         with:
@@ -101,9 +101,9 @@ jobs:
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
             DATE=${{ env.COMMIT_DATE }}
-          file: backend/cmd/mintter-site/Dockerfile
-          tags: mintter/mintter-site:main
-      - name: Build and push rc mintter-site
+          file: backend/cmd/seed-site/Dockerfile
+          tags: seedhypermedia/site:main
+      - name: Build and push rc seed-site
         if: (startsWith(github.ref, 'refs/tags/') && (steps.release-candidate-tag.outputs.match || steps.release-tag.outputs.match)) || startsWith(github.ref, 'refs/heads/release/')
         uses: docker/build-push-action@v4
         with:
@@ -112,9 +112,9 @@ jobs:
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
             DATE=${{ env.COMMIT_DATE }}
-          file: backend/cmd/mintter-site/Dockerfile
-          tags: mintter/mintter-site:rc
-      - name: Build and push stable mintter-site
+          file: backend/cmd/seed-site/Dockerfile
+          tags: seedhypermedia/site:rc
+      - name: Build and push stable seed-site
         if: startsWith(github.ref, 'refs/tags/') && steps.release-tag.outputs.match
         uses: docker/build-push-action@v4
         with:
@@ -123,8 +123,8 @@ jobs:
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
             DATE=${{ env.COMMIT_DATE }}
-          file: backend/cmd/mintter-site/Dockerfile
-          tags: mintter/mintter-site:latest
+          file: backend/cmd/seed-site/Dockerfile
+          tags: seedhypermedia/site:latest
 
       - name: Build and push edge monitord
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -132,21 +132,21 @@ jobs:
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
-          tags: mintter/monitord:main
+          tags: seedhypermedia/monitord:main
       - name: Build and push rc monitord
         if: (startsWith(github.ref, 'refs/tags/') && (steps.release-candidate-tag.outputs.match || steps.release-tag.outputs.match)) || startsWith(github.ref, 'refs/heads/release/')
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
-          tags: mintter/monitord:rc
+          tags: seedhypermedia/monitord:rc
       - name: Build and push stable monitord
         if: startsWith(github.ref, 'refs/tags/') && steps.release-tag.outputs.match
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
-          tags: mintter/monitord:latest
+          tags: seedhypermedia/monitord:latest
 
       - name: Build and push edge relay
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -154,18 +154,18 @@ jobs:
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
-          tags: mintter/relayd:main
+          tags: seedhypermedia/relayd:main
       - name: Build and push rc relay
         if: (startsWith(github.ref, 'refs/tags/') && (steps.release-candidate-tag.outputs.match || steps.release-tag.outputs.match)) || startsWith(github.ref, 'refs/heads/release/')
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
-          tags: mintter/relayd:rc
+          tags: seedhypermedia/relayd:rc
       - name: Build and push stable relay
         if: startsWith(github.ref, 'refs/tags/') && steps.release-tag.outputs.match
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
-          tags: mintter/relayd:latest
+          tags: seedhypermedia/relayd:latest

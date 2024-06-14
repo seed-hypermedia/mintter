@@ -1,6 +1,6 @@
 [project]
 channels = ["conda-forge"]
-name = "mintter"
+name = "seed"
 platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
 version = "0.0.0"
 

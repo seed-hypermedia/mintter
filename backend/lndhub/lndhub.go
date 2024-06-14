@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
-	"mintter/backend/core"
-	lndhub "mintter/backend/lndhub/lndhubsql"
-	"mintter/backend/pkg/future"
 	"net/http"
+	"seed/backend/core"
+	lndhub "seed/backend/lndhub/lndhubsql"
+	"seed/backend/pkg/future"
 	"strconv"
 	"strings"
 	"time"
@@ -36,8 +36,8 @@ const (
 	getPaidInvoicesRoute     = "/v2/invoices/outgoing"
 	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
-	// SigninMessage is the fixed message to sign. The server must have the same message.
-	SigninMessage = "sign in into mintter lndhub"
+	// SigningMessage is the fixed message to sign. The server must have the same message.
+	SigningMessage = "sign in into seed lndhub"
 )
 
 type httpRequest struct {
@@ -147,9 +147,9 @@ func (c *Client) GetLndaddressDomain() string {
 }
 
 // Create creates an account or changes the nickname on already created one. If the login is a CID, then the password must
-// be the signature of the message 'sign in into mintter lndhub' and the token the pubkey whose private counterpart
+// be the signature of the message 'sign in into seed lndhub' and the token the pubkey whose private counterpart
 // was used to sign the password. If login is not a CID, then there is no need for the token and password can be
-// anything. Nickname can be anything in both cases as long as it's unique across all mintter lndhub users (it will
+// anything. Nickname can be anything in both cases as long as it's unique across all seed lndhub users (it will
 // fail otherwise).
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
@@ -442,7 +442,7 @@ func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string
 
 // RequestRemoteInvoice request a remote peer via lndhub an invoice of amount
 // sats (in satoshis). The remote user can be either a lnaddres user or a
-// mintter account ID. We accept a short memo or description of purpose of
+// seed account ID. We accept a short memo or description of purpose of
 // payment, to attach along with the invoice. The generated invoice will have
 // an expirationtime of 24 hours and a random preimage.
 func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, amountSats int64, memo string) (string, error) {

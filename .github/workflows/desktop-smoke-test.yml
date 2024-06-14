@@ -44,7 +44,7 @@ jobs:
         if: matrix.config.os != 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }} ./backend/cmd/seed-daemon
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
@@ -53,7 +53,7 @@ jobs:
         if: matrix.config.os == 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }}.exe ./backend/cmd/seed-daemon
         env:
           GOOS: "windows"
           GOARCH: ${{ matrix.config.goarch }}
@@ -81,7 +81,7 @@ jobs:
           VITE_DESKTOP_P2P_PORT: "58000"
           VITE_DESKTOP_HTTP_PORT: "58001"
           VITE_DESKTOP_GRPC_PORT: "58002"
-          VITE_DESKTOP_APPDATA: "Mintter"
+          VITE_DESKTOP_APPDATA: "Seed"
           VITE_DESKTOP_HOSTNAME: "http://localhost"
           VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
 
@@ -100,7 +100,7 @@ jobs:
           VITE_DESKTOP_P2P_PORT: "58000"
           VITE_DESKTOP_HTTP_PORT: "58001"
           VITE_DESKTOP_GRPC_PORT: "58002"
-          VITE_DESKTOP_APPDATA: "Mintter"
+          VITE_DESKTOP_APPDATA: "Seed"
           VITE_DESKTOP_HOSTNAME: "http://localhost"
           VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
 

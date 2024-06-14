@@ -1,7 +1,7 @@
 package example
 
 import (
-	"mintter/backend/pkg/sqlitegen/example/schema"
+	"seed/backend/pkg/sqlitegen/example/schema"
 	"testing"
 
 	"github.com/stretchr/testify/require"

@@ -1,7 +1,7 @@
 filegroup(
     name = "defs",
     srcs = [
-        "mintter.build_defs",
+        "seed.build_defs",
     ],
     visibility = ["PUBLIC"],
 )

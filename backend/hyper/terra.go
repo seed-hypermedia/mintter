@@ -2,8 +2,8 @@ package hyper
 
 import (
 	"fmt"
-	"mintter/backend/core"
-	"mintter/backend/hlc"
+	"seed/backend/core"
+	"seed/backend/hlc"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -122,7 +122,7 @@ const (
 	ActionUpdate = "Update"
 )
 
-// Change for a Mintter mutable Entity.
+// Change for a Seed mutable Entity.
 type Change struct {
 	// Type is always the same (see constants).
 	Type BlobType `refmt:"@type"`

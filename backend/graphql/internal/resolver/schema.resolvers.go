@@ -7,9 +7,9 @@ package resolver
 import (
 	"context"
 	"fmt"
-	"mintter/backend/graphql/internal/generated"
-	"mintter/backend/graphql/internal/model"
-	"mintter/backend/lndhub"
+	"seed/backend/graphql/internal/generated"
+	"seed/backend/graphql/internal/model"
+	"seed/backend/lndhub"
 	"strings"
 	"time"
 )
@@ -123,14 +123,13 @@ func (r *mutationResolver) ImportWallet(ctx context.Context, input generated.Imp
 			IsDefault:   defaultWallet.ID == lndhubWallet.ID,
 		},
 	}, nil
-
 }
 
 // RequestInvoice is the resolver for the requestInvoice field.
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
 	lnaddress := strings.Split(input.User, "@")
-	if len(lnaddress) == 2 && !strings.Contains(lnaddress[1], "mintter") {
-		return nil, fmt.Errorf("currently only supported mintter lndaddress")
+	if len(lnaddress) == 2 && !strings.Contains(lnaddress[1], "seed") {
+		return nil, fmt.Errorf("currently only supported seed lndaddress")
 	}
 	payReq, err := r.svc.RequestRemoteInvoice(ctx, lnaddress[0], int64(input.AmountSats), input.Memo)
 	if err != nil {

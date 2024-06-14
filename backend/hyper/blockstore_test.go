@@ -3,10 +3,10 @@ package hyper
 import (
 	"context"
 	"fmt"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
-	"mintter/backend/pkg/must"
+	"seed/backend/daemon/storage"
+	"seed/backend/hyper/hypersql"
+	"seed/backend/ipfs"
+	"seed/backend/pkg/must"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"

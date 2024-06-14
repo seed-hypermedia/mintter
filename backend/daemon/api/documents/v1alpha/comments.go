@@ -3,11 +3,11 @@ package documents
 import (
 	"context"
 	"fmt"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hlc"
-	"mintter/backend/hyper"
-	"mintter/backend/pkg/errutil"
 	"net/url"
+	documents "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/hlc"
+	"seed/backend/hyper"
+	"seed/backend/pkg/errutil"
 	"strings"
 
 	"crawshaw.io/sqlite"

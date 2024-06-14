@@ -2,15 +2,15 @@ package docmodel
 
 import (
 	"context"
-	"mintter/backend/core"
-	"mintter/backend/core/coretest"
-	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/daemon/storage"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hlc"
-	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	"mintter/backend/pkg/must"
+	"seed/backend/core"
+	"seed/backend/core/coretest"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/storage"
+	documents "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/hlc"
+	"seed/backend/hyper"
+	"seed/backend/logging"
+	"seed/backend/pkg/must"
 	"testing"
 	"time"
 
@@ -21,7 +21,7 @@ import (
 func TestDocument_IgnoreRedundantReplaces(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	ctx := context.Background()
 
 	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
@@ -58,7 +58,7 @@ func TestDocument_IgnoreRedundantReplaces(t *testing.T) {
 func TestDocument_LoadingDrafts(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	ctx := context.Background()
 
 	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
@@ -77,7 +77,7 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 func TestDocument_DeleteTurnaround(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 
 	require.NoError(t, dm.MoveBlock("b1", "", ""))
@@ -125,7 +125,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 func TestDocument_Cleanup(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 
 	require.NoError(t, dm.MoveBlock("b1", "", ""))
@@ -207,7 +207,7 @@ func TestDocument_Cleanup(t *testing.T) {
 func TestDocumentUpdatePublished(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
-	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 	ctx := context.Background()
 	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 

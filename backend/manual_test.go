@@ -2,10 +2,10 @@ package backend
 
 import (
 	"context"
-	"mintter/backend/daemon/storage"
-	"mintter/backend/hyper"
-	"mintter/backend/pkg/must"
 	"os"
+	"seed/backend/daemon/storage"
+	"seed/backend/hyper"
+	"seed/backend/pkg/must"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -18,16 +18,16 @@ func TestDBMigrateManual(t *testing.T) {
 	// Run it from the command line as:
 	//
 	// ```
-	// MINTTER_MANUAL_DB_MIGRATE_TEST=1 go test -run 'TestDBMigrateManual' ./backend -count=1 -v
+	// SEED_MANUAL_DB_MIGRATE_TEST=1 go test -run 'TestDBMigrateManual' ./backend -count=1 -v
 	// ```
 	//
-	// Before running the test duplicate your entire production data directory to /tmp/mintter-db-migrate-test.
-	if os.Getenv("MINTTER_MANUAL_DB_MIGRATE_TEST") == "" {
+	// Before running the test duplicate your entire production data directory to /tmp/seed-db-migrate-test.
+	if os.Getenv("SEED_MANUAL_DB_MIGRATE_TEST") == "" {
 		t.SkipNow()
 		return
 	}
 
-	dir, err := storage.InitRepo("/tmp/mintter-db-migrate-test", nil, "debug")
+	dir, err := storage.InitRepo("/tmp/seed-db-migrate-test", nil, "debug")
 	require.NoError(t, err)
 
 	_ = dir

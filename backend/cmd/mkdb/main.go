@@ -7,11 +7,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/config"
-	"mintter/backend/core/coretest"
-	"mintter/backend/daemon"
-	"mintter/backend/daemon/storage"
 	"os"
+	"seed/backend/config"
+	"seed/backend/core/coretest"
+	"seed/backend/daemon"
+	"seed/backend/daemon/storage"
 
 	"github.com/burdiyan/go/mainutil"
 )
@@ -29,7 +29,7 @@ func run() error {
 	cfg := config.Default()
 	cfg.P2P.NoRelay = true
 	cfg.P2P.BootstrapPeers = nil
-	cfg.Base.DataDir = "/tmp/mintter-test-db-snapshot"
+	cfg.Base.DataDir = "/tmp/seed-test-db-snapshot"
 
 	if err := os.RemoveAll(cfg.Base.DataDir); err != nil {
 		return err
