@@ -1,4 +1,4 @@
-import {Button, SizableText, XStack, YStack} from '@mintter/ui'
+import {Button, SizableText, XStack, YStack} from '@shm/ui'
 import {useState} from 'react'
 import {useHasDevTools} from '../models/experiments'
 

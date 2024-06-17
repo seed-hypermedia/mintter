@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Profile} from '@mintter/shared'
+import {Profile} from '@shm/shared'
 import {
   Button,
   DialogTitle,
@@ -8,7 +8,7 @@ import {
   Spinner,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useEffect} from 'react'
 import {Control, useController, useForm} from 'react-hook-form'
 import {z} from 'zod'

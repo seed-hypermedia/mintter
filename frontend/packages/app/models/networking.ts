@@ -1,6 +1,6 @@
 import {ConnectError} from '@connectrpc/connect'
-import appError from '@mintter/app/errors'
-import {ConnectionStatus, GRPCClient, PeerInfo} from '@mintter/shared'
+import appError from '@shm/app/errors'
+import {ConnectionStatus, GRPCClient, PeerInfo} from '@shm/shared'
 import {
   FetchQueryOptions,
   UseQueryOptions,

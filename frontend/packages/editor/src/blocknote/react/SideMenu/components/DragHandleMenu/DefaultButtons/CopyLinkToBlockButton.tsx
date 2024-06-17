@@ -1,7 +1,7 @@
 import {BlockSchema} from '@/blocknote/core'
 
-import {usePublicationContentContext} from '@mintter/shared'
-import {Link, XStack} from '@mintter/ui'
+import {usePublicationContentContext} from '@shm/shared'
+import {Link, XStack} from '@shm/ui'
 import {DragHandleMenuProps} from '../DragHandleMenu'
 import {DragHandleMenuItem} from '../DragHandleMenuItem'
 

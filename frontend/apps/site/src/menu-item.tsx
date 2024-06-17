@@ -1,4 +1,4 @@
-import {SizableText} from '@mintter/ui'
+import {SizableText} from '@shm/ui'
 import {ReactNode} from 'react'
 import {NextLink} from './next-link'
 

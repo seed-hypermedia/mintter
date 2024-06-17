@@ -1,4 +1,4 @@
-import {GRPCClient, Info} from '@mintter/shared'
+import {GRPCClient, Info} from '@shm/shared'
 import {
   FetchQueryOptions,
   UseMutationOptions,

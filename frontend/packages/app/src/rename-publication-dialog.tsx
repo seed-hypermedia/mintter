@@ -5,7 +5,7 @@ import {
   Form,
   Input,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import 'allotment/dist/style.css'
 import {useState} from 'react'
 import '../components/accounts-combobox.css'

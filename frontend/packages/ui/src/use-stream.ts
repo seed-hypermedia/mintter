@@ -1,5 +1,5 @@
-import type {StateStream} from '@mintter/shared/src/utils/stream'
-import {useEffect, useState, useSyncExternalStore} from 'react'
+import type { StateStream } from '@shm/shared/src/utils/stream'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 export function useStream<StreamValue>(
   stream?: StateStream<StreamValue> | undefined,

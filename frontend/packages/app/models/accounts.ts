@@ -1,9 +1,9 @@
 import {ConnectError} from '@connectrpc/connect'
-import {useGRPCClient, useQueryInvalidator} from '@mintter/app/app-context'
-import appError from '@mintter/app/errors'
-import {useDaemonInfo} from '@mintter/app/models/daemon'
-import {queryKeys} from '@mintter/app/models/query-keys'
-import {GRPCClient, HMAccount, Profile, hmAccount} from '@mintter/shared'
+import {useGRPCClient, useQueryInvalidator} from '@shm/app/app-context'
+import appError from '@shm/app/errors'
+import {useDaemonInfo} from '@shm/app/models/daemon'
+import {queryKeys} from '@shm/app/models/query-keys'
+import {GRPCClient, HMAccount, Profile, hmAccount} from '@shm/shared'
 import {
   UseMutationOptions,
   useMutation,

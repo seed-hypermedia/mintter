@@ -2,7 +2,7 @@ import {
   createHmId,
   groupVariantSchema,
   publicationVariantSchema,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {z} from 'zod'
 
 export const defaultRoute: NavRoute = {key: 'feed', tab: 'trusted'}

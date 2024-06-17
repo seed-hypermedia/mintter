@@ -12,7 +12,7 @@ import {
   publicationVariantSchema,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {queryClient} from 'src/client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'

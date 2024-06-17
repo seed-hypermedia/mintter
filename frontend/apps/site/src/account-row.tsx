@@ -1,5 +1,5 @@
-import {abbreviateCid} from '@mintter/shared'
-import {SizableText, UIAvatar, XStack} from '@mintter/ui'
+import {abbreviateCid} from '@shm/shared'
+import {SizableText, UIAvatar, XStack} from '@shm/ui'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
 import {cidURL} from './ipfs'

@@ -1,5 +1,5 @@
-import {Entity} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
-import {Button, ButtonProps, SizableText, XStack, YStack} from '@mintter/ui'
+import {Entity} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {Button, ButtonProps, SizableText, XStack, YStack} from '@shm/ui'
 import {Fragment, NodeSpec} from '@tiptap/pm/model'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {keymap} from 'prosemirror-keymap'

@@ -1,4 +1,4 @@
-import {YStack} from '@mintter/ui'
+import {YStack} from '@shm/ui'
 import {Placeholder} from '../components/placeholder-box'
 
 export function DocumentPlaceholder() {

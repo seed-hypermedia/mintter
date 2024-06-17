@@ -1,5 +1,5 @@
-import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@mintter/shared'
-import {Button, Paragraph, SizableText} from '@mintter/ui'
+import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@shm/shared'
+import {Button, Paragraph, SizableText} from '@shm/ui'
 import Link from 'next/link'
 import {ErrorPage} from 'src/error-page'
 

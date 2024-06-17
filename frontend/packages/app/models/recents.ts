@@ -1,4 +1,4 @@
-import {trpc} from '@mintter/desktop/src/trpc'
+import {trpc} from '@shm/desktop/src/trpc'
 import {useQueryInvalidator} from '../app-context'
 import {useNavRoute} from '../utils/navigation'
 import {getRecentsRouteEntityUrl} from '../utils/routes'

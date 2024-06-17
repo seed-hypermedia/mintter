@@ -1,4 +1,4 @@
-import {Button, Share, SizableText, XStack} from '@mintter/ui'
+import {Button, Share, SizableText, XStack} from '@shm/ui'
 
 export function OpenInAppLink({url}: {url: string}) {
   return (

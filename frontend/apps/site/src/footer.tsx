@@ -1,4 +1,4 @@
-import {SizableText, XStack, YStack} from '@mintter/ui'
+import {SizableText, XStack, YStack} from '@shm/ui'
 import {NextLink} from 'src/next-link'
 
 export default function Footer() {

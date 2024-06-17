@@ -1,10 +1,11 @@
 import {
   BlockNoteEditor,
+  BlockNoteView,
   defaultBlockSchema,
   HMBlockSchema,
-} from '@mintter/editor'
-import {BlockNoteView, useBlockNote} from '@mintter/editor'
-import {YStack} from '@mintter/ui'
+  useBlockNote,
+} from '@shm/editor'
+import {YStack} from '@shm/ui'
 
 export default function BlockNoteDemo() {
   // Creates a new editor instance.

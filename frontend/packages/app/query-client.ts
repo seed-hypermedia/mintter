@@ -1,6 +1,6 @@
 import {JsonValue} from '@bufbuild/protobuf'
-import {AppIPC} from '@mintter/app/app-ipc'
-import {copyTextToClipboard, toast} from '@mintter/ui'
+import {AppIPC} from '@shm/app/app-ipc'
+import {copyTextToClipboard, toast} from '@shm/ui'
 import {
   QueryCache,
   QueryClient,

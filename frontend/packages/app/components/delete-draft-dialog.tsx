@@ -1,5 +1,5 @@
-import {useDeleteDraft} from '@mintter/app/models/documents'
-import {AlertDialog, Button, XStack, YStack} from '@mintter/ui'
+import {useDeleteDraft} from '@shm/app/models/documents'
+import {AlertDialog, Button, XStack, YStack} from '@shm/ui'
 import {useAppDialog} from './dialog'
 
 export function useDeleteDraftDialog() {

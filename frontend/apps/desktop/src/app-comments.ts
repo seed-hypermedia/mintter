@@ -1,4 +1,4 @@
-import {HMCommentDraft} from '@mintter/shared'
+import {HMCommentDraft} from '@shm/shared'
 import z from 'zod'
 import {commentDraftStore} from './app-store'
 import {t} from './app-trpc'

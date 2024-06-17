@@ -1,10 +1,10 @@
-import {AppErrorPage} from '@mintter/app/components/app-error'
-import {CitationsProvider} from '@mintter/app/components/citations-context'
-import Footer, {FooterButton} from '@mintter/app/components/footer'
-import {useEntityMentions} from '@mintter/app/models/content-graph'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {EntityVersionsAccessory} from '@mintter/desktop/src/changes-list'
+import {AppErrorPage} from '@shm/app/components/app-error'
+import {CitationsProvider} from '@shm/app/components/citations-context'
+import Footer, {FooterButton} from '@shm/app/components/footer'
+import {useEntityMentions} from '@shm/app/models/content-graph'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {EntityVersionsAccessory} from '@shm/desktop/src/changes-list'
 import {
   Publication,
   PublicationContent,
@@ -14,7 +14,7 @@ import {
   pluralS,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   BlockQuote,
   Button,
@@ -23,7 +23,7 @@ import {
   Text,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
 import {ReactNode, useCallback, useEffect, useRef} from 'react'

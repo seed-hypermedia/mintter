@@ -1,8 +1,4 @@
-import {
-  API_GRAPHQL_ENDPOINT,
-  LIGHTNING_API_URL,
-  Mutation,
-} from '@mintter/shared'
+import {API_GRAPHQL_ENDPOINT, LIGHTNING_API_URL, Mutation} from '@shm/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import request, {gql} from 'graphql-request'
 import {useEffect} from 'react'

@@ -1,5 +1,5 @@
-import {NavRoute, getRecentsRouteEntityUrl} from '@mintter/app/utils/routes'
-import {PublicationVariant, getPublicationVariant} from '@mintter/shared'
+import {NavRoute, getRecentsRouteEntityUrl} from '@shm/app/utils/routes'
+import {PublicationVariant, getPublicationVariant} from '@shm/shared'
 import {z} from 'zod'
 import {grpcClient} from './app-grpc'
 import {invalidateQueries} from './app-invalidation'

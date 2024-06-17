@@ -5,8 +5,8 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "paths": {
-      "@mintter/app/*": ["*", "frontend/packages/app/src/*"],
-      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"]
+      "@shm/app/*": ["*", "frontend/packages/app/src/*"],
+      "@shm/shared": ["*", "frontend/packages/shared/src/index.ts"]
     }
   },
   "references": []

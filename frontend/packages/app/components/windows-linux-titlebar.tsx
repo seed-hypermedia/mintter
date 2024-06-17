@@ -1,5 +1,5 @@
-import {useIPC, useWindowUtils} from '@mintter/app/app-context'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {useIPC, useWindowUtils} from '@shm/app/app-context'
+import {useNavigate} from '@shm/app/utils/useNavigate'
 import {
   AddSquare,
   Button,
@@ -21,7 +21,7 @@ import {
   TitlebarWrapper,
   XStack,
   YGroup,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {useNavRoute, useNavigationDispatch} from '../utils/navigation'

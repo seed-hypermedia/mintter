@@ -1,5 +1,5 @@
-import {API_FILE_URL} from '@mintter/shared'
-import {ResizeHandle, SizableText, XStack, useTheme} from '@mintter/ui'
+import {API_FILE_URL} from '@shm/shared'
+import {ResizeHandle, SizableText, XStack, useTheme} from '@shm/ui'
 import {useEffect, useState} from 'react'
 import {RiVideoAddLine} from 'react-icons/ri'
 import {

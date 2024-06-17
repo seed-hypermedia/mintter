@@ -6,8 +6,8 @@ import {
   UnpackedHypermediaId,
   getDocumentTitle,
   unpackHmId,
-} from '@mintter/shared'
-import {Button, Home, SizableText, XStack, YStack} from '@mintter/ui'
+} from '@shm/shared'
+import {Button, Home, SizableText, XStack, YStack} from '@shm/ui'
 import {
   Book,
   Contact,

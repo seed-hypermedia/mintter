@@ -12,7 +12,7 @@ import {
   pluralS,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   SideSection,
@@ -20,7 +20,7 @@ import {
   SizableText,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ArrowRight, ChevronDown, ChevronUp} from '@tamagui/lucide-icons'
 import {format} from 'date-fns'
 import {useRouter} from 'next/router'

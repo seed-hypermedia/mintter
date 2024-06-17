@@ -1,5 +1,5 @@
-import {useWindowUtils} from '@mintter/app/app-context'
-import {Button, Close, XStack, useTheme} from '@mintter/ui'
+import {useWindowUtils} from '@shm/app/app-context'
+import {Button, Close, XStack, useTheme} from '@shm/ui'
 
 export function CloseButton() {
   const {close} = useWindowUtils()

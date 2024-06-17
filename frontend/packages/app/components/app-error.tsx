@@ -1,11 +1,4 @@
-import {
-  Button,
-  Heading,
-  SizableText,
-  XStack,
-  YStack,
-  useStream,
-} from '@mintter/ui'
+import {Button, Heading, SizableText, XStack, YStack, useStream} from '@shm/ui'
 import {FallbackProps} from 'react-error-boundary'
 import {useSidebarContext} from '../src/sidebar-context'
 import {ErrorBar} from './error-bar'

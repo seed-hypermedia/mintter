@@ -1,5 +1,5 @@
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@mintter/ui'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@shm/ui'
 import {Fragment} from '@tiptap/pm/model'
 import {
   QuotedTweet,

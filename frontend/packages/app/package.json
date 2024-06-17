@@ -1,5 +1,5 @@
 {
-  "name": "@mintter/app",
+  "name": "@shm/app",
   "version": "0.1.0",
   "main": "index.ts",
   "private": true,
@@ -20,9 +20,9 @@
     "@hookform/resolvers": "3.3.1",
     "@juggle/resize-observer": "3.4.0",
     "@manuscripts/prosemirror-recreate-steps": "^0.1.4",
-    "@mintter/shared": "*",
-    "@mintter/ui": "*",
     "@radix-ui/react-dropdown-menu": "2.0.5",
+    "@shm/shared": "*",
+    "@shm/ui": "*",
     "@tamagui/lucide-icons": "1.90.2",
     "@tanstack/react-query": "4.33.0",
     "@tanstack/react-query-devtools": "4.33.0",
@@ -43,7 +43,7 @@
     "zod": "3.22.2"
   },
   "devDependencies": {
-    "@mintter/prettier": "*",
+    "@shm/prettier": "*",
     "@tamagui/vite-plugin": "1.90.2",
     "@types/node": "20.6.5",
     "@types/react": "18.2.21",

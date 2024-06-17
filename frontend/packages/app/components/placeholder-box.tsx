@@ -1,5 +1,4 @@
-import {XStack} from '@mintter/ui'
-import {SizeTokens} from '@mintter/ui'
+import {SizeTokens, XStack} from '@shm/ui'
 
 export const Placeholder = ({
   width = '100%',

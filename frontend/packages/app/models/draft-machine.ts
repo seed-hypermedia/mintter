@@ -1,4 +1,4 @@
-import {Document, HMDocument} from '@mintter/shared'
+import {Document, HMDocument} from '@shm/shared'
 import {createActorContext} from '@xstate/react'
 import {StateFrom, assign, createMachine} from 'xstate'
 import {BlocksMap, createBlocksMap} from './documents'

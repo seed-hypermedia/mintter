@@ -1,4 +1,4 @@
-import {Change, HTTP_PORT} from '@mintter/shared'
+import {Change, HTTP_PORT} from '@shm/shared'
 import {UseQueryOptions, useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient} from '../app-context'

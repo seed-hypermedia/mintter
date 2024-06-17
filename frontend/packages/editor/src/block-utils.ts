@@ -1,4 +1,4 @@
-import {HMBlockChildrenType} from '@mintter/shared'
+import {HMBlockChildrenType} from '@shm/shared'
 import {Node} from '@tiptap/pm/model'
 import {EditorView} from '@tiptap/pm/view'
 import {useEffect, useState} from 'react'

@@ -1,10 +1,7 @@
-import {useAppContext} from '@mintter/app/app-context'
-import {
-  isHttpUrl,
-  useHmIdToAppRouteResolver,
-} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {toast} from '@mintter/ui'
+import {useAppContext} from '@shm/app/app-context'
+import {isHttpUrl, useHmIdToAppRouteResolver} from '@shm/app/utils/navigation'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {toast} from '@shm/ui'
 import {useMemo} from 'react'
 
 export function useOpenUrl() {

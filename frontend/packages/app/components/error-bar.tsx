@@ -1,4 +1,4 @@
-import {AppPlatform, useAppContext} from '@mintter/app/app-context'
+import {AppPlatform, useAppContext} from '@shm/app/app-context'
 import {lazy} from 'react'
 
 var ErrorBarMacos = lazy(() => import('./error-bar-macos'))

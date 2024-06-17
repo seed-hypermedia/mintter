@@ -1,4 +1,4 @@
-import {PageSection, SizableText, YStack} from '@mintter/ui'
+import {PageSection, SizableText, YStack} from '@shm/ui'
 import {SiteHead} from '../../src/site-head'
 
 export default function NotFoundPage() {

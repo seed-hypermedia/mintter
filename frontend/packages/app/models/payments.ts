@@ -5,7 +5,7 @@ import {
   Mutation,
   Payments,
   Query,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   FetchQueryOptions,
   MutationOptions,

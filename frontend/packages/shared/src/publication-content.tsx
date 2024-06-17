@@ -1,5 +1,5 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {CitationLink} from '@mintter/app/models/content-graph'
+import {CitationLink} from '@shm/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
@@ -23,7 +23,7 @@ import {
   unpackHmId,
   useHover,
   useLowlight,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   BlockQuote,
   Button,
@@ -57,7 +57,7 @@ import {
   XStackProps,
   YStack,
   YStackProps,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {AlertCircle, Book, MessageSquare, Reply} from '@tamagui/lucide-icons'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'

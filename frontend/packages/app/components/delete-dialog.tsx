@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@mintter/shared'
+import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@shm/shared'
 import {
   AlertDialog,
   AlertDialogContentProps,
@@ -11,7 +11,7 @@ import {
   XStack,
   XStackProps,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ReactNode, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {z} from 'zod'

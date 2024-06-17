@@ -1,6 +1,6 @@
 // tamagui-ignore
 import * as Ariakit from '@ariakit/react'
-import {UIAvatar, XStack, YStack} from '@mintter/ui'
+import {UIAvatar, XStack, YStack} from '@shm/ui'
 import {SizableText} from 'tamagui'
 import {useAccount} from '../models/accounts'
 import {AccountTrustButton} from './account-trust'

@@ -4,7 +4,7 @@ import {
   UnpackedHypermediaId,
   hmDeletedEntity,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   UseMutationOptions,
   UseQueryOptions,

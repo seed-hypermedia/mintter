@@ -1,7 +1,7 @@
-import {useDraftList} from '@mintter/app/models/documents'
-import {Delete, List, Spinner} from '@mintter/ui'
+import {useDraftList} from '@shm/app/models/documents'
+import {Delete, List, Spinner} from '@shm/ui'
 
-import {Document, PublicationVariant, unpackHmId} from '@mintter/shared'
+import {Document, PublicationVariant, unpackHmId} from '@shm/shared'
 import {Trash} from '@tamagui/lucide-icons'
 import React, {ReactNode} from 'react'
 import {useAppContext} from '../app-context'

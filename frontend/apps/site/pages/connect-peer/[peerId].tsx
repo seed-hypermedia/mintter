@@ -1,7 +1,7 @@
-import {Button, PageSection, SizableText, YStack} from '@mintter/ui'
-import {SiteHead} from '../../src/site-head'
+import {Button, PageSection, SizableText, YStack} from '@shm/ui'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
+import {SiteHead} from '../../src/site-head'
 
 export default function ConnectPeerPage() {
   const router = useRouter()

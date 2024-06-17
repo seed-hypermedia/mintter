@@ -1,9 +1,9 @@
-import {trpc} from '@mintter/desktop/src/trpc'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   HYPERMEDIA_PUBLIC_WEB_GATEWAY,
   StateStream,
   writeableStateStream,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {useEffect, useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
 

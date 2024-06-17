@@ -1,4 +1,4 @@
-import {ButtonText} from '@mintter/ui'
+import {ButtonText} from '@shm/ui'
 import {ComponentProps} from 'react'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'

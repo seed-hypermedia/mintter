@@ -17,7 +17,7 @@ import {
   getBlockNodeById,
   unpackHmId,
   usePublicationContentContext,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -27,7 +27,7 @@ import {
   UIAvatar,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
 import {
   ComponentProps,

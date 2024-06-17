@@ -1,5 +1,5 @@
-import {API_HTTP_URL} from '@mintter/shared'
-import {toast} from '@mintter/ui'
+import {API_HTTP_URL} from '@shm/shared'
+import {toast} from '@shm/ui'
 import {app, dialog, net} from 'electron'
 import fs from 'fs'
 

@@ -3,13 +3,13 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@seed/app/*": [
+      "@shm/app/*": [
         "./frontend/packages/app/src/*"
       ],
-      "@seed/ui/*": [
+      "@shm/ui/*": [
         "./frontend/packages/ui/*"
       ],
-      "@seed/shared/*": [
+      "@shm/shared/*": [
         "./frontend/packages/shared/*"
       ]
     },

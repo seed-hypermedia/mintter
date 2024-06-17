@@ -1,4 +1,4 @@
-import {Button, Text, YStack} from '@mintter/ui'
+import {Button, Text, YStack} from '@shm/ui'
 
 export function EmptyList({
   description,

@@ -1,4 +1,4 @@
-import {TitlebarWrapper, XStack} from '@mintter/ui'
+import {TitlebarWrapper, XStack} from '@shm/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {ErrorBarProps} from './error-bar'
 import {NavMenuButton, NavigationButtons} from './titlebar-common'

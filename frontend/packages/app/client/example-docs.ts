@@ -4,7 +4,7 @@ import {
   BlockNode,
   Document,
   HMBlockAttributes,
-} from '@mintter/shared'
+} from '@shm/shared'
 
 function createAnnotation(
   type: string,

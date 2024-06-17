@@ -1,4 +1,4 @@
-import {Block, BlockNode} from '@mintter/shared/src/client/grpc-types'
+import {Block, BlockNode} from '@shm/shared/src/client/grpc-types'
 import {describe, expect, test} from 'vitest'
 import {examples} from '../example-docs'
 import {toHMBlock, toHMInlineContent} from '../to-hm-block'

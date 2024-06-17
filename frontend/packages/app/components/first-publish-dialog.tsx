@@ -1,4 +1,4 @@
-import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
+import {createPublicWebHmUrl, unpackDocId} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -7,7 +7,7 @@ import {
   DialogTitle,
   Spinner,
   XStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useAppContext} from '../app-context'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useIsHMUrlReady} from '../models/networking'

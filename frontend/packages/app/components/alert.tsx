@@ -1,4 +1,4 @@
-import {AlertDialog, Button, DialogContent, H3, SizableText} from '@mintter/ui'
+import {AlertDialog, Button, DialogContent, H3, SizableText} from '@shm/ui'
 import type {ComponentProps, PropsWithChildren} from 'react'
 import React from 'react'
 

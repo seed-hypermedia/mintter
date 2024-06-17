@@ -1,4 +1,4 @@
-import {ScrollView, SizableText, XStack, YStack} from '@mintter/ui'
+import {ScrollView, SizableText, XStack, YStack} from '@shm/ui'
 import {Allotment} from 'allotment'
 import {ComponentProps} from 'react'
 

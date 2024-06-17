@@ -1,4 +1,4 @@
-import {Heading, Text, YStack} from '@mintter/ui'
+import {Heading, Text, YStack} from '@shm/ui'
 
 export function NotFoundPage() {
   return (

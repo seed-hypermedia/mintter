@@ -1,5 +1,5 @@
-import {Button, H3, SizableText} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {Button, H3, SizableText} from '@shm/ui'
 import type {ComponentProps} from 'react'
 import {DialogContent, DialogFooter, DialogOverlay} from './dialog'
 

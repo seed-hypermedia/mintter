@@ -1,11 +1,4 @@
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Select,
-  XStack,
-  YStack,
-} from '@mintter/ui'
+import {Check, ChevronDown, ChevronUp, Select, XStack, YStack} from '@shm/ui'
 import {NodeViewProps} from '@tiptap/core'
 import {NodeViewContent} from '@tiptap/react'
 import {useState} from 'react'

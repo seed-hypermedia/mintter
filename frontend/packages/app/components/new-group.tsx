@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Button, Form, Label, XStack, toast} from '@mintter/ui'
+import {Button, Form, Label, XStack, toast} from '@shm/ui'
 import {Plus} from '@tamagui/lucide-icons'
 import {ForwardedRef, forwardRef, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'

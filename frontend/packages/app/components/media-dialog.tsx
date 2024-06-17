@@ -1,4 +1,4 @@
-import {AlertDialog, Button, XStack, YStack, toast} from '@mintter/ui'
+import {AlertDialog, Button, XStack, YStack, toast} from '@shm/ui'
 import {useAppDialog} from './dialog'
 
 export function useMediaDialog() {

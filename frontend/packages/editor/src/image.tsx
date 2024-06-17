@@ -1,5 +1,5 @@
-import {getCIDFromIPFSUrl, usePublicationContentContext} from '@mintter/shared'
-import {ResizeHandle, useTheme} from '@mintter/ui'
+import {getCIDFromIPFSUrl, usePublicationContentContext} from '@shm/shared'
+import {ResizeHandle, useTheme} from '@shm/ui'
 import {useEffect, useState} from 'react'
 import {RiImage2Line} from 'react-icons/ri'
 import {

@@ -1,5 +1,5 @@
-import Footer from '@mintter/app/components/footer'
-import {unpackHmId} from '@mintter/shared'
+import Footer from '@shm/app/components/footer'
+import {unpackHmId} from '@shm/shared'
 import {
   Container,
   List,
@@ -10,7 +10,7 @@ import {
   Text,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Book, FileText} from '@tamagui/lucide-icons'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import {useDeleteDialog} from '../components/delete-dialog'

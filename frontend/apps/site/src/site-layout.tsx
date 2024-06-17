@@ -1,4 +1,4 @@
-import {Heading, PageSection, YStack} from '@mintter/ui'
+import {Heading, PageSection, YStack} from '@shm/ui'
 import {ReactNode} from 'react'
 import Footer from './footer'
 

@@ -1,4 +1,4 @@
-import {unpackHmId} from '@mintter/shared/src/utils/entity-id-url'
+import {unpackHmId} from '@shm/shared/src/utils/entity-id-url'
 import {appendFile, exists, mkdirp, move, rmdir, writeFile} from 'fs-extra'
 import open from 'open'
 import {dirname} from 'path'

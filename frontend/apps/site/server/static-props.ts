@@ -1,4 +1,4 @@
-import {createHmId, parseVariantsQuery} from '@mintter/shared'
+import {createHmId, parseVariantsQuery} from '@shm/shared'
 import {GetStaticPaths, GetStaticProps} from 'next'
 import {EveryPageProps} from 'pages/_app'
 import {prefetchGroup, prefetchGroupContent} from 'server/group'

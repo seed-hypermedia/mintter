@@ -1,4 +1,4 @@
-import {HMTimestamp, formattedDate} from '@mintter/shared'
+import {HMTimestamp, formattedDate} from '@shm/shared'
 import {useEffect, useMemo, useState} from 'react'
 
 function useInterval(ms: number) {

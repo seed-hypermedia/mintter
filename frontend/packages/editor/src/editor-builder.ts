@@ -1,4 +1,4 @@
-import {HMBlock, HMDocument, toHMInlineContent} from '@mintter/shared'
+import {HMBlock, HMDocument, toHMInlineContent} from '@shm/shared'
 import {nanoid} from 'nanoid'
 
 export function createDocument(props: Partial<HMDocument> = {}) {

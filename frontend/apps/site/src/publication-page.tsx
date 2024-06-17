@@ -15,7 +15,7 @@ import {
   createHmId,
   groupDocUrl,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 
 import {
   ArrowRight,
@@ -26,7 +26,7 @@ import {
   SizableText,
   Spinner,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
 import Link from 'next/link'

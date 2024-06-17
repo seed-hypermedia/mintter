@@ -1,10 +1,10 @@
-import {GRPCClient, StateStream, unpackDocId} from '@mintter/shared'
+import {GRPCClient, StateStream, unpackDocId} from '@shm/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
   unpackHmId,
-} from '@mintter/shared/src/utils/entity-id-url'
-import {useStream, useStreamSelector} from '@mintter/ui'
+} from '@shm/shared/src/utils/entity-id-url'
+import {useStream, useStreamSelector} from '@shm/ui'
 import {Buffer} from 'buffer'
 import {createContext, useContext} from 'react'
 import {useGRPCClient} from '../app-context'

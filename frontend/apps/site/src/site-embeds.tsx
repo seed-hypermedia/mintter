@@ -23,7 +23,7 @@ import {
   isHypermediaScheme,
   unpackHmId,
   usePublicationContentContext,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   ButtonText,
   FileWarning,
@@ -34,7 +34,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
   useMedia,
-} from '@mintter/ui'
+} from '@shm/ui'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
 import {

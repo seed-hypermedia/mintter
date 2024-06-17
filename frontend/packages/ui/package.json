@@ -1,5 +1,5 @@
 {
-  "name": "@mintter/ui",
+  "name": "@shm/ui",
   "version": "0.1.0",
   "sideEffects": [
     "*.css"
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "3.3.1",
-    "@mintter/shared": "*",
+    "@shm/shared": "*",
     "@tamagui/animations-moti": "1.90.2",
     "@tamagui/animations-react-native": "1.90.2",
     "@tamagui/cli": "1.90.2",
@@ -45,7 +45,8 @@
     "tamagui": "1.90.2"
   },
   "devDependencies": {
-    "@mintter/prettier": "*",
-    "@tamagui/build": "1.90.2"
+    "@shm/prettier": "*",
+    "@tamagui/build": "1.90.2",
+    "@tamagui/use-did-finish-ssr": "^1.100.5"
   }
 }

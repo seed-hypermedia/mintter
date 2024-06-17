@@ -1,5 +1,5 @@
-import {formatBytes} from '@mintter/shared'
-import {Button, File, SizableText} from '@mintter/ui'
+import {formatBytes} from '@shm/shared'
+import {Button, File, SizableText} from '@shm/ui'
 import {Block, BlockNoteEditor, defaultProps} from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {MediaContainer} from './media-container'

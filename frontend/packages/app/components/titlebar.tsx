@@ -1,5 +1,5 @@
-import {AppPlatform, useAppContext} from '@mintter/app/app-context'
-import {TitlebarWrapper} from '@mintter/ui'
+import {AppPlatform, useAppContext} from '@shm/app/app-context'
+import {TitlebarWrapper} from '@shm/ui'
 import {Suspense, lazy} from 'react'
 
 var TitleBarMacos = lazy(() => import('./titlebar-macos'))

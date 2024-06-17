@@ -5,7 +5,7 @@ import {
   PublicationVariant,
   hmDocument,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {UseQueryOptions, useQuery} from '@tanstack/react-query'
 import {useGRPCClient} from '../app-context'
 import {useAccount} from './accounts'

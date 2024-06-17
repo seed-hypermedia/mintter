@@ -1,4 +1,4 @@
-import {HMAccount} from '@mintter/shared'
+import {HMAccount} from '@shm/shared'
 import {
   Button,
   Dialog,
@@ -15,7 +15,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
 import Link from 'next/link'
 import React, {

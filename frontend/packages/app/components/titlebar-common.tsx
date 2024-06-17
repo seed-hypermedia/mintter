@@ -1,11 +1,11 @@
-import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
-import {useMyAccount} from '@mintter/app/models/accounts'
-import {usePublicationVariant} from '@mintter/app/models/publication'
+import {ContactsPrompt} from '@shm/app/components/contacts-prompt'
+import {useMyAccount} from '@shm/app/models/accounts'
+import {usePublicationVariant} from '@shm/app/models/publication'
 import {
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
-} from '@mintter/app/utils/navigation'
+} from '@shm/app/utils/navigation'
 import {
   BlockRange,
   ExpandedBlockRange,
@@ -16,7 +16,7 @@ import {
   hmId,
   serializeBlockRange,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Back,
   Button,
@@ -31,7 +31,7 @@ import {
   copyUrlToClipboardWithFeedback,
   toast,
   useStream,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {
   ArrowLeftFromLine,
   ArrowRightFromLine,

@@ -1,4 +1,4 @@
-import {PageSection, SizableText, XStack} from '@mintter/ui'
+import {PageSection, SizableText, XStack} from '@shm/ui'
 import Head from 'next/head'
 import {trpc} from 'src/trpc'
 import {SiteOGMeta} from './head'

@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Button, DialogDescription, Form} from '@mintter/ui'
+import {Button, DialogDescription, Form} from '@shm/ui'
 import {useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {DialogTitle} from '../components/dialog'

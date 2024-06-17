@@ -5,7 +5,7 @@ import {
   SizableText,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import Link from 'next/link'
 import {useRouter} from 'next/router'

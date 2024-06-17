@@ -1,4 +1,4 @@
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
 import * as cheerio from 'cheerio'
 import http from 'http'
 import https from 'https'

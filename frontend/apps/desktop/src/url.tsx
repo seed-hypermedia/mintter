@@ -8,7 +8,7 @@ import {
   XGroup,
   copyTextToClipboard,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ComponentProps, FC, useState} from 'react'
 import {useOpenUrl} from './open-url'
 

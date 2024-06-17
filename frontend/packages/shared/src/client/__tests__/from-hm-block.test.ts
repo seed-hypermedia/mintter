@@ -1,4 +1,4 @@
-import {Block} from '@mintter/shared/src/client/grpc-types'
+import {Block} from '@shm/shared/src/client/grpc-types'
 import {describe, expect, test} from 'vitest'
 import {extractContent, fromHMBlock} from '../from-hm-block'
 

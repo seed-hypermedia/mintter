@@ -1,4 +1,4 @@
-import {Separator, SizableText, TextArea, XStack, YStack} from '@mintter/ui'
+import {Separator, SizableText, TextArea, XStack, YStack} from '@shm/ui'
 import {Fragment} from '@tiptap/pm/model'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'

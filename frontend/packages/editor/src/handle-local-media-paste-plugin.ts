@@ -1,4 +1,4 @@
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
 import {Extension} from '@tiptap/core'
 import {Plugin, PluginKey} from 'prosemirror-state'
 

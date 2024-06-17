@@ -1,11 +1,11 @@
-import {TitleBarProps} from '@mintter/app/components/titlebar'
+import {TitleBarProps} from '@shm/app/components/titlebar'
 import {
   TitleText,
   TitlebarRow,
   TitlebarSection,
   TitlebarWrapper,
   XStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {
   NavMenuButton,
   NavigationButtons,

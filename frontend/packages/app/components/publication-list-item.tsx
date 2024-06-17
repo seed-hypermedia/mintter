@@ -1,5 +1,5 @@
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {useClickNavigate} from '@mintter/app/utils/useNavigate'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {useClickNavigate} from '@shm/app/utils/useNavigate'
 import {
   Document,
   GroupVariant,
@@ -9,14 +9,14 @@ import {
   createHmId,
   getDocumentTitle,
   unpackDocId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   ArrowUpRight,
   Button,
   ButtonText,
   XStack,
   copyTextToClipboard,
-} from '@mintter/ui'
+} from '@shm/ui'
 import React from 'react'
 import {useFavorite} from '../models/favorites'
 import {NavRoute} from '../utils/routes'

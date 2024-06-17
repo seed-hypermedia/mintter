@@ -1,5 +1,5 @@
-import {useEntityMentions} from '@mintter/app/models/content-graph'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {useEntityMentions} from '@shm/app/models/content-graph'
+import {useNavigate} from '@shm/app/utils/useNavigate'
 import {
   BlockRange,
   BlocksContent,
@@ -9,8 +9,8 @@ import {
   pluralS,
   serializeBlockRange,
   unpackHmId,
-} from '@mintter/shared'
-import {Mention} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+} from '@shm/shared'
+import {Mention} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {
   ButtonText,
   PanelCard,
@@ -18,7 +18,7 @@ import {
   XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'

@@ -1,4 +1,4 @@
-import {EditorInlineContent} from '@mintter/editor'
+import {EditorInlineContent} from '@shm/editor'
 import type {
   Account,
   ChangeInfo,
@@ -7,7 +7,7 @@ import type {
   MttLink,
   Profile,
   Publication,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {HMTimestamp} from './utils'
 
 export type ServerChangeInfo = ChangeInfo

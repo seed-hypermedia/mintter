@@ -1,5 +1,5 @@
-import {client} from '@mintter/desktop/src/trpc'
-import {writeableStateStream} from '@mintter/shared'
+import {client} from '@shm/desktop/src/trpc'
+import {writeableStateStream} from '@shm/shared'
 import {ReactNode, useEffect, useMemo} from 'react'
 import {useIPC} from '../app-context'
 import {useConfirmConnection} from '../components/contacts-prompt'

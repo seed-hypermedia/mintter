@@ -1,8 +1,8 @@
 import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
-import Footer from '@mintter/app/components/footer'
-import {EntityVersionsAccessory} from '@mintter/desktop/src/changes-list'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
+import Footer from '@shm/app/components/footer'
+import {EntityVersionsAccessory} from '@shm/desktop/src/changes-list'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {
   API_FILE_URL,
   Account,
@@ -18,7 +18,7 @@ import {
   pluralS,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   Container,
@@ -39,7 +39,7 @@ import {
   YGroup,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Pencil, PlusCircle, Trash, X} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
 import {matchSorter} from 'match-sorter'

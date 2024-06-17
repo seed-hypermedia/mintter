@@ -33,7 +33,7 @@ export default defineConfig(({command, mode}) => {
       tsConfigPaths(),
       react(),
       tamaguiPlugin({
-        components: ['@mintter/ui', 'tamagui'],
+        components: ['@shm/ui', 'tamagui'],
         config: './tamagui.config.ts',
         themeBuilder: {
           input: '../../packages/ui/src/themes/theme.ts',

@@ -1,6 +1,6 @@
-import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {StateStream, unpackHmId} from '@mintter/shared'
-import {Button, ChevronUp, SizableText, YStack, useStream} from '@mintter/ui'
+import {HMEditorContainer, HyperMediaEditorView} from '@shm/editor'
+import {StateStream, unpackHmId} from '@shm/shared'
+import {Button, ChevronUp, SizableText, YStack, useStream} from '@shm/ui'
 import {useEffect, useState} from 'react'
 import {XStack} from 'tamagui'
 import {

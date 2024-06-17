@@ -1,4 +1,4 @@
-import {DESKTOP_APPDATA} from '@mintter/shared/src'
+import {DESKTOP_APPDATA} from '@shm/shared/src'
 import {app} from 'electron'
 import {mkdtempSync} from 'fs'
 import os from 'os'

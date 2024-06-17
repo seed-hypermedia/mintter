@@ -4,7 +4,7 @@ import {
   IS_PROD_DESKTOP,
   P2P_PORT,
   VERSION,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {spawn} from 'child_process'
 import {app} from 'electron'
 import path from 'path'

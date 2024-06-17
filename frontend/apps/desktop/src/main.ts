@@ -1,6 +1,6 @@
-import {defaultRoute} from '@mintter/app/utils/routes'
-import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
+import {defaultRoute} from '@shm/app/utils/routes'
+import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@shm/shared'
 import {
   BrowserWindow,
   Menu,

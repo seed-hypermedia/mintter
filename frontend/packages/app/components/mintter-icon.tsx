@@ -1,4 +1,4 @@
-import {XStack} from '@mintter/ui'
+import {XStack} from '@shm/ui'
 
 type IconSize = '$1' | '$2' | '$3' | '$4'
 

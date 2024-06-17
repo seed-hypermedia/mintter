@@ -1,4 +1,4 @@
-import {IS_PROD_DESKTOP} from '@mintter/shared'
+import {IS_PROD_DESKTOP} from '@shm/shared'
 import * as legacyLogger from 'electron-log'
 import {existsSync, rmSync} from 'fs'
 import {join} from 'path'

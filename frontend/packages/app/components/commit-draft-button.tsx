@@ -1,6 +1,6 @@
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {API_FILE_URL, AuthorVariant, GroupVariant} from '@mintter/shared'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {API_FILE_URL, AuthorVariant, GroupVariant} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -15,7 +15,7 @@ import {
   YStack,
   YStackProps,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Check, ChevronDown, ChevronUp, Upload} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect} from 'react'
 import {useGRPCClient} from '../app-context'

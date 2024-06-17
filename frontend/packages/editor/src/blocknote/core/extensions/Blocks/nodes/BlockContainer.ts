@@ -13,7 +13,7 @@ import {
   inlineContentToNodes,
 } from '../../../api/nodeConversions/nodeConversions'
 
-import {HMBlockChildrenType} from '@mintter/shared'
+import {HMBlockChildrenType} from '@shm/shared'
 import {ResolvedPos} from '@tiptap/pm/model'
 import {EditorView} from '@tiptap/pm/view'
 import {mergeCSSClasses} from '../../../shared/utils'

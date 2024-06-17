@@ -1,5 +1,5 @@
 {
-  "name": "@mintter/site",
+  "name": "@shm/site",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,9 +16,9 @@
     "@bufbuild/protobuf": "1.4.1",
     "@connectrpc/connect": "1.1.3",
     "@connectrpc/connect-node": "1.1.3",
-    "@mintter/shared": "*",
-    "@mintter/ui": "*",
     "@sentry/nextjs": "7.81.1",
+    "@shm/shared": "*",
+    "@shm/ui": "*",
     "@tamagui/lucide-icons": "1.90.2",
     "@tamagui/next-theme": "1.90.2",
     "@tanstack/react-query": "4.33.0",
@@ -50,7 +50,7 @@
     "zod": "3.22.2"
   },
   "devDependencies": {
-    "@mintter/prettier": "*",
+    "@shm/prettier": "*",
     "@tamagui/next-plugin": "1.90.2",
     "@tanstack/react-query-devtools": "4.33.0",
     "@types/node": "20.6.5",

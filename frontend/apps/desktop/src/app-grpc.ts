@@ -1,6 +1,6 @@
 import type {Interceptor} from '@connectrpc/connect'
 import {createGrpcWebTransport} from '@connectrpc/connect-node'
-import {API_HTTP_URL, createGRPCClient} from '@mintter/shared'
+import {API_HTTP_URL, createGRPCClient} from '@shm/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {

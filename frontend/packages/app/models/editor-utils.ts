@@ -1,5 +1,5 @@
-import {BlockIdentifier, BlockNoteEditor} from '@mintter/editor'
-import {HMBlock} from '@mintter/shared'
+import {BlockIdentifier, BlockNoteEditor} from '@shm/editor'
+import {HMBlock} from '@shm/shared'
 import {Editor} from '@tiptap/react'
 import {Node} from 'prosemirror-model'
 

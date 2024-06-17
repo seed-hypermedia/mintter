@@ -1,4 +1,4 @@
-import {SizableText, XStack} from '@mintter/ui'
+import {SizableText, XStack} from '@shm/ui'
 import {ReactNode} from 'react'
 
 export function AppBanner({

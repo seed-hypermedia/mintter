@@ -1,25 +1,25 @@
-import {AccessoryContainer} from '@mintter/app/components/accessory-sidebar'
-import {AccountLinkAvatar} from '@mintter/app/components/account-link-avatar'
-import {useAppDialog} from '@mintter/app/components/dialog'
+import {AccessoryContainer} from '@shm/app/components/accessory-sidebar'
+import {AccountLinkAvatar} from '@shm/app/components/account-link-avatar'
+import {useAppDialog} from '@shm/app/components/dialog'
 import {
   MenuItemType,
   OptionsDropdown,
-} from '@mintter/app/components/options-dropdown'
-import appError from '@mintter/app/errors'
-import {useAccount} from '@mintter/app/models/accounts'
-import {TimelineChange, useDocHistory} from '@mintter/app/models/changes'
-import {useGatewayUrl} from '@mintter/app/models/gateway-settings'
+} from '@shm/app/components/options-dropdown'
+import appError from '@shm/app/errors'
+import {useAccount} from '@shm/app/models/accounts'
+import {TimelineChange, useDocHistory} from '@shm/app/models/changes'
+import {useGatewayUrl} from '@shm/app/models/gateway-settings'
 import {
   useDocumentGroups,
   useGroup,
   useGroupContent,
   useMyGroups,
   usePublishDocToGroup,
-} from '@mintter/app/models/groups'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {NavRoute} from '@mintter/app/utils/routes'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
+} from '@shm/app/models/groups'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {NavRoute} from '@shm/app/utils/routes'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {
   Change,
   GroupVariant,
@@ -28,9 +28,9 @@ import {
   formattedDateLong,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
-import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
-import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
+} from '@shm/shared'
+import {ListDocumentGroupsResponse_Item} from '@shm/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import {UnpackedHypermediaId} from '@shm/shared/src/utils/entity-id-url'
 import {
   Button,
   ButtonText,
@@ -44,7 +44,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext} from 'react'
 

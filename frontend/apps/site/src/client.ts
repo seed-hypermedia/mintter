@@ -6,7 +6,7 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
 }
 import type {Interceptor} from '@connectrpc/connect'
 import {createGrpcWebTransport} from '@connectrpc/connect-node'
-import {createGRPCClient} from '@mintter/shared'
+import {createGRPCClient} from '@shm/shared'
 
 const IS_DEV = process.env.NODE_ENV == 'development'
 const IS_PROD = process.env.NODE_ENV == 'production'

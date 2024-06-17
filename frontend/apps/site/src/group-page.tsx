@@ -9,7 +9,7 @@ import {
   formattedDate,
   getBlockNode,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -19,7 +19,7 @@ import {
   SizableText,
   View,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import NotFoundPage from 'pages/404'

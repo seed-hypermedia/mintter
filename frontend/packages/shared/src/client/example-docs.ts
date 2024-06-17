@@ -3,7 +3,7 @@ import {
   Block,
   BlockNode,
   Document,
-} from '@mintter/shared/src/client/grpc-types'
+} from '@shm/shared/src/client/grpc-types'
 
 function createAnnotation(
   type: string,

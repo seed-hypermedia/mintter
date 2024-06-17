@@ -1,4 +1,4 @@
-import {SizableText} from '@mintter/ui'
+import {SizableText} from '@shm/ui'
 
 export function Slash() {
   return (

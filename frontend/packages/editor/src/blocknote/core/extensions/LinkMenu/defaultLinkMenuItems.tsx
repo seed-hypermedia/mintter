@@ -6,8 +6,8 @@ import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normalizeHmId,
-} from '@mintter/shared'
-import {Globe, Link, Spinner, SquareAsterisk, TwitterXIcon} from '@mintter/ui'
+} from '@shm/shared'
+import {Globe, Link, Spinner, SquareAsterisk, TwitterXIcon} from '@shm/ui'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'

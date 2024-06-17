@@ -9,7 +9,7 @@ import {
   WindowsIcon,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {GetStaticProps} from 'next'
 import {getPageProps} from 'server/ssr-helpers'
 import {getSiteServerHelpers} from 'server/static-props'

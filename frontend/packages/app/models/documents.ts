@@ -1,15 +1,15 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {useAppContext, useQueryInvalidator} from '@mintter/app/app-context'
-import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {trpc} from '@mintter/desktop/src/trpc'
+import {useAppContext, useQueryInvalidator} from '@shm/app/app-context'
+import {slashMenuItems} from '@shm/app/src/slash-menu-items'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   BlockNoteEditor,
   Block as EditorBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
   useBlockNote,
-} from '@mintter/editor'
+} from '@shm/editor'
 import {
   DocumentChange,
   GRPCClient,
@@ -30,8 +30,8 @@ import {
   unpackDocId,
   unpackHmId,
   writeableStateStream,
-} from '@mintter/shared'
-import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
+} from '@shm/shared'
+import {UpdateDraftResponse} from '@shm/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   FetchQueryOptions,
   UseInfiniteQueryOptions,

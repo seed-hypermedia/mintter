@@ -20,7 +20,7 @@ import {
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
-import {TamaguiProvider, Toaster} from '@mintter/ui'
+import {TamaguiProvider, Toaster} from '@shm/ui'
 import type {AppProps} from 'next/app'
 import Head from 'next/head'
 import React, {startTransition, useMemo, useState} from 'react'

@@ -1,5 +1,5 @@
 import {createStyles} from '@mantine/core'
-import {createHmDocLink} from '@mintter/shared'
+import {createHmDocLink} from '@shm/shared'
 import {
   Button,
   Check,
@@ -14,7 +14,7 @@ import {
   Unlink,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {HTMLAttributes, forwardRef, useState} from 'react'
 
 export type EditHyperlinkMenuProps = {

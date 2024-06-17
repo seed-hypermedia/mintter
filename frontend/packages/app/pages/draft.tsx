@@ -1,11 +1,11 @@
-import Footer from '@mintter/app/components/footer'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {trpc} from '@mintter/desktop/src/trpc'
+import Footer from '@shm/app/components/footer'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   BlockNoteEditor,
   HMEditorContainer,
   HyperMediaEditorView,
-} from '@mintter/editor'
+} from '@shm/editor'
 import {
   BlockRange,
   ExpandedBlockRange,
@@ -17,7 +17,7 @@ import {
   useHeadingMarginStyles,
   useHeadingTextStyles,
   usePublicationContentContext,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ErrorIcon,
@@ -29,7 +29,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
   useStream,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'

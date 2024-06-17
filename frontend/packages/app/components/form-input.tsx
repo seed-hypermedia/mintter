@@ -1,4 +1,4 @@
-import {Input, Text, TextArea} from '@mintter/ui'
+import {Input, Text, TextArea} from '@shm/ui'
 import {
   Control,
   FieldErrors,

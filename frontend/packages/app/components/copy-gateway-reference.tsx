@@ -4,11 +4,11 @@ import {
   UnpackedHypermediaId,
   unpackHmId,
   writeableStateStream,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   createHmId,
   createPublicWebHmUrl,
-} from '@mintter/shared/src/utils/entity-id-url'
+} from '@shm/shared/src/utils/entity-id-url'
 import {
   Button,
   CheckboxField,
@@ -22,7 +22,7 @@ import {
   copyTextToClipboard,
   toast,
   useStream,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ReactNode, useState} from 'react'
 import {usePushPublication} from '../models/documents'
 import {

@@ -4,8 +4,8 @@ import {
   formattedDateLong,
   formattedDateMedium,
   unpackHmId,
-} from '@mintter/shared'
-import {Button, List, SizableText, Tooltip, View, XStack} from '@mintter/ui'
+} from '@shm/shared'
+import {Button, List, SizableText, Tooltip, View, XStack} from '@shm/ui'
 import {ShieldX} from '@tamagui/lucide-icons'
 import {useDeletedContent, useUndeleteEntity} from '../models/entities'
 

@@ -1,21 +1,21 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {useMyAccount} from '@mintter/app/models/accounts'
-import {getDefaultShortname} from '@mintter/app/models/documents'
+import {useMyAccount} from '@shm/app/models/accounts'
+import {getDefaultShortname} from '@shm/app/models/documents'
 import {
   useAccountGroups,
   useGroup,
   useMyGroups,
   usePublishDocToGroup,
-} from '@mintter/app/models/groups'
-import {usePublicationVariant} from '@mintter/app/models/publication'
-import {usePopoverState} from '@mintter/app/use-popover-state'
+} from '@shm/app/models/groups'
+import {usePublicationVariant} from '@shm/app/models/publication'
+import {usePopoverState} from '@shm/app/use-popover-state'
 import {
   NavContextProvider,
   useNavRoute,
   useNavigation,
-} from '@mintter/app/utils/navigation'
-import {pathNameify} from '@mintter/app/utils/path'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
+} from '@shm/app/utils/navigation'
+import {pathNameify} from '@shm/app/utils/path'
+import {useNavigate} from '@shm/app/utils/useNavigate'
 import {
   API_FILE_URL,
   AuthorVariant,
@@ -29,8 +29,8 @@ import {
   shortenPath,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
-import {AuthorVersion} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+} from '@shm/shared'
+import {AuthorVersion} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {
   Button,
   ButtonText,
@@ -53,7 +53,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ArrowRight, Book, Pencil, Upload} from '@tamagui/lucide-icons'
 import {ComponentProps, PropsWithChildren, useMemo, useState} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'

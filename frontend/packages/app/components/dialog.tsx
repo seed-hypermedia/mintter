@@ -7,7 +7,7 @@ import {
   YStack,
   YStackProps,
   styled,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {X} from '@tamagui/lucide-icons'
 import {FC, useMemo, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'

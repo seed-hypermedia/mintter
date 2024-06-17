@@ -1,13 +1,6 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {formattedDate, formattedDateLong, useHover} from '@mintter/shared'
-import {
-  Button,
-  ButtonProps,
-  ButtonText,
-  Link,
-  Tooltip,
-  XStack,
-} from '@mintter/ui'
+import {formattedDate, formattedDateLong, useHover} from '@shm/shared'
+import {Button, ButtonProps, ButtonText, Link, Tooltip, XStack} from '@shm/ui'
 import {ComponentProps, ReactElement, useState} from 'react'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 

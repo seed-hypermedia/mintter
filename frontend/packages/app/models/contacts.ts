@@ -1,5 +1,5 @@
-import {queryKeys} from '@mintter/app/models/query-keys'
-import {Device} from '@mintter/shared'
+import {queryKeys} from '@shm/app/models/query-keys'
+import {Device} from '@shm/shared'
 import {UseMutationOptions, useMutation} from '@tanstack/react-query'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'

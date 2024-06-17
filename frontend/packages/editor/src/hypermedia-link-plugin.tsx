@@ -1,6 +1,6 @@
-import {fetchWebLink} from '@mintter/app/models/web-links'
-import {AppQueryClient} from '@mintter/app/query-client'
-import {extractBlockRefOfUrl, hmIdWithVersion} from '@mintter/shared'
+import {fetchWebLink} from '@shm/app/models/web-links'
+import {AppQueryClient} from '@shm/app/query-client'
+import {extractBlockRefOfUrl, hmIdWithVersion} from '@shm/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
 

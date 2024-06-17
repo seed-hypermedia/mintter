@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Group} from '@mintter/shared'
+import {Group} from '@shm/shared'
 import {
   Button,
   Check as CheckIcon,
@@ -11,7 +11,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useEffect} from 'react'
 import {
   Control,

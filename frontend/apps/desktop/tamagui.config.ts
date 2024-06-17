@@ -1,4 +1,4 @@
-import {config} from '@mintter/ui'
+import {config} from '@shm/ui'
 
 type Conf = typeof config
 

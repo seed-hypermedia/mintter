@@ -1,7 +1,7 @@
-import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
-import {NavRoute, defaultRoute, navRouteSchema} from '@mintter/app/utils/routes'
-import type {AppWindowEvent} from '@mintter/app/utils/window-events'
-import {API_GRPC_URL, API_HTTP_URL} from '@mintter/shared'
+import {resolveHmIdToAppRoute} from '@shm/app/utils/navigation'
+import {NavRoute, defaultRoute, navRouteSchema} from '@shm/app/utils/routes'
+import type {AppWindowEvent} from '@shm/app/utils/window-events'
+import {API_GRPC_URL, API_HTTP_URL} from '@shm/shared'
 import {
   BrowserWindow,
   NativeImage,

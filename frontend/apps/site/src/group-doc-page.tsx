@@ -1,5 +1,5 @@
-import {createHmId} from '@mintter/shared'
-import {Spinner} from '@mintter/ui'
+import {createHmId} from '@shm/shared'
+import {Spinner} from '@shm/ui'
 import {useRouter} from 'next/router'
 import NotFoundPage from 'pages/404'
 import {PublicationPage} from 'src/publication-page'

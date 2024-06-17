@@ -1,8 +1,8 @@
-import appError from '@mintter/app/errors'
-import type {NavState} from '@mintter/app/utils/navigation'
-import {NavRoute, defaultRoute} from '@mintter/app/utils/routes'
-import type {AppWindowEvent} from '@mintter/app/utils/window-events'
-import {getRouteWindowType} from '@mintter/app/utils/window-types'
+import appError from '@shm/app/errors'
+import type {NavState} from '@shm/app/utils/navigation'
+import {NavRoute, defaultRoute} from '@shm/app/utils/routes'
+import type {AppWindowEvent} from '@shm/app/utils/window-events'
+import {getRouteWindowType} from '@shm/app/utils/window-types'
 import {
   BrowserView,
   BrowserWindow,

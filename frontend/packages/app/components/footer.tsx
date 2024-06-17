@@ -1,7 +1,7 @@
-import {useConnectionSummary} from '@mintter/app/models/contacts'
-import {useDaemonReady} from '@mintter/app/node-status-context'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {VERSION} from '@mintter/shared'
+import {useConnectionSummary} from '@shm/app/models/contacts'
+import {useDaemonReady} from '@shm/app/node-status-context'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {VERSION} from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -9,7 +9,7 @@ import {
   FooterWrapper,
   SizableText,
   XStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Cable} from '@tamagui/lucide-icons'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'

@@ -1,4 +1,4 @@
-import {GRPCClient, unpackHmId} from '@mintter/shared'
+import {GRPCClient, unpackHmId} from '@shm/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useGRPCClient} from '../app-context'
 import {queryKeys} from './query-keys'

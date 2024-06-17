@@ -1,5 +1,5 @@
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
-import {toast} from '@mintter/ui'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
+import {toast} from '@shm/ui'
 import {Node, NodeType} from 'prosemirror-model'
 
 export type BlockInfoWithoutPositions = {

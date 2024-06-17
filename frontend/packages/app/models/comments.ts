@@ -1,14 +1,14 @@
-import {useAppContext} from '@mintter/app/app-context'
-import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {client, trpc} from '@mintter/desktop/src/trpc'
+import {useAppContext} from '@shm/app/app-context'
+import {slashMenuItems} from '@shm/app/src/slash-menu-items'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {client, trpc} from '@shm/desktop/src/trpc'
 import {
   BlockNoteEditor,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
   useBlockNote,
-} from '@mintter/editor'
-import type {Block} from '@mintter/editor/src/blocknote/core/extensions/Blocks/api/blockTypes'
+} from '@shm/editor'
+import type {Block} from '@shm/editor/src/blocknote/core/extensions/Blocks/api/blockTypes'
 import {
   HMComment,
   HMCommentDraft,
@@ -17,8 +17,8 @@ import {
   toHMBlock,
   unpackHmId,
   writeableStateStream,
-} from '@mintter/shared'
-import {toast} from '@mintter/ui'
+} from '@shm/shared'
+import {toast} from '@shm/ui'
 import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {Extension} from '@tiptap/core'
 import {useEffect, useMemo, useRef} from 'react'

@@ -1,6 +1,6 @@
-import {HyperDocsEditor} from '@mintter/app/models/documents'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {YStack} from '@mintter/ui'
+import {HyperDocsEditor} from '@shm/app/models/documents'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {YStack} from '@shm/ui'
 import {
   BlockNoteView,
   FormattingToolbarPositioner,

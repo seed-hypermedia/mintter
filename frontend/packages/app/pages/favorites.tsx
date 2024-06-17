@@ -1,5 +1,5 @@
-import {HMAccount, UnpackedHypermediaId} from '@mintter/shared'
-import {List} from '@mintter/ui'
+import {HMAccount, UnpackedHypermediaId} from '@shm/shared'
+import {List} from '@shm/ui'
 import {useCopyGatewayReference} from '../components/copy-gateway-reference'
 import Footer from '../components/footer'
 import {GroupListItem} from '../components/groups-list'

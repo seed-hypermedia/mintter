@@ -1,4 +1,4 @@
-import {Heading, PageSection, SizableText, YStack} from '@mintter/ui'
+import {Heading, PageSection, SizableText, YStack} from '@shm/ui'
 import {SiteHead} from './site-head'
 
 export function SmallContainer({

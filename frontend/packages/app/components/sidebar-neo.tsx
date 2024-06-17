@@ -7,8 +7,8 @@ import {
   getBlockNodeById,
   getDocumentTitle,
   unpackHmId,
-} from '@mintter/shared'
-import {Tooltip} from '@mintter/ui'
+} from '@shm/shared'
+import {Tooltip} from '@shm/ui'
 import {
   Book,
   Contact,

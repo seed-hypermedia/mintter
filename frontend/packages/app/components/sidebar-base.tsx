@@ -3,7 +3,7 @@ import {
   getBlockNode,
   HMBlockNode,
   UnpackedHypermediaId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ListItem,
@@ -15,7 +15,7 @@ import {
   View,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {
   ArrowDownRight,
   Book,

@@ -1,7 +1,7 @@
-import {useAppContext} from '@mintter/app/app-context'
-import {useGatewayUrlStream} from '@mintter/app/models/gateway-settings'
-import {fetchWebLink} from '@mintter/app/models/web-links'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
+import {useAppContext} from '@shm/app/app-context'
+import {useGatewayUrlStream} from '@shm/app/models/gateway-settings'
+import {fetchWebLink} from '@shm/app/models/web-links'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {
   BlockContentEmbed,
   createHmDocLink,
@@ -11,8 +11,8 @@ import {
   normalizeHmId,
   unpackHmId,
   useHover,
-} from '@mintter/shared'
-import {ErrorBlock} from '@mintter/shared/src/publication-content'
+} from '@shm/shared'
+import {ErrorBlock} from '@shm/shared/src/publication-content'
 import {
   Button,
   Check,
@@ -27,7 +27,7 @@ import {
   Tooltip,
   XStack,
   YGroup,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Fragment} from '@tiptap/pm/model'
 import {forwardRef, useCallback, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'

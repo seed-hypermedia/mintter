@@ -5,8 +5,8 @@ import {
   createPublicWebHmUrl,
   getDocumentTitle,
   unpackHmId,
-} from '@mintter/shared'
-import {Avatar, Card, H2, Paragraph, XStack, YStack} from '@mintter/ui'
+} from '@shm/shared'
+import {Avatar, Card, H2, Paragraph, XStack, YStack} from '@shm/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {cidURL} from 'src/ipfs'

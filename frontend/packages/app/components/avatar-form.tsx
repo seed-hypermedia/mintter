@@ -1,7 +1,7 @@
-import {Avatar} from '@mintter/app/components/avatar'
-import {useMyAccount} from '@mintter/app/models/accounts'
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
-import {Stack, Tooltip} from '@mintter/ui'
+import {Avatar} from '@shm/app/components/avatar'
+import {useMyAccount} from '@shm/app/models/accounts'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
+import {Stack, Tooltip} from '@shm/ui'
 import {ChangeEvent} from 'react'
 import appError from '../errors'
 

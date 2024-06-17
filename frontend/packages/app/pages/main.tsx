@@ -1,10 +1,10 @@
-import {useListen} from '@mintter/app/app-context'
+import {useListen} from '@shm/app/app-context'
 
-import {AppErrorPage} from '@mintter/app//components/app-error'
-import {TitleBar} from '@mintter/app/components/titlebar'
-import {getRouteKey, useNavRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {YStack} from '@mintter/ui'
+import {AppErrorPage} from '@shm/app//components/app-error'
+import {TitleBar} from '@shm/app/components/titlebar'
+import {getRouteKey, useNavRoute} from '@shm/app/utils/navigation'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {YStack} from '@shm/ui'
 import {ReactElement, lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Launcher} from '../components/launcher'
@@ -18,18 +18,18 @@ import {DocumentPlaceholder} from './document-placeholder'
 import GroupPage from './group'
 import './polyfills'
 
-var Feed = lazy(() => import('@mintter/app/pages/feed'))
-var Account = lazy(() => import('@mintter/app/pages/account-page'))
-var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
-var Publication = lazy(() => import('@mintter/app/pages/publication'))
-var Draft = lazy(() => import('@mintter/app/pages/draft'))
-var Settings = lazy(() => import('@mintter/app/pages/settings'))
-var Comment = lazy(() => import('@mintter/app/pages/comment'))
-var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
-var Explore = lazy(() => import('@mintter/app/pages/explore'))
-var Favorites = lazy(() => import('@mintter/app/pages/favorites'))
-var DeletedContent = lazy(() => import('@mintter/app/pages/deleted-content'))
-var DraftRebase = lazy(() => import('@mintter/app/pages/draft-rebase'))
+var Feed = lazy(() => import('@shm/app/pages/feed'))
+var Account = lazy(() => import('@shm/app/pages/account-page'))
+var Contacts = lazy(() => import('@shm/app/pages/contacts-page'))
+var Publication = lazy(() => import('@shm/app/pages/publication'))
+var Draft = lazy(() => import('@shm/app/pages/draft'))
+var Settings = lazy(() => import('@shm/app/pages/settings'))
+var Comment = lazy(() => import('@shm/app/pages/comment'))
+var CommentDraft = lazy(() => import('@shm/app/pages/comment-draft'))
+var Explore = lazy(() => import('@shm/app/pages/explore'))
+var Favorites = lazy(() => import('@shm/app/pages/favorites'))
+var DeletedContent = lazy(() => import('@shm/app/pages/deleted-content'))
+var DraftRebase = lazy(() => import('@shm/app/pages/draft-rebase'))
 
 export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()

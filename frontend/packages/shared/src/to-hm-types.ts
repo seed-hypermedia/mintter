@@ -12,7 +12,7 @@ import {
   HMPublication,
   MttLink,
   Publication,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {DeletedEntity} from './client/.generated/entities/v1alpha/entities_pb'
 
 export function hmPublication(

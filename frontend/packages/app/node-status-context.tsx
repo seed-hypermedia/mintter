@@ -1,4 +1,4 @@
-import {ConnectionStatus} from '@mintter/shared'
+import {ConnectionStatus} from '@shm/shared'
 import {
   ReactNode,
   createContext,

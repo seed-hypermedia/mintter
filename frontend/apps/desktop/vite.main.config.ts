@@ -4,7 +4,7 @@ import {defineConfig} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 
 const _tamaguiPlugin = tamaguiPlugin({
-  components: ['@mintter/ui', 'tamagui'],
+  components: ['@shm/ui', 'tamagui'],
   config: './tamagui.config.ts',
   themeBuilder: {
     input: '../../packages/ui/src/themes/theme.ts',

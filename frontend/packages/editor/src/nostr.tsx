@@ -1,4 +1,4 @@
-import {API_FILE_UPLOAD_URL, API_FILE_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL, API_FILE_URL} from '@shm/shared'
 import {
   Button,
   Card,
@@ -13,7 +13,7 @@ import {
   XStack,
   YStack,
   useTheme,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {
   Event as NostrEvent,
   nip19,

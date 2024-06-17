@@ -1,5 +1,5 @@
-import {trpc} from '@mintter/desktop/src/trpc'
-import {HMComment, createHmId, unpackHmId} from '@mintter/shared'
+import {trpc} from '@shm/desktop/src/trpc'
+import {HMComment, createHmId, unpackHmId} from '@shm/shared'
 import {
   Button,
   ChevronUp,
@@ -8,7 +8,7 @@ import {
   XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Reply} from '@tamagui/lucide-icons'
 import {
   CommentGroup,

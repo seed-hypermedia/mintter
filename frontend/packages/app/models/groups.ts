@@ -9,8 +9,8 @@ import {
   getBlockNode,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
-import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
+} from '@shm/shared'
+import {ListDocumentGroupsResponse_Item} from '@shm/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
   UseInfiniteQueryOptions,
   UseMutationOptions,
@@ -36,7 +36,7 @@ import {
   hmDocument,
   hmGroup,
   hmIdWithVersion,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {useDocumentDrafts} from './publication'
 import {queryKeys} from './query-keys'
 

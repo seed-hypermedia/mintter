@@ -1,4 +1,4 @@
-import {createHmId, unpackHmId} from '@mintter/shared'
+import {createHmId, unpackHmId} from '@shm/shared'
 import z from 'zod'
 import {appStore} from './app-store'
 import {t} from './app-trpc'

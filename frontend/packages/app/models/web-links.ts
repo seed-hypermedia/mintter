@@ -1,5 +1,5 @@
-import {AppQueryClient} from '@mintter/app/query-client'
-import {parseFragment} from '@mintter/shared'
+import {AppQueryClient} from '@shm/app/query-client'
+import {parseFragment} from '@shm/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'
 import {queryKeys} from './query-keys'

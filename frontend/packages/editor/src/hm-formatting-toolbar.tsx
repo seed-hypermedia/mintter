@@ -5,7 +5,7 @@ import {
 } from '@/blocknote/core'
 
 import {BlockTypeDropdownItem, FormattingToolbarProps} from '@/blocknote/react'
-import {ToggledStyle} from '@mintter/shared'
+import {ToggledStyle} from '@shm/shared'
 import {
   Button,
   Check,
@@ -25,7 +25,7 @@ import {
   UnorderedList,
   XGroup,
   XStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useMemo, useState} from 'react'
 import {
   HMBlockSchema,

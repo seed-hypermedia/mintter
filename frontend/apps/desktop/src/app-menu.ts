@@ -1,7 +1,7 @@
 // this menu is visible on macOS only
 // the keyboard shortcuts apply to every platform
 
-import {defaultRoute} from '@mintter/app/utils/routes'
+import {defaultRoute} from '@shm/app/utils/routes'
 import {Menu, MenuItem} from 'electron'
 import {dispatchFocusedWindowAppEvent, openRoute, trpc} from './app-api'
 

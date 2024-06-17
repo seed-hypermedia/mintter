@@ -1,10 +1,7 @@
-import Footer from '@mintter/app/components/footer'
-import {
-  useAccountIsConnected,
-  useAllAccounts,
-} from '@mintter/app/models/accounts'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {HMAccount, createHmId, hmId} from '@mintter/shared'
+import Footer from '@shm/app/components/footer'
+import {useAccountIsConnected, useAllAccounts} from '@shm/app/models/accounts'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {HMAccount, createHmId, hmId} from '@shm/shared'
 import {
   ArrowUpRight,
   Container,
@@ -13,7 +10,7 @@ import {
   Text,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import {AccountTrustButton} from '../components/account-trust'
 import {Avatar} from '../components/avatar'

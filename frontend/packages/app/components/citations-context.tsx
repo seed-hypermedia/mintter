@@ -1,5 +1,5 @@
-import {useEntityMentions} from '@mintter/app/models/content-graph'
-import {Mention} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {useEntityMentions} from '@shm/app/models/content-graph'
+import {Mention} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {createContext, ReactNode, useContext, useMemo, useState} from 'react'
 
 export type CitationsContext = {

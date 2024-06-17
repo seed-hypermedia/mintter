@@ -1,9 +1,9 @@
-import {MintterIcon} from '@mintter/app/components/mintter-icon'
-import appError from '@mintter/app/errors'
-import {useSetProfile} from '@mintter/app/models/accounts'
-import {useAccountRegistration, useMnemonics} from '@mintter/app/models/daemon'
-import {trpc} from '@mintter/desktop/src/trpc'
-import {Profile as ProfileType} from '@mintter/shared'
+import {MintterIcon} from '@shm/app/components/mintter-icon'
+import appError from '@shm/app/errors'
+import {useSetProfile} from '@shm/app/models/accounts'
+import {useAccountRegistration, useMnemonics} from '@shm/app/models/daemon'
+import {trpc} from '@shm/desktop/src/trpc'
+import {Profile as ProfileType} from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -32,7 +32,7 @@ import {
   YStack,
   toast,
   useTheme,
-} from '@mintter/ui'
+} from '@shm/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {
   PropsWithChildren,

@@ -1,5 +1,5 @@
-import {BlockNoteEditor, HyperMediaEditorView} from '@mintter/editor'
-import {YStack} from '@mintter/ui'
+import {BlockNoteEditor, HyperMediaEditorView} from '@shm/editor'
+import {YStack} from '@shm/ui'
 import {useMemo, useState} from 'react'
 import {AppPublicationContentProvider} from './publication-content-provider'
 

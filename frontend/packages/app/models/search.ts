@@ -3,7 +3,7 @@ import {
   HYPERMEDIA_ENTITY_TYPES,
   SearchEntitiesResponse,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {UseQueryOptions, useQuery} from '@tanstack/react-query'
 import {useCallback, useMemo, useState} from 'react'
 import {useGRPCClient} from '../app-context'

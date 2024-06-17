@@ -1,5 +1,5 @@
-import {useHover} from '@mintter/shared'
-import {Button, Star, StarFull, Tooltip} from '@mintter/ui'
+import {useHover} from '@shm/shared'
+import {Button, Star, StarFull, Tooltip} from '@shm/ui'
 
 import {ComponentProps} from 'react'
 import {useFavorite} from '../models/favorites'

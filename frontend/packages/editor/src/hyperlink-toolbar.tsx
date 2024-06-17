@@ -1,4 +1,4 @@
-import {createHmDocLink, unpackHmId} from '@mintter/shared'
+import {createHmDocLink, unpackHmId} from '@shm/shared'
 import {
   Button,
   Check,
@@ -14,7 +14,7 @@ import {
   Unlink,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useEffect, useMemo, useState} from 'react'
 import {HyperlinkToolbarProps} from './blocknote'
 

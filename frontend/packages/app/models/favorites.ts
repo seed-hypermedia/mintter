@@ -1,10 +1,5 @@
-import {trpc} from '@mintter/desktop/src/trpc'
-import {
-  HMAccount,
-  HMGroup,
-  UnpackedHypermediaId,
-  unpackHmId,
-} from '@mintter/shared'
+import {trpc} from '@shm/desktop/src/trpc'
+import {HMAccount, HMGroup, UnpackedHypermediaId, unpackHmId} from '@shm/shared'
 import {useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
 import {useAccounts} from './accounts'

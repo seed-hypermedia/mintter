@@ -1,8 +1,8 @@
-import {Avatar} from '@mintter/app/components/avatar'
-import Footer from '@mintter/app/components/footer'
-import {OnlineIndicator} from '@mintter/app/components/indicator'
-import {useAccountWithDevices} from '@mintter/app/models/contacts'
-import {useNavRoute} from '@mintter/app/utils/navigation'
+import {Avatar} from '@shm/app/components/avatar'
+import Footer from '@shm/app/components/footer'
+import {OnlineIndicator} from '@shm/app/components/indicator'
+import {useAccountWithDevices} from '@shm/app/models/contacts'
+import {useNavRoute} from '@shm/app/utils/navigation'
 import {
   Event,
   HMAccount,
@@ -18,8 +18,8 @@ import {
   pluralizer,
   unpackDocId,
   unpackHmId,
-} from '@mintter/shared'
-import {ListAccountGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
+} from '@shm/shared'
+import {ListAccountGroupsResponse_Item} from '@shm/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
   AlertDialog,
   BlockQuote,
@@ -38,8 +38,8 @@ import {
   YStack,
   copyTextToClipboard,
   toast,
-} from '@mintter/ui'
-import {PageContainer} from '@mintter/ui/src/container'
+} from '@shm/ui'
+import {PageContainer} from '@shm/ui/src/container'
 import {Trash} from '@tamagui/lucide-icons'
 import React, {ReactNode, useMemo} from 'react'
 import {VirtuosoHandle} from 'react-virtuoso'

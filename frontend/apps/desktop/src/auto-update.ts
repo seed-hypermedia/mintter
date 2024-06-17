@@ -1,4 +1,4 @@
-import {IS_PROD_DESKTOP} from '@mintter/shared'
+import {IS_PROD_DESKTOP} from '@shm/shared'
 import {MessageBoxOptions, app, autoUpdater, dialog, shell} from 'electron'
 import log from 'electron-log/main'
 import {appStore} from './app-store'

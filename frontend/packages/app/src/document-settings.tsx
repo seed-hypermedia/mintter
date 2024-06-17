@@ -1,4 +1,4 @@
-import {SizableText, XStack, YStack} from '@mintter/ui'
+import {SizableText, XStack, YStack} from '@shm/ui'
 import {useEffect, useState} from 'react'
 import {useEntityTimeline} from '../models/changes'
 import {useNavRoute} from '../utils/navigation'

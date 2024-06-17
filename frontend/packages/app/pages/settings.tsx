@@ -1,10 +1,10 @@
-import {useMyAccount} from '@mintter/app/models/accounts'
-import {useDaemonInfo} from '@mintter/app/models/daemon'
-import {usePeerInfo} from '@mintter/app/models/networking'
-import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
-import {ObjectKeys} from '@mintter/app/utils/object-keys'
-import {trpc} from '@mintter/desktop/src/trpc'
-import {LightningWallet, Profile, VERSION} from '@mintter/shared'
+import {useMyAccount} from '@shm/app/models/accounts'
+import {useDaemonInfo} from '@shm/app/models/daemon'
+import {usePeerInfo} from '@shm/app/models/networking'
+import {useInvoicesBywallet, useWallets} from '@shm/app/models/payments'
+import {ObjectKeys} from '@shm/app/utils/object-keys'
+import {trpc} from '@shm/desktop/src/trpc'
+import {LightningWallet, Profile, VERSION} from '@shm/shared'
 import {
   ArrowDownRight,
   Button,
@@ -40,7 +40,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import React, {useEffect, useMemo, useState} from 'react'

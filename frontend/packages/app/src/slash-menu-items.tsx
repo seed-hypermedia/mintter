@@ -3,8 +3,8 @@ import {
   HMBlockSchema,
   PartialBlock,
   insertOrUpdateBlock,
-} from '@mintter/editor'
-import {TwitterXIcon} from '@mintter/ui'
+} from '@shm/editor'
+import {TwitterXIcon} from '@shm/ui'
 import {
   RiArticleFill,
   RiCodeBoxFill,

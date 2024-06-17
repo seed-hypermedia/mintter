@@ -1,4 +1,4 @@
-import {Spinner, YStack} from '@mintter/ui'
+import {Spinner, YStack} from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'

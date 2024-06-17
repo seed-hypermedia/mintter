@@ -1,4 +1,4 @@
-import {AlertDialog, Button, XStack, YStack} from '@mintter/ui'
+import {AlertDialog, Button, XStack, YStack} from '@shm/ui'
 import {useAppDialog} from './dialog'
 
 export function useDeleteCommentDraftDialog() {

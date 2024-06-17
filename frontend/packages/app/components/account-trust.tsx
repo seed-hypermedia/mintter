@@ -1,6 +1,6 @@
-import {Button, Tooltip} from '@mintter/ui'
+import {Button, Tooltip} from '@shm/ui'
 
-import {useHover} from '@mintter/shared'
+import {useHover} from '@shm/shared'
 import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {useSetTrusted} from '../models/accounts'
 

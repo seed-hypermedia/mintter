@@ -1,4 +1,4 @@
-import {BlockNode, DocumentChange, GRPCClient} from '@mintter/shared'
+import {BlockNode, DocumentChange, GRPCClient} from '@shm/shared'
 
 export type WebCapture = {
   uploadedPNG: string

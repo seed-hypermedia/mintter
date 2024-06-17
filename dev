@@ -78,7 +78,7 @@ def main():
     def run_desktop(args):
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
-        run("yarn workspace @seed/ui generate")
+        run("yarn workspace @shm/ui generate")
         run("plz build //backend:seed-daemon //:yarn")
 
         testnet_var = "SEED_P2P_TESTNET_NAME"
@@ -102,7 +102,7 @@ def main():
 
     @cmd(cmds, "test-desktop", "Run frontend desktop tests.")
     def test_desktop(args):
-        run("yarn workspace @seed/ui generate")
+        run("yarn workspace @shm/ui generate")
         run("plz build //backend:seed-daemon //:yarn")
 
         testnet_var = "SEED_P2P_TESTNET_NAME"
@@ -138,7 +138,11 @@ def main():
     def frontend_validate(args):
         run("yarn validate")
 
-    @cmd(cmds, "run-backend", "Build and run seed-daemon binary for the current platform.")
+    @cmd(
+        cmds,
+        "run-backend",
+        "Build and run seed-daemon binary for the current platform.",
+    )
     def run_backend(args):
         return run("plz run //backend:seed-daemon", args=args)
 

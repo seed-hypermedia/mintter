@@ -1,5 +1,5 @@
-import {trpc} from '@mintter/desktop/src/trpc'
-import {toast} from '@mintter/ui'
+import {trpc} from '@shm/desktop/src/trpc'
+import {toast} from '@shm/ui'
 import {useQueryInvalidator} from '../app-context'
 
 export function useAutoUpdatePreference() {

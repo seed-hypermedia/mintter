@@ -1,7 +1,7 @@
-import {useAppContext} from '@mintter/app/app-context'
-import {fetchWebLink} from '@mintter/app/models/web-links'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {trpc} from '@mintter/desktop/src/trpc'
+import {useAppContext} from '@shm/app/app-context'
+import {fetchWebLink} from '@shm/app/models/web-links'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   GRPCClient,
   HYPERMEDIA_ENTITY_TYPES,
@@ -11,7 +11,7 @@ import {
   parseCustomURL,
   parseFragment,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   Input,
@@ -21,7 +21,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'

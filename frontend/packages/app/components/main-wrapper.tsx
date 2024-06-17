@@ -1,4 +1,4 @@
-import {ScrollView, View, XStack, YStackProps, useStream} from '@mintter/ui'
+import {ScrollView, View, XStack, YStackProps, useStream} from '@shm/ui'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 
 function SidebarSpacer() {

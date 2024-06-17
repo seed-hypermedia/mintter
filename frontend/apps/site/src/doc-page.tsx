@@ -1,4 +1,4 @@
-import {createHmId, parseVariantsQuery} from '@mintter/shared'
+import {createHmId, parseVariantsQuery} from '@shm/shared'
 import {useRouter} from 'next/router'
 import {PublicationPage} from './publication-page'
 

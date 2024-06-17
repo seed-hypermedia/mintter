@@ -1,5 +1,5 @@
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {Account, API_FILE_URL, PeerInfo} from '@mintter/shared'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {Account, API_FILE_URL, PeerInfo} from '@shm/shared'
 import {
   ArrowUpRight,
   Button,
@@ -18,7 +18,7 @@ import {
   XGroup,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import React, {useState} from 'react'
 import {ColorValue} from 'react-native'
 import {useAllAccounts} from '../models/accounts'

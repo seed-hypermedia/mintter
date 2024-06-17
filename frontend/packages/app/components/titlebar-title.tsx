@@ -1,7 +1,7 @@
-import {useDraftTitle} from '@mintter/app/models/documents'
-import {usePublicationVariant} from '@mintter/app/models/publication'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {getDocumentTitle} from '@mintter/shared'
+import {useDraftTitle} from '@shm/app/models/documents'
+import {usePublicationVariant} from '@shm/app/models/publication'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {getDocumentTitle} from '@shm/shared'
 import {
   Book,
   Button,
@@ -17,7 +17,7 @@ import {
   XStack,
   YStack,
   styled,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {Sparkles, Star} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {AiOutlineEllipsis} from 'react-icons/ai'

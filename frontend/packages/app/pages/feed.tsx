@@ -14,7 +14,7 @@ import {
   hmId,
   pluralS,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -32,7 +32,7 @@ import {
   XStack,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
 import React, {PropsWithChildren, ReactNode} from 'react'
 import {VirtuosoHandle} from 'react-virtuoso'

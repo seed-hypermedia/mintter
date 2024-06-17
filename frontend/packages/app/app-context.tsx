@@ -1,5 +1,5 @@
-import {GRPCClient} from '@mintter/shared'
-import {TamaguiProvider, TamaguiProviderProps, View} from '@mintter/ui'
+import {GRPCClient} from '@shm/shared'
+import {TamaguiProvider, TamaguiProviderProps, View} from '@shm/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {ReactNode, createContext, useContext, useEffect, useMemo} from 'react'

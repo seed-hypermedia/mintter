@@ -1,6 +1,6 @@
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
-import {trpc} from '@mintter/desktop/src/trpc'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   API_FILE_URL,
   BlockRange,
@@ -9,7 +9,7 @@ import {
   PublicationContentProvider,
   contentLayoutUnit,
   contentTextUnit,
-} from '@mintter/shared'
+} from '@shm/shared'
 import 'allotment/dist/style.css'
 import {useAppContext} from '../app-context'
 import {

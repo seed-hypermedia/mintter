@@ -1,6 +1,6 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-import {abbreviateCid} from '@mintter/shared'
+import {abbreviateCid} from '@shm/shared'
 import {QueryKey} from '@tanstack/react-query'
 
 export const queryKeys = {

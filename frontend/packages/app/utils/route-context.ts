@@ -1,4 +1,4 @@
-import {unpackHmId} from '@mintter/shared'
+import {unpackHmId} from '@shm/shared'
 import {useNavRoute} from './navigation'
 import {BaseEntityRoute, NavRoute} from './routes'
 import {useNavigate} from './useNavigate'

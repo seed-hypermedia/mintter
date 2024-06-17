@@ -1,5 +1,5 @@
-import {HMGroup, Role, createHmId, unpackHmId} from '@mintter/shared'
-import {SideSection, SideSectionTitle, SizableText, Tooltip} from '@mintter/ui'
+import {HMGroup, Role, createHmId, unpackHmId} from '@shm/shared'
+import {SideSection, SideSectionTitle, SizableText, Tooltip} from '@shm/ui'
 import {format} from 'date-fns'
 import {AccountRow} from './account-row'
 import {OpenInAppLink} from './metadata'

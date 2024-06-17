@@ -1,5 +1,5 @@
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
-import {Button, Text, XStack, YStack, toast} from '@mintter/ui'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
+import {Button, Text, XStack, YStack, toast} from '@shm/ui'
 import {useState} from 'react'
 import {Block, HMBlockSchema, MaxFileSizeB, MaxFileSizeMB} from '.'
 import {BlockNoteEditor} from './blocknote'

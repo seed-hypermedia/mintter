@@ -1,3 +1,4 @@
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import {
   Button,
   ButtonProps,
@@ -6,8 +7,7 @@ import {
   SizableText,
   SizableTextProps,
   YStack,
-} from '@mintter/ui'
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
+} from '@shm/ui'
 import {forwardRef} from 'react'
 import {DialogOverlay} from './dialog'
 

@@ -6,7 +6,7 @@ import {
   Separator,
   XStack,
   YGroup,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {FC} from 'react'
 import {usePopoverState} from '../use-popover-state'
 

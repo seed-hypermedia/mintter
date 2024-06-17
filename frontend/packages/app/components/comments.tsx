@@ -1,4 +1,4 @@
-import {trpc} from '@mintter/desktop/src/trpc'
+import {trpc} from '@shm/desktop/src/trpc'
 import {
   API_FILE_URL,
   BlockRange,
@@ -11,7 +11,7 @@ import {
   formattedDateMedium,
   serializeBlockRange,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -22,7 +22,7 @@ import {
   XStack,
   copyUrlToClipboardWithFeedback,
   useStream,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {
   ArrowUpRight,
   Copy,

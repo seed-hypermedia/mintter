@@ -1,4 +1,4 @@
-import {HMBlockNode, HMPublication} from '@mintter/shared'
+import {HMBlockNode, HMPublication} from '@shm/shared'
 import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 
 export function OGImageMeta({url, alt}: {url: string; alt?: string}) {

@@ -1,4 +1,4 @@
-import {Circle, XStack} from '@mintter/ui'
+import {Circle, XStack} from '@shm/ui'
 
 export function OnlineIndicator({online}: {online: boolean}) {
   return (

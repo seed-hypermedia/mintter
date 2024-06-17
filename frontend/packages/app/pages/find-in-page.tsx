@@ -6,7 +6,7 @@ import {
   Input,
   XGroup,
   XStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useEffect, useRef, useState} from 'react'
 import {AppIPC} from '../app-ipc'
 

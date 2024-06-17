@@ -1,4 +1,4 @@
-import {useOpenUrl} from '@mintter/desktop/src/open-url'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {
   Button,
   ButtonText,
@@ -8,7 +8,7 @@ import {
   Spinner,
   YStack,
   toast,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'
 import {usePublishGroupToSite} from '../models/groups'

@@ -1,6 +1,6 @@
 import {HMBlockSchema} from '@/schema'
-import {API_FILE_UPLOAD_URL} from '@mintter/shared'
-import {toast} from '@mintter/ui'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
+import {toast} from '@shm/ui'
 import {Extension} from '@tiptap/core'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {BlockNoteEditor} from '../../BlockNoteEditor'

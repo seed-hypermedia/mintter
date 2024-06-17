@@ -10,7 +10,7 @@ import {
   Theme,
   Unlink,
   XGroup,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {useCallback, useEffect, useState} from 'react'
 import {HyperlinkToolbarProps, useEditorSelectionChange} from './blocknote'
 import {usePopoverState} from './use-popover-state'

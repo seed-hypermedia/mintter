@@ -1,7 +1,7 @@
 import {getLinkMenuItems} from '@/blocknote/core'
 import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
-import {fetchWebLink} from '@mintter/app/models/web-links'
-import {AppQueryClient} from '@mintter/app/query-client'
+import {fetchWebLink} from '@shm/app/models/web-links'
+import {AppQueryClient} from '@shm/app/query-client'
 import {
   GRPCClient,
   StateStream,
@@ -13,7 +13,7 @@ import {
   isPublicGatewayLink,
   normalizeHmId,
   unpackHmId,
-} from '@mintter/shared'
+} from '@shm/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'

@@ -1,5 +1,5 @@
 import {PartialMessage, Timestamp} from '@bufbuild/protobuf'
-import {Event, ListEventsRequest} from '@mintter/shared'
+import {Event, ListEventsRequest} from '@shm/shared'
 import {useInfiniteQuery, useQuery} from '@tanstack/react-query'
 import {unpackHmId} from '../../shared/src'
 import {useGRPCClient} from '../app-context'

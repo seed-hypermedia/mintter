@@ -1,7 +1,4 @@
-import {
-  API_FILE_UPLOAD_URL,
-  usePublicationContentContext,
-} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL, usePublicationContentContext} from '@shm/shared'
 import {
   Button,
   Form,
@@ -11,7 +8,7 @@ import {
   Spinner,
   XStack,
   YStack,
-} from '@mintter/ui'
+} from '@shm/ui'
 import {ChangeEvent, FunctionComponent, useEffect, useState} from 'react'
 import {RiUpload2Fill} from 'react-icons/ri'
 import {Block, BlockNoteEditor, getBlockInfoFromPos} from './blocknote'
