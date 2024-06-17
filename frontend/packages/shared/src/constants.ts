@@ -30,7 +30,7 @@ export const HOSTNAME =
 export const DESKTOP_APPDATA =
   (import.meta.env && import.meta.env.VITE_DESKTOP_APPDATA) ||
   process.env.VITE_DESKTOP_APPDATA ||
-  'Mintter'
+  'Seed'
 
 export const VERSION =
   (import.meta.env && import.meta.env.VITE_VERSION) ||

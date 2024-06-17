@@ -1,8 +1,8 @@
 {
   "name": "@shm/desktop",
   "version": "0.0.0",
-  "productName": "Mintter",
-  "description": "Mintter: A Hypermedia client",
+  "productName": "Seed",
+  "description": "Seed: A Hypermedia client",
   "keywords": [],
   "repository": {
     "type": "git",
@@ -10,8 +10,8 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Mintterteam",
-    "email": "team@mintter.com"
+    "name": "Seed Hypermedia team",
+    "email": "team@seedhypermedia.com"
   },
   "main": ".vite/build/main.js",
   "scripts": {

@@ -11,20 +11,20 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
+import { NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 import {
   DehydratedState,
   Hydrate,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import {TamaguiProvider, Toaster} from '@shm/ui'
-import type {AppProps} from 'next/app'
+import { TamaguiProvider, Toaster } from '@shm/ui'
+import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import React, {startTransition, useMemo, useState} from 'react'
-import {trpc} from '../src/trpc'
+import React, { startTransition, useMemo, useState } from 'react'
+import { trpc } from '../src/trpc'
 import tamaguiConfig from '../tamagui.config'
 
 if (process.env.NODE_ENV === 'production') {
@@ -33,8 +33,8 @@ if (process.env.NODE_ENV === 'production') {
 
 export default trpc.withTRPC(App)
 
-const isMintterSite = process.env.HM_BASE_URL === 'https://mintter.com'
-const hostIconPrefix = isMintterSite ? '/mintter-icon' : '/generic-icon'
+const isSeedSite = process.env.HM_BASE_URL === 'https://seedhypermedia.com'
+const hostIconPrefix = isSeedSite ? '/seed-icon' : '/generic-icon'
 
 export type EveryPageProps = {
   trpcState?: DehydratedState

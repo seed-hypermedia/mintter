@@ -1,5 +1,5 @@
-import {SizableText, XStack, YStack} from '@shm/ui'
-import {NextLink} from 'src/next-link'
+import { SizableText, XStack, YStack } from '@shm/ui'
+import { NextLink } from 'src/next-link'
 
 export default function Footer() {
   return (

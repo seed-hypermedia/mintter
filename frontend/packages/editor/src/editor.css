@@ -42,7 +42,7 @@
 /* .ProseMirror .link { */
 /* color: var(--blue11); */
 /* } */
-/* .mintter-app-dark .ProseMirror .link {
+/* .seed-app-dark .ProseMirror .link {
   color: hsl(210, 100%, 66.1%);
 } */
 
@@ -50,7 +50,7 @@
 .ProseMirror .hm-link {
   color: var(--mint11);
 }
-/* .mintter-app-dark .ProseMirror .hm-link {
+/* .seed-app-dark .ProseMirror .hm-link {
   color: hsl(184, 80%, 71%);
 } */
 

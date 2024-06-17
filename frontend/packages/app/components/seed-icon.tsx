@@ -1,4 +1,4 @@
-import {XStack} from '@shm/ui'
+import { XStack } from '@shm/ui'
 
 type IconSize = '$1' | '$2' | '$3' | '$4'
 
@@ -9,7 +9,7 @@ let sizes = {
   $4: 60,
 } as const
 
-export function MintterIcon({
+export function SeedIcon({
   size: propSize = '$2',
   color,
 }: {

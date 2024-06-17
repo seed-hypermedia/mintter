@@ -92,7 +92,7 @@ def main():
         run("./scripts/cleanup-frontend.sh")
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
-        run("plz build //backend:seed-daemon//:yarn")
+        run("plz build //backend:seed-daemon //:yarn")
 
         testnet_var = "SEED_P2P_TESTNET_NAME"
         if testnet_var not in os.environ:

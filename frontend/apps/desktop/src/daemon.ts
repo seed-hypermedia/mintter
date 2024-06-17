@@ -5,17 +5,17 @@ import {
   P2P_PORT,
   VERSION,
 } from '@shm/shared'
-import {spawn} from 'child_process'
-import {app} from 'electron'
+import { spawn } from 'child_process'
+import { app } from 'electron'
 import path from 'path'
-import {userDataPath} from './app-paths'
-import {getDaemonBinaryPath} from './daemon-path'
-import {childLogger, info} from './logger'
+import { userDataPath } from './app-paths'
+import { getDaemonBinaryPath } from './daemon-path'
+import { childLogger, info } from './logger'
 const logger = childLogger('Go Daemon')
 
 let goDaemonExecutablePath = getDaemonBinaryPath()
 
-let lndhubFlags = userDataPath.includes('Mintter.local')
+let lndhubFlags = userDataPath.includes('Seed.local')
   ? '-lndhub.mainnet=false'
   : IS_PROD_DESKTOP
   ? '-lndhub.mainnet=true'

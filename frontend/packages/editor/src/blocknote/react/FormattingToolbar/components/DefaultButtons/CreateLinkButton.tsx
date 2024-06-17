@@ -1,7 +1,7 @@
-import {BlockNoteEditor, BlockSchema} from '@/blocknote/core'
-import {useCallback, useState} from 'react'
-import {RiLink} from 'react-icons/ri'
-import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
+import { BlockNoteEditor, BlockSchema } from '@/blocknote/core'
+import { useCallback, useState } from 'react'
+import { RiLink } from 'react-icons/ri'
+import { useEditorSelectionChange } from '../../../hooks/useEditorSelectionChange'
 import LinkToolbarButton from '../LinkToolbarButton'
 
 export const CreateLinkButton = <BSchema extends BlockSchema>(props: {
@@ -29,7 +29,7 @@ export const CreateLinkButton = <BSchema extends BlockSchema>(props: {
     <LinkToolbarButton
       isSelected={!!url}
       mainTooltip="Link"
-      // secondaryTooltip={formatKeyboardShortcut('Mod+K')} // cmd-k is the quick switcher in Mintter
+      // secondaryTooltip={formatKeyboardShortcut('Mod+K')} // cmd-k is the quick switcher in Seed
       icon={RiLink}
       hyperlinkIsActive={!!url}
       activeHyperlinkUrl={url}

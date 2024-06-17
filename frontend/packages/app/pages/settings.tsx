@@ -1,10 +1,10 @@
-import {useMyAccount} from '@shm/app/models/accounts'
-import {useDaemonInfo} from '@shm/app/models/daemon'
-import {usePeerInfo} from '@shm/app/models/networking'
-import {useInvoicesBywallet, useWallets} from '@shm/app/models/payments'
-import {ObjectKeys} from '@shm/app/utils/object-keys'
-import {trpc} from '@shm/desktop/src/trpc'
-import {LightningWallet, Profile, VERSION} from '@shm/shared'
+import { useMyAccount } from '@shm/app/models/accounts'
+import { useDaemonInfo } from '@shm/app/models/daemon'
+import { usePeerInfo } from '@shm/app/models/networking'
+import { useInvoicesBywallet, useWallets } from '@shm/app/models/payments'
+import { ObjectKeys } from '@shm/app/utils/object-keys'
+import { trpc } from '@shm/desktop/src/trpc'
+import { LightningWallet, Profile, VERSION } from '@shm/shared'
 import {
   ArrowDownRight,
   Button,
@@ -41,15 +41,15 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import {Trash} from '@tamagui/lucide-icons'
+import { Trash } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import React, {useEffect, useMemo, useState} from 'react'
-import {useIPC} from '../app-context'
-import {AvatarForm} from '../components/avatar-form'
-import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useIPC } from '../app-context'
+import { AvatarForm } from '../components/avatar-form'
+import { useEditProfileDialog } from '../components/edit-profile-dialog'
 import appError from '../errors'
-import {useAutoUpdatePreference} from '../models/app-settings'
-import {useExperiments, useWriteExperiments} from '../models/experiments'
+import { useAutoUpdatePreference } from '../models/app-settings'
+import { useExperiments, useWriteExperiments } from '../models/experiments'
 import {
   useGatewayUrl,
   usePushOnCopy,
@@ -58,9 +58,9 @@ import {
   useSetPushOnCopy,
   useSetPushOnPublish,
 } from '../models/gateway-settings'
-import {useExportWallet} from '../models/payments'
-import {useWalletOptIn} from '../models/wallet'
-import {getAvatarUrl} from '../utils/account-url'
+import { useExportWallet } from '../models/payments'
+import { useWalletOptIn } from '../models/wallet'
+import { getAvatarUrl } from '../utils/account-url'
 
 export default function Settings() {
   return (
@@ -197,7 +197,7 @@ export function DeveloperSettings() {
       <SettingsSection title="Developer Tools">
         <SizableText fontSize="$4">
           Adds features across the app for helping diagnose issues. Mostly
-          useful for Mintter Developers.
+          useful for Seed Developers.
         </SizableText>
         <XStack jc="space-between">
           {enabledDevTools ? <EnabledTag /> : <View />}

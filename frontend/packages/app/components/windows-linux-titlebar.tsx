@@ -1,5 +1,5 @@
-import {useIPC, useWindowUtils} from '@shm/app/app-context'
-import {useNavigate} from '@shm/app/utils/useNavigate'
+import { useIPC, useWindowUtils } from '@shm/app/app-context'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   AddSquare,
   Button,
@@ -22,13 +22,13 @@ import {
   XStack,
   YGroup,
 } from '@shm/ui'
-import {Contact, FileText, Library} from '@tamagui/lucide-icons'
-import {useMemo} from 'react'
-import {useNavRoute, useNavigationDispatch} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
-import {defaultRoute} from '../utils/routes'
-import {useTriggerWindowEvent} from '../utils/window-events'
-import {WindowsLinuxWindowControls} from './window-controls'
+import { Contact, FileText, Library } from '@tamagui/lucide-icons'
+import { useMemo } from 'react'
+import { useNavRoute, useNavigationDispatch } from '../utils/navigation'
+import { useOpenDraft } from '../utils/open-draft'
+import { defaultRoute } from '../utils/routes'
+import { useTriggerWindowEvent } from '../utils/window-events'
+import { WindowsLinuxWindowControls } from './window-controls'
 
 export function WindowsLinuxTitleBar({
   left,
@@ -98,8 +98,8 @@ export function SystemMenu() {
   const menuItems: Array<MenuItemElement> = useMemo(
     () => [
       {
-        id: 'mintter',
-        title: 'Mintter',
+        id: 'seed',
+        title: 'Seed',
         children: [
           {
             id: 'preferences',
@@ -130,7 +130,7 @@ export function SystemMenu() {
           },
           {
             id: 'quit',
-            title: 'Quit Mintter',
+            title: 'Quit Seed',
             onSelect: () => quit(),
             icon: Delete,
           },
@@ -279,7 +279,7 @@ export function SystemMenu() {
               backgroundColor="transparent"
               borderRadius={0}
               paddingHorizontal="$2"
-              fontWeight={item.id == 'mintter' ? 'bold' : undefined}
+              fontWeight={item.id == 'seed' ? 'bold' : undefined}
             >
               {item.title}
             </Button>

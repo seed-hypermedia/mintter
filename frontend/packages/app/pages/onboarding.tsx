@@ -1,9 +1,8 @@
-import {MintterIcon} from '@shm/app/components/mintter-icon'
 import appError from '@shm/app/errors'
-import {useSetProfile} from '@shm/app/models/accounts'
-import {useAccountRegistration, useMnemonics} from '@shm/app/models/daemon'
-import {trpc} from '@shm/desktop/src/trpc'
-import {Profile as ProfileType} from '@shm/shared'
+import { useSetProfile } from '@shm/app/models/accounts'
+import { useAccountRegistration, useMnemonics } from '@shm/app/models/daemon'
+import { trpc } from '@shm/desktop/src/trpc'
+import { Profile as ProfileType } from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -46,10 +45,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import {useConnectPeer} from '../models/contacts'
-import {useWalletOptIn} from '../models/wallet'
-import {useDaemonReady} from '../node-status-context'
-import {isHttpUrl} from '../utils/navigation'
+import { SeedIcon } from '../components/seed-icon'
+import { useConnectPeer } from '../models/contacts'
+import { useWalletOptIn } from '../models/wallet'
+import { useDaemonReady } from '../node-status-context'
+import { isHttpUrl } from '../utils/navigation'
 
 const CONTENT_MAX_WIDTH = 500
 
@@ -85,12 +85,12 @@ function Welcome(props: OnboardingStepProps) {
       <XStack flex={1} gap="$10">
         <StepTitleSection step="welcome">
           <H2>Welcome to</H2>
-          <H1>Mintter</H1>
+          <H1>Seed</H1>
         </StepTitleSection>
 
         <YStack flex={2} gap="$5">
           <StepParagraph>
-            Welcome to Mintter, the decentralized knowledge collaboration app
+            Welcome to Seed, the decentralized knowledge collaboration app
             that fosters constructive dialogue and critical debate.
           </StepParagraph>
           <StepParagraph>
@@ -320,7 +320,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     }}
                   >
                     I understand that after this point I will not be able to
-                    recover my 12-word recovery phrase. Mintter cannot help me
+                    recover my 12-word recovery phrase. Seed cannot help me
                     recover them if I lose it.
                   </CheckboxField>
                 </YStack>
@@ -329,7 +329,7 @@ function Mnemonics(props: OnboardingStepProps) {
                 <YStack gap="$4">
                   <StepParagraph>
                     If you aready have a BIP-39 seed, you can reuse it with
-                    Mintter and we will derive a seprate Mintter-specific key
+                    Seed and we will derive a seprate Seed-specific key
                     from it
                   </StepParagraph>
                   <XStack
@@ -364,7 +364,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     }}
                   >
                     I understand that after this point I will not be able to
-                    recover my 12-word recovery phrase. Mintter cannot help me
+                    recover my 12-word recovery phrase. Seed cannot help me
                     recover them if I lose it.
                   </CheckboxField>
 
@@ -543,7 +543,7 @@ function NewDevice(props: OnboardingStepProps) {
                 }}
               >
                 I understand that after this point I will not be able to recover
-                my 12-word recovery phrase. Mintter cannot help me recover them
+                my 12-word recovery phrase. Seed cannot help me recover them
                 if I lose it.
               </CheckboxField>
               {error || register.status == 'error' ? (
@@ -606,7 +606,7 @@ function Profile(props: OnboardingStepProps) {
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
             <StepParagraph>
-              Link your personal data with your new Mintter account. You can
+              Link your personal data with your new Seed account. You can
               fill this information later if you prefer.
             </StepParagraph>
             <XStack maxWidth={CONTENT_MAX_WIDTH}>
@@ -650,13 +650,13 @@ function Analytics(props: OnboardingStepProps) {
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
             <StepParagraph>
-              Pre-release versions of Mintter automatically send anonymized
+              Pre-release versions of Seed automatically send anonymized
               crash reports when things go wrong. This helps us fix bugs and
               improve performance.
             </StepParagraph>
             <StepParagraph>
               We strongly believe privacy is a basic human right, so the full
-              release of Mintter will never send your data to anyone.
+              release of Seed will never send your data to anyone.
             </StepParagraph>
           </YStack>
         </YStack>
@@ -717,7 +717,7 @@ function Wallet(props: OnboardingStepProps) {
 
 const SuggestedSites = import.meta.env.DEV
   ? ['test.hyper.media']
-  : ['mintter.com', 'hyper.media']
+  : ['seedhypermedia.com', 'hyper.media', 'mintter.com']
 
 function ConnectSite(props: OnboardingStepProps) {
   const isDaemonReady = useDaemonReady()
@@ -863,7 +863,7 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
           maxWidth={1024}
         >
           <YStack alignItems="flex-start" padding="$6">
-            <MintterIcon
+            <SeedIcon
               size="$3"
               color={theme.color8?.val || 'hsl(0, 0%, 81.0%)'}
             />

@@ -6,12 +6,12 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Mintter Docs',
+  title: 'Seed Docs',
   tagline: 'Amplifying Intllectual Communities',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://docs.mintter.com',
+  url: 'https://docs.seedhypermedia.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',

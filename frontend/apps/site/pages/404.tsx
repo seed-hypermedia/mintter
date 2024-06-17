@@ -1,7 +1,7 @@
-import {HYPERMEDIA_ENTITY_TYPES, unpackHmId} from '@shm/shared'
-import {Button, Paragraph, SizableText} from '@shm/ui'
+import { HYPERMEDIA_ENTITY_TYPES, unpackHmId } from '@shm/shared'
+import { Button, Paragraph, SizableText } from '@shm/ui'
 import Link from 'next/link'
-import {ErrorPage} from 'src/error-page'
+import { ErrorPage } from 'src/error-page'
 
 export default function NotFoundPage() {
   return <ErrorPage title="Page not found" description=":(" />
@@ -26,13 +26,13 @@ export function EntityNotFoundPage({
       <Paragraph>
         We couldn't find this {entityTypeName.toLowerCase()}. You might be able
         to find it in the{' '}
-        <Link href="/download-mintter-hypermedia" target="_blank">
-          Mintter App
+        <Link href="/download-seed-hypermedia" target="_blank">
+          Seed App
         </Link>{' '}
         if you are connected to a peer who has it.
       </Paragraph>
       <Link passHref href={id} style={{textDecoration: 'none'}}>
-        <Button>Open in Mintter App</Button>
+        <Button>Open in Seed App</Button>
       </Link>
     </ErrorPage>
   )

@@ -1,4 +1,4 @@
-import {Button, Share, SizableText, XStack} from '@shm/ui'
+import { Button, Share, SizableText, XStack } from '@shm/ui'
 
 export function OpenInAppLink({url}: {url: string}) {
   return (
@@ -11,7 +11,7 @@ export function OpenInAppLink({url}: {url: string}) {
       userSelect="none"
     >
       <XStack flex={1} alignItems="center">
-        <SizableText size="$2">Open in Mintter app</SizableText>
+        <SizableText size="$2">Open in Seed app</SizableText>
       </XStack>
     </Button>
   )

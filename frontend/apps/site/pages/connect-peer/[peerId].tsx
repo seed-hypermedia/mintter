@@ -1,7 +1,7 @@
-import {Button, PageSection, SizableText, YStack} from '@shm/ui'
+import { Button, PageSection, SizableText, YStack } from '@shm/ui'
 import Link from 'next/link'
-import {useRouter} from 'next/router'
-import {SiteHead} from '../../src/site-head'
+import { useRouter } from 'next/router'
+import { SiteHead } from '../../src/site-head'
 
 export default function ConnectPeerPage() {
   const router = useRouter()
@@ -25,12 +25,12 @@ export default function ConnectPeerPage() {
             <SizableText size="$5" fontWeight="800" textAlign="center">
               Somebody wants to connect with you! First{' '}
               <a href="https://github.com/mintterhypermedia/mintter/releases/latest">
-                download the Mintter app
+                download the Seed app
               </a>
               , then press this button to launch it:
             </SizableText>
             <Link passHref href={`hm://connect-peer/${peerId}`}>
-              <Button tag="a">Connect in Mintter</Button>
+              <Button tag="a">Connect in Seed</Button>
             </Link>
           </YStack>
         </PageSection.Content>

@@ -1,12 +1,12 @@
-import {StyleProvider} from '@shm/app/app-context'
-import {FindInPage} from '@shm/app/pages/find-in-page'
-import {useStream} from '@shm/ui'
+import { StyleProvider } from '@shm/app/app-context'
+import { FindInPage } from '@shm/app/pages/find-in-page'
+import { useStream } from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
-import React, {useMemo} from 'react'
+import React, { useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
-import {createIPC} from './ipc'
+import { createIPC } from './ipc'
 
 function FindInPageView() {
   const ipc = useMemo(() => createIPC(), [])
@@ -17,7 +17,7 @@ function FindInPageView() {
     <div
       className={
         // this is used by editor.css which doesn't know tamagui styles, boooo!
-        darkMode ? 'mintter-app-dark' : 'mintter-app-light'
+        darkMode ? 'seed-app-dark' : 'seed-app-light'
       }
     >
       <StyleProvider darkMode={darkMode}>

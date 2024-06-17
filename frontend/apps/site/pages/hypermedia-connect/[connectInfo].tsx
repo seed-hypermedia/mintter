@@ -6,12 +6,12 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {decompressFromEncodedURIComponent} from 'lz-string'
+import { decompressFromEncodedURIComponent } from 'lz-string'
 import Link from 'next/link'
-import {useRouter} from 'next/router'
-import {useMemo} from 'react'
-import {MainSiteLayout} from 'src/site-layout'
-import {SiteHead} from '../../src/site-head'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
+import { MainSiteLayout } from 'src/site-layout'
+import { SiteHead } from '../../src/site-head'
 
 export default function ConnectPeerPage() {
   const router = useRouter()
@@ -37,17 +37,17 @@ export default function ConnectPeerPage() {
         gap="$3"
       >
         <SizableText size="$5" fontWeight="800">
-          Connect to &quot;{alias}&quot; on Mintter Hypermedia
+          Connect to &quot;{alias}&quot; on Seed Hypermedia
         </SizableText>
         <SizableText>1. Download the app and set up your account:</SizableText>
         <XStack>
           <Link
             passHref
-            href={`/download-mintter-hypermedia`}
+            href={`/download-seed-hypermedia`}
             style={{textDecoration: 'none'}}
           >
             <Button tag="a" iconAfter={ArrowRight}>
-              Download Mintter Desktop
+              Download Seed Desktop App
             </Button>
           </Link>
         </XStack>
@@ -61,7 +61,7 @@ export default function ConnectPeerPage() {
             style={{textDecoration: 'none'}}
           >
             <Button tag="a" iconAfter={ArrowUpRight}>
-              Connect in Mintter
+              Connect in Seed
             </Button>
           </Link>
         </XStack>

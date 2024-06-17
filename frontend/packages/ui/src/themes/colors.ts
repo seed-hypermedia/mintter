@@ -14,7 +14,7 @@ export {
   red,
   redDark,
   yellow,
-  yellowDark,
+  yellowDark
 } from '@tamagui/themes'
 
 export const lightTransparent = 'rgba(255,255,255,0)'
@@ -46,7 +46,7 @@ export const mintDark = {
   mint8: 'hsl(181, 52.1%, 45.9%)',
   mint9: 'hsl(181, 51.0%, 54.0%)',
   mint10: 'hsl(182, 57.3%, 59.1%)',
-  mint11: 'hsl(184, 80.0%, 71.0%)', // PLEASE manually sync with editor.css .mintter-app-dark .ProseMirror .hm-link
+  mint11: 'hsl(184, 80.0%, 71.0%)', // PLEASE manually sync with editor.css .seed-app-dark .ProseMirror .hm-link
   mint12: 'hsl(188, 75.0%, 95.7%)',
 }
 

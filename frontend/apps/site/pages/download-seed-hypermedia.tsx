@@ -10,22 +10,22 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {GetStaticProps} from 'next'
-import {getPageProps} from 'server/ssr-helpers'
-import {getSiteServerHelpers} from 'server/static-props'
-import {SiteHead} from 'src/site-head'
-import {EveryPageProps} from './_app'
+import { GetStaticProps } from 'next'
+import { getPageProps } from 'server/ssr-helpers'
+import { getSiteServerHelpers } from 'server/static-props'
+import { SiteHead } from 'src/site-head'
+import { EveryPageProps } from './_app'
 
 export default function DownloadPage(props: any) {
   return (
     <>
-      <SiteHead pageTitle={`Download Mintter ${props.versionName}`} />
+      <SiteHead pageTitle={`Download Seed ${props.versionName}`} />
       <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
           <YStack paddingHorizontal="$4" $gtMd={{paddingHorizontal: '$5'}}>
             <SizableText size="$8" fontWeight="bold">
-              Download Mintter
+              Download Seed
             </SizableText>
             <SizableText size="$6" fontWeight="bold" opacity={0.6}>
               {props.versionName}

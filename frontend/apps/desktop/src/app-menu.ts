@@ -1,9 +1,9 @@
 // this menu is visible on macOS only
 // the keyboard shortcuts apply to every platform
 
-import {defaultRoute} from '@shm/app/utils/routes'
-import {Menu, MenuItem} from 'electron'
-import {dispatchFocusedWindowAppEvent, openRoute, trpc} from './app-api'
+import { defaultRoute } from '@shm/app/utils/routes'
+import { Menu, MenuItem } from 'electron'
+import { dispatchFocusedWindowAppEvent, openRoute, trpc } from './app-api'
 
 export function createAppMenu() {
   const appMenu = new Menu()
@@ -11,7 +11,7 @@ export function createAppMenu() {
   appMenu.append(
     new MenuItem({
       role: 'appMenu',
-      label: 'Mintter',
+      label: 'Seed',
       submenu: [
         {role: 'about'},
         {type: 'separator'},

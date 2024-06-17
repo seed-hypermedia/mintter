@@ -1,13 +1,13 @@
-import {GRPCClient} from '@shm/shared'
-import {TamaguiProvider, TamaguiProviderProps, View} from '@shm/ui'
-import {QueryClientProvider} from '@tanstack/react-query'
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {ReactNode, createContext, useContext, useEffect, useMemo} from 'react'
-import {AppIPC, Event, EventCallback} from './app-ipc'
-import {useExperiments} from './models/experiments'
-import {AppQueryClient} from './query-client'
+import { GRPCClient } from '@shm/shared'
+import { TamaguiProvider, TamaguiProviderProps, View } from '@shm/ui'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ReactNode, createContext, useContext, useEffect, useMemo } from 'react'
+import { AppIPC, Event, EventCallback } from './app-ipc'
+import { useExperiments } from './models/experiments'
+import { AppQueryClient } from './query-client'
 import tamaguiConfig from './tamagui.config'
-import {WindowUtils} from './window-utils'
+import { WindowUtils } from './window-utils'
 
 export type AppPlatform = typeof process.platform
 
@@ -90,7 +90,7 @@ export function StyleProvider({
       // TODO: find a way to add this props without breaking all the styles
       // disableInjectCSS
       // disableRootThemeClass
-      className={darkMode ? 'mintter-app-dark' : 'mintter-app-light'}
+      className={darkMode ? 'seed-app-dark' : 'seed-app-light'}
       defaultTheme={darkMode ? 'dark' : 'light'}
       {...rest}
     >

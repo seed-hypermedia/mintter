@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/electron/main'
-import {defaultRoute} from '@shm/app/utils/routes'
-import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@shm/shared'
+import { defaultRoute } from '@shm/app/utils/routes'
+import { ELECTRON_HTTP_PORT, IS_PROD_DESKTOP } from '@shm/shared'
 import {
   BrowserWindow,
   Menu,
@@ -20,14 +20,14 @@ import {
   openInitialWindows,
   trpc,
 } from './app-api'
-import {createAppMenu} from './app-menu'
-import {startMetricsServer} from './app-metrics'
-import {initPaths} from './app-paths'
-import {APP_AUTO_UPDATE_PREFERENCE} from './app-settings'
-import {appStore} from './app-store'
+import { createAppMenu } from './app-menu'
+import { startMetricsServer } from './app-metrics'
+import { initPaths } from './app-paths'
+import { APP_AUTO_UPDATE_PREFERENCE } from './app-settings'
+import { appStore } from './app-store'
 import autoUpdate from './auto-update'
-import {startMainDaemon} from './daemon'
-import {saveCidAsFile} from './save-cid-as-file'
+import { startMainDaemon } from './daemon'
+import { saveCidAsFile } from './save-cid-as-file'
 
 const OS_REGISTER_SCHEME = 'hm'
 
@@ -100,7 +100,7 @@ log.initialize({
 })
 
 app.on('did-become-active', () => {
-  log.debug('[MAIN]: Mintter active')
+  log.debug('[MAIN]: Seed active')
   if (BrowserWindow.getAllWindows().length === 0) {
     log.debug('[MAIN]: will open the home window')
     trpc.createAppWindow({
@@ -109,7 +109,7 @@ app.on('did-become-active', () => {
   }
 })
 app.on('did-resign-active', () => {
-  log.debug('[MAIN]: Mintter no longer active')
+  log.debug('[MAIN]: Seed no longer active')
 })
 
 // dark mode support: https://www.electronjs.org/docs/latest/tutorial/dark-mode
@@ -142,11 +142,11 @@ ipcMain.on('open_path', (event, path) => {
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {
-  log.debug('[MAIN]: Another Mintter already running. Quitting..')
+  log.debug('[MAIN]: Another Seed already running. Quitting..')
   app.quit()
 } else {
   app.on('ready', () => {
-    log.debug('[MAIN]: Mintter ready')
+    log.debug('[MAIN]: Seed ready')
     openInitialWindows()
   })
   app.on('second-instance', handleSecondInstance)
@@ -163,7 +163,7 @@ if (!gotTheLock) {
     handleUrlOpen(url)
   })
   app.on('activate', () => {
-    log.debug('[MAIN]: Mintter Active')
+    log.debug('[MAIN]: Seed Active')
     if (BrowserWindow.getAllWindows().length === 0) {
       log.debug('[MAIN]: will open the home window')
       trpc.createAppWindow({

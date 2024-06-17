@@ -1,5 +1,5 @@
-import {PageSection, SizableText, YStack} from '@shm/ui'
-import {SiteHead} from '../../src/site-head'
+import { PageSection, SizableText, YStack } from '@shm/ui'
+import { SiteHead } from '../../src/site-head'
 
 export default function NotFoundPage() {
   return (
@@ -19,7 +19,7 @@ export default function NotFoundPage() {
             gap="$3"
           >
             <SizableText size="$5" fontWeight="800" textAlign="center">
-              Welcome to your new site. Paste this URL into the Mintter app to
+              Welcome to your new site. Paste this URL into the Seed app to
               publish your group to this new site.
             </SizableText>
           </YStack>

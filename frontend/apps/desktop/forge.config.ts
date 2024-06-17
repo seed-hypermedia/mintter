@@ -1,10 +1,10 @@
-import { MakerDeb, MakerDebConfig } from '@electron-forge/maker-deb'
-import { MakerRpm } from '@electron-forge/maker-rpm'
-import { MakerSquirrel } from '@electron-forge/maker-squirrel'
-import { MakerZIP } from '@electron-forge/maker-zip'
-import type { ForgeConfig } from '@electron-forge/shared-types'
+import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
+import {MakerRpm} from '@electron-forge/maker-rpm'
+import {MakerSquirrel} from '@electron-forge/maker-squirrel'
+import {MakerZIP} from '@electron-forge/maker-zip'
+import type {ForgeConfig} from '@electron-forge/shared-types'
 // import {MakerRpm} from '@electron-forge/maker-rpm'
-import { VitePlugin } from '@electron-forge/plugin-vite'
+import {VitePlugin} from '@electron-forge/plugin-vite'
 import path from 'node:path'
 import packageJson from './package.json'
 // import setLanguages from 'electron-packager-languages'
@@ -43,12 +43,12 @@ const commonLinuxConfig: MakerDebConfig = {
     categories: ['Development', 'Utility'],
     icon: `${iconsPath}.png`,
     maintainer: 'Mintter Inc.',
-    description: 'Mintter: a hyper.media protocol client',
-    productName: 'Mintter',
+    description: 'Seed: a hyper.media protocol client',
+    productName: 'Seed',
     mimeType: ['x-scheme-handler/hm'],
     version,
-    bin: 'Mintter',
-    homepage: 'https://mintter.com',
+    bin: 'Seed',
+    homepage: 'https://seedhypermedia.com',
   },
 }
 
@@ -58,32 +58,32 @@ const config: ForgeConfig = {
     asar: true,
     darwinDarkModeSupport: true,
     icon: iconsPath,
-    name: 'Mintter',
-    appBundleId: 'com.mintter.app',
-    executableName: 'Mintter',
+    name: 'Seed',
+    appBundleId: 'com.seed.app',
+    executableName: 'Seed',
     appCategoryType: 'public.app-category.productivity',
     // packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
     // beforeCopy: [setLanguages(['en', 'en_US'])],
     win32metadata: {
       CompanyName: 'Mintter Inc.',
-      OriginalFilename: 'Mintter',
+      OriginalFilename: 'Seed',
     },
-    protocols: [{name: 'Mintter Hypermedia', schemes: ['hm']}],
+    protocols: [{name: 'Seed Hypermedia', schemes: ['hm']}],
   },
   makers: [
     new MakerDeb(commonLinuxConfig),
     new MakerZIP({}, ['darwin']),
     new MakerSquirrel({
-      name: 'Mintter',
+      name: 'Seed',
       authors: 'Mintter inc.',
-      exe: 'mintter.exe',
-      description: 'Mintter: a hyper.media protocol client',
+      exe: 'seed.exe',
+      description: 'Seed: a hyper.media protocol client',
       // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
       iconUrl: `${iconsPath}.ico`,
       noMsi: true,
       setupIcon: `${iconsPath}.ico`,
-      setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
+      setupExe: `seed-${version}-win32-${process.arch}-setup.exe`,
       // The ICO file to use as the icon for the generated Setup.exe
       loadingGif: path.resolve(__dirname, 'assets', 'loading.gif'),
 

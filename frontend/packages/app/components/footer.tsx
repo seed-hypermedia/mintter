@@ -1,7 +1,7 @@
-import {useConnectionSummary} from '@shm/app/models/contacts'
-import {useDaemonReady} from '@shm/app/node-status-context'
-import {useNavRoute} from '@shm/app/utils/navigation'
-import {VERSION} from '@shm/shared'
+import { useConnectionSummary } from '@shm/app/models/contacts'
+import { useDaemonReady } from '@shm/app/node-status-context'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { VERSION } from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -10,10 +10,10 @@ import {
   SizableText,
   XStack,
 } from '@shm/ui'
-import {Cable} from '@tamagui/lucide-icons'
-import {ReactNode} from 'react'
-import {OnlineIndicator} from './indicator'
-import {useNetworkDialog} from './network-dialog'
+import { Cable } from '@tamagui/lucide-icons'
+import { ReactNode } from 'react'
+import { OnlineIndicator } from './indicator'
+import { useNetworkDialog } from './network-dialog'
 
 export function FooterButton({
   active,
@@ -89,7 +89,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           }}
           color="$color8"
         >
-          {`Mintter ${VERSION}`}
+          {`Seed ${VERSION}`}
           {/* To do: include release date of this version. when this is clicked, we should help the user upgrade  */}
         </SizableText>
       </XStack>
