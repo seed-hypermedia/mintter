@@ -5,7 +5,7 @@
     "test": "turbo test --continue",
     "validate": "yarn format",
     "validate:fix": "yarn format:fix",
-    "web": "yarn build && cd frontend/apps/web && yarn dev",
+    "web": "cd frontend/apps/web && yarn dev",
     "site": "yarn build && cd frontend/apps/site && yarn dev",
     "site:prod": "yarn build && yarn workspace @shm/site build",
     "site:serve": "yarn workspace @shm/site serve",

@@ -30,10 +30,20 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
+    {
+      name: "log-files",
+      transform(code, id) {
+        console.log("Processing file:", id);
+        return code;
+      },
+    },
   ],
   optimizeDeps: {
     esbuildOptions: {
       resolveExtensions: extensions,
     },
+  },
+  build: {
+    target: "esnext",
   },
 });
