@@ -1,17 +1,17 @@
-import {getCIDFromIPFSUrl, usePublicationContentContext} from '@shm/shared'
-import {ResizeHandle, useTheme} from '@shm/ui'
-import {useEffect, useState} from 'react'
-import {RiImage2Line} from 'react-icons/ri'
+import { getCIDFromIPFSUrl, usePublicationContentContext } from '@shm/shared'
+import { isValidUrl, timeoutPromise } from '@shm/shared/src/editor'
+import { ResizeHandle, useTheme } from '@shm/ui'
+import { useEffect, useState } from 'react'
+import { RiImage2Line } from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import {MediaContainer} from './media-container'
-import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
-import {HMBlockSchema} from './schema'
-import {isValidUrl, timeoutPromise} from './utils'
+import { MediaContainer } from './media-container'
+import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
+import { HMBlockSchema } from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',

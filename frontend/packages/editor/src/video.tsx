@@ -1,17 +1,17 @@
-import {API_FILE_URL} from '@shm/shared'
-import {ResizeHandle, SizableText, XStack, useTheme} from '@shm/ui'
-import {useEffect, useState} from 'react'
-import {RiVideoAddLine} from 'react-icons/ri'
+import { API_FILE_URL } from '@shm/shared'
+import { isValidUrl, youtubeParser } from '@shm/shared/src/editor'
+import { ResizeHandle, SizableText, XStack, useTheme } from '@shm/ui'
+import { useEffect, useState } from 'react'
+import { RiVideoAddLine } from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import {MediaContainer} from './media-container'
-import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
-import {HMBlockSchema} from './schema'
-import {isValidUrl, youtubeParser} from './utils'
+import { MediaContainer } from './media-container'
+import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
+import { HMBlockSchema } from './schema'
 
 export const getSourceType = (name: string) => {
   const nameArray = name.split('.')

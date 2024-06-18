@@ -1,5 +1,5 @@
-import {Extension} from '@tiptap/core'
-import {getBlockInfoFromPos} from './blocknote'
+import { Extension } from '@tiptap/core'
+import { getBlockInfoFromPos } from './blocknote'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

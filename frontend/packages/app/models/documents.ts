@@ -6,7 +6,6 @@ import {trpc} from '@shm/desktop/src/trpc'
 import {
   BlockNoteEditor,
   Block as EditorBlock,
-  createHypermediaDocLinkPlugin,
   hmBlockSchema,
   useBlockNote,
 } from '@shm/editor'
@@ -21,6 +20,7 @@ import {
   ListPublicationsResponse,
   Publication,
   UnpackedHypermediaId,
+  createHypermediaDocLinkPlugin,
   fromHMBlock,
   hmDocument,
   hmPublication,

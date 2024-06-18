@@ -1,4 +1,4 @@
-import {Node, NodeType} from 'prosemirror-model'
+import { Node, NodeType } from 'prosemirror-model'
 
 export type BlockInfoWithoutPositions = {
   id: string
@@ -36,13 +36,14 @@ export function getBlockInfo(blockContainer: Node): BlockInfoWithoutPositions {
 }
 
 /**
+ * 
  * Retrieves information regarding the nearest blockContainer node in a
  * ProseMirror doc, relative to a position.
  * @param doc The ProseMirror doc.
  * @param pos An integer position.
  * @returns A BlockInfo object for the nearest blockContainer node.
  */
-export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo {
+export function getBlockInfoFromPos(doc: Node, pos: number): BlockInfo { 
   // If the position is outside the outer block group, we need to move it to the
   // nearest block. This happens when the collaboration plugin is active, where
   // the selection is placed at the very end of the doc.

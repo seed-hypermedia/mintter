@@ -1,5 +1,5 @@
-import { keyboardStack, useKeyboard } from '@shm/editor/src/keyboard-helpers'
 import { Entity } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import { keyboardStack, useKeyboard } from '@shm/shared/src/editor'
 import { Button, ButtonProps, SizableText, XStack, YStack } from '@shm/ui'
 import { Fragment, NodeSpec } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'

@@ -1,6 +1,7 @@
-import {useOpenUrl} from '@shm/desktop/src/open-url'
-import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@shm/ui'
-import {Fragment} from '@tiptap/pm/model'
+import { useOpenUrl } from '@shm/desktop/src/open-url'
+import { isValidUrl } from '@shm/shared/src/editor'
+import { TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme } from '@shm/ui'
+import { Fragment } from '@tiptap/pm/model'
 import {
   QuotedTweet,
   TweetBody,
@@ -17,10 +18,9 @@ import {
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import {MediaContainer} from './media-container'
-import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
-import {HMBlockSchema} from './schema'
-import {isValidUrl} from './utils'
+import { MediaContainer } from './media-container'
+import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
+import { HMBlockSchema } from './schema'
 
 export const WebEmbed = createReactBlockSpec({
   type: 'web-embed',

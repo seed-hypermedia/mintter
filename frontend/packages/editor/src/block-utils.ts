@@ -1,14 +1,14 @@
-import {HMBlockChildrenType} from '@shm/shared'
-import {Node} from '@tiptap/pm/model'
-import {EditorView} from '@tiptap/pm/view'
-import {useEffect, useState} from 'react'
+import { HMBlockChildrenType } from '@shm/shared'
+import { Node } from '@tiptap/pm/model'
+import { EditorView } from '@tiptap/pm/view'
+import { useEffect, useState } from 'react'
 import {
   Block as BlockNoteBlock,
   BlockNoteEditor,
-  getBlockInfoFromPos,
+  getBlockInfoFromPos
 } from './blocknote'
-import {getNodeById} from './blocknote/core/api/util/nodeUtil'
-import {HMBlockSchema} from './schema'
+import { getNodeById } from './blocknote/core/api/util/nodeUtil'
+import { HMBlockSchema } from './schema'
 
 export function useSelected(
   block: BlockNoteBlock<HMBlockSchema>,

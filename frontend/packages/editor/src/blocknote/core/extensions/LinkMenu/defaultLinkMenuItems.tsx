@@ -1,4 +1,3 @@
-import {youtubeParser} from '@/utils'
 import {
   HYPERMEDIA_ENTITY_TYPES,
   StateStream,
@@ -7,11 +6,12 @@ import {
   isPublicGatewayLink,
   normalizeHmId,
 } from '@shm/shared'
-import {Globe, Link, Spinner, SquareAsterisk, TwitterXIcon} from '@shm/ui'
-import {Node} from '@tiptap/pm/model'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
-import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
-import {LinkMenuItem} from './LinkMenuItem'
+import { youtubeParser } from '@shm/shared/src/editor'
+import { Globe, Link, Spinner, SquareAsterisk, TwitterXIcon } from '@shm/ui'
+import { Node } from '@tiptap/pm/model'
+import { BlockNoteEditor } from '../../BlockNoteEditor'
+import { getBlockInfoFromPos } from '../Blocks/helpers/getBlockInfoFromPos'
+import { LinkMenuItem } from './LinkMenuItem'
 
 export function getLinkMenuItems({
   isLoading,
