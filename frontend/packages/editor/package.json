@@ -74,7 +74,7 @@
     "jsdom": "22.1.0",
     "prettier": "3.0.2",
     "prosemirror-dev-tools": "4.0.0",
-    "typescript": "5.2.2",
+    "typescript": "5.5.1-rc",
     "vitest": "0.34.2"
   }
 }

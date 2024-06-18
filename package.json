@@ -5,6 +5,7 @@
     "test": "turbo test --continue",
     "validate": "yarn format",
     "validate:fix": "yarn format:fix",
+    "web": "yarn build && cd frontend/apps/web && yarn dev",
     "site": "yarn build && cd frontend/apps/site && yarn dev",
     "site:prod": "yarn build && yarn workspace @shm/site build",
     "site:serve": "yarn workspace @shm/site serve",
@@ -57,7 +58,7 @@
     "superjson": "1.13.3",
     "tamagui": "1.90.2",
     "turbo": "1.11.2",
-    "typescript": "5.2.2"
+    "typescript": "5.5.1-rc"
   },
   "devDependencies": {
     "@storybook/nextjs": "7.0.26",
