@@ -1,9 +1,10 @@
-import {Entity} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
-import {Button, ButtonProps, SizableText, XStack, YStack} from '@shm/ui'
-import {Fragment, NodeSpec} from '@tiptap/pm/model'
-import {Decoration, DecorationSet} from '@tiptap/pm/view'
-import {keymap} from 'prosemirror-keymap'
-import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
+import { keyboardStack, useKeyboard } from '@shm/editor/src/keyboard-helpers'
+import { Entity } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import { Button, ButtonProps, SizableText, XStack, YStack } from '@shm/ui'
+import { Fragment, NodeSpec } from '@tiptap/pm/model'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { keymap } from 'prosemirror-keymap'
+import { NodeSelection, Plugin, PluginKey } from 'prosemirror-state'
 import React, {
   useEffect,
   useLayoutEffect,
@@ -11,7 +12,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import {keyboardStack, useKeyboard} from './keyboard-helpers'
 
 export function createAutoCompletePlugin<N extends string, T>(args: {
   nodeName: N
