@@ -1,6 +1,6 @@
-import {mergeAttributes} from '@tiptap/core'
-import {mergeCSSClasses} from '../../../../../shared/utils'
-import {createTipTapBlock} from '../../../api/block'
+import { mergeAttributes } from '@tiptap/core'
+import { mergeCSSClasses } from '../../../../../shared/utils'
+import { createTipTapBlock } from '../../../api/block'
 import styles from '../../Block.module.css'
 
 export const ParagraphBlockContent = createTipTapBlock({
@@ -13,6 +13,14 @@ export const ParagraphBlockContent = createTipTapBlock({
         tag: 'p',
         priority: 200,
         node: 'paragraph',
+        getAttrs: node => {
+          // Don't match if has image (for markdown parse)
+          if (node.childNodes.length > 0 && node.childNodes[0].nodeName) {
+            const hasImage = node.childNodes[0].nodeName === 'IMG'
+            return hasImage ? false : {}
+          }
+          return null
+        },
       },
     ]
   },
