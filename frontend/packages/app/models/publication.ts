@@ -1,17 +1,14 @@
 import {
   AuthorVariant,
-  GroupVariant,
   Publication,
   PublicationVariant,
   hmDocument,
-  unpackHmId,
 } from '@shm/shared'
 import {UseQueryOptions, useQuery} from '@tanstack/react-query'
 import {useGRPCClient} from '../app-context'
 import {useAccount} from './accounts'
 import {useEntityTimeline} from './changes'
 import {usePublication} from './documents'
-import {useDocumentGroups} from './groups'
 import {queryKeys} from './query-keys'
 
 export function usePublicationVariant({
@@ -26,53 +23,13 @@ export function usePublicationVariant({
   variants?: undefined | PublicationVariant[]
   latest?: boolean
 }) {
-  const groupVariants = variants?.filter((v) => v.key === 'group') as
-    | GroupVariant[]
-    | undefined
-  const groupVariant = groupVariants ? groupVariants[0] : undefined
   const authorVariants = variants?.filter((v) => v.key === 'author') as
     | AuthorVariant[]
     | undefined
-  if (groupVariants && groupVariants.length > 1) {
-    throw new Error('Only one group variant is currently allowed')
-  }
-  if (
-    authorVariants &&
-    authorVariants.length > 0 &&
-    groupVariants &&
-    groupVariants.length > 0
-  ) {
-    throw new Error('Cannot currently specify multiple variant types')
-  }
-  const docGroups = useDocumentGroups(documentId, {enabled: !!groupVariant})
   const timelineQuery = useEntityTimeline(documentId)
   let queryVariantVersion: undefined | string = undefined
   let queryDocumentId = documentId
-  if (groupVariant && docGroups.data && !docGroups.isPreviousData) {
-    const docGroupEntry = docGroups.data
-      .filter(
-        (d) =>
-          d.groupId === groupVariant.groupId &&
-          d.path === groupVariant.pathName,
-      )
-      .sort((a, b) => {
-        const aTime = a.changeTime?.seconds
-        const bTime = b.changeTime?.seconds
-        if (!aTime || !bTime) return 0
-        return Number(bTime - aTime)
-      })[0]
-    const groupEntryId =
-      typeof docGroupEntry?.rawUrl === 'string'
-        ? unpackHmId(docGroupEntry?.rawUrl)
-        : null
-    if (groupEntryId?.version) {
-      queryVariantVersion = groupEntryId?.version
-    } else {
-      throw new Error(
-        `Could not determine version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
-      )
-    }
-  } else if (authorVariants?.length) {
+  if (authorVariants?.length) {
     const variantAuthors = new Set(
       authorVariants.map((variant) => variant.author),
     )

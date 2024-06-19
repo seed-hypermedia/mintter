@@ -1,6 +1,6 @@
 import Footer from '@shm/app/components/footer'
-import {useNavRoute} from '@shm/app/utils/navigation'
-import {trpc} from '@shm/desktop/src/trpc'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { trpc } from '@shm/desktop/src/trpc'
 import {
   BlockNoteEditor,
   HMEditorContainer,
@@ -30,24 +30,23 @@ import {
   copyUrlToClipboardWithFeedback,
   useStream,
 } from '@shm/ui'
-import {useSelector} from '@xstate/react'
-import {useEffect, useRef, useState} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {ActorRefFrom} from 'xstate'
-import {useGRPCClient} from '../app-context'
-import {MainWrapper} from '../components/main-wrapper'
-import {useMyAccount} from '../models/accounts'
+import { useSelector } from '@xstate/react'
+import { useEffect, useRef, useState } from 'react'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { ActorRefFrom } from 'xstate'
+import { useGRPCClient } from '../app-context'
+import { MainWrapper } from '../components/main-wrapper'
+import { useMyAccount } from '../models/accounts'
 import {
   compareDraftWithMap,
   createBlocksMap,
   extractDeletes,
   useDraftEditor,
 } from '../models/documents'
-import {DraftStatusContext, draftMachine} from '../models/draft-machine'
-import {useHasDevTools} from '../models/experiments'
-import {useGatewayUrl} from '../models/gateway-settings'
-import {useGroup} from '../models/groups'
-import {subscribeDraftFocus} from '../src/draft-focusing'
+import { DraftStatusContext, draftMachine } from '../models/draft-machine'
+import { useHasDevTools } from '../models/experiments'
+import { useGatewayUrl } from '../models/gateway-settings'
+import { subscribeDraftFocus } from '../src/draft-focusing'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -55,9 +54,9 @@ import {
   getBlockInfoFromPos,
   handleDragMedia,
 } from '../utils/media-drag'
-import {useOpenDraft} from '../utils/open-draft'
-import {DraftRoute} from '../utils/routes'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { useOpenDraft } from '../utils/open-draft'
+import { DraftRoute } from '../utils/routes'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -122,7 +121,7 @@ export default function DraftPage() {
 
     const result = data.draft?.children
       ? compareDraftWithMap({}, data.draft.children, '')
-      : {changes: [], touchedBlocks: []}
+      : { changes: [], touchedBlocks: [] }
     const deletedBlocks = extractDeletes(prevBlocksMap, result.touchedBlocks)
 
     try {
@@ -227,7 +226,7 @@ export default function DraftPage() {
                         return handleDragMedia(file).then((props) => {
                           if (!props) return false
 
-                          const {state} = ttEditor.view
+                          const { state } = ttEditor.view
                           let blockNode
                           const newId = generateBlockId()
 
@@ -267,13 +266,13 @@ export default function DraftPage() {
                           )
 
                           if (index === 0) {
-                            ;(data.editor as BlockNoteEditor).insertBlocks(
+                            ; (data.editor as BlockNoteEditor).insertBlocks(
                               [blockNode],
                               blockInfo.id,
                               blockInfo.node.textContent ? 'after' : 'before',
                             )
                           } else {
-                            ;(data.editor as BlockNoteEditor).insertBlocks(
+                            ; (data.editor as BlockNoteEditor).insertBlocks(
                               [blockNode],
                               lastId,
                               'after',
@@ -381,7 +380,7 @@ export default function DraftPage() {
                 }}
                 importWebFile={importWebFile}
               >
-                {data.state.matches({ready: 'saveError'}) ? (
+                {data.state.matches({ ready: 'saveError' }) ? (
                   <XStack padding="$4" position="sticky" top={0} zIndex={100}>
                     <XStack
                       flex={1}
@@ -422,7 +421,7 @@ export default function DraftPage() {
                               //   borderColor: '$red7',
                               // }}
                               size="$2"
-                              onPress={() => data.send({type: 'RESTORE.DRAFT'})}
+                              onPress={() => data.send({ type: 'RESTORE.DRAFT' })}
                               $sm={{
                                 alignSelf: 'stretch',
                               }}
@@ -453,7 +452,7 @@ export default function DraftPage() {
                               alignSelf: 'stretch',
                             }}
                             size="$2"
-                            onPress={() => data.send({type: 'RESET.DRAFT'})}
+                            onPress={() => data.send({ type: 'RESET.DRAFT' })}
                           >
                             Reset to the initial state
                           </Button>
@@ -467,7 +466,7 @@ export default function DraftPage() {
                   onPress={(e) => {
                     e.stopPropagation()
                   }}
-                  // style={{border: '1px solid green'}}
+                // style={{border: '1px solid green'}}
                 >
                   <DraftTitleInput
                     fixedTitle={fixedTitle}
@@ -479,10 +478,10 @@ export default function DraftPage() {
                 </YStack>
                 <HMEditorContainer>
                   {data.state.context.draft &&
-                  data.editor &&
-                  data.editor.topLevelBlocks.length ? (
+                    data.editor &&
+                    data.editor.topLevelBlocks.length ? (
                     <HyperMediaEditorView
-                      editable={!data.state.matches({ready: 'saveError'})}
+                      editable={!data.state.matches({ ready: 'saveError' })}
                       editor={data.editor}
                     />
                   ) : null}
@@ -537,7 +536,7 @@ export default function DraftPage() {
               <Button
                 size="$2"
                 onPress={() => {
-                  data.send({type: 'RESET.CORRUPT.DRAFT'})
+                  data.send({ type: 'RESET.CORRUPT.DRAFT' })
                 }}
               >
                 Reset Draft
@@ -568,13 +567,9 @@ function applyTitleResize(target: HTMLTextAreaElement) {
 
 export function useFixedDraftTitle(route: DraftRoute) {
   const myAccount = useMyAccount()
-  const contextGroup = useGroup(route.variant?.groupId)
 
   let fixedTitle: string | undefined = undefined
-  if (route.variant?.groupId && route.variant?.pathName === '/') {
-    const groupTitle = contextGroup.data?.title
-    fixedTitle = groupTitle ? `${groupTitle} Home` : 'Group Home'
-  } else if (route.isProfileDocument) {
+  if (route.isProfileDocument) {
     const myAlias = myAccount.data?.profile?.alias
     fixedTitle = myAlias ? `${myAlias} Home` : 'My Account Home'
   }
@@ -592,7 +587,7 @@ export function DraftTitleInput({
   draftActor: ActorRefFrom<typeof draftMachine>
   disabled?: boolean
 }) {
-  const {textUnit, layoutUnit} = usePublicationContentContext()
+  const { textUnit, layoutUnit } = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const title = useSelector(draftActor, (s) => s.context.title || '')
 
@@ -674,7 +669,7 @@ export function DraftTitleInput({
         // value={title}
         onChangeText={(title) => {
           // TODO: change title here
-          draftActor.send({type: 'CHANGE', title})
+          draftActor.send({ type: 'CHANGE', title })
         }}
         placeholder="Untitled Document"
         {...headingTextStyles}
@@ -717,7 +712,7 @@ function DraftDevTools({
         </Button>
       </XStack>
       {debugValue && (
-        <code style={{whiteSpace: 'pre-wrap'}}>
+        <code style={{ whiteSpace: 'pre-wrap' }}>
           {JSON.stringify(editorValue, null, 2)}
         </code>
       )}
@@ -729,7 +724,7 @@ function DraftError({
   documentId,
   error,
   resetErrorBoundary,
-}: FallbackProps & {documentId: string}) {
+}: FallbackProps & { documentId: string }) {
   return (
     <Theme name="red">
       <YStack

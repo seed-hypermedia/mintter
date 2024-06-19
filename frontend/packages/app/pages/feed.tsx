@@ -1,9 +1,8 @@
-import {Timestamp} from '@bufbuild/protobuf'
+import { Timestamp } from '@bufbuild/protobuf'
 import {
   API_FILE_URL,
   ActivityEvent,
   BlocksContent,
-  Group,
   HMComment,
   HMPublication,
   PublicationContent,
@@ -12,8 +11,7 @@ import {
   clipContentBlocks,
   formattedDateLong,
   hmId,
-  pluralS,
-  unpackHmId,
+  unpackHmId
 } from '@shm/shared'
 import {
   Button,
@@ -33,24 +31,23 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import {ArrowRight, ChevronUp, Verified} from '@tamagui/lucide-icons'
-import React, {PropsWithChildren, ReactNode} from 'react'
-import {VirtuosoHandle} from 'react-virtuoso'
+import { ArrowRight, ChevronUp, Verified } from '@tamagui/lucide-icons'
+import React, { PropsWithChildren, ReactNode } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
 import Footer from '../components/footer'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
-import {useAccount} from '../models/accounts'
-import {GroupSchema, ProfileSchema, useBlobData} from '../models/changes'
-import {useComment} from '../models/comments'
-import {usePublication} from '../models/documents'
-import {useFeedWithLatest, useResourceFeedWithLatest} from '../models/feed'
-import {useGroup} from '../models/groups'
-import {appRouteOfId, useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { MainWrapperNoScroll } from '../components/main-wrapper'
+import { useAccount } from '../models/accounts'
+import { ProfileSchema, useBlobData } from '../models/changes'
+import { useComment } from '../models/comments'
+import { usePublication } from '../models/documents'
+import { useFeedWithLatest, useResourceFeedWithLatest } from '../models/feed'
+import { appRouteOfId, useNavRoute } from '../utils/navigation'
+import { useNavigate } from '../utils/useNavigate'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 const feedTabsOptions = [
-  {key: 'trusted', label: 'Trusted Content', icon: Verified},
-  {key: 'all', label: 'All Content', icon: Globe},
+  { key: 'trusted', label: 'Trusted Content', icon: Verified },
+  { key: 'all', label: 'All Content', icon: Globe },
 ] as const
 
 export default function FeedPage() {
@@ -91,8 +88,8 @@ function FeedItemFooter(props) {
         p="$2"
         jc="center"
         gap="$2"
-        // opacity={0}
-        // $group-item-hover={{opacity: 1}}
+      // opacity={0}
+      // $group-item-hover={{opacity: 1}}
       >
         {props.children}
       </XStack>
@@ -121,13 +118,13 @@ function FeedItemContainer({
         onPress={
           linkId
             ? () => {
-                const route = appRouteOfId(linkId)
-                if (route) {
-                  navigate(route)
-                } else {
-                  toast.error('Failed to resolve a route for this')
-                }
+              const route = appRouteOfId(linkId)
+              if (route) {
+                navigate(route)
+              } else {
+                toast.error('Failed to resolve a route for this')
               }
+            }
             : undefined
         }
       >
@@ -173,7 +170,7 @@ function EntityLink({
   const navigate = useNavigate('push')
   return (
     <ButtonText
-      style={{whiteSpace: 'break-spaces'}}
+      style={{ whiteSpace: 'break-spaces' }}
       fontWeight={'bold'}
       onPress={(e) => {
         e.stopPropagation()
@@ -222,7 +219,7 @@ function FeedItemHeader({
         }
         label={account.data?.profile?.alias || account.data?.id}
         onPress={() => {
-          navigate({key: 'account', accountId: author})
+          navigate({ key: 'account', accountId: author })
         }}
       />
       <YStack f={1}>
@@ -258,12 +255,12 @@ function FeedItemPublicationContent({
   )
 }
 
-function FeedItemCommentContent({comment}: {comment: HMComment}) {
+function FeedItemCommentContent({ comment }: { comment: HMComment }) {
   return (
     <AppPublicationContentProvider renderOnly>
       <YStack
         paddingHorizontal={12}
-        $gtMd={{paddingHorizontal: 24}}
+        $gtMd={{ paddingHorizontal: 24 }}
         marginVertical={0}
       >
         <BlocksContent
@@ -278,7 +275,7 @@ function FeedItemCommentContent({comment}: {comment: HMComment}) {
 function HMLinkButton({
   to,
   children,
-}: PropsWithChildren<{to: UnpackedHypermediaId}>) {
+}: PropsWithChildren<{ to: UnpackedHypermediaId }>) {
   const navigate = useNavigate('push')
   return (
     <Button
@@ -300,16 +297,14 @@ function HMLinkButton({
   )
 }
 
-function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
-  const pub = usePublication({id: id.qid, version: cid})
+function DocChangeFeedItem({ id, eventTime, cid, author }: ChangeFeedItemProps) {
+  const pub = usePublication({ id: id.qid, version: cid })
   const linkId = hmId('d', id.eid, {
     version: cid,
-    variants: [{key: 'author', author}],
+    variants: [{ key: 'author', author }],
   })
   const account = useAccount(author)
   const isProfileUpdate = account.data?.profile?.rootDocument === id.qid
-  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
-    return <HiddenFeedItem />
   const message = isProfileUpdate ? 'updated their profile' : 'updated'
   return (
     <FeedItemContainer
@@ -340,193 +335,10 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
   )
 }
 
-function GroupContentChangeFeedItem({
-  id,
-  eventTime,
-  cid,
-  author,
-  pathName,
-  contentUrl,
-  group,
-}: ChangeFeedItemProps & {pathName: string; contentUrl: string; group: Group}) {
-  const docId = unpackHmId(contentUrl)
-  const pub = usePublication({
-    id: docId?.qid,
-    version: docId?.version || undefined,
-  })
-  const linkId = docId
-    ? {
-        ...docId,
-        variants: [{key: 'group', groupId: group.id, pathName} as const],
-      }
-    : undefined
-  if (!docId) {
-    return (
-      <ErrorFeedItem
-        message={`Unhandled Group Content Change: unrecognized content URL for ${pathName}: ${contentUrl}`}
-      />
-    )
-  }
-  if (pub.data?.document?.title === '(HIDDEN) Group Navigation')
-    return <HiddenFeedItem />
-  return (
-    <FeedItemContainer
-      linkId={linkId}
-      maxContentHeight={400}
-      header={
-        <FeedItemHeader
-          author={author}
-          eventTime={eventTime}
-          message={
-            <>
-              updated{' '}
-              {linkId ? (
-                <EntityLink id={linkId}>
-                  {pub.data?.document?.title || 'Untitled Document'}
-                </EntityLink>
-              ) : (
-                'entry'
-              )}{' '}
-              in{' '}
-              <EntityLink id={hmId('g', id.eid, {version: cid})}>
-                {group.title || 'Untitled Group'}
-              </EntityLink>
-            </>
-          }
-        />
-      }
-      footer={
-        <FeedItemFooter>
-          {linkId && (
-            <HMLinkButton to={linkId}>Open Group Document</HMLinkButton>
-          )}
-        </FeedItemFooter>
-      }
-    >
-      {pub.data && <FeedItemPublicationContent publication={pub.data} />}
-    </FeedItemContainer>
-  )
-}
-
-function GroupChangeFeedItem(props: ChangeFeedItemProps) {
-  const {id, eventTime, cid, author} = props
-  const group = useGroup(id.qid, cid)
-  const groupChange = useBlobData(cid)
-  if (groupChange.isInitialLoading) return <Spinner />
-  // @ts-expect-error
-  const patchEntries = Object.entries(groupChange.data?.patch)
-  if (patchEntries.length === 0)
-    return (
-      <ErrorFeedItem message="Unrecognized Group Change: no patch entries" />
-    )
-  const contentPatch = patchEntries.find(([key]) => key === 'content')
-  const contentUpdate = contentPatch?.[1]
-  const contentEntries = Object.entries(contentUpdate || {})
-  const linkId = hmId('g', id.eid, {version: cid})
-  if (group.data && patchEntries.length === 1 && contentEntries.length === 1) {
-    const [pathName, contentUrl] = contentEntries[0]
-    if (contentUrl === '') {
-      return (
-        <FeedItemContainer
-          linkId={linkId}
-          header={
-            <FeedItemHeader
-              author={author}
-              eventTime={eventTime}
-              message={
-                <>
-                  removed {pathName} from{' '}
-                  <EntityLink id={linkId}>
-                    {group.data?.title || 'Untitled Group'}
-                  </EntityLink>
-                </>
-              }
-            />
-          }
-        />
-      )
-    }
-    return (
-      <GroupContentChangeFeedItem
-        {...props}
-        pathName={pathName}
-        contentUrl={contentUrl}
-        group={group.data}
-      />
-    )
-  }
-  const removalContentEntry = contentEntries.find(
-    ([key, value]) => value === '',
-  )
-  const newContentEntry = contentEntries.find(([key, value]) => value !== '')
-  const newContentId = unpackHmId(newContentEntry?.[1])
-  // detecting if a simple path rename happened
-  if (
-    group.data &&
-    patchEntries.length === 1 &&
-    contentEntries.length === 2 &&
-    removalContentEntry &&
-    newContentEntry &&
-    newContentId
-  ) {
-    const docLinkId = hmId('d', newContentId.eid, {
-      version: newContentId.version,
-      variants: [
-        {key: 'group', groupId: linkId.qid, pathName: newContentEntry[0]},
-      ],
-    })
-    return (
-      <FeedItemContainer
-        linkId={linkId}
-        header={
-          <FeedItemHeader
-            author={author}
-            eventTime={eventTime}
-            message={
-              <>
-                renamed "{removalContentEntry[0]}" to{' '}
-                <EntityLink id={docLinkId}>{newContentEntry[0]}</EntityLink> in{' '}
-                <EntityLink id={linkId}>
-                  {group.data?.title || 'Untitled Group'}
-                </EntityLink>
-              </>
-            }
-          />
-        }
-      ></FeedItemContainer>
-    )
-  }
-  // @ts-expect-error
-  const updates = getPatchedGroupEntries(groupChange.data?.patch || {}, id.qid)
-  if (groupChange.data && updates.length === 0)
-    console.warn('No updates found for group change', groupChange.data?.patch)
-  return (
-    <FeedItemContainer
-      linkId={linkId}
-      header={
-        <FeedItemHeader
-          author={author}
-          eventTime={eventTime}
-          message={
-            <>
-              updated{' '}
-              <EntityLink id={linkId}>
-                {group.data?.title || 'Untitled Group'}
-              </EntityLink>
-            </>
-          }
-        />
-      }
-    >
-      <UpdatesList updates={updates} />
-    </FeedItemContainer>
-  )
-}
-
 function UpdatesList({
   updates,
 }: {
-  updates: {labelKey: string; content: ReactNode}[]
+  updates: { labelKey: string; content: ReactNode }[]
 }) {
   return (
     <YStack marginVertical="$4" gap="$2">
@@ -549,8 +361,8 @@ function UpdatesList({
 
 function getPatchedAccountEntries(
   patch: Partial<ProfileSchema>,
-): {labelKey: string; content: ReactNode}[] {
-  const entries: {labelKey: string; content: ReactNode}[] = []
+): { labelKey: string; content: ReactNode }[] {
+  const entries: { labelKey: string; content: ReactNode }[] = []
   if (patch.alias) {
     entries.push({
       labelKey: 'Alias',
@@ -574,7 +386,7 @@ function getPatchedAccountEntries(
   return entries
 }
 
-function AccountEntityLink({id}: {id: string}) {
+function AccountEntityLink({ id }: { id: string }) {
   const account = useAccount(id)
   return (
     <EntityLink id={hmId('a', id)}>{account.data?.profile?.alias}</EntityLink>
@@ -593,69 +405,10 @@ function PublicationLink({
     version: id?.version || undefined,
   })
   return (
-    <EntityLink id={{...id, variants}}>{pub.data?.document?.title}</EntityLink>
+    <EntityLink id={{ ...id, variants }}>{pub.data?.document?.title}</EntityLink>
   )
 }
 
-function getPatchedGroupEntries(
-  patch: Partial<GroupSchema>,
-  groupId: string,
-): {labelKey: string; content: ReactNode}[] {
-  const entries: {labelKey: string; content: ReactNode}[] = []
-  if (patch.title) {
-    entries.push({
-      labelKey: 'Title',
-      content: <SizableText>{patch.title}</SizableText>,
-    })
-  }
-  if (patch.description) {
-    entries.push({
-      labelKey: 'Description',
-      content: <SizableText>{patch.description}</SizableText>,
-    })
-  }
-  if (patch.members) {
-    const memberEntries = Object.entries(patch.members)
-    entries.push({
-      labelKey: `Added ${pluralS(memberEntries.length, 'Editor')}`,
-      content: (
-        <SizableText>
-          {memberEntries
-            .map(([accountId, groupRole], index) => {
-              return [
-                <AccountEntityLink key={index} id={accountId} />,
-                index === memberEntries.length - 1 ? '' : ', ',
-              ]
-            })
-            .flat()}
-        </SizableText>
-      ),
-    })
-  }
-  if (patch.siteURL) {
-    entries.push({
-      labelKey: 'Site URL',
-      content: <SizableText>{patch.siteURL}</SizableText>,
-    })
-  }
-  if (patch.content) {
-    Object.entries(patch.content).forEach(([pathName, contentUrl]) => {
-      const labelKey = pathName === '/' ? 'Front Page' : pathName
-      const docId = unpackHmId(contentUrl)
-      if (docId)
-        entries.push({
-          labelKey,
-          content: (
-            <PublicationLink
-              id={docId}
-              variants={[{key: 'group', groupId, pathName}]}
-            />
-          ),
-        })
-    })
-  }
-  return entries
-}
 
 function AccountChangeFeedItem({
   id,
@@ -684,7 +437,7 @@ function AccountChangeFeedItem({
   )
 }
 
-function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
+function CommentFeedItem({ id, eventTime, cid, author }: CommentFeedItemProps) {
   const comment = useComment(id.qid)
   const targetDocId =
     comment.data?.target == null ? null : unpackHmId(comment.data?.target)
@@ -725,7 +478,7 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
   )
 }
 
-function ErrorFeedItem({message}: {message: string}) {
+function ErrorFeedItem({ message }: { message: string }) {
   return (
     <FeedItemContainer>
       <SizableText color="$red10" fontWeight="bold">
@@ -741,17 +494,14 @@ export const FeedItem = React.memo(function FeedItem({
 }: {
   event: ActivityEvent
 }) {
-  const {data, eventTime} = event
+  const { data, eventTime } = event
   if (data.case === 'newBlob') {
-    const {cid, author, resource, blobType} = data.value
+    const { cid, author, resource, blobType } = data.value
     let hmId: UnpackedHypermediaId | null = null
     if (resource) {
       hmId = unpackHmId(resource)
     }
-    const genericEvent = {id: hmId, eventTime, cid, author}
-    if (hmId?.type === 'g' && blobType === 'Change') {
-      return <GroupChangeFeedItem {...genericEvent} id={hmId} />
-    }
+    const genericEvent = { id: hmId, eventTime, cid, author }
     if (hmId?.type === 'd' && blobType === 'Change') {
       return <DocChangeFeedItem {...genericEvent} id={hmId} />
     }
@@ -769,7 +519,7 @@ export const FeedItem = React.memo(function FeedItem({
   return <ErrorFeedItem message={`Unknown event type: ${event.data.case}`} />
 })
 
-export function NewUpdatesButton({onPress}: {onPress: () => void}) {
+export function NewUpdatesButton({ onPress }: { onPress: () => void }) {
   return (
     <XStack
       position="absolute"
@@ -789,7 +539,7 @@ export function NewUpdatesButton({onPress}: {onPress: () => void}) {
   )
 }
 
-const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
+const Feed = React.memo(function Feed({ tab }: { tab: 'trusted' | 'all' }) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
@@ -807,7 +557,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
                   value={route.tab}
                   options={feedTabsOptions}
                   onValue={(tab) => {
-                    replace({...route, tab})
+                    replace({ ...route, tab })
                   }}
                 />
                 {feed.isFetching ? <Spinner /> : null}
@@ -817,7 +567,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
         }
         footer={<FeedPageFooter feedQuery={feed} />}
         items={feed.data || []}
-        renderItem={({item}) => <FeedItem event={item} />}
+        renderItem={({ item }) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
         }}
@@ -825,7 +575,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
       {feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />
@@ -838,8 +588,8 @@ export function FeedPageFooter({
   feedQuery,
 }: {
   feedQuery:
-    | ReturnType<typeof useFeedWithLatest>
-    | ReturnType<typeof useResourceFeedWithLatest>
+  | ReturnType<typeof useFeedWithLatest>
+  | ReturnType<typeof useResourceFeedWithLatest>
 }) {
   return feedQuery.data?.length ? (
     <XStack jc="center" gap="$3" paddingVertical="$6">
@@ -870,7 +620,7 @@ export const ResourceFeed = React.memo(function ResourceFeed({
         header={<View height="$2" />}
         footer={<FeedPageFooter feedQuery={feed} />}
         items={feed.data || []}
-        renderItem={({item}) => <FeedItem event={item} />}
+        renderItem={({ item }) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
         }}
@@ -878,7 +628,7 @@ export const ResourceFeed = React.memo(function ResourceFeed({
       {feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />

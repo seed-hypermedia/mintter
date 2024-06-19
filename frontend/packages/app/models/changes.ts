@@ -133,28 +133,9 @@ export type ProfileSchema = {
   bio: string
   avatar: IPLDRef
 }
-export enum GroupRole {
-  Owner = 1,
-  Editor = 2,
-}
-export type GroupSchema = {
-  siteURL: string
-  owner: IPLDBytes
-  nonce: IPLDBytes
-  title: string
-  description: string
-  members: Record<
-    string, // accountId
-    GroupRole
-  >
-  content: Record<
-    string, // pathName
-    string // hm://d/123?v=123
-  >
-}
 
 // todo, add KeyDelegationData CommentData and any other JSON blobs
-export type ChangeData = ChangeBlob<ProfileSchema> | ChangeBlob<GroupSchema> // todo: add DocumentSchema
+export type ChangeData = ChangeBlob<ProfileSchema> // todo: add DocumentSchema
 export type BlobData = ChangeData
 
 function queryBlob(cid: string | undefined) {

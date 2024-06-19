@@ -1,15 +1,14 @@
-import {HMAccount, UnpackedHypermediaId} from '@shm/shared'
-import {List} from '@shm/ui'
-import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import { HMAccount, UnpackedHypermediaId } from '@shm/shared'
+import { List } from '@shm/ui'
+import { useCopyGatewayReference } from '../components/copy-gateway-reference'
 import Footer from '../components/footer'
-import {GroupListItem} from '../components/groups-list'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
-import {PublicationListItem} from '../components/publication-list-item'
-import {useAllAccounts} from '../models/accounts'
-import {FavoriteItem, useFavorites} from '../models/favorites'
-import {usePublicationVariant} from '../models/publication'
-import {ContactItem} from './contacts-page'
+import { copyLinkMenuItem } from '../components/list-item'
+import { MainWrapperNoScroll } from '../components/main-wrapper'
+import { PublicationListItem } from '../components/publication-list-item'
+import { useAllAccounts } from '../models/accounts'
+import { FavoriteItem, useFavorites } from '../models/favorites'
+import { usePublicationVariant } from '../models/publication'
+import { ContactItem } from './contacts-page'
 
 export default function FavoritesPage() {
   const favorites = useFavorites()
@@ -26,7 +25,7 @@ export default function FavoritesPage() {
           onEndReached={() => {
             // publications.fetchNextPage()
           }}
-          renderItem={({item}) => {
+          renderItem={({ item }) => {
             return (
               <FavoriteListItem
                 key={item.url}
@@ -98,9 +97,6 @@ function FavoriteListItem({
   onCopy: () => void
   allAccounts?: HMAccount[]
 }) {
-  if (item.key === 'group') {
-    return <GroupListItem group={item.group} onCopy={onCopy} />
-  }
   if (item.key === 'account') {
     return <ContactItem account={item.account} onCopy={onCopy} />
   }

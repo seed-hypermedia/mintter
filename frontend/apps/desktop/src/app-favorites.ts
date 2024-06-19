@@ -10,11 +10,6 @@ type PinsState = {
   documents: {
     docId: string
     authors: string[]
-    groups?: {groupId: string; pathName: string | null}[]
-  }[]
-  groups: {
-    groupId: string
-    documents: {pathName?: string}[]
   }[]
 }
 
@@ -42,20 +37,6 @@ function getDefaultOrLegacyFavorites() {
       url: createHmId('d', id.eid, {
         variants: doc.authors.map((author) => ({key: 'author', author})),
       }),
-    })
-  })
-  pins.groups.forEach((group) => {
-    favorites.push({
-      url: group.groupId,
-    })
-    const id = unpackHmId(group.groupId)
-    group.documents.forEach((doc) => {
-      if (!id || !doc.pathName) return
-      favorites.push({
-        url: createHmId('g', id.eid, {
-          groupPathName: doc.pathName,
-        }),
-      })
     })
   })
   pins.accounts.forEach((accountId) => {

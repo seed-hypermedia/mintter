@@ -38,7 +38,7 @@ function wrapLogger(logFn: (...args: any[]) => void) {
         if (typeof item === 'string') return item
         try {
           return JSON.stringify(item, null, 2)
-        } catch {}
+        } catch { }
         return item // on main thread this will likely be rendered as [object Object]
       }),
     )
@@ -51,8 +51,6 @@ const securitySensitiveMethods = new Set([
 ])
 const enabledLogMessages = new Set<string>([
   // 'Accounts.ListAccounts',
-  // 'Groups.GetGroup',
-  // 'Groups.ListContent',
   // 'Comments.ListComments',
   // etc.. add the messages you need to see here, please comment out before committing!
 ])
@@ -235,7 +233,7 @@ function MainApp({
           ipc.send?.('open-external-link', url)
         }}
         saveCidAsFile={async (cid: string, name: string) => {
-          ipc.send?.('save-file', {cid, name})
+          ipc.send?.('save-file', { cid, name })
         }}
         windowUtils={windowUtils}
         darkMode={darkMode}

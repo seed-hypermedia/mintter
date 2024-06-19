@@ -1,6 +1,5 @@
 import { useAccount } from '@shm/app/models/accounts'
 import { usePublication } from '@shm/app/models/documents'
-import { useGroup } from '@shm/app/models/groups'
 import { AutocompletePopup, UnpackedHypermediaId, createAutoCompletePlugin, unpackHmId } from '@shm/shared'
 import { SizableText } from '@shm/ui'
 import { Node } from '@tiptap/core'
@@ -21,7 +20,7 @@ document.body.append(inlineEmbedPopupElement)
 var popupRoot = ReactDOM.createRoot(inlineEmbedPopupElement)
 
 export function createInlineEmbedNode(bnEditor: any) {
-  let {nodes, plugins} = createAutoCompletePlugin({
+  let { nodes, plugins } = createAutoCompletePlugin({
     nodeName: 'inline-embed',
     triggerCharacter: '@',
     renderPopup: (state, actions) => {
@@ -49,7 +48,7 @@ export function createInlineEmbedNode(bnEditor: any) {
           getAttrs: (dom) => {
             if (dom instanceof HTMLElement) {
               var value = dom.getAttribute('data-inline-embed')
-              return {ref: value}
+              return { ref: value }
             }
             return false
           },
@@ -82,13 +81,11 @@ function InlineEmbedNodeComponent(props: any) {
   )
 }
 
-export function MentionToken(props: {value: string; selected?: boolean}) {
+export function MentionToken(props: { value: string; selected?: boolean }) {
   const unpackedRef = unpackHmId(props.value)
 
   if (unpackedRef?.type == 'a') {
     return <AccountMention unpackedRef={unpackedRef} {...props} />
-  } else if (unpackedRef?.type == 'g') {
-    return <GroupMention unpackedRef={unpackedRef} {...props} />
   } else if (unpackedRef?.type == 'd') {
     return <DocumentMention unpackedRef={unpackedRef} {...props} />
   } else {
@@ -109,18 +106,6 @@ function AccountMention({
   return (
     <MentionText selected={selected}>
       @{account.data?.profile?.alias || unpackedRef.eid}
-    </MentionText>
-  )
-}
-
-function GroupMention(props: {
-  unpackedRef: UnpackedHypermediaId
-  selected?: boolean
-}) {
-  const group = useGroup(props.unpackedRef.qid)
-  return (
-    <MentionText selected={props.selected}>
-      {group.data?.title || 'group'}
     </MentionText>
   )
 }

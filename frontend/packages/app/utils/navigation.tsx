@@ -1,24 +1,24 @@
-import {GRPCClient, StateStream, unpackDocId} from '@shm/shared'
+import { GRPCClient, StateStream, unpackDocId } from '@shm/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
   unpackHmId,
 } from '@shm/shared/src/utils/entity-id-url'
-import {useStream, useStreamSelector} from '@shm/ui'
-import {Buffer} from 'buffer'
-import {createContext, useContext} from 'react'
-import {useGRPCClient} from '../app-context'
-import {NavRoute, defaultRoute} from './routes'
+import { useStream, useStreamSelector } from '@shm/ui'
+import { Buffer } from 'buffer'
+import { createContext, useContext } from 'react'
+import { useGRPCClient } from '../app-context'
+import { NavRoute, defaultRoute } from './routes'
 
 global.Buffer = global.Buffer || Buffer
 
-export type PushAction = {type: 'push'; route: NavRoute}
-export type ReplaceAction = {type: 'replace'; route: NavRoute}
-export type BackplaceAction = {type: 'backplace'; route: NavRoute}
-export type CloseBackAction = {type: 'closeBack'}
-export type PopAction = {type: 'pop'}
-export type ForwardAction = {type: 'forward'}
-export type SetSidebarLockedAction = {type: 'sidebarLocked'; value: boolean}
+export type PushAction = { type: 'push'; route: NavRoute }
+export type ReplaceAction = { type: 'replace'; route: NavRoute }
+export type BackplaceAction = { type: 'backplace'; route: NavRoute }
+export type CloseBackAction = { type: 'closeBack' }
+export type PopAction = { type: 'pop' }
+export type ForwardAction = { type: 'forward' }
+export type SetSidebarLockedAction = { type: 'sidebarLocked'; value: boolean }
 export type NavAction =
   | PushAction
   | ReplaceAction
@@ -211,7 +211,7 @@ export function useHmIdToAppRouteResolver() {
   const grpcClient = useGRPCClient()
   return (
     hmId: string,
-  ): Promise<null | (UnpackedHypermediaId & {navRoute?: NavRoute})> => {
+  ): Promise<null | (UnpackedHypermediaId & { navRoute?: NavRoute })> => {
     return resolveHmIdToAppRoute(hmId, grpcClient).catch((e) => {
       console.error(e)
       // toast.error('Failed to resolve ID to app route')
@@ -223,12 +223,12 @@ export function useHmIdToAppRouteResolver() {
 export async function resolveHmIdToAppRoute(
   hmId: string,
   grpcClient: GRPCClient,
-): Promise<null | (UnpackedHypermediaId & {navRoute?: NavRoute})> {
+): Promise<null | (UnpackedHypermediaId & { navRoute?: NavRoute })> {
   const hmIds = unpackHmId(hmId)
-  if (hmIds?.type === 'g' && hmIds.eid && hmIds.groupPathName) {
+  if (hmIds?.type === 'g' && hmIds.eid && hmIds.indexPath) {
     const groupId = createHmId('g', hmIds.eid)
     const contentPathName =
-      hmIds.groupPathName === '-' ? '/' : hmIds.groupPathName
+      hmIds.indexPath === '-' ? '/' : hmIds.indexPath
     const content = await grpcClient.groups.listContent({
       id: groupId,
       version: hmIds.version || '',
@@ -291,5 +291,5 @@ export async function resolveHmIdToAppRoute(
   if (!hmIds) return null
   const navRoute = appRouteOfId(hmIds)
   if (!navRoute) return null
-  return {...hmIds, navRoute}
+  return { ...hmIds, navRoute }
 }

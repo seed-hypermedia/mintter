@@ -1,14 +1,13 @@
-import {useNavRoute} from '@shm/app/utils/navigation'
-import {useClickNavigate} from '@shm/app/utils/useNavigate'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { useClickNavigate } from '@shm/app/utils/useNavigate'
 import {
   Document,
-  GroupVariant,
   HMAccount,
   HMPublication,
   PublicationVariant,
   createHmId,
   getDocumentTitle,
-  unpackDocId,
+  unpackDocId
 } from '@shm/shared'
 import {
   ArrowUpRight,
@@ -18,13 +17,13 @@ import {
   copyTextToClipboard,
 } from '@shm/ui'
 import React from 'react'
-import {useFavorite} from '../models/favorites'
-import {NavRoute} from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
-import {BaseAccountLinkAvatar} from './account-link-avatar'
-import {FavoriteButton} from './favoriting'
-import {ListItem, TimeAccessory} from './list-item'
-import {MenuItemType} from './options-dropdown'
+import { useFavorite } from '../models/favorites'
+import { NavRoute } from '../utils/routes'
+import { useNavigate } from '../utils/useNavigate'
+import { BaseAccountLinkAvatar } from './account-link-avatar'
+import { FavoriteButton } from './favoriting'
+import { ListItem, TimeAccessory } from './list-item'
+import { MenuItemType } from './options-dropdown'
 
 export const PublicationListItem = React.memo(function PublicationListItem({
   publication,
@@ -63,9 +62,9 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   const docUrl =
     docHmId && docRoute
       ? createHmId('d', docHmId.eid, {
-          version: docRoute.versionId,
-          variants: docRoute.variants,
-        })
+        version: docRoute.versionId,
+        variants: docRoute.variants,
+      })
       : undefined
   const favorite = useFavorite(docUrl)
 
@@ -73,9 +72,6 @@ export const PublicationListItem = React.memo(function PublicationListItem({
 
   const navigate = useClickNavigate()
 
-  const groupVariant = variants?.find((v) => v.key === 'group') as
-    | GroupVariant
-    | undefined
   return (
     <ListItem
       onPress={() => {
@@ -89,7 +85,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
             <XStack
               opacity={favorite.isFavorited ? 1 : 0}
               $group-item-hover={
-                favorite.isFavorited ? undefined : {opacity: 1}
+                favorite.isFavorited ? undefined : { opacity: 1 }
               }
             >
               <FavoriteButton url={docUrl} />
@@ -105,7 +101,6 @@ export const PublicationListItem = React.memo(function PublicationListItem({
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
-                    variant: groupVariant,
                   },
                   e,
                 )
@@ -132,43 +127,43 @@ export const PublicationListItem = React.memo(function PublicationListItem({
               hoverStyle={
                 onPathNamePress
                   ? {
-                      textDecorationLine: 'underline',
-                    }
+                    textDecorationLine: 'underline',
+                  }
                   : undefined
               }
             >
               {pathName.length > 40
                 ? `${pathName.slice(0, 15)}.....${pathName.slice(
-                    pathName.length - 15,
-                  )}`
+                  pathName.length - 15,
+                )}`
                 : pathName}
             </ButtonText>
           )}
           <XStack>
             {editors && editors.length
               ? editors.map((editor, idx) => {
-                  const editorId =
-                    typeof editor === 'string' ? editor : editor?.id
-                  if (!editorId) return null
-                  const account = typeof editor == 'string' ? undefined : editor
-                  return (
-                    <XStack
-                      zIndex={idx + 1}
-                      key={editorId}
-                      borderColor="$background"
-                      backgroundColor="$background"
-                      borderWidth={2}
-                      borderRadius={100}
-                      marginLeft={-8}
-                      animation="fast"
-                    >
-                      <BaseAccountLinkAvatar
-                        accountId={editorId}
-                        account={account}
-                      />
-                    </XStack>
-                  )
-                })
+                const editorId =
+                  typeof editor === 'string' ? editor : editor?.id
+                if (!editorId) return null
+                const account = typeof editor == 'string' ? undefined : editor
+                return (
+                  <XStack
+                    zIndex={idx + 1}
+                    key={editorId}
+                    borderColor="$background"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderRadius={100}
+                    marginLeft={-8}
+                    animation="fast"
+                  >
+                    <BaseAccountLinkAvatar
+                      accountId={editorId}
+                      account={account}
+                    />
+                  </XStack>
+                )
+              })
               : null}
           </XStack>
           <TimeAccessory

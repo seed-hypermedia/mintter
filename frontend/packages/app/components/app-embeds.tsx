@@ -5,9 +5,7 @@ import {
   BlockNodeList,
   ContentEmbed,
   EmbedAccountContent,
-  EmbedGroupCardContent,
   EntityComponentProps,
-  ErrorBlock,
   InlineEmbedComponentProps,
   PublicationCardView,
   UnpackedHypermediaId,
@@ -16,7 +14,7 @@ import {
   formattedDateMedium,
   getBlockNodeById,
   unpackHmId,
-  usePublicationContentContext,
+  usePublicationContentContext
 } from '@shm/shared'
 import {
   Button,
@@ -28,7 +26,7 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
+import { ArrowUpRightSquare } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   PropsWithChildren,
@@ -38,18 +36,17 @@ import {
   useRef,
   useState,
 } from 'react'
-import {YStackProps} from 'tamagui'
-import {useAccount, useAccounts} from '../models/accounts'
-import {useComment} from '../models/comments'
-import {usePublication} from '../models/documents'
-import {useGroup, useGroupFrontpage} from '../models/groups'
-import {usePublicationVariant} from '../models/publication'
-import {getAvatarUrl} from '../utils/account-url'
-import {useNavRoute} from '../utils/navigation'
-import {getRouteContext, useOpenInContext} from '../utils/route-context'
-import {useNavigate} from '../utils/useNavigate'
-import {BaseAccountLinkAvatar} from './account-link-avatar'
-import {Avatar} from './avatar'
+import { YStackProps } from 'tamagui'
+import { useAccount, useAccounts } from '../models/accounts'
+import { useComment } from '../models/comments'
+import { usePublication } from '../models/documents'
+import { usePublicationVariant } from '../models/publication'
+import { getAvatarUrl } from '../utils/account-url'
+import { useNavRoute } from '../utils/navigation'
+import { getRouteContext, useOpenInContext } from '../utils/route-context'
+import { useNavigate } from '../utils/useNavigate'
+import { BaseAccountLinkAvatar } from './account-link-avatar'
+import { Avatar } from './avatar'
 
 function EmbedWrapper({
   hmRef,
@@ -177,23 +174,23 @@ function EmbedWrapper({
       onPress={
         !disableEmbedClick
           ? () => {
-              // if (comment && route.key == 'publication' && route.documentId == )
-              // open(hmRef, true)
-              if (comment) {
-                if (
-                  route.key == 'publication' &&
-                  unpackRef?.qid == route.documentId
-                ) {
-                  navigate({
-                    ...route,
-                    blockId: unpackRef?.blockRef!,
-                    versionId: unpackRef?.version!,
-                  })
-                }
-              } else {
-                open(hmRef, parentBlockId)
+            // if (comment && route.key == 'publication' && route.documentId == )
+            // open(hmRef, true)
+            if (comment) {
+              if (
+                route.key == 'publication' &&
+                unpackRef?.qid == route.documentId
+              ) {
+                navigate({
+                  ...route,
+                  blockId: unpackRef?.blockRef!,
+                  versionId: unpackRef?.version!,
+                })
               }
+            } else {
+              open(hmRef, parentBlockId)
             }
+          }
           : undefined
       }
       {...props}
@@ -233,19 +230,19 @@ export function useSizeObserver(onRect: (rect: DOMRect) => void) {
 
 const EmbedSideAnnotation = forwardRef<
   HTMLDivElement,
-  {hmId: string; sidePos: 'bottom' | 'right'}
->(function EmbedSideAnnotation({hmId, sidePos}, ref) {
+  { hmId: string; sidePos: 'bottom' | 'right' }
+>(function EmbedSideAnnotation({ hmId, sidePos }, ref) {
   const unpacked = unpackHmId(hmId)
 
   // @ts-expect-error
   const sideStyles: YStackProps =
     sidePos == 'right'
       ? {
-          position: 'absolute',
-          top: 32,
-          right: -16,
-          transform: 'translateX(100%)',
-        }
+        position: 'absolute',
+        top: 32,
+        right: -16,
+        transform: 'translateX(100%)',
+      }
       : {}
 
   if (unpacked && unpacked.type == 'c')
@@ -321,7 +318,7 @@ const EmbedSideAnnotation = forwardRef<
         size="$1"
         color="$blue9"
         opacity={0}
-        $group-item-hover={{opacity: 1}}
+        $group-item-hover={{ opacity: 1 }}
       >
         Go to Document →
       </SizableText>
@@ -330,7 +327,7 @@ const EmbedSideAnnotation = forwardRef<
 })
 
 const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
-  props: {unpackedRef?: UnpackedHypermediaId; sideStyles: YStackProps},
+  props: { unpackedRef?: UnpackedHypermediaId; sideStyles: YStackProps },
   ref,
 ) {
   const comment = useComment(props.unpackedRef?.id)
@@ -417,7 +414,7 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
           size="$1"
           color="$blue9"
           opacity={0}
-          $group-item-hover={{opacity: 1}}
+          $group-item-hover={{ opacity: 1 }}
         >
           Go to Document →
         </SizableText>
@@ -445,8 +442,8 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
       showReferenced && props.version
         ? props.version
         : props.latest
-        ? undefined
-        : props.version || undefined,
+          ? undefined
+          : props.version || undefined,
     variants: props.variants || undefined,
     enabled: !!documentId,
   })
@@ -630,8 +627,8 @@ export function EmbedComment(props: EntityComponentProps) {
   )
 }
 
-function AvatarComponent({accountId}: {accountId: string}) {
-  let {data: account} = useAccount(accountId)
+function AvatarComponent({ accountId }: { accountId: string }) {
+  let { data: account } = useAccount(accountId)
   return (
     <Avatar
       label={account?.profile?.alias}
@@ -641,67 +638,10 @@ function AvatarComponent({accountId}: {accountId: string}) {
   )
 }
 
-export function EmbedGroup(props: EntityComponentProps) {
-  const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
-  if (props.block?.attributes?.view == 'content') {
-    return <EmbedGroupContent groupId={groupId} {...props} />
-  } else if (props.block?.attributes?.view == 'card') {
-    return <EmbedGroupCard groupId={groupId} {...props} />
-  }
-
-  return (
-    <ErrorBlock
-      message={`EmbedGroup view error: ${JSON.stringify(props.block)}`}
-    />
-  )
-}
-
-export function EmbedGroupCard(
-  props: EntityComponentProps & {groupId?: string; noContent?: boolean},
-) {
-  const groupQuery = useGroup(props.groupId, props.version || undefined)
-
-  const group = groupQuery.data
-
-  return group && groupQuery.status == 'success' ? (
-    <EmbedWrapper
-      hmRef={props.id}
-      parentBlockId={props.parentBlockId}
-      viewType="card"
-    >
-      <EmbedGroupCardContent group={group} />
-      {props.noContent ? (
-        <XStack p="$2" theme="red" gap="$2">
-          <FileWarning size={14} />
-          <SizableText size="$1">
-            This group does not have a Homepage
-          </SizableText>
-        </XStack>
-      ) : null}
-    </EmbedWrapper>
-  ) : (
-    <ErrorBlock message="Failed to load group embed" />
-  )
-}
-
-function EmbedGroupContent(props: EntityComponentProps & {groupId?: string}) {
-  const groupFrontPage = useGroupFrontpage(
-    props.groupId,
-    props.version || undefined,
-  )
-
-  if (groupFrontPage) {
-    return <EmbedPublicationContent {...props} {...groupFrontPage} />
-  }
-
-  return <EmbedGroupCard noContent {...props} />
-}
 
 export function EmbedInline(props: InlineEmbedComponentProps) {
   if (props?.type == 'a') {
     return <AccountInlineEmbed {...props} />
-  } else if (props?.type == 'g') {
-    return <GroupInlineEmbed {...props} />
   } else if (props?.type == 'd') {
     return <PublicationInlineEmbed {...props} />
   } else {
@@ -719,7 +659,7 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   return (
     <InlineEmbedButton
       dataRef={props?.id}
-      onPress={() => navigate({key: 'account', accountId})}
+      onPress={() => navigate({ key: 'account', accountId })}
     >
       {(accountId &&
         accountQuery.status == 'success' &&
@@ -729,23 +669,6 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   )
 }
 
-function GroupInlineEmbed(props: InlineEmbedComponentProps) {
-  const groupId = props?.type == 'g' ? props.qid : undefined
-  if (!groupId) throw new Error('Invalid props at GroupInlineEmbed (groupId)')
-  const groupQuery = useGroup(groupId)
-  const navigate = useNavigate()
-  return (
-    <InlineEmbedButton
-      dataRef={props?.id}
-      onPress={() => navigate({key: 'group', groupId})}
-    >
-      {(groupQuery &&
-        groupQuery.status == 'success' &&
-        groupQuery.data?.title) ||
-        `${groupId?.slice(0, 5) + '...' + groupId?.slice(-5)}`}
-    </InlineEmbedButton>
-  )
-}
 
 function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
   const pubId = props?.type == 'd' ? props.qid : undefined

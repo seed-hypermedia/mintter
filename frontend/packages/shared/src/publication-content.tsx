@@ -1,5 +1,5 @@
-import {Timestamp} from '@bufbuild/protobuf'
-import {CitationLink} from '@shm/app/models/content-graph'
+import { Timestamp } from '@bufbuild/protobuf'
+import { CitationLink } from '@shm/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
@@ -58,11 +58,11 @@ import {
   YStack,
   YStackProps,
 } from '@shm/ui'
-import {AlertCircle, Book, MessageSquare, Reply} from '@tamagui/lucide-icons'
+import { AlertCircle, Book, MessageSquare, Reply } from '@tamagui/lucide-icons'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import {common} from 'lowlight'
-import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
+import { common } from 'lowlight'
+import { nip19, nip21, validateEvent, verifySignature } from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
@@ -73,7 +73,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
+import { RiCheckFill, RiCloseCircleLine, RiRefreshLine } from 'react-icons/ri'
 import {
   QuotedTweet,
   TweetBody,
@@ -84,17 +84,16 @@ import {
   enrichTweet,
   useTweet,
 } from 'react-tweet'
-import {HMAccount, HMGroup} from './hm-types'
+import { HMAccount, HMGroup } from './hm-types'
 import {
   contentLayoutUnit,
   contentTextUnit,
 } from './publication-content-constants'
 import './publication-content.css'
-import {useRangeSelection} from './range-selection'
+import { useRangeSelection } from './range-selection'
 
 export type EntityComponentsRecord = {
   Account: React.FC<EntityComponentProps>
-  Group: React.FC<EntityComponentProps>
   Publication: React.FC<EntityComponentProps>
   Comment: React.FC<EntityComponentProps>
   Inline: React.FC<InlineEmbedComponentProps>
@@ -110,12 +109,12 @@ export type PublicationContentContextValue = {
   onCitationClick?: () => void
   disableEmbedClick?: boolean
   onCopyBlock:
-    | null
-    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
+  | null
+  | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   onReplyBlock?: null | ((blockId: string) => void)
   onBlockComment?:
-    | null
-    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
+  | null
+  | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -247,9 +246,9 @@ export function usePublicationContentContext() {
 function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
   return debug
     ? {
-        borderWidth: 1,
-        borderColor: color,
-      }
+      borderWidth: 1,
+      borderColor: color,
+    }
     : {}
 }
 
@@ -272,9 +271,9 @@ export function PublicationContent({
   publication: HMPublication
   marginVertical?: any
 }) {
-  const {wrapper, bubble, coords, state, send} = useRangeSelection()
+  const { wrapper, bubble, coords, state, send } = useRangeSelection()
 
-  const {layoutUnit, onCopyBlock, onBlockComment} =
+  const { layoutUnit, onCopyBlock, onBlockComment } =
     usePublicationContentContext()
   const allBlocks = publication.document?.children || []
   const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
@@ -310,7 +309,7 @@ export function PublicationContent({
     <YStack
       ref={wrapper}
       paddingHorizontal={layoutUnit / 3}
-      $gtMd={{paddingHorizontal: layoutUnit / 2}}
+      $gtMd={{ paddingHorizontal: layoutUnit / 2 }}
       marginVertical={marginVertical}
       {...props}
     >
@@ -333,12 +332,12 @@ export function PublicationContent({
                   typeof state.context.rangeStart == 'number' &&
                     typeof state.context.rangeEnd == 'number'
                     ? {
-                        start: state.context.rangeStart,
-                        end: state.context.rangeEnd,
-                      }
+                      start: state.context.rangeStart,
+                      end: state.context.rangeEnd,
+                    }
                     : {
-                        expanded: true,
-                      },
+                      expanded: true,
+                    },
                 )
               }}
             />
@@ -350,15 +349,15 @@ export function PublicationContent({
               size="$2"
               icon={Comment}
               onPress={() => {
-                send({type: 'CREATE_COMMENT'})
+                send({ type: 'CREATE_COMMENT' })
                 onBlockComment(
                   state.context.blockId,
                   typeof state.context.rangeStart == 'number' &&
                     typeof state.context.rangeEnd == 'number'
                     ? {
-                        start: state.context.rangeStart,
-                        end: state.context.rangeEnd,
-                      }
+                      start: state.context.rangeStart,
+                      end: state.context.rangeEnd,
+                    }
                     : undefined,
                 )
               }}
@@ -519,8 +518,8 @@ export function BlockNodeContent({
     layoutUnit,
     isFirstChild,
   )
-  const {hover, ...hoverProps} = useHover()
-  const {citations} = useBlockCitations(blockNode.block?.id)
+  const { hover, ...hoverProps } = useHover()
+  const { citations } = useBlockCitations(blockNode.block?.id)
   const [_expanded, setExpanded] = useState<boolean>(expanded)
 
   useEffect(() => {
@@ -532,19 +531,19 @@ export function BlockNodeContent({
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
-        <BlockNodeContent
-          key={bn.block!.id}
-          depth={depth + 1}
-          isFirstChild={index == 0}
-          blockNode={bn}
-          childrenType={bn.block!.attributes?.childrenType}
-          start={bn.block!.attributes?.start}
-          listLevel={bn.block!.attributes?.listLevel}
-          index={index}
-          parentBlockId={blockNode.block?.id || null}
-          embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
-        />
-      ))
+      <BlockNodeContent
+        key={bn.block!.id}
+        depth={depth + 1}
+        isFirstChild={index == 0}
+        blockNode={bn}
+        childrenType={bn.block!.attributes?.childrenType}
+        start={bn.block!.attributes?.start}
+        listLevel={bn.block!.attributes?.listLevel}
+        index={index}
+        parentBlockId={blockNode.block?.id || null}
+        embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
+      />
+    ))
     : null
 
   const headingStyles = useMemo(() => {
@@ -577,7 +576,7 @@ export function BlockNodeContent({
 
   useEffect(() => {
     if (elm.current && isHighlight) {
-      elm.current.scrollIntoView({behavior: 'smooth', block: 'start'})
+      elm.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [isHighlight])
 
@@ -612,10 +611,10 @@ export function BlockNodeContent({
       borderRadius={layoutUnit / 4}
       bg={isHighlight ? '$yellow3' : '$backgroundTransparent'}
       data-node-type="blockContainer"
-      // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
-      // onHoverOut={() =>
-      //   props.embedDepth ? undefined : hoverProps.onHoverOut()
-      // }
+    // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
+    // onHoverOut={() =>
+    //   props.embedDepth ? undefined : hoverProps.onHoverOut()
+    // }
     >
       <XStack
         padding={isEmbed ? 0 : layoutUnit / 3}
@@ -740,7 +739,7 @@ export function BlockNodeContent({
                     icon={Link}
                     onPress={() => {
                       if (blockNode.block?.id) {
-                        onCopyBlock(blockNode.block.id, {expanded: true})
+                        onCopyBlock(blockNode.block.id, { expanded: true })
                       } else {
                         console.error('onCopyBlock Error: no blockId available')
                       }
@@ -914,7 +913,7 @@ function BlockContentParagraph({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {debug, textUnit, comment} = usePublicationContentContext()
+  const { debug, textUnit, comment } = usePublicationContentContext()
 
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   return (
@@ -940,7 +939,7 @@ export function BlockContentHeading({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {textUnit, debug, ffSerif} = usePublicationContentContext()
+  const { textUnit, debug, ffSerif } = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
   let tag = `h${depth}`
@@ -977,7 +976,7 @@ export function PublicationHeading({
   children?: string
   right?: React.ReactNode
 }) {
-  const {textUnit, debug, layoutUnit} = usePublicationContentContext()
+  const { textUnit, debug, layoutUnit } = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
 
@@ -985,14 +984,14 @@ export function PublicationHeading({
     <Theme name="subtle">
       <YStack
         paddingHorizontal={layoutUnit / 3}
-        $gtMd={{paddingHorizontal: layoutUnit / 2}}
+        $gtMd={{ paddingHorizontal: layoutUnit / 2 }}
         group="header"
       >
         <YStack
           padding={layoutUnit / 3}
           // marginBottom={layoutUnit}
           paddingBottom={layoutUnit / 2}
-          // {...headingMarginStyles}
+        // {...headingMarginStyles}
         >
           <XStack>
             <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
@@ -1112,7 +1111,7 @@ function BlockContentImage({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
-  const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
+  const { ipfsBlobPrefix, textUnit } = usePublicationContentContext()
   if (!cid) return null
 
   return (
@@ -1137,7 +1136,7 @@ function BlockContentImage({
         <img
           alt={block?.attributes?.alt}
           src={`${ipfsBlobPrefix}${cid}`}
-          style={{width: '100%'}}
+          style={{ width: '100%' }}
         />
       </XStack>
       {inline.length ? (
@@ -1156,7 +1155,7 @@ function BlockContentVideo({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
-  const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
+  const { ipfsBlobPrefix, textUnit } = usePublicationContentContext()
 
   return (
     <YStack
@@ -1249,7 +1248,7 @@ function InlineContentView({
   rangeOffset?: number
   isRange?: boolean
 }) {
-  const {onLinkClick, textUnit, entityComponents} =
+  const { onLinkClick, textUnit, entityComponents } =
     usePublicationContentContext()
 
   const InlineEmbed = entityComponents.Inline
@@ -1379,7 +1378,7 @@ function InlineContentView({
               key={`${content.type}-${index}`}
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
-              style={{textDecorationLine}}
+              style={{ textDecorationLine }}
               fontSize={fSize}
               lineHeight={fSize * 1.5}
               data-range-offset={inlineContentOffset}
@@ -1445,10 +1444,6 @@ export function BlockContentEmbed(props: BlockContentProps) {
   if (id?.type == 'a') {
     return <EmbedTypes.Account {...props} {...id} />
   }
-  if (id?.type == 'g') {
-    return <EmbedTypes.Group {...props} {...id} />
-  }
-
   if (id?.type == 'd') {
     return <EmbedTypes.Publication {...props} {...id} />
   }
@@ -1458,7 +1453,7 @@ export function BlockContentEmbed(props: BlockContentProps) {
   return <BlockContentUnknown {...props} />
 }
 
-export function EmbedGroupCardContent({group}: {group: HMGroup}) {
+export function EmbedGroupCardContent({ group }: { group: HMGroup }) {
   return (
     <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -1479,8 +1474,8 @@ export function EmbedGroupCardContent({group}: {group: HMGroup}) {
   )
 }
 
-export function EmbedAccountContent({account}: {account: HMAccount}) {
-  const {ipfsBlobPrefix} = usePublicationContentContext()
+export function EmbedAccountContent({ account }: { account: HMAccount }) {
+  const { ipfsBlobPrefix } = usePublicationContentContext()
   return (
     <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -1566,7 +1561,7 @@ export function ContentEmbed({
   onShowReferenced: (showReference: boolean) => void
   renderOpenButton: () => React.ReactNode
   EmbedWrapper: React.ComponentType<
-    React.PropsWithChildren<{hmRef: string; parentBlockId: string}>
+    React.PropsWithChildren<{ hmRef: string; parentBlockId: string }>
   >
   parentBlockId: string | null
 }) {
@@ -1579,30 +1574,30 @@ export function ContentEmbed({
     const embedBlocks = props.blockRef
       ? selectedBlock
         ? [
-            {
-              ...selectedBlock,
-              block: {
-                ...selectedBlock.block,
-                annotations:
-                  props.blockRange && 'start' in props.blockRange
-                    ? [
-                        ...currentAnnotations,
-                        {
-                          type: 'range',
-                          starts: [props.blockRange.start],
-                          ends: [props.blockRange.end],
-                        },
-                      ]
-                    : currentAnnotations,
-              },
-              // children:
-              //   props.blockRange &&
-              //   'expanded' in props.blockRange &&
-              //   props.blockRange.expanded
-              //     ? [...selectedBlock.children]
-              //     : [],
+          {
+            ...selectedBlock,
+            block: {
+              ...selectedBlock.block,
+              annotations:
+                props.blockRange && 'start' in props.blockRange
+                  ? [
+                    ...currentAnnotations,
+                    {
+                      type: 'range',
+                      starts: [props.blockRange.start],
+                      ends: [props.blockRange.end],
+                    },
+                  ]
+                  : currentAnnotations,
             },
-          ]
+            // children:
+            //   props.blockRange &&
+            //   'expanded' in props.blockRange &&
+            //   props.blockRange.expanded
+            //     ? [...selectedBlock.children]
+            //     : [],
+          },
+        ]
         : null
       : pub?.document?.children
 
@@ -1614,10 +1609,10 @@ export function ContentEmbed({
         blockRange:
           props.blockRange && 'start' in props.blockRange && selectedBlock
             ? {
-                blockId: props.blockRef,
-                start: props.blockRange.start,
-                end: props.blockRange.end,
-              }
+              blockId: props.blockRef,
+              start: props.blockRange.start,
+              end: props.blockRange.end,
+            }
             : null,
       },
     }
@@ -1795,8 +1790,8 @@ export function BlockContentFile({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {hover, ...hoverProps} = useHover()
-  const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
+  const { hover, ...hoverProps } = useHover()
+  const { layoutUnit, saveCidAsFile } = usePublicationContentContext()
   return (
     <YStack
       // backgroundColor="$color3"
@@ -1867,7 +1862,7 @@ export function BlockContentNostr({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {layoutUnit} = usePublicationContentContext()
+  const { layoutUnit } = usePublicationContentContext()
   const name = block.attributes.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
 
@@ -1926,15 +1921,15 @@ export function BlockContentNostr({
           flex={1}
         >
           {'Public Key: '}
-          {nip21.test(uri) ? <a href={uri}>{header}</a> : {header}}
+          {nip21.test(uri) ? <a href={uri}>{header}</a> : { header }}
         </SizableText>
         <Tooltip
           content={
             verified === undefined
               ? ''
               : verified
-              ? 'Signature verified'
-              : 'Invalid signature'
+                ? 'Signature verified'
+                : 'Invalid signature'
           }
         >
           <Button
@@ -1947,8 +1942,8 @@ export function BlockContentNostr({
               verified === undefined
                 ? RiRefreshLine
                 : verified
-                ? RiCheckFill
-                : RiCloseCircleLine
+                  ? RiCheckFill
+                  : RiCloseCircleLine
             }
           />
         </Tooltip>
@@ -1967,10 +1962,10 @@ export function BlockContentXPost({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {layoutUnit, onLinkClick} = usePublicationContentContext()
+  const { layoutUnit, onLinkClick } = usePublicationContentContext()
   const urlArray = block.ref?.split('/')
   const xPostId = urlArray?.[urlArray.length - 1].split('?')[0]
-  const {data, error, isLoading} = useTweet(xPostId)
+  const { data, error, isLoading } = useTweet(xPostId)
 
   let xPostContent
 
@@ -2024,28 +2019,28 @@ export function BlockContentCode({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {layoutUnit, debug, textUnit} = usePublicationContentContext()
+  const { layoutUnit, debug, textUnit } = usePublicationContentContext()
   function getHighlightNodes(result: any) {
     return result.value || result.children || []
   }
 
-  const CodeHighlight = ({node}: {node: any}) => {
+  const CodeHighlight = ({ node }: { node: any }) => {
     if (node.type === 'text') {
       return node.value
     }
 
     if (node.type === 'element') {
-      const {tagName, properties, children} = node
+      const { tagName, properties, children } = node
       if (properties.className && Array.isArray(properties.className)) {
         properties.className = properties.className[0]
       }
       return createElement(
         tagName,
-        {...properties},
+        { ...properties },
         children &&
-          children.map((child: any, index: number) => (
-            <CodeHighlight key={index} node={child} />
-          )),
+        children.map((child: any, index: number) => (
+          <CodeHighlight key={index} node={child} />
+        )),
       )
     }
 
@@ -2088,8 +2083,8 @@ export function BlockContentCode({
         >
           {nodes.length > 0
             ? nodes.map((node, index) => (
-                <CodeHighlight key={index} node={node} />
-              ))
+              <CodeHighlight key={index} node={node} />
+            ))
             : block.text}
         </Text>
       </XStack>
@@ -2102,7 +2097,7 @@ export function BlockContentMath({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const {layoutUnit} = usePublicationContentContext()
+  const { layoutUnit } = usePublicationContentContext()
 
   const tex = katex.renderToString(block.text ? block.text : '', {
     throwOnError: true,
@@ -2131,7 +2126,7 @@ export function BlockContentMath({
       <SizableText
         ai="center"
         ac="center"
-        dangerouslySetInnerHTML={{__html: tex}}
+        dangerouslySetInnerHTML={{ __html: tex }}
       ></SizableText>
     </YStack>
   )
@@ -2162,7 +2157,7 @@ function CheckboxWithLabel({
   size,
   label,
   ...checkboxProps
-}: CheckboxProps & {size: SizeTokens; label: string}) {
+}: CheckboxProps & { size: SizeTokens; label: string }) {
   const id = `checkbox-${size.toString().slice(1)}`
   return (
     <XStack alignItems="center" space="$2">
@@ -2179,7 +2174,7 @@ function CheckboxWithLabel({
   )
 }
 
-function RadioGroupItemWithLabel(props: {value: string; label: string}) {
+function RadioGroupItemWithLabel(props: { value: string; label: string }) {
   const id = `radiogroup-${props.value}`
   return (
     <XStack alignItems="center" space="$2">
@@ -2204,7 +2199,7 @@ export function PublicationCardView({
   title?: string
   textContent?: string
   editors?: Array<string>
-  AvatarComponent: React.FC<{accountId?: string}>
+  AvatarComponent: React.FC<{ accountId?: string }>
   date?: Timestamp
 }) {
   return (
@@ -2256,7 +2251,7 @@ function EditorsAvatars({
   AvatarComponent,
 }: {
   editors?: Array<string>
-  AvatarComponent: React.FC<{accountId?: string}>
+  AvatarComponent: React.FC<{ accountId?: string }>
 }) {
   return (
     <XStack marginLeft={6}>

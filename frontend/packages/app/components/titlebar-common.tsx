@@ -1,6 +1,6 @@
-import {ContactsPrompt} from '@shm/app/components/contacts-prompt'
-import {useMyAccount} from '@shm/app/models/accounts'
-import {usePublicationVariant} from '@shm/app/models/publication'
+import { ContactsPrompt } from '@shm/app/components/contacts-prompt'
+import { useMyAccount } from '@shm/app/models/accounts'
+import { usePublicationVariant } from '@shm/app/models/publication'
 import {
   useNavRoute,
   useNavigationDispatch,
@@ -9,13 +9,10 @@ import {
 import {
   BlockRange,
   ExpandedBlockRange,
-  GroupVariant,
-  Role,
   createHmId,
   createPublicWebHmUrl,
   hmId,
-  serializeBlockRange,
-  unpackHmId,
+  unpackHmId
 } from '@shm/shared'
 import {
   Back,
@@ -36,50 +33,32 @@ import {
   ArrowLeftFromLine,
   ArrowRightFromLine,
   ArrowUpRight,
-  Book,
-  Copy,
   ExternalLink,
-  FileText,
+  FilePlus2,
   Link,
   Pencil,
-  Plus,
-  Send,
   Trash,
   UploadCloud,
-  X,
+  X
 } from '@tamagui/lucide-icons'
-import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ReactNode, useState} from 'react'
-import {useAppContext} from '../app-context'
-import {useAccount} from '../models/accounts'
-import {useEntityTimeline} from '../models/changes'
-import {usePushPublication} from '../models/documents'
-import {useGatewayHost, useGatewayUrl} from '../models/gateway-settings'
-import {
-  useCanEditGroup,
-  useGroup,
-  useGroupContent,
-  useGroupMembers,
-  useInvertedGroupContent,
-} from '../models/groups'
-import {RemoveProfileDocDialog} from '../pages/account-page'
-import {AddToCategoryDialog} from '../src/add-to-category-dialog'
-import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {useOpenDraft} from '../utils/open-draft'
-import {GroupRoute, NavRoute} from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
-import {CloneGroupDialog} from './clone-group'
-import {useCopyGatewayReference} from './copy-gateway-reference'
-import {useDeleteDialog} from './delete-dialog'
-import {useAppDialog} from './dialog'
-import {EditDocButton} from './edit-doc-button'
-import {useEditGroupInfoDialog} from './edit-group-info'
-import {useEditProfileDialog} from './edit-profile-dialog'
-import {useFavoriteMenuItem} from './favoriting'
-import {useCreateGroupDialog} from './new-group'
-import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {usePublishGroupDialog} from './publish-group'
-import {TitleBarProps} from './titlebar'
+import { ReactNode, useState } from 'react'
+import { useAppContext } from '../app-context'
+import { useAccount } from '../models/accounts'
+import { usePushPublication } from '../models/documents'
+import { useGatewayHost, useGatewayUrl } from '../models/gateway-settings'
+import { RemoveProfileDocDialog } from '../pages/account-page'
+import { SidebarWidth, useSidebarContext } from '../src/sidebar-context'
+import { useOpenDraft } from '../utils/open-draft'
+import { NavRoute } from '../utils/routes'
+import { useNavigate } from '../utils/useNavigate'
+import { useCopyGatewayReference } from './copy-gateway-reference'
+import { useDeleteDialog } from './delete-dialog'
+import { useAppDialog } from './dialog'
+import { EditDocButton } from './edit-doc-button'
+import { useEditProfileDialog } from './edit-profile-dialog'
+import { useFavoriteMenuItem } from './favoriting'
+import { MenuItemType, OptionsDropdown } from './options-dropdown'
+import { TitleBarProps } from './titlebar'
 import {
   DraftPublicationButtons,
   PublicationVariants,
@@ -94,13 +73,7 @@ export function DocOptionsButton() {
       'DocOptionsButton can only be rendered on publication route',
     )
   const docId = route.documentId
-  const groupVariants = route.variants?.filter((v) => v.key === 'group') as
-    | GroupVariant[]
-    | undefined
-  const groupVariant =
-    groupVariants?.length === 1 ? groupVariants[0] : undefined
   const gwHost = useGatewayHost()
-  const addToCategoryDialog = useAppDialog(AddToCategoryDialog)
   const push = usePushPublication()
   const deleteEntity = useDeleteDialog()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
@@ -148,38 +121,24 @@ export function DocOptionsButton() {
           title: pub.data?.publication?.document?.title,
           onSuccess: () => {
             // dispatch({type: 'backplace', route: {key: 'feed', tab: 'trusted'}})
-            dispatch({type: 'pop'})
+            dispatch({ type: 'pop' })
           },
         })
       },
     },
-    // ...(groupVariant && groupVariant.pathName
-    //   ? [
-    //       {
-    //         key: 'add-to-category',
-    //         label: 'Add to Category',
-    //         icon: PackageOpen,
-    //         onPress: () => {
-    //           const {groupId, pathName} = groupVariant
-    //           addToCategoryDialog.open({groupId, docId, pathName})
-    //         },
-    //       },
-    //     ]
-    //   : []),
   ]
   const id = unpackHmId(docId)
   const docUrl = id
     ? createHmId('d', id.eid, {
-        version: route.versionId,
-        variants: route.variants,
-      })
+      version: route.versionId,
+      variants: route.variants,
+    })
     : null
   menuItems.push(useFavoriteMenuItem(docUrl))
 
   return (
     <>
       {copyContent}
-      {addToCategoryDialog.content}
       {deleteEntity.content}
       <OptionsDropdown menuItems={menuItems} />
     </>
@@ -201,7 +160,7 @@ export function AccountOptionsButton() {
   const myAccount = useMyAccount()
   const spawn = useNavigate('spawn')
   const editProfileDialog = useEditProfileDialog()
-  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, {isAlert: true})
+  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, { isAlert: true })
   const isMyAccount = myAccount.data?.id === route.accountId
   if (isMyAccount) {
     menuItems.push({
@@ -254,7 +213,7 @@ export function AccountOptionsButton() {
         id: createHmId('a', route.accountId),
         title: account.data?.profile?.alias,
         onSuccess: () => {
-          dispatch({type: 'pop'})
+          dispatch({ type: 'pop' })
         },
       })
     },
@@ -291,151 +250,6 @@ function EditAccountButton() {
   )
 }
 
-function EditGroupButton({route}: {route: GroupRoute}) {
-  const myAccount = useMyAccount()
-  const groupMembers = useGroupMembers(route.groupId, route.version)
-  const myMemberRole =
-    groupMembers.data?.members[myAccount.data?.id || ''] ||
-    Role.ROLE_UNSPECIFIED
-  const canEdit = myMemberRole !== Role.ROLE_UNSPECIFIED
-  const groupContent = useGroupContent(route.groupId, route.version)
-  const frontId = groupContent.data?.content['/']
-  const id = frontId ? unpackHmId(frontId) : null
-  if (route.tab !== 'front' && route.tab != null) return null
-  if (!canEdit) return null
-  return (
-    <EditDocButton
-      docId={id?.qid || undefined}
-      // baseVersion={id?.version || undefined}
-      navMode="push"
-      contextRoute={route}
-      variants={[
-        {
-          key: 'group',
-          groupId: route.groupId,
-          pathName: '/',
-        },
-      ]}
-    />
-  )
-}
-
-export function GroupOptionsButton() {
-  const route = useNavRoute()
-  const groupRoute = route.key === 'group' ? route : null
-  const groupRouteVersion = groupRoute?.version
-  const groupId = groupRoute?.groupId
-  if (!groupId || !groupRoute)
-    throw new Error('GroupOptionsButton not supported in this route')
-  const publish = usePublishGroupDialog()
-  const myAccount = useMyAccount()
-  const group = useGroup(groupId)
-  const editInfo = useEditGroupInfoDialog()
-  const groupContent = useGroupContent(groupId, groupRouteVersion)
-  const isGroupOwner =
-    myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
-  const cloneGroup = useAppDialog(CloneGroupDialog)
-  const deleteEntity = useDeleteDialog()
-  const gwUrl = useGatewayUrl()
-  const dispatch = useNavigationDispatch()
-  const spawn = useNavigate('spawn')
-  const menuItems: MenuItemType[] = [
-    {
-      key: 'clone',
-      label: 'Clone Group',
-      icon: Copy,
-      onPress: () => {
-        cloneGroup.open(groupId)
-      },
-    },
-    {
-      key: 'link',
-      label: 'Copy Public Group URL',
-      icon: Link,
-      onPress: () => {
-        const id = unpackHmId(groupId)
-        if (!id) return
-        copyTextToClipboard(
-          createPublicWebHmUrl('g', id.eid, {
-            version: groupRouteVersion,
-            hostname: gwUrl.data,
-          }),
-        )
-        toast.success('Copied Public Group URL')
-      },
-    },
-    {
-      key: 'delete',
-      label: 'Delete Group',
-      icon: Trash,
-      onPress: () => {
-        deleteEntity.open({
-          id: groupId,
-          title: group.data?.title,
-          onSuccess: () => {
-            dispatch({type: 'pop'})
-          },
-        })
-      },
-    },
-    {
-      key: 'openNewWindow',
-      label: 'Open Front Document in New Window',
-      icon: ArrowUpRight,
-      onPress: () => {
-        const frontId = groupContent.data?.content['/']
-        const frontHmId = frontId ? unpackHmId(frontId) : null
-        if (!frontHmId) return
-        spawn({
-          key: 'publication',
-          documentId: frontHmId.qid,
-          versionId: frontHmId.version || undefined,
-          variants: [
-            {
-              key: 'group',
-              groupId,
-              pathName: '/',
-            },
-          ],
-        })
-      },
-    },
-  ]
-
-  menuItems.push(useFavoriteMenuItem(groupId))
-
-  // if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
-  if (isGroupOwner) {
-    menuItems.push({
-      key: 'publishSite',
-      label: 'Publish Group to Site',
-      icon: Send,
-      onPress: () => {
-        publish.open({
-          groupId,
-          publishedBaseUrl: group.data?.siteInfo?.baseUrl,
-        })
-      },
-    })
-    menuItems.push({
-      key: 'editGroupInfo',
-      label: 'Edit Group Info',
-      icon: Pencil,
-      onPress: () => {
-        editInfo.open(groupId)
-      },
-    })
-  }
-  return (
-    <>
-      <OptionsDropdown menuItems={menuItems} />
-      {publish.content}
-      {deleteEntity.content}
-      {editInfo.content}
-      {cloneGroup.content}
-    </>
-  )
-}
 
 export function useFullReferenceUrl(route: NavRoute): {
   label: string
@@ -447,148 +261,20 @@ export function useFullReferenceUrl(route: NavRoute): {
   content: ReactNode
 } | null {
   const pubRoute = route.key === 'publication' ? route : null
-  const groupRoute = route.key === 'group' ? route : null
   const pub = usePublicationVariant({
     documentId: pubRoute?.documentId,
     versionId: pubRoute?.versionId,
     variants: pubRoute?.variants,
     enabled: !!pubRoute?.documentId,
   })
-  const pubGroupVariants = pubRoute?.variants?.filter(
-    (variant) => variant.key === 'group',
-  ) as GroupVariant[] | undefined
-  if (pubGroupVariants && pubGroupVariants.length > 1) {
-    throw new Error('Multiple group variants not currently supported')
-  }
-  const pubGroupVariant: GroupVariant | undefined = pubGroupVariants?.[0]
-  const variantGroupId = pubGroupVariant?.groupId
-  const routeGroupId = groupRoute?.groupId
-  const pubRouteDocId = pubRoute?.documentId
-  const group = useGroup(variantGroupId || routeGroupId)
-  const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
-  const invertedGroupContent = useInvertedGroupContent(variantGroupId)
   const gwUrl = useGatewayUrl()
-  const [copyDialogContent, onCopyPublic, gatewayHost] =
+  const [copyDialogContent, onCopyPublic] =
     useCopyGatewayReference()
-  if (groupRoute) {
-    const groupId = unpackHmId(groupRoute.groupId)
-    if (!groupId) return null
-    const groupExactVersion = groupRoute?.version || group?.data?.version
-    const baseUrl = group.data?.siteInfo?.baseUrl
-    if (baseUrl) {
-      let url = baseUrl + '/'
-      if (groupExactVersion) url += `?v=${groupExactVersion}`
-      if (groupRoute.blockId && groupRoute.isBlockFocused)
-        url += `#${groupRoute.blockId}`
-      return {
-        label: 'Site',
-        url,
-        content: null,
-        onCopy: () => {
-          copyUrlToClipboardWithFeedback(url, 'Site')
-        },
-      }
-    }
-    let hostname = group.data?.siteInfo?.baseUrl || gwUrl.data
-    const focusBlockId = groupRoute.isBlockFocused ? groupRoute.blockId : null
-    return {
-      label: 'Group',
-      url: createPublicWebHmUrl('g', groupId.eid, {
-        hostname: hostname || null,
-        version: groupExactVersion || group.data?.version || null,
-        blockRef: focusBlockId || null,
-      }),
-      content: copyDialogContent,
-      onCopy: () => {
-        onCopyPublic({
-          ...groupId,
-          hostname: hostname || null,
-          version: groupExactVersion || group.data?.version || null,
-          blockRef: focusBlockId || null,
-        })
-      },
-    }
-  }
 
   if (pubRoute) {
     const docId = unpackHmId(pubRoute.documentId)
     if (!docId) return null
-
-    let hostname = variantGroupId ? group.data?.siteInfo?.baseUrl : gwUrl.data
-
-    const entityVersion = pub.data?.publication?.version
-
-    if (hostname && entityVersion && variantGroupId) {
-      const matchedPrettyPath =
-        invertedGroupContent.data?.[docId.eid]?.[entityVersion]
-      if (matchedPrettyPath && !pubRoute.versionId) {
-        const displayPrettyPath =
-          matchedPrettyPath === '/' ? '' : matchedPrettyPath
-        let sitePrettyUrl = `${hostname}/${displayPrettyPath}`
-        // Version is temporarily disabled
-        // if (groupVersion) {
-        //   sitePrettyUrl += `?v=${groupVersion}`
-        // }
-        const focusBlockId = pubRoute.isBlockFocused ? pubRoute.blockId : null
-        return {
-          url: sitePrettyUrl,
-          label: 'Site Document',
-          content: null,
-          onCopy: (
-            blockId?: string | undefined,
-            blockRange?: BlockRange | ExpandedBlockRange | null,
-          ) => {
-            const copyBlockId = blockId || focusBlockId
-            copyUrlToClipboardWithFeedback(
-              copyBlockId
-                ? `${sitePrettyUrl}#${copyBlockId}${serializeBlockRange(
-                    blockRange,
-                  )}`
-                : sitePrettyUrl,
-              'Site Document',
-            )
-          },
-        }
-      }
-      if (hostname && entityTimeline.data && entityVersion) {
-        const linkChangeIds = entityVersion.split('.')
-        const allChanges = entityTimeline.data.allChanges
-        const explicitlyHostedChangeIds = new Set(
-          Object.keys(invertedGroupContent.data?.[docId.eid] || {})
-            .map((version) => version.split('.'))
-            .flat(),
-        )
-        const allHostedChangeIds = new Set<string>()
-        let walkingHostedChangeIds = [...explicitlyHostedChangeIds]
-        while (walkingHostedChangeIds.length) {
-          walkingHostedChangeIds = walkingHostedChangeIds
-            .map((changeId) => {
-              allHostedChangeIds.add(changeId)
-              const change = allChanges[changeId]
-              if (!change) return []
-              return change.deps
-            })
-            .flat()
-        }
-
-        if (
-          linkChangeIds.find((changeId) => !allHostedChangeIds.has(changeId))
-        ) {
-          // this is the main purpose for all this code!
-          // if the version is not hosted on this site, we should link to hyper.media by setting hostname to undefined
-          hostname = undefined
-          // also we want to clear the publication context from the route:
-          // redirectedContext = null
-        }
-      }
-      // if (redirectedContext !== undefined) {
-      // this is causing buggy behavior. maybe we should show a visual indicator that this version doesn't actually appear in the group, rather than redirecting
-      // navigateReplace({
-      //   ...pubRoute,
-      //   pubContext: redirectedContext,
-      // })
-      // }
-    }
+    let hostname = gwUrl.data
     return {
       url: createPublicWebHmUrl('d', docId.eid, {
         version: pub.data?.publication?.version,
@@ -648,18 +334,6 @@ function getReferenceUrlOfRoute(
   hostname?: string | undefined,
   exactVersion?: string | undefined,
 ) {
-  if (route.key === 'group') {
-    const groupId = unpackHmId(route.groupId)
-    if (!groupId || groupId.type !== 'g') return null
-    const url = createPublicWebHmUrl('g', groupId.eid, {
-      hostname,
-      version: exactVersion,
-    })
-    return {
-      label: 'Group',
-      url,
-    }
-  }
   if (route.key === 'publication') {
     const docId = unpackHmId(route.documentId)
     if (!docId || docId.type !== 'd') return null
@@ -692,7 +366,7 @@ export function CopyReferenceButton() {
   const [shouldOpen, setShouldOpen] = useState(false)
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
-  const {externalOpen} = useAppContext()
+  const { externalOpen } = useAppContext()
   if (!reference) return null
   return (
     <>
@@ -731,67 +405,15 @@ export function CopyReferenceButton() {
   )
 }
 
-function NewDocumentButton({
-  groupVariant,
-  label,
-}: {
-  groupVariant?: GroupVariant
-  label?: string
-}) {
+function CreateDropdown({ }: {}) {
   const openDraft = useOpenDraft('push')
-  const canEdit = useCanEditGroup(groupVariant?.groupId)
-  if (groupVariant && !canEdit) return null
   return (
-    <Tooltip content={`New ${label || 'Document'}`}>
-      <Button
-        size="$2"
-        chromeless
-        icon={Plus}
-        onPress={(e) => {
-          e.preventDefault()
-          openDraft(groupVariant)
-        }}
-      >
-        New Document
-      </Button>
-    </Tooltip>
-  )
-}
-
-function CreateDropdown({groupVariant}: {groupVariant?: GroupVariant}) {
-  const openDraft = useOpenDraft('push')
-  const canEdit = useCanEditGroup(groupVariant?.groupId)
-  const createGroup = useCreateGroupDialog()
-  if (groupVariant && !canEdit) return null
-  return (
-    <>
-      <OptionsDropdown
-        menuItems={[
-          {
-            key: 'doc',
-            label: 'New Document',
-            icon: FileText,
-            onPress: () => {
-              openDraft(groupVariant)
-            },
-          },
-          {
-            key: 'group',
-            label: 'New Group',
-            icon: Book,
-            onPress: () => {
-              createGroup.open({})
-            },
-          },
-        ]}
-        button={
-          <Button size="$2" icon={Plus}>
-            Create
-          </Button>
-        }
-      />
-      {createGroup.content}
-    </>
+    <Button size="$2" icon={FilePlus2} onPress={() => {
+      openDraft()
+    }}
+    >
+      Create
+    </Button>
   )
 }
 
@@ -808,30 +430,6 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key == 'account' && route.tab === 'groups') {
     buttonGroup = [<CreateDropdown key="create" />]
-  } else if (route.key == 'group') {
-    buttonGroup = [
-      <VersionContext key="versionContext" route={route} />,
-      <EditGroupButton route={route} key="editGroup" />,
-      // <NewDocumentButton
-      //   key="newDocument"
-      //   label="Group Document"
-      //   groupVariant={{
-      //     key: 'group',
-      //     groupId: route.groupId,
-      //     pathName: null,
-      //   }}
-      //   contextRoute={route}
-      // />,
-      <CreateDropdown
-        key="create"
-        groupVariant={{
-          key: 'group',
-          groupId: route.groupId,
-          pathName: null,
-        }}
-      />,
-      <GroupOptionsButton key="groupOptions" />,
-    ]
   } else if (route.key === 'publication') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
@@ -859,7 +457,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({type: 'pop'})}
+            onPress={() => dispatch({ type: 'pop' })}
             chromeless
             cursor={state.routeIndex <= 0 ? 'default' : 'pointer'}
             disabled={state.routeIndex <= 0}
@@ -870,7 +468,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({type: 'forward'})}
+            onPress={() => dispatch({ type: 'forward' })}
             chromeless
             cursor={
               state.routeIndex >= state.routes.length - 1
@@ -887,7 +485,7 @@ export function NavigationButtons() {
   )
 }
 
-export function NavMenuButton({left}: {left?: ReactNode}) {
+export function NavMenuButton({ left }: { left?: ReactNode }) {
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)

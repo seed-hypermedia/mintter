@@ -1,19 +1,10 @@
-import {trpc} from '@shm/desktop/src/trpc'
-import {HMAccount, HMGroup, UnpackedHypermediaId, unpackHmId} from '@shm/shared'
-import {useMemo} from 'react'
-import {useQueryInvalidator} from '../app-context'
-import {useAccounts} from './accounts'
-import {useGroups} from './groups'
+import { trpc } from '@shm/desktop/src/trpc'
+import { HMAccount, UnpackedHypermediaId, unpackHmId } from '@shm/shared'
+import { useMemo } from 'react'
+import { useQueryInvalidator } from '../app-context'
+import { useAccounts } from './accounts'
 
 export type FavoriteItem =
-  | {
-      key: 'group'
-      id: UnpackedHypermediaId
-      url: string
-      groupId: string
-      version?: string | null
-      group: HMGroup
-    }
   | {
       key: 'document'
       id: UnpackedHypermediaId
@@ -29,21 +20,14 @@ export type FavoriteItem =
 
 export function useFavorites() {
   const favoritesQuery = trpc.favorites.get.useQuery()
-  const {groups, accounts, favorites, favoriteUrls} = useMemo(() => {
+  const {accounts, favorites, favoriteUrls} = useMemo(() => {
     const favoriteUrls: string[] = []
     const unpackedIds = favoritesQuery.data?.favorites.map((favorite) => {
       favoriteUrls.push(favorite.url)
       return unpackHmId(favorite.url)
     })
-    const groups: {id: string; version?: string | null}[] = []
     const accounts: string[] = []
     unpackedIds?.forEach((id) => {
-      if (id?.type === 'g' && id?.groupPathName === null) {
-        groups.push({
-          id: id.qid,
-          version: id.version,
-        })
-      }
       if (id?.type === 'a') {
         accounts.push(id.eid)
       }
@@ -51,29 +35,13 @@ export function useFavorites() {
     return {
       favorites: unpackedIds,
       favoriteUrls,
-      groups,
       accounts,
     }
   }, [favoritesQuery.data])
-  const groupsQuery = useGroups(groups)
   const accountsQuery = useAccounts(accounts)
   const favoriteItems: FavoriteItem[] = []
   favorites?.forEach((id, favoriteIndex) => {
     const url = favoriteUrls[favoriteIndex]
-    if (id?.type === 'g' && id?.groupPathName === null && url) {
-      const groupQ = groupsQuery.find((group) => group.data?.id === id.qid)
-      const group = groupQ?.data
-      if (group) {
-        favoriteItems.push({
-          key: 'group',
-          id,
-          url,
-          groupId: id.qid,
-          version: id.version,
-          group,
-        })
-      }
-    }
     if (id?.type === 'a' && url) {
       const accountQ = accountsQuery.find(
         (account) => account.data?.id === id.eid,

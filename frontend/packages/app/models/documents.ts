@@ -13,12 +13,10 @@ import {
 import {
   DocumentChange,
   GRPCClient,
-  GroupVariant,
   HMAccount,
   HMBlock,
   HMBlockNode,
   HMDocument,
-  HMGroup,
   HMPublication,
   ListPublicationsResponse,
   Publication,
@@ -57,7 +55,6 @@ import {useAccounts, useAllAccounts, useMyAccount} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
-import {useGroupContent, useGroups} from './groups'
 import {queryKeys} from './query-keys'
 import {useInlineMentions} from './search'
 
@@ -292,11 +289,6 @@ export type EmbedsContent = Record<
       data: HMAccount
       query: {refId: UnpackedHypermediaId; blockId: string}
     }
-  | {
-      type: 'g'
-      data: HMGroup
-      query: {refId: UnpackedHypermediaId; blockId: string}
-    }
   | undefined
 >
 
@@ -321,8 +313,6 @@ export function useDocumentEmbeds(
       ({refId, blockId}) => {
         if (refId.type === 'a') {
           queryAccounts.push({blockId, refId})
-        } else if (refId.type === 'g') {
-          queryGroups.push({blockId, refId})
         } else if (refId.type === 'd') {
           queryPublications.push({blockId, refId})
         }
@@ -337,18 +327,11 @@ export function useDocumentEmbeds(
   const pubs = usePublications(
     queryPublications.map((q) => ({id: q.refId.qid, version: q.refId.version})),
   )
-  const groups = useGroups(
-    queryGroups.map((q) => ({id: q.refId.qid, version: q.refId.version})),
-  )
   const accounts = useAccounts(queryAccounts.map((q) => q.refId.eid))
   const embeds = Object.fromEntries([
     ...pubs.map((pub, idx) => [
       queryPublications[idx].blockId,
       {type: 'd', query: queryPublications[idx], data: pub.data},
-    ]),
-    ...groups.map((group, idx) => [
-      queryGroups[idx].blockId,
-      {type: 'g', query: queryGroups[idx], data: group.data},
     ]),
     ...accounts.map((account, idx) => [
       queryAccounts[idx].blockId,
@@ -416,7 +399,6 @@ export function usePublishDraft(
   opts?: UseMutationOptions<
     {
       pub: Publication
-      groupVariant?: GroupVariant | null | undefined
       isFirstPublish: boolean
       isProfileDocument: boolean
     },
@@ -431,21 +413,10 @@ export function usePublishDraft(
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
-  const groupVariant = draftRoute?.variant
   const myAccount = useMyAccount()
   const isProfileDocument =
     draftRoute?.isProfileDocument ||
     myAccount.data?.profile?.rootDocument === draftRoute?.draftId
-  const groupVariantContent = useGroupContent(
-    groupVariant?.key === 'group' ? groupVariant.groupId : undefined,
-  )
-  const prevGroupVariantUrl =
-    groupVariant && groupVariant.pathName
-      ? groupVariantContent.data?.content?.[groupVariant.pathName]
-      : undefined
-  const prevGroupVariantId = prevGroupVariantUrl
-    ? unpackDocId(prevGroupVariantUrl)
-    : undefined
   const {client, invalidate} = queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
@@ -456,7 +427,6 @@ export function usePublishDraft(
       draftId: string
     }): Promise<{
       pub: Publication
-      groupVariant?: GroupVariant | null | undefined
       isFirstPublish: boolean
       isProfileDocument: boolean
     }> => {
@@ -469,10 +439,6 @@ export function usePublishDraft(
       const publishedId = pub.document?.id
       if (!publishedId)
         throw new Error('Could not get ID of published document')
-      const groupVariantChanged =
-        publishedId !== prevGroupVariantId?.docId ||
-        pub.version !== prevGroupVariantId?.version
-      const publishedDocId = `${publishedId}?v=${pub.version}`
       if (isProfileDocument) {
         if (myAccount.data?.profile?.rootDocument !== publishedId) {
           await grpcClient.accounts.updateProfile({
@@ -480,40 +446,11 @@ export function usePublishDraft(
             rootDocument: publishedId,
           })
         }
-      } else if (groupVariant && groupVariantChanged) {
-        let docTitle: string | undefined = (
-          queryClient.client.getQueryData([
-            queryKeys.EDITOR_DRAFT,
-            draftId,
-          ]) as any
-        )?.title
-        const publishPathName = groupVariant.pathName
-          ? groupVariant.pathName
-          : getDefaultShortname(docTitle, publishedId)
-        if (publishPathName) {
-          await grpcClient.groups.updateGroup({
-            id: groupVariant.groupId,
-            updatedContent: {
-              [publishPathName]: publishedDocId,
-            },
-          })
-          return {
-            isFirstPublish,
-            pub,
-            groupVariant: {
-              key: 'group',
-              groupId: groupVariant.groupId,
-              pathName: publishPathName,
-            },
-            isProfileDocument,
-          }
-        }
       }
-      return {isFirstPublish, pub, groupVariant, isProfileDocument}
+      return {isFirstPublish, pub, isProfileDocument}
     },
     onSuccess: (result, variables, context) => {
       const documentId = result.pub.document?.id
-      const {groupVariant} = result
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
@@ -525,13 +462,6 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
       invalidate([queryKeys.GET_ACCOUNT, myAccount.data?.id])
       invalidate([queryKeys.ENTITY_CITATIONS])
-      if (groupVariant) {
-        invalidate([queryKeys.GET_GROUP, groupVariant.groupId])
-        invalidate([queryKeys.GET_GROUP_CONTENT, groupVariant.groupId])
-        invalidate([queryKeys.ENTITY_TIMELINE, groupVariant.groupId])
-        invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
-      }
-
       setTimeout(() => {
         client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
         // otherwise it will re-query for a draft that no longer exists and an error happens

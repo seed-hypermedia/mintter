@@ -1,10 +1,10 @@
-import {NavRoute, getRecentsRouteEntityUrl} from '@shm/app/utils/routes'
-import {PublicationVariant, getPublicationVariant} from '@shm/shared'
-import {z} from 'zod'
-import {grpcClient} from './app-grpc'
-import {invalidateQueries} from './app-invalidation'
-import {appStore} from './app-store'
-import {t} from './app-trpc'
+import { NavRoute, getRecentsRouteEntityUrl } from '@shm/app/utils/routes'
+import { PublicationVariant, getPublicationVariant } from '@shm/shared'
+import { z } from 'zod'
+import { grpcClient } from './app-grpc'
+import { invalidateQueries } from './app-invalidation'
+import { appStore } from './app-store'
+import { t } from './app-trpc'
 
 const RECENTS_STORAGE_KEY = 'Recents-v001'
 
@@ -53,12 +53,6 @@ async function getRouteTitles(route: NavRoute) {
     })
     title = account.profile?.alias || account.id
     subtitle = 'Account'
-  } else if (route.key === 'group') {
-    const group = await grpcClient.groups.getGroup({
-      id: route.groupId,
-    })
-    title = group.title || route.groupId
-    subtitle = 'Group'
   } else if (route.key === 'publication') {
     const {publication} = await getPublicationVariant(
       grpcClient,

@@ -1,5 +1,5 @@
-import {z} from 'zod'
-import {StateStream} from './stream'
+import { z } from 'zod'
+import { StateStream } from './stream'
 
 export const HYPERMEDIA_PUBLIC_WEB_GATEWAY = 'https://hyper.media'
 
@@ -7,7 +7,6 @@ export const HYPERMEDIA_SCHEME = 'hm'
 export const HYPERMEDIA_ENTITY_TYPES = {
   a: 'Account',
   d: 'Document',
-  g: 'Group',
   c: 'Comment',
 } as const
 
@@ -58,36 +57,10 @@ export function createPublicWebHmUrl(
   return res
 }
 
-export function groupDocUrl(
-  groupEid: string,
-  version: string | null | undefined,
-  pathName: string,
-  hostname: null | string = null,
-) {
-  const type = 'g'
-  const webPath = `/${type}/${groupEid}`
-  let urlHost =
-    hostname === null
-      ? ''
-      : hostname === undefined
-      ? HYPERMEDIA_PUBLIC_WEB_GATEWAY
-      : hostname
-  let webUrl = `${urlHost}${webPath}`
-  if (pathName && pathName !== '/') webUrl += `/${pathName}`
-  if (version) webUrl += `?v=${version}`
-  return webUrl
-}
 
 function getVariantsParamValue(variants: PublicationVariant[]): string {
   return variants
     .map((variant) => {
-      if (variant.key === 'group') {
-        const groupId = unpackHmId(variant.groupId)
-        if (!groupId) return false
-        return `g/${groupId.eid}${
-          variant.pathName ? `/${variant.pathName}` : ''
-        }`
-      }
       if (variant.key === 'author') {
         return `a/${variant.author}`
       }
@@ -105,13 +78,13 @@ export function createHmId(
     blockRef?: string | null
     blockRange?: BlockRange | ExpandedBlockRange | null
     id?: string
-    groupPathName?: string | null
+    indexPath?: string | null
     variants?: PublicationVariant[] | null
     latest?: boolean | null
   } = {},
 ) {
   let path = `${type}/${id}`
-  if (opts?.groupPathName) path += `/${opts.groupPathName}`
+  if (opts?.indexPath) path += `/${opts.indexPath}`
   let url = new URL(`${HYPERMEDIA_SCHEME}://${path}`)
   let responseUrl = url.toString()
   const query: Record<string, string | null> = {}
@@ -165,13 +138,6 @@ function inKeys<V extends string>(
   return null
 }
 
-export const groupVariantSchema = z.object({
-  key: z.literal('group'),
-  groupId: z.string(),
-  pathName: z.string().or(z.null()),
-})
-export type GroupVariant = z.infer<typeof groupVariantSchema>
-
 export const authorVariantSchema = z.object({
   key: z.literal('author'),
   author: z.string(),
@@ -179,7 +145,6 @@ export const authorVariantSchema = z.object({
 export type AuthorVariant = z.infer<typeof authorVariantSchema>
 
 export const publicationVariantSchema = z.discriminatedUnion('key', [
-  groupVariantSchema,
   authorVariantSchema,
 ])
 export type PublicationVariant = z.infer<typeof publicationVariantSchema>
@@ -189,7 +154,7 @@ export type UnpackedHypermediaId = {
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
   eid: string
   qid: string
-  groupPathName: string | null
+  indexPath: string | null
   version: string | null
   blockRef: string | null
   blockRange?: BlockRange | ExpandedBlockRange | null
@@ -206,7 +171,7 @@ export function hmId(
     version?: string | null
     blockRef?: string | null
     blockRange?: BlockRange | ExpandedBlockRange | null
-    groupPathName?: string | null
+    indexPath?: string | null
     variants?: PublicationVariant[] | null
     latest?: boolean | null
     hostname?: string | null
@@ -217,7 +182,7 @@ export function hmId(
     type,
     eid,
     qid: createHmId(type, eid),
-    groupPathName: opts.groupPathName || null,
+    indexPath: opts.indexPath || null,
     version: opts.version || null,
     blockRef: opts.blockRef || null,
     blockRange: opts.blockRange || null,
@@ -236,14 +201,6 @@ export function parseVariantsQuery(
   variantsString.split('.').forEach((singleVariantString: string) => {
     if (!singleVariantString) return
     const [key, ...rest] = singleVariantString.split(/:|\//)
-    if (key === 'g') {
-      const [groupEid, pathName] = rest
-      variants.push({
-        key: 'group',
-        groupId: createHmId('g', groupEid),
-        pathName: pathName || null,
-      })
-    }
     if (key === 'a') {
       const [author] = rest
       variants.push({key: 'author', author})
@@ -285,7 +242,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       qid,
       type,
       eid,
-      groupPathName: parsed.path[2] || null,
+      indexPath: parsed.path[2] || null,
       version,
       variants,
       blockRef: fragment ? fragment.blockId : null,
@@ -324,7 +281,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       qid,
       type,
       eid,
-      groupPathName: parsed.path[3] || null,
+      indexPath: parsed.path[3] || null,
       version,
       variants,
       blockRef: fragment ? fragment.blockId : null,
@@ -452,26 +409,6 @@ function serializeQueryString(query: Record<string, string | null>) {
   return `?${queryString}`
 }
 
-export function createHmGroupDocLink(
-  groupId: string,
-  pathName: string,
-  version?: string | null,
-  blockRef?: string | null,
-  blockRange?: BlockRange | ExpandedBlockRange | null,
-): string {
-  let res = groupId
-  if (pathName) {
-    if (pathName === '/') res += '/-'
-    else res += `/${pathName}`
-  }
-  if (version) res += `?v=${version}`
-  if (blockRef)
-    res += `${
-      !blockRef.startsWith('#') ? '#' : ''
-    }${blockRef}${serializeBlockRange(blockRange)}`
-  return res
-}
-
 export function labelOfEntityType(type: keyof typeof HYPERMEDIA_ENTITY_TYPES) {
   return HYPERMEDIA_ENTITY_TYPES[type]
 }
@@ -486,7 +423,7 @@ export function hmIdWithVersion(
   const unpacked = unpackHmId(hmId)
   if (!unpacked) return null
   return createHmId(unpacked.type, unpacked.eid, {
-    groupPathName: unpacked.groupPathName,
+    indexPath: unpacked.indexPath,
     version: version || unpacked.version,
     blockRef,
     blockRange,

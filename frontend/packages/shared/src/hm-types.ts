@@ -3,7 +3,6 @@ import type {
   Account,
   ChangeInfo,
   Device,
-  Group_SiteInfo,
   MttLink,
   Profile,
   Publication,
@@ -22,14 +21,6 @@ export type HMChangeInfo = {
 export type ServerPublication = Publication
 export type HMPublication = {
   document?: HMDocument
-  version?: string
-}
-
-export type ServerGroupSiteInfo = Group_SiteInfo
-export type HMGroupSiteInfo = {
-  baseUrl?: string
-  lastSyncTime?: HMTimestamp
-  lastOkSyncTime?: HMTimestamp
   version?: string
 }
 
@@ -233,16 +224,6 @@ export type HMDocument = {
   previousVersion?: string
 }
 
-export type HMGroup = {
-  id?: string
-  title?: string
-  description?: string
-  ownerAccountId?: string
-  createTime?: HMTimestamp
-  version?: string
-  siteInfo?: HMGroupSiteInfo
-}
-
 export type HMDeletedEntity = {
   id?: string
   deleteTime?: HMTimestamp
@@ -256,10 +237,6 @@ export type HMEntity =
       account: HMAccount
     }
   | {
-      type: 'g'
-      group: HMGroup
-    }
-  | {
       type: 'd'
       publication: HMPublication
     }
@@ -271,11 +248,6 @@ export type HMEntityContent =
       document?: HMDocument
     }
   | {
-      type: 'g'
-      group: HMGroup
-      document?: HMDocument
-    }
-  | {
       type: 'd'
       publication: HMPublication
       document?: HMDocument
@@ -283,7 +255,6 @@ export type HMEntityContent =
   | {
       type: 'd-draft'
       document: HMDocument
-      homeGroup: HMGroup | undefined
     }
 
 export type HMComment = {

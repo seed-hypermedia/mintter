@@ -1,9 +1,9 @@
-import {describe, expect, it, test} from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import {
-  createHmId,
-  parseCustomURL,
-  unpackDocId,
-  unpackHmId,
+    createHmId,
+    parseCustomURL,
+    unpackDocId,
+    unpackHmId,
 } from '../entity-id-url'
 
 describe('unpackHmId', () => {
@@ -17,7 +17,7 @@ describe('unpackHmId', () => {
       eid: 'abc',
       version: undefined,
       blockRef: null,
-      groupPathName: null,
+      indexPath: null,
     })
   })
   test('unpacks hm://g/abc?v=123#foo', () => {
@@ -30,7 +30,7 @@ describe('unpackHmId', () => {
       eid: 'abc',
       version: '123',
       blockRef: 'foo',
-      groupPathName: null,
+      indexPath: null,
     })
   })
   test('unpacks hm://d/foo#bar', () => {
@@ -43,7 +43,7 @@ describe('unpackHmId', () => {
       eid: 'foo',
       version: undefined,
       blockRef: 'bar',
-      groupPathName: null,
+      indexPath: null,
     })
   })
   test('unpacks hm://a/foo?v=bar', () => {
@@ -56,7 +56,7 @@ describe('unpackHmId', () => {
       eid: 'foo',
       version: 'bar',
       blockRef: null,
-      groupPathName: null,
+      indexPath: null,
     })
   })
   test('unpacks https://foobar.com/d/1?v=2', () => {
@@ -69,7 +69,7 @@ describe('unpackHmId', () => {
       blockRef: null,
       id: 'https://foobar.com/d/1?v=2',
       qid: 'hm://d/1',
-      groupPathName: null,
+      indexPath: null,
     })
   })
   test('unpacks http://foobar.com/a/1#block', () => {
@@ -82,7 +82,7 @@ describe('unpackHmId', () => {
       blockRef: 'block',
       id: 'http://foobar.com/a/1#block',
       qid: 'hm://a/1',
-      groupPathName: null,
+      indexPath: null,
     })
   })
 })

@@ -1,11 +1,10 @@
 import {
   createHmId,
-  groupVariantSchema,
   publicationVariantSchema,
 } from '@shm/shared'
-import {z} from 'zod'
+import { z } from 'zod'
 
-export const defaultRoute: NavRoute = {key: 'feed', tab: 'trusted'}
+export const defaultRoute: NavRoute = { key: 'feed', tab: 'trusted' }
 
 export const feedRouteSchema = z.object({
   key: z.literal('feed'),
@@ -15,11 +14,10 @@ export type FeedRoute = z.infer<typeof feedRouteSchema>
 
 export const exploreRouteSchema = z.object({
   key: z.literal('explore'),
-  tab: z.enum(['docs', 'groups']),
 })
 export type ExploreRoute = z.infer<typeof exploreRouteSchema>
 
-export const contactsRouteSchema = z.object({key: z.literal('contacts')})
+export const contactsRouteSchema = z.object({ key: z.literal('contacts') })
 export type ContactsRoute = z.infer<typeof contactsRouteSchema>
 
 export const entityVersionsAccessorySchema = z.object({
@@ -57,7 +55,6 @@ export const basePublicationRouteSchema = z.object({
       expanded: z.boolean().optional(),
     })
     .optional(),
-  groupVariantCategory: z.string().optional(),
   showFirstPublicationMessage: z.boolean().optional(),
   immediatelyPromptPush: z.boolean().optional(),
   accessory: z
@@ -70,19 +67,6 @@ export const basePublicationRouteSchema = z.object({
     .optional(),
 })
 export type BasePublicationRoute = z.infer<typeof basePublicationRouteSchema>
-
-export const baseGroupRouteSchema = z.object({
-  key: z.literal('group'),
-  groupId: z.string(),
-  version: z.string().optional(),
-  blockId: z.string().optional(),
-  isBlockFocused: z.boolean().optional(),
-  accessory: z
-    .discriminatedUnion('key', [entityVersionsAccessorySchema])
-    .nullable()
-    .optional(),
-})
-export type BaseGroupRoute = z.infer<typeof baseGroupRouteSchema>
 
 export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
@@ -99,14 +83,12 @@ export type BaseAccountRoute = z.infer<typeof baseAccountRouteSchema>
 export const baseDraftRouteSchema = z.object({
   key: z.literal('draft'),
   draftId: z.string().optional(),
-  variant: groupVariantSchema.nullable(),
   isProfileDocument: z.boolean().optional(),
 })
 export type BaseDraftRoute = z.infer<typeof baseDraftRouteSchema>
 
 export const baseEntityRouteSchema = z.discriminatedUnion('key', [
   basePublicationRouteSchema,
-  baseGroupRouteSchema,
   baseAccountRouteSchema,
   baseDraftRouteSchema,
 ])
@@ -114,15 +96,9 @@ export type BaseEntityRoute = z.infer<typeof baseEntityRouteSchema>
 
 export const accountRouteSchema = baseAccountRouteSchema.extend({
   context: z.array(baseEntityRouteSchema).optional(),
-  tab: z.enum(['profile', 'documents', 'groups', 'activity']).optional(), // profile is the default
+  tab: z.enum(['profile', 'documents', 'activity']).optional(), // profile is the default
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
-
-export const groupRouteSchema = baseGroupRouteSchema.extend({
-  context: z.array(baseEntityRouteSchema).optional(),
-  tab: z.enum(['front', 'documents', 'activity']).optional(), // front is the default
-})
-export type GroupRoute = z.infer<typeof groupRouteSchema>
 
 export const publicationRouteSchema = basePublicationRouteSchema.extend({
   context: z.array(baseEntityRouteSchema).optional(),
@@ -148,7 +124,7 @@ export const commentDraftRouteSchema = z.object({
 })
 export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 
-export const settingsRouteSchema = z.object({key: z.literal('settings')})
+export const settingsRouteSchema = z.object({ key: z.literal('settings') })
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
 export const deletedContentRouteSchema = z.object({
@@ -167,7 +143,6 @@ export const draftRouteSchema = baseDraftRouteSchema.extend({
   contextRoute: z
     .discriminatedUnion('key', [
       publicationRouteSchema,
-      groupRouteSchema,
       accountRouteSchema,
     ])
     .optional(),
@@ -179,7 +154,6 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   contactsRouteSchema,
   accountRouteSchema,
   settingsRouteSchema,
-  groupRouteSchema,
   publicationRouteSchema,
   draftRouteSchema,
   draftRebaseRouteSchema,
@@ -194,7 +168,6 @@ export type NavRoute = z.infer<typeof navRouteSchema>
 export function getRecentsRouteEntityUrl(route: NavRoute) {
   // this is used to uniquely identify an item for the recents list. So it references the entity without specifying version or variant
   if (route.key === 'account') return createHmId('a', route.accountId)
-  if (route.key === 'group') return route.groupId
   if (route.key === 'publication') return route.documentId
   // comments do not show up in the recents list, we do not know how to display them
   return null

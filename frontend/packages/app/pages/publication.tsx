@@ -1,10 +1,10 @@
-import {AppErrorPage} from '@shm/app/components/app-error'
-import {CitationsProvider} from '@shm/app/components/citations-context'
-import Footer, {FooterButton} from '@shm/app/components/footer'
-import {useEntityMentions} from '@shm/app/models/content-graph'
-import {useNavRoute} from '@shm/app/utils/navigation'
-import {useNavigate} from '@shm/app/utils/useNavigate'
-import {EntityVersionsAccessory} from '@shm/desktop/src/changes-list'
+import { AppErrorPage } from '@shm/app/components/app-error'
+import { CitationsProvider } from '@shm/app/components/citations-context'
+import Footer, { FooterButton } from '@shm/app/components/footer'
+import { useEntityMentions } from '@shm/app/models/content-graph'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { useNavigate } from '@shm/app/utils/useNavigate'
+import { EntityVersionsAccessory } from '@shm/desktop/src/changes-list'
 import {
   Publication,
   PublicationContent,
@@ -17,35 +17,33 @@ import {
 } from '@shm/shared'
 import {
   BlockQuote,
-  Button,
   ButtonText,
   SizableText,
   Text,
   XStack,
-  YStack,
+  YStack
 } from '@shm/ui'
-import {History, MessageSquare} from '@tamagui/lucide-icons'
+import { History, MessageSquare } from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import {ReactNode, useCallback, useEffect, useRef} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {AccessoryLayout} from '../components/accessory-sidebar'
-import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
-import {EntityCitationsAccessory} from '../components/citations'
-import {EntityCommentsAccessory} from '../components/comments'
-import {PushToGatewayDialog} from '../components/copy-gateway-reference'
-import {useAppDialog} from '../components/dialog'
-import {FavoriteButton} from '../components/favoriting'
-import {FirstPublishDialog} from '../components/first-publish-dialog'
-import {MainWrapper} from '../components/main-wrapper'
-import {CopyReferenceButton} from '../components/titlebar-common'
-import {useAccounts} from '../models/accounts'
-import {useDocHistory} from '../models/changes'
-import {useAllPublicationComments, useCreateComment} from '../models/comments'
-import {useGatewayHost} from '../models/gateway-settings'
-import {useCurrentDocumentGroups, useGroup} from '../models/groups'
-import {usePublicationVariant} from '../models/publication'
-import {getAccountName} from './account-page'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { ReactNode, useCallback, useEffect, useRef } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { AccessoryLayout } from '../components/accessory-sidebar'
+import { BaseAccountLinkAvatar } from '../components/account-link-avatar'
+import { EntityCitationsAccessory } from '../components/citations'
+import { EntityCommentsAccessory } from '../components/comments'
+import { PushToGatewayDialog } from '../components/copy-gateway-reference'
+import { useAppDialog } from '../components/dialog'
+import { FavoriteButton } from '../components/favoriting'
+import { FirstPublishDialog } from '../components/first-publish-dialog'
+import { MainWrapper } from '../components/main-wrapper'
+import { CopyReferenceButton } from '../components/titlebar-common'
+import { useAccounts } from '../models/accounts'
+import { useDocHistory } from '../models/changes'
+import { useAllPublicationComments, useCreateComment } from '../models/comments'
+import { useGatewayHost } from '../models/gateway-settings'
+import { usePublicationVariant } from '../models/publication'
+import { getAccountName } from './account-page'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -71,7 +69,7 @@ export default function PublicationPage() {
   )
   const firstPubDialog = useAppDialog(FirstPublishDialog, {
     onClose: useCallback(() => {
-      replace({...route, showFirstPublicationMessage: false})
+      replace({ ...route, showFirstPublicationMessage: false })
     }, [replace, route]),
   })
 
@@ -79,7 +77,7 @@ export default function PublicationPage() {
   const pubVersion = publication.data?.publication?.version
   useEffect(() => {
     if (showFirstPublicationMessage && pubVersion) {
-      firstPubDialog.open({route, version: pubVersion})
+      firstPubDialog.open({ route, version: pubVersion })
     }
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
@@ -89,7 +87,7 @@ export default function PublicationPage() {
   const pushToGatewayDialog = useAppDialog(PushToGatewayDialog, {
     onClose: () => {
       if (route.immediatelyPromptPush) {
-        replace({...route, immediatelyPromptPush: false})
+        replace({ ...route, immediatelyPromptPush: false })
       }
     },
   })
@@ -142,7 +140,7 @@ export default function PublicationPage() {
           documentId={docId}
           onCitationsOpen={() => {
             // todo, pass active citations into route
-            replace({...route, accessory: {key: 'citations'}})
+            replace({ ...route, accessory: { key: 'citations' } })
           }}
         >
           <AccessoryLayout accessory={accessory}>
@@ -157,11 +155,11 @@ export default function PublicationPage() {
                   citations={mentions.data?.mentions}
                   onCitationClick={() => {
                     if (route.accessory?.key === 'citations')
-                      return replace({...route, accessory: null})
-                    replace({...route, accessory: {key: 'citations'}})
+                      return replace({ ...route, accessory: null })
+                    replace({ ...route, accessory: { key: 'citations' } })
                   }}
                   onBlockComment={(blockId, blockRange) => {
-                    replace({...route, accessory: {key: 'comments'}})
+                    replace({ ...route, accessory: { key: 'comments' } })
                     const version = publication.data?.publication?.version
                     if (!id) throw new Error('invalid doc id')
                     if (!version)
@@ -182,8 +180,8 @@ export default function PublicationPage() {
                     right={
                       <XStack
                         gap="$2"
-                        // opacity={0}
-                        // $group-header-hover={{opacity: 1}}
+                      // opacity={0}
+                      // $group-header-hover={{opacity: 1}}
                       >
                         {id && (
                           <FavoriteButton
@@ -236,8 +234,8 @@ export default function PublicationPage() {
                 icon={BlockQuote}
                 onPress={() => {
                   if (route.accessory?.key === 'citations')
-                    return replace({...route, accessory: null})
-                  replace({...route, accessory: {key: 'citations'}})
+                    return replace({ ...route, accessory: null })
+                  replace({ ...route, accessory: { key: 'citations' } })
                 }}
               />
             ) : null}
@@ -278,8 +276,8 @@ function PublicationCommentaryButton() {
       active={accessoryKey === 'comments'}
       onPress={() => {
         if (route.accessory?.key === 'comments')
-          return replace({...route, accessory: null})
-        replace({...route, accessory: {key: 'comments'}})
+          return replace({ ...route, accessory: null })
+        replace({ ...route, accessory: { key: 'comments' } })
       }}
     />
   )
@@ -305,28 +303,17 @@ function PublicationVersionsFooterButton({
       icon={History}
       onPress={() => {
         if (route.accessory?.key === 'versions')
-          return replace({...route, accessory: null})
-        replace({...route, accessory: {key: 'versions'}})
+          return replace({ ...route, accessory: null })
+        replace({ ...route, accessory: { key: 'versions' } })
       }}
     />
   )
 }
 
-function PublicationPageMeta({publication}: {publication: Publication}) {
+function PublicationPageMeta({ publication }: { publication: Publication }) {
   const editors = useAccounts(publication.document?.editors || [])
   const navigate = useNavigate()
-  const docGroups = useCurrentDocumentGroups(publication.document?.id)
-  const allSelectedGroups = docGroups.data?.filter((groupItem) => {
-    const groupItemId = unpackDocId(groupItem.rawUrl)
-    return !!groupItemId?.version && groupItemId.version === publication.version
-  })
-  const selectedGroups = allSelectedGroups?.filter(
-    (item, index) =>
-      index ===
-      allSelectedGroups.findIndex(
-        (findItem) => findItem.groupId === item.groupId,
-      ),
-  )
+
   return (
     <YStack
       ai="flex-start"
@@ -372,7 +359,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
                     key={account.id}
                     fontWeight={'bold'}
                     onPress={() => {
-                      navigate({key: 'account', accountId: account.id})
+                      navigate({ key: 'account', accountId: account.id })
                     }}
                     hoverStyle={{
                       textDecorationLine: 'underline',
@@ -397,38 +384,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
             {formattedDateMedium(publication.document?.publishTime)}
           </Text>
         </XStack>
-        {selectedGroups?.length ? (
-          <XStack gap="$2" marginHorizontal="$4" ai="center" flexWrap="wrap">
-            {selectedGroups.map((selectedGroup) => (
-              <PublicationGroup
-                key={selectedGroup.groupId}
-                groupId={selectedGroup.groupId}
-              />
-            ))}
-          </XStack>
-        ) : null}
       </XStack>
     </YStack>
-  )
-}
-
-function PublicationGroup({groupId}: {groupId: string}) {
-  const group = useGroup(groupId)
-  const navigate = useNavigate()
-  if (!group.data?.title) return null
-  return (
-    <Button
-      chromeless
-      borderColor="$color8"
-      size="$2"
-      onPress={() => {
-        navigate({
-          key: 'group',
-          groupId,
-        })
-      }}
-    >
-      {group.data.title}
-    </Button>
   )
 }

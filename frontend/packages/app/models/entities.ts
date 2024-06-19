@@ -17,13 +17,11 @@ import {
   BaseAccountRoute,
   BaseDraftRoute,
   BaseEntityRoute,
-  BaseGroupRoute,
   BasePublicationRoute,
   NavRoute,
 } from '../utils/routes'
 import {useAccount, useAccounts} from './accounts'
 import {useDrafts, usePublication, usePublications} from './documents'
-import {useGroup, useGroupContent, useGroups, useGroupsContent} from './groups'
 import {usePublicationVariant} from './publication'
 import {queryKeys} from './query-keys'
 import {useDeleteRecent} from './recents'
@@ -134,20 +132,6 @@ export function getEntityRoutes(route: NavRoute): BaseEntityRoute[] {
     const {context, ...baseRoute} = route
     if (context) return [...context, baseRoute]
     const firstVariant = route.variants?.[0]
-    if (firstVariant?.key === 'group') {
-      return [
-        {
-          key: 'group',
-          groupId: firstVariant.groupId,
-        },
-        baseRoute,
-      ]
-    }
-    return [baseRoute]
-  }
-  if (route.key === 'group') {
-    const {context, tab, ...baseRoute} = route
-    if (context) return [...context, baseRoute]
     return [baseRoute]
   }
   if (route.key === 'account') {
@@ -176,22 +160,11 @@ export function useEntityContent(
 ): HMEntityContent | null | undefined {
   const {qid, eid, version, type, latest} = id
   const account = useAccount(type === 'a' ? eid : undefined)
-  const group = useGroup(type === 'g' ? qid : undefined, version || undefined)
-  const groupContent = useGroupContent(
-    type === 'g' ? qid : undefined,
-    version || undefined,
-  )
   const publication = usePublicationVariant({
     documentId: type === 'd' ? qid : undefined,
     versionId: version || undefined,
     variants: id.variants || undefined,
     latest: latest || false,
-  })
-  const groupFrontUrl = groupContent.data?.content['/']
-  const groupFrontId = groupFrontUrl ? unpackHmId(groupFrontUrl) : null
-  const groupFront = usePublication({
-    id: groupFrontId?.qid,
-    version: groupFrontId?.version || undefined,
   })
   const profileDoc = usePublication({
     id: account.data?.profile?.rootDocument,
@@ -202,8 +175,6 @@ export function useEntityContent(
       account: account.data,
       document: profileDoc.data?.document,
     }
-  } else if (type === 'g' && group.data) {
-    return {type: 'g', group: group.data, document: groupFront.data?.document}
   } else if (type === 'd' && publication.data?.publication) {
     return {
       type: 'd',
@@ -213,11 +184,6 @@ export function useEntityContent(
   }
   if (type === 'a' && (account.isLoading || profileDoc.isLoading))
     return undefined
-  if (
-    type === 'g' &&
-    (group.isLoading || groupContent.isLoading || groupFront.isLoading)
-  )
-    return undefined
   if (type === 'd' && publication.isLoading) return undefined
   return null
 }
@@ -225,10 +191,7 @@ export function useEntityContent(
 export function useEntitiesContent(
   routes: BaseEntityRoute[],
 ): {route: BaseEntityRoute; entity?: HMEntityContent}[] {
-  const {groups, accounts, publications, drafts, draftGroups} = useMemo(() => {
-    const groups: BaseGroupRoute[] = routes.filter(
-      (r) => r.key === 'group',
-    ) as BaseGroupRoute[]
+  const {accounts, publications, drafts} = useMemo(() => {
     const accounts: BaseAccountRoute[] = routes.filter(
       (r) => r.key === 'account',
     ) as BaseAccountRoute[]
@@ -238,23 +201,13 @@ export function useEntitiesContent(
     const drafts: BaseDraftRoute[] = routes.filter(
       (r) => r.key === 'draft',
     ) as BaseDraftRoute[]
-    const draftGroups = drafts.map((r) =>
-      r.key === 'draft' ? r.variant?.groupId : undefined,
-    )
     return {
-      groups,
       accounts,
       publications,
       drafts,
-      draftGroups,
     }
   }, [routes])
-  const groupQueries = useGroups(
-    groups.map((r) => ({id: r.groupId, version: r.version})),
-  )
-  const groupContentQueries = useGroupsContent(
-    groups.map((r) => ({id: r.groupId, version: r.version})),
-  )
+
   // TODO, BUG HERE! We should be using the publication variant query but there is no plural getPublicationVariants
   const pubQueries = usePublications(
     publications.map((r) => ({id: r.documentId, version: r.versionId})),
@@ -267,14 +220,7 @@ export function useEntitiesContent(
       return {id: profileDocId}
     }),
   )
-  const groupFrontQueries = usePublications(
-    groups.map((groupRoute, groupIndex) => {
-      const contentQuery = groupContentQueries[groupIndex]
-      const frontDocId = contentQuery.data?.content['/']
-      const id = frontDocId ? unpackHmId(frontDocId) : undefined
-      return {id: id?.qid, version: id?.version}
-    }),
-  )
+
   const draftQueries = useDrafts(
     drafts
       .map((draftRoute, draftIndex) => {
@@ -282,24 +228,7 @@ export function useEntitiesContent(
       })
       .filter(Boolean) as string[],
   )
-  const draftGroupQueries = useGroups(
-    draftGroups.filter(Boolean).map((id) => ({id})) as {
-      id: string
-    }[],
-  )
   return routes.map((route) => {
-    const groupRouteIndex = groups.findIndex((r) => r === route)
-    if (groupRouteIndex >= 0) {
-      const group = groupQueries[groupRouteIndex].data
-      if (group) {
-        const frontPub = groupFrontQueries[groupRouteIndex].data
-        const document = frontPub?.document
-        return {
-          route,
-          entity: {type: 'g', group, document},
-        }
-      }
-    }
     const accountRouteIndex = accounts.findIndex((r) => r === route)
     if (accountRouteIndex >= 0) {
       const account = accountQueries[accountRouteIndex].data
@@ -318,15 +247,9 @@ export function useEntitiesContent(
     }
     const draftRouteIndex = drafts.findIndex((r) => r === route)
     if (draftRouteIndex >= 0) {
-      const draftRoute = drafts[draftRouteIndex]
       const draft = draftQueries[draftRouteIndex]?.data
-      const homeGroup = draftRoute.variant?.groupId
-        ? draftGroupQueries.find(
-            (g) => g.data?.id === draftRoute.variant?.groupId,
-          )?.data
-        : undefined
       if (draft) {
-        return {route, entity: {type: 'd-draft', document: draft, homeGroup}}
+        return {route, entity: {type: 'd-draft', document: draft}}
       }
     }
     return {route, entity: undefined}

@@ -1,6 +1,6 @@
-import {useNavRoute} from '@shm/app/utils/navigation'
-import {useOpenUrl} from '@shm/desktop/src/open-url'
-import {trpc} from '@shm/desktop/src/trpc'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { useOpenUrl } from '@shm/desktop/src/open-url'
+import { trpc } from '@shm/desktop/src/trpc'
 import {
   API_FILE_URL,
   BlockRange,
@@ -11,22 +11,21 @@ import {
   contentTextUnit,
 } from '@shm/shared'
 import 'allotment/dist/style.css'
-import {useAppContext} from '../app-context'
+import { useAppContext } from '../app-context'
 import {
   EmbedAccount,
   EmbedComment,
-  EmbedGroup,
   EmbedInline,
   EmbedPublication,
 } from '../components/app-embeds'
-import {useFullReferenceUrl} from '../components/titlebar-common'
-import {useExperiments} from '../models/experiments'
+import { useFullReferenceUrl } from '../components/titlebar-common'
+import { useExperiments } from '../models/experiments'
 
 export function AppPublicationContentProvider({
   children,
   ...overrides
 }: React.PropsWithChildren<Partial<PublicationContentContextValue>>) {
-  const {saveCidAsFile} = useAppContext()
+  const { saveCidAsFile } = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
@@ -42,7 +41,6 @@ export function AppPublicationContentProvider({
         debug={false}
         entityComponents={{
           Account: EmbedAccount,
-          Group: EmbedGroup,
           Publication: EmbedPublication,
           Comment: EmbedComment,
           Inline: EmbedInline,
@@ -56,13 +54,13 @@ export function AppPublicationContentProvider({
         onCopyBlock={
           reference
             ? (
-                blockId: string,
-                blockRange: BlockRange | ExpandedBlockRange | undefined,
-              ) => {
-                if (blockId && reference) {
-                  reference.onCopy(blockId, blockRange || {expanded: true})
-                }
+              blockId: string,
+              blockRange: BlockRange | ExpandedBlockRange | undefined,
+            ) => {
+              if (blockId && reference) {
+                reference.onCopy(blockId, blockRange || { expanded: true })
               }
+            }
             : null
         }
         ipfsBlobPrefix={`${API_FILE_URL}/`}
@@ -70,10 +68,10 @@ export function AppPublicationContentProvider({
         routeParams={
           route.key == 'publication'
             ? {
-                documentId: route.documentId,
-                version: route.versionId,
-                blockRef: route.blockId,
-              }
+              documentId: route.documentId,
+              version: route.versionId,
+              blockRef: route.blockId,
+            }
             : {}
         }
         {...overrides}

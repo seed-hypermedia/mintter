@@ -1,20 +1,18 @@
-import {useGRPCClient} from '@shm/app/app-context'
-import {useDraftList} from '@shm/app/models/documents'
-import {usePublicationVariant} from '@shm/app/models/publication'
-import {NavMode} from '@shm/app/utils/navigation'
-import {useNavigate} from '@shm/app/utils/useNavigate'
-import {GroupVariant, HMBlock, PublicationVariant} from '@shm/shared'
-import {Button, Tooltip, toast} from '@shm/ui'
-import {Pencil} from '@tamagui/lucide-icons'
-import {useQueryInvalidator} from '../app-context'
+import { useGRPCClient } from '@shm/app/app-context'
+import { useDraftList } from '@shm/app/models/documents'
+import { usePublicationVariant } from '@shm/app/models/publication'
+import { NavMode } from '@shm/app/utils/navigation'
+import { useNavigate } from '@shm/app/utils/useNavigate'
+import { HMBlock, PublicationVariant } from '@shm/shared'
+import { Button, Tooltip, toast } from '@shm/ui'
+import { Pencil } from '@tamagui/lucide-icons'
+import { useQueryInvalidator } from '../app-context'
 import appError from '../errors'
-import {useMyAccount} from '../models/accounts'
-import {queryKeys} from '../models/query-keys'
-import {generateBlockId} from '../utils/media-drag'
+import { useMyAccount } from '../models/accounts'
+import { queryKeys } from '../models/query-keys'
+import { generateBlockId } from '../utils/media-drag'
 import {
   AccountRoute,
-  DocumentsRoute,
-  GroupRoute,
   PublicationRoute,
 } from '../utils/routes'
 
@@ -29,7 +27,7 @@ export function useEditDraft(
   }: {
     version: string | undefined
     navMode?: NavMode
-    contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
+    contextRoute: PublicationRoute | AccountRoute
     variants?: PublicationVariant[]
     isProfileDocument?: boolean
   },
@@ -44,13 +42,7 @@ export function useEditDraft(
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
-    const groupVariants = variants?.filter((v) => v.key === 'group') as
-      | GroupVariant[]
-      | undefined
-    const singleGroupVariant =
-      (groupVariants && groupVariants.length === 1
-        ? groupVariants[0]
-        : undefined) || null
+
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
@@ -58,7 +50,6 @@ export function useEditDraft(
           key: 'draft',
           draftId: docId,
           contextRoute,
-          variant: singleGroupVariant,
         })
         return
       }
@@ -105,7 +96,6 @@ export function useEditDraft(
         key: 'draft',
         draftId: draft.id,
         contextRoute,
-        variant: singleGroupVariant,
         isProfileDocument,
       })
       invalidate([queryKeys.GET_DRAFT_LIST])
@@ -120,15 +110,14 @@ export function useEditDraft(
           key: 'draft',
           draftId: docId, // because docId and draftId are the same right now
           contextRoute,
-          variant: singleGroupVariant,
         })
         return
       }
 
-      appError(`Draft Error: ${error?.message}`, {error})
+      appError(`Draft Error: ${error?.message}`, { error })
     }
   }
-  return {hasExistingDraft, handleEdit}
+  return { hasExistingDraft, handleEdit }
 }
 
 export function EditDocButton({
@@ -141,7 +130,7 @@ export function EditDocButton({
 }: {
   docId: string | undefined
   navMode?: NavMode
-  contextRoute: PublicationRoute | DocumentsRoute | GroupRoute | AccountRoute
+  contextRoute: PublicationRoute | AccountRoute
   variants?: PublicationVariant[]
   baseVersion?: string
   isProfileDocument?: boolean
@@ -153,7 +142,7 @@ export function EditDocButton({
     enabled: !!docId,
   })
   const pubVersion = pub.data?.publication?.version
-  const {hasExistingDraft, handleEdit} = useEditDraft(docId, {
+  const { hasExistingDraft, handleEdit } = useEditDraft(docId, {
     version: baseVersion || pubVersion,
     variants,
     navMode,

@@ -2,12 +2,10 @@ import {
   Account,
   ChangeInfo,
   Document,
-  Group,
   HMAccount,
   HMChangeInfo,
   HMDeletedEntity,
   HMDocument,
-  HMGroup,
   HMLink,
   HMPublication,
   MttLink,
@@ -31,16 +29,8 @@ export function hmDocument(input?: Document | null): HMDocument | null {
 
 export function hmAccount(input?: Account | null): HMAccount | null {
   if (!input) return null
-  // @ts-expect-error
   if (typeof input.toJson != 'function') return input
   return input.toJson() as HMAccount
-}
-
-export function hmGroup(input?: Group | null): HMGroup | null {
-  if (!input) return null
-  // @ts-expect-error
-  if (typeof input.toJson != 'function') return input
-  return input.toJson() as HMGroup
 }
 
 export function hmChangeInfo(input?: ChangeInfo | null): HMChangeInfo | null {

@@ -1,8 +1,8 @@
-import {Avatar} from '@shm/app/components/avatar'
+import { Avatar } from '@shm/app/components/avatar'
 import Footer from '@shm/app/components/footer'
-import {OnlineIndicator} from '@shm/app/components/indicator'
-import {useAccountWithDevices} from '@shm/app/models/contacts'
-import {useNavRoute} from '@shm/app/utils/navigation'
+import { OnlineIndicator } from '@shm/app/components/indicator'
+import { useAccountWithDevices } from '@shm/app/models/contacts'
+import { useNavRoute } from '@shm/app/utils/navigation'
 import {
   Event,
   HMAccount,
@@ -16,10 +16,8 @@ import {
   hmId,
   pluralS,
   pluralizer,
-  unpackDocId,
-  unpackHmId,
+  unpackDocId
 } from '@shm/shared'
-import {ListAccountGroupsResponse_Item} from '@shm/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
   AlertDialog,
   BlockQuote,
@@ -39,35 +37,33 @@ import {
   copyTextToClipboard,
   toast,
 } from '@shm/ui'
-import {PageContainer} from '@shm/ui/src/container'
-import {Trash} from '@tamagui/lucide-icons'
-import React, {ReactNode, useMemo} from 'react'
-import {VirtuosoHandle} from 'react-virtuoso'
-import {AccessoryLayout} from '../components/accessory-sidebar'
-import {AccountTrustButton} from '../components/account-trust'
-import {EntityCitationsAccessory} from '../components/citations'
-import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {useDeleteDialog} from '../components/delete-dialog'
-import {FavoriteButton} from '../components/favoriting'
-import {FooterButton} from '../components/footer'
-import {GroupListItem} from '../components/groups-list'
-import {ListItem, copyLinkMenuItem} from '../components/list-item'
-import {MainWrapperNoScroll} from '../components/main-wrapper'
-import {PublicationListItem} from '../components/publication-list-item'
-import {CopyReferenceButton} from '../components/titlebar-common'
-import {useAccount, useMyAccount} from '../models/accounts'
-import {useEntityMentions} from '../models/content-graph'
+import { PageContainer } from '@shm/ui/src/container'
+import { Trash } from '@tamagui/lucide-icons'
+import React, { ReactNode, useMemo } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
+import { AccessoryLayout } from '../components/accessory-sidebar'
+import { AccountTrustButton } from '../components/account-trust'
+import { EntityCitationsAccessory } from '../components/citations'
+import { useCopyGatewayReference } from '../components/copy-gateway-reference'
+import { useDeleteDialog } from '../components/delete-dialog'
+import { FavoriteButton } from '../components/favoriting'
+import { FooterButton } from '../components/footer'
+import { ListItem, copyLinkMenuItem } from '../components/list-item'
+import { MainWrapperNoScroll } from '../components/main-wrapper'
+import { PublicationListItem } from '../components/publication-list-item'
+import { CopyReferenceButton } from '../components/titlebar-common'
+import { useAccount, useMyAccount } from '../models/accounts'
+import { useEntityMentions } from '../models/content-graph'
 import {
   useAccountPublicationFullList,
   useDraftList,
   usePublication,
 } from '../models/documents'
-import {useResourceFeedWithLatest} from '../models/feed'
-import {useAccountGroups} from '../models/groups'
-import {getAvatarUrl} from '../utils/account-url'
-import {useNavigate} from '../utils/useNavigate'
-import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { useResourceFeedWithLatest } from '../models/feed'
+import { getAvatarUrl } from '../utils/account-url'
+import { useNavigate } from '../utils/useNavigate'
+import { FeedItem, FeedPageFooter, NewUpdatesButton } from './feed'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 function DeviceRow({
   isOnline,
@@ -128,8 +124,8 @@ export default function AccountPage() {
             icon={BlockQuote}
             onPress={() => {
               if (route.accessory?.key === 'citations')
-                return replace({...route, accessory: null})
-              replace({...route, accessory: {key: 'citations'}})
+                return replace({ ...route, accessory: null })
+              replace({ ...route, accessory: { key: 'citations' } })
             }}
           />
         ) : null}
@@ -146,13 +142,10 @@ function MainAccountPage() {
   const account = useAccountWithDevices(accountId)
   const myAccount = useMyAccount()
   const isMe = myAccount.data?.id === accountId
-  const {data: groups} = useAccountGroups(
-    route.tab === 'groups' ? accountId : undefined,
-  )
-  const {data: documents} = useAccountPublicationFullList(
+  const { data: documents } = useAccountPublicationFullList(
     route.tab === 'documents' ? accountId : undefined,
   )
-  const {data: drafts} = useDraftList({})
+  const { data: drafts } = useDraftList({})
   const allDocs = useMemo(() => {
     if (route.tab !== 'documents') return []
     const allPubIds = new Set<string>()
@@ -160,12 +153,12 @@ function MainAccountPage() {
     const docs = documents.map((d) => {
       if (d.publication?.document?.id)
         allPubIds.add(d.publication?.document?.id)
-      return {key: 'publication', ...d}
+      return { key: 'publication', ...d }
     })
     if (!isMe) return docs
     const newDrafts = drafts.documents
       .filter((d) => !allPubIds.has(d.id))
-      .map((d) => ({key: 'draft', document: d}))
+      .map((d) => ({ key: 'draft', document: d }))
     return [...newDrafts, ...docs]
   }, [isMe, route.tab, drafts, documents])
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -174,29 +167,26 @@ function MainAccountPage() {
   let items: Array<
     | 'profile'
     | Event
-    | ListAccountGroupsResponse_Item
     | {
-        key: 'publication'
-        publication: HMPublication
-        author: HMAccount | undefined
-        editors: (HMAccount | undefined)[]
-      }
+      key: 'publication'
+      publication: HMPublication
+      author: HMAccount | undefined
+      editors: (HMAccount | undefined)[]
+    }
     | {
-        key: 'draft'
-        document: HMDocument
-      }
+      key: 'draft'
+      document: HMDocument
+    }
   > = ['profile']
   const feed = useResourceFeedWithLatest(
     route.tab === 'activity' ? hmId('a', accountId).qid : undefined,
   )
-  if (route.tab === 'groups') {
-    items = groups?.items || []
-  } else if (route.tab === 'documents') {
+  if (route.tab === 'documents') {
     items = allDocs || []
   } else if (route.tab === 'activity') {
     items = feed.data || []
   }
-  const {content: deleteDialog, open: openDelete} = useDeleteDialog()
+  const { content: deleteDialog, open: openDelete } = useDeleteDialog()
   const navigate = useNavigate()
   return (
     <>
@@ -210,30 +200,11 @@ function MainAccountPage() {
         onEndReached={() => {
           if (route.tab === 'activity') feed.fetchNextPage()
         }}
-        renderItem={({item}) => {
+        renderItem={({ item }) => {
           if (item === 'profile') {
             return <ProfileDoc />
           }
-          if (item.group) {
-            return (
-              <GroupListItem
-                group={item.group}
-                onCopy={() => {
-                  const groupId = unpackHmId(item?.group?.id)
-                  if (!groupId) return
-                  onCopyId(groupId)
-                }}
-                onDelete={() => {
-                  if (!item.group) return
-                  openDelete({
-                    id: item.group.id,
-                    title: item.group.title,
-                  })
-                }}
-                key={item.group.id}
-              />
-            )
-          } else if (item.publication && item.publication?.document?.id) {
+          if (item.publication && item.publication?.document?.id) {
             const docId = item.publication.document?.id
             return (
               <PublicationListItem
@@ -249,7 +220,7 @@ function MainAccountPage() {
                     onCopyId({
                       ...id,
                       version: item.publication.version || null,
-                      variants: [{key: 'author', author: accountId}],
+                      variants: [{ key: 'author', author: accountId }],
                     })
                   }, 'Publication'),
                   {
@@ -293,7 +264,7 @@ function MainAccountPage() {
                 theme="yellow"
                 backgroundColor="$color3"
                 accessory={
-                  <Button disabled onPress={(e) => {}} size="$1">
+                  <Button disabled onPress={(e) => { }} size="$1">
                     Draft
                   </Button>
                 }
@@ -308,7 +279,7 @@ function MainAccountPage() {
       {route.tab === 'activity' && feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />
@@ -371,15 +342,15 @@ function AccountPageHeader() {
                     {isMe
                       ? 'My Devices'
                       : isConnected
-                      ? 'Connected'
-                      : 'Offline'}
+                        ? 'Connected'
+                        : 'Offline'}
                   </Button>
                 </Popover.Trigger>
                 <Popover.Content
                   padding={0}
                   elevation="$2"
-                  enterStyle={{y: -10, opacity: 0}}
-                  exitStyle={{y: -10, opacity: 0}}
+                  enterStyle={{ y: -10, opacity: 0 }}
+                  exitStyle={{ y: -10, opacity: 0 }}
                   elevate
                   animation={[
                     'fast',
@@ -428,13 +399,12 @@ function AccountPageHeader() {
               key={route.tab}
               value={route.tab || 'profile'}
               options={[
-                {key: 'profile', label: 'Profile'},
-                {key: 'groups', label: 'Groups'},
-                {key: 'documents', label: 'Documents'},
-                {key: 'activity', label: 'Activity'},
+                { key: 'profile', label: 'Profile' },
+                { key: 'documents', label: 'Documents' },
+                { key: 'activity', label: 'Activity' },
               ]}
               onValue={(tab) => {
-                replace({...route, tab})
+                replace({ ...route, tab })
               }}
             />
           </XStack>
@@ -444,7 +414,7 @@ function AccountPageHeader() {
   )
 }
 
-function ProfileDoc({}: {}) {
+function ProfileDoc({ }: {}) {
   const route = useNavRoute()
   const accountRoute = route.key === 'account' ? route : undefined
   if (!accountRoute) throw new Error('Invalid route, no account id')
@@ -463,28 +433,28 @@ function ProfileDoc({}: {}) {
 
   const pubDataWithHeading =
     pub.data?.document?.title &&
-    account.data?.profile?.alias !== pub.data?.document?.title
+      account.data?.profile?.alias !== pub.data?.document?.title
       ? {
-          ...pub.data,
-          document: {
-            ...pub.data.document,
-            children: [
-              {
-                block: {
-                  type: 'heading',
-                  text: pub.data.document.title,
-                },
-                children: pub.data.document.children,
+        ...pub.data,
+        document: {
+          ...pub.data.document,
+          children: [
+            {
+              block: {
+                type: 'heading',
+                text: pub.data.document.title,
               },
-            ],
-          },
-        }
+              children: pub.data.document.children,
+            },
+          ],
+        },
+      }
       : pub.data
 
   return pub.status == 'success' && pub.data ? (
     <PageContainer>
       <AppPublicationContentProvider
-        routeParams={{blockRef: accountRoute?.blockId}}
+        routeParams={{ blockRef: accountRoute?.blockId }}
       >
         <PublicationContent
           publication={pubDataWithHeading}

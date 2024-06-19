@@ -1,1 +1,1 @@
-module.exports = '@mintter/prettier'
+module.exports = '@shm/prettier'

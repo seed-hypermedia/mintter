@@ -1,21 +1,18 @@
-import {PublicationListItem} from '@shm/app/components/publication-list-item'
-import {useAccountGroups} from '@shm/app/models/groups'
-import {Profile, unpackDocId, unpackHmId} from '@shm/shared'
-import {List} from '@shm/ui'
-import {useMemo} from 'react'
-import {useCopyGatewayReference} from '../components/copy-gateway-reference'
-import {useDeleteDialog} from '../components/delete-dialog'
-import {copyLinkMenuItem} from '../components/list-item'
-import {useAllAccounts} from '../models/accounts'
-import {useAccountPublications} from '../models/documents'
-import {GroupListItem} from './groups'
+import { PublicationListItem } from '@shm/app/components/publication-list-item'
+import { Profile, unpackDocId } from '@shm/shared'
+import { List } from '@shm/ui'
+import { useMemo } from 'react'
+import { useCopyGatewayReference } from '../components/copy-gateway-reference'
+import { copyLinkMenuItem } from '../components/list-item'
+import { useAllAccounts } from '../models/accounts'
+import { useAccountPublications } from '../models/documents'
 
 export function getAccountName(profile: Profile | undefined) {
   if (!profile) return ''
   return profile.alias || 'Untitled Account'
 }
 
-export function AccountPublications({accountId}: {accountId: string}) {
+export function AccountPublications({ accountId }: { accountId: string }) {
   const list = useAccountPublications(accountId)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
@@ -51,8 +48,8 @@ export function AccountPublications({accountId}: {accountId: string}) {
       <List
         header={null}
         items={data || []}
-        renderItem={({item}) => {
-          const {publication, author, editors} = item
+        renderItem={({ item }) => {
+          const { publication, author, editors } = item
           const docId = publication.document?.id
           if (!docId) return null
           return (
@@ -69,7 +66,7 @@ export function AccountPublications({accountId}: {accountId: string}) {
                   onCopy({
                     ...id,
                     version: publication.version || null,
-                    variants: [{key: 'author', author: accountId}],
+                    variants: [{ key: 'author', author: accountId }],
                   })
                 }, 'Publication'),
               ]}
@@ -93,31 +90,3 @@ export function AccountPublications({accountId}: {accountId: string}) {
   )
 }
 
-export function AccountGroups({accountId}: {accountId: string}) {
-  if (!accountId) throw new Error('Invalid route, no account id')
-  const {data: groups} = useAccountGroups(accountId)
-  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const deleteDialog = useDeleteDialog()
-  return (
-    <>
-      {groups?.items ? (
-        <List
-          items={groups.items}
-          renderItem={({item}) => (
-            <GroupListItem
-              group={item.group}
-              onCopy={() => {
-                const groupId = unpackHmId(item?.group?.id)
-                if (!groupId) return
-                onCopyId(groupId)
-              }}
-              onDelete={deleteDialog.open}
-            />
-          )}
-        />
-      ) : null}
-      {copyDialogContent}
-      {deleteDialog.content}
-    </>
-  )
-}

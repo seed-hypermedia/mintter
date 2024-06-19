@@ -25,15 +25,6 @@ export const queryKeys = {
   GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS', // , filterSites: boolean
   GET_ACCOUNT: 'GET_ACCOUNT', // , accountId: string
 
-  // groups
-  GET_GROUPS: 'GET_GROUPS',
-  GET_GROUP: 'GET_GROUP', // , groupId: string, version: string
-  GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string, version: string
-  GET_GROUP_MEMBERS: 'GET_GROUP_MEMBERS', // , groupId: string, version: string
-  GET_GROUPS_FOR_DOCUMENT: 'GET_GROUPS_FOR_DOCUMENT', // , documentId: string
-  GET_GROUPS_FOR_ACCOUNT: 'GET_GROUPS_FOR_ACCOUNT', // , accountId: string
-  GET_HOST_GROUP: 'GET_HOST_GROUP', // , hostname: string
-
   // entities
   ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string, includeDrafts: boolean
 
@@ -96,22 +87,6 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'All Accounts'
     case queryKeys.GET_ACCOUNT:
       return `Account ${abbreviateCid(arg1)}`
-
-    // groups
-    case queryKeys.GET_GROUPS:
-      return 'Groups'
-    case queryKeys.GET_GROUP:
-      return 'Group'
-    case queryKeys.GET_GROUP_CONTENT:
-      return 'GET_GROUP_CONTENT'
-    case queryKeys.GET_GROUP_MEMBERS:
-      return 'GET_GROUP_MEMBERS'
-    case queryKeys.GET_GROUPS_FOR_DOCUMENT:
-      return 'GET_GROUPS_FOR_DOCUMENT'
-    case queryKeys.GET_GROUPS_FOR_ACCOUNT:
-      return 'GET_GROUPS_FOR_ACCOUNT'
-    case queryKeys.GET_HOST_GROUP:
-      return 'GET_HOST_GROUP'
 
     // entities
     case queryKeys.ENTITY_TIMELINE:
