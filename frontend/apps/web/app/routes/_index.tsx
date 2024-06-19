@@ -1,3 +1,4 @@
+import { toPlainMessage } from "@bufbuild/protobuf";
 import type { MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { queryClient } from "../client";
@@ -11,8 +12,8 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   const siteInfo = await queryClient.website.getSiteInfo({})
-
-  return { message: "Hello from loader data!" + JSON.stringify(siteInfo) };
+  // const foo = await grpcClient.daemon.getInfo({})
+  return { message: "Hello from loader data!" + JSON.stringify(toPlainMessage(siteInfo)) };
 }
 
 export default function Index() {
