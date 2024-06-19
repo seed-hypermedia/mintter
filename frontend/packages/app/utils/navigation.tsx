@@ -1,4 +1,4 @@
-import { GRPCClient, StateStream, unpackDocId } from '@shm/shared'
+import { GRPCClient, StateStream } from '@shm/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
@@ -184,11 +184,6 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
       blockId: id.blockRef || undefined,
       variants: id.variants || undefined,
     }
-  } else if (id?.type === 'g') {
-    navRoute = {
-      key: 'group',
-      groupId: createHmId('g', id.eid),
-    }
   } else if (id?.type === 'a') {
     navRoute = {
       key: 'account',
@@ -225,46 +220,6 @@ export async function resolveHmIdToAppRoute(
   grpcClient: GRPCClient,
 ): Promise<null | (UnpackedHypermediaId & { navRoute?: NavRoute })> {
   const hmIds = unpackHmId(hmId)
-  if (hmIds?.type === 'g' && hmIds.eid && hmIds.indexPath) {
-    const groupId = createHmId('g', hmIds.eid)
-    const contentPathName =
-      hmIds.indexPath === '-' ? '/' : hmIds.indexPath
-    const content = await grpcClient.groups.listContent({
-      id: groupId,
-      version: hmIds.version || '',
-    })
-    const resolvedDocIdWithVersion = content.content[contentPathName]
-    const doc = unpackDocId(resolvedDocIdWithVersion)
-    let isVersionLatest = false
-    if (hmIds.version) {
-      const latestContent = await grpcClient.groups.listContent({
-        id: groupId,
-      })
-      const resolvedLatestDocIdWithVersion =
-        latestContent.content[contentPathName]
-      const latestDoc = unpackDocId(resolvedLatestDocIdWithVersion)
-      if (latestDoc?.version && doc?.version === latestDoc?.version) {
-        isVersionLatest = true
-      }
-    }
-    if (resolvedDocIdWithVersion && doc?.eid) {
-      return {
-        ...hmIds,
-        navRoute: {
-          key: 'publication',
-          documentId: createHmId('d', doc.eid),
-          versionId: isVersionLatest ? undefined : doc.version || undefined,
-          variants: [
-            {
-              key: 'group',
-              groupId: createHmId('g', hmIds.eid),
-              pathName: contentPathName,
-            },
-          ],
-        },
-      }
-    }
-  }
   if (hmIds?.type === 'd') {
     const docId = createHmId('d', hmIds.eid)
     const pub = await grpcClient.publications.getPublication({
