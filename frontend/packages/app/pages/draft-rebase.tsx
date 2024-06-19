@@ -1,6 +1,6 @@
-import {BlockNoteEditor, HyperMediaEditorView} from '@shm/editor'
 import {YStack} from '@shm/ui'
 import {useMemo, useState} from 'react'
+import {BlockNoteEditor, HyperMediaEditorView} from '../editor'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftRebase() {

@@ -1,7 +1,7 @@
-import {BlockIdentifier, BlockNoteEditor} from '@shm/editor'
 import {HMBlock} from '@shm/shared'
 import {Editor} from '@tiptap/react'
 import {Node} from 'prosemirror-model'
+import {BlockIdentifier, BlockNoteEditor} from '../editor'
 
 export function getBlockGroup(
   editor: BlockNoteEditor,

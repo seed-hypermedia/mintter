@@ -2,12 +2,6 @@ import Footer from '@shm/app/components/footer'
 import {useNavRoute} from '@shm/app/utils/navigation'
 import {trpc} from '@shm/desktop/src/trpc'
 import {
-  BlockNoteEditor,
-  HMEditorContainer,
-  HyperMediaEditorView,
-  getBlockInfoFromPos,
-} from '@shm/editor'
-import {
   BlockRange,
   ExpandedBlockRange,
   StateStream,
@@ -37,6 +31,12 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {ActorRefFrom} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {MainWrapper} from '../components/main-wrapper'
+import {
+  BlockNoteEditor,
+  HMEditorContainer,
+  HyperMediaEditorView,
+  getBlockInfoFromPos,
+} from '../editor'
 import {useMyAccount} from '../models/accounts'
 import {
   compareDraftWithMap,

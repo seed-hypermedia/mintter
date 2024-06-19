@@ -1,4 +1,4 @@
-import {EditorInlineContent} from '@shm/editor'
+import {EditorInlineContent} from '@shm/app/editor'
 import type {
   Account,
   ChangeInfo,

@@ -1,17 +1,21 @@
-import { HMEditorContainer, HyperMediaEditorView, getBlockInfoFromPos } from '@shm/editor'
-import { StateStream, unpackHmId } from '@shm/shared'
-import { Button, ChevronUp, SizableText, YStack, useStream } from '@shm/ui'
+import {StateStream, unpackHmId} from '@shm/shared'
+import {Button, ChevronUp, SizableText, YStack, useStream} from '@shm/ui'
+import {
+  HMEditorContainer,
+  HyperMediaEditorView,
+  getBlockInfoFromPos,
+} from '../editor'
 
-import { useEffect, useState } from 'react'
-import { XStack } from 'tamagui'
+import {useEffect, useState} from 'react'
+import {XStack} from 'tamagui'
 import {
   CommentPageTitlebarWithDocId,
   CommentPresentation,
   CommentThread,
 } from '../components/comments'
-import { useDeleteCommentDraftDialog } from '../components/delete-comment-draft-dialog'
-import { MainWrapperStandalone } from '../components/main-wrapper'
-import { useComment, useCommentEditor } from '../models/comments'
+import {useDeleteCommentDraftDialog} from '../components/delete-comment-draft-dialog'
+import {MainWrapperStandalone} from '../components/main-wrapper'
+import {useComment, useCommentEditor} from '../models/comments'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -19,10 +23,10 @@ import {
   handleDragMedia,
 } from '../utils/media-drag'
 
-import { useNavRoute } from '../utils/navigation'
-import { useNavigate } from '../utils/useNavigate'
+import {useNavRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 import './comment-draft.css'
-import { AppPublicationContentProvider } from './publication-content-provider'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 function CommitBar({
   onSubmit,
@@ -200,7 +204,6 @@ export default function CommentDraftPage() {
                     event.stopPropagation()
 
                     if (pos && pos.inside !== -1) {
-
                       return handleDragMedia(file).then((props) => {
                         if (!props) return false
 

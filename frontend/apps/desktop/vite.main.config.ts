@@ -70,7 +70,17 @@ export default defineConfig(({command, mode}) => {
             }),
             _tamaguiPlugin,
           ]
-        : [tsConfigPaths(), _tamaguiPlugin],
+        : [
+            tsConfigPaths(),
+            _tamaguiPlugin,
+            // {
+            //   name: 'log-files',
+            //   transform(code, id) {
+            //     console.log('Processing file:', id)
+            //     return code
+            //   },
+            // },
+          ],
     alias: {
       'react-native': 'react-native-web',
     },

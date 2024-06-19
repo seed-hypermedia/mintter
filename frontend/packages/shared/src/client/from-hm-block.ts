@@ -1,4 +1,4 @@
-import {Block as EditorBlock, Styles, hmBlockSchema} from '@shm/editor'
+import {Block as EditorBlock, Styles, hmBlockSchema} from '@shm/app/editor'
 import {Block as ServerBlock} from '@shm/shared/src/client/grpc-types'
 import {
   ColorAnnotation,

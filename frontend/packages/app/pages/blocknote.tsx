@@ -1,11 +1,11 @@
+import {YStack} from '@shm/ui'
 import {
   BlockNoteEditor,
   BlockNoteView,
   defaultBlockSchema,
   HMBlockSchema,
   useBlockNote,
-} from '@shm/editor'
-import {YStack} from '@shm/ui'
+} from '../editor'
 
 export default function BlockNoteDemo() {
   // Creates a new editor instance.

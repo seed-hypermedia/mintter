@@ -1,35 +1,31 @@
-import { useAppContext } from '@shm/app/app-context'
-import { slashMenuItems } from '@shm/app/src/slash-menu-items'
-import { useOpenUrl } from '@shm/desktop/src/open-url'
-import { client, trpc } from '@shm/desktop/src/trpc'
-import {
-  BlockNoteEditor,
-  hmBlockSchema,
-  useBlockNote,
-} from '@shm/editor'
-import type { Block } from '@shm/editor/src/blocknote/core/extensions/Blocks/api/blockTypes'
+import {useAppContext} from '@shm/app/app-context'
+import {createHypermediaDocLinkPlugin} from '@shm/app/editor'
+import {slashMenuItems} from '@shm/app/src/slash-menu-items'
+import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {client, trpc} from '@shm/desktop/src/trpc'
 import {
   HMComment,
   HMCommentDraft,
   createHmId,
-  createHypermediaDocLinkPlugin,
   fromHMBlock,
   toHMBlock,
   unpackHmId,
   writeableStateStream,
 } from '@shm/shared'
-import { toast } from '@shm/ui'
-import { UseQueryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import { Extension } from '@tiptap/core'
-import { useEffect, useMemo, useRef } from 'react'
-import { useGRPCClient, useQueryInvalidator } from '../app-context'
+import {toast} from '@shm/ui'
+import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
+import {Extension} from '@tiptap/core'
+import {useEffect, useMemo, useRef} from 'react'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import {hmBlockSchema, useBlockNote} from '../editor'
+import type {Block, BlockNoteEditor} from '../editor/blocknote'
 import appError from '../errors'
-import { useNavRoute } from '../utils/navigation'
-import { useNavigate } from '../utils/useNavigate'
-import { getBlockGroup, setGroupTypes } from './editor-utils'
-import { useGatewayUrlStream } from './gateway-settings'
-import { queryKeys } from './query-keys'
-import { useInlineMentions } from './search'
+import {useNavRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
+import {getBlockGroup, setGroupTypes} from './editor-utils'
+import {useGatewayUrlStream} from './gateway-settings'
+import {queryKeys} from './query-keys'
+import {useInlineMentions} from './search'
 
 function serverBlockNodesFromEditorBlocks(
   editor: BlockNoteEditor,

@@ -1,14 +1,9 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {useAppContext, useQueryInvalidator} from '@shm/app/app-context'
+import {createHypermediaDocLinkPlugin} from '@shm/app/editor'
 import {slashMenuItems} from '@shm/app/src/slash-menu-items'
 import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {trpc} from '@shm/desktop/src/trpc'
-import {
-  BlockNoteEditor,
-  Block as EditorBlock,
-  hmBlockSchema,
-  useBlockNote,
-} from '@shm/editor'
 import {
   DocumentChange,
   GRPCClient,
@@ -20,7 +15,6 @@ import {
   ListPublicationsResponse,
   Publication,
   UnpackedHypermediaId,
-  createHypermediaDocLinkPlugin,
   fromHMBlock,
   hmDocument,
   hmPublication,
@@ -47,6 +41,12 @@ import _ from 'lodash'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
+import {
+  BlockNoteEditor,
+  Block as EditorBlock,
+  hmBlockSchema,
+  useBlockNote,
+} from '../editor'
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {NavRoute} from '../utils/routes'

@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "paths": {
+      "@/*": ["./src/*"],
       "@shm/app/*": ["*", "frontend/packages/app/src/*"],
       "@shm/shared": ["*", "frontend/packages/shared/src/index.ts"]
     }
