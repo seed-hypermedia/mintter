@@ -23,20 +23,28 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DraftsClient interface {
-	// Creates a new draft with a new permanent document ID.
+	// Creates a new draft of an existing standalone branch
 	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Creates a draft for a new branch.
+	CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Creates a draft for a new index branch. Thows if a draft already exists for this index.
+	CreateIndexhDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Create a draft for a profile document. Thows if a draft already exists for this profile.
+	CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Document, error)
 	// Deletes a draft by its document ID.
 	DeleteDraft(ctx context.Context, in *DeleteDraftRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
-	GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	GetStandaloneDraft(ctx context.Context, in *GetStandaloneDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Gets a draft for a profile document.
+	GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Document, error)
 	// Updates a draft using granular update operations.
 	UpdateDraft(ctx context.Context, in *UpdateDraftRequest, opts ...grpc.CallOption) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
 	// Lists drafts for a given document.
 	ListDocumentDrafts(ctx context.Context, in *ListDocumentDraftsRequest, opts ...grpc.CallOption) (*ListDocumentDraftsResponse, error)
-	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
-	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error)
+	// Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
+	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Document, error)
 }
 
 type draftsClient struct {
@@ -56,6 +64,33 @@ func (c *draftsClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, 
 	return out, nil
 }
 
+func (c *draftsClient) CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateBranchDraft", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *draftsClient) CreateIndexhDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateIndexhDraft", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *draftsClient) CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateProfileDraft", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *draftsClient) DeleteDraft(ctx context.Context, in *DeleteDraftRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/DeleteDraft", in, out, opts...)
@@ -65,9 +100,18 @@ func (c *draftsClient) DeleteDraft(ctx context.Context, in *DeleteDraftRequest, 
 	return out, nil
 }
 
-func (c *draftsClient) GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+func (c *draftsClient) GetStandaloneDraft(ctx context.Context, in *GetStandaloneDraftRequest, opts ...grpc.CallOption) (*Document, error) {
 	out := new(Document)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetDraft", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetStandaloneDraft", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *draftsClient) GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetProfileDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,8 +145,8 @@ func (c *draftsClient) ListDocumentDrafts(ctx context.Context, in *ListDocumentD
 	return out, nil
 }
 
-func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error) {
-	out := new(Publication)
+func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/PublishDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -114,20 +158,28 @@ func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest
 // All implementations should embed UnimplementedDraftsServer
 // for forward compatibility
 type DraftsServer interface {
-	// Creates a new draft with a new permanent document ID.
+	// Creates a new draft of an existing standalone branch
 	CreateDraft(context.Context, *CreateDraftRequest) (*Document, error)
+	// Creates a draft for a new branch.
+	CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Document, error)
+	// Creates a draft for a new index branch. Thows if a draft already exists for this index.
+	CreateIndexhDraft(context.Context, *CreateIndexDraftRequest) (*Document, error)
+	// Create a draft for a profile document. Thows if a draft already exists for this profile.
+	CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Document, error)
 	// Deletes a draft by its document ID.
 	DeleteDraft(context.Context, *DeleteDraftRequest) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
-	GetDraft(context.Context, *GetDraftRequest) (*Document, error)
+	GetStandaloneDraft(context.Context, *GetStandaloneDraftRequest) (*Document, error)
+	// Gets a draft for a profile document.
+	GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Document, error)
 	// Updates a draft using granular update operations.
 	UpdateDraft(context.Context, *UpdateDraftRequest) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
 	// Lists drafts for a given document.
 	ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error)
-	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
-	PublishDraft(context.Context, *PublishDraftRequest) (*Publication, error)
+	// Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
+	PublishDraft(context.Context, *PublishDraftRequest) (*Document, error)
 }
 
 // UnimplementedDraftsServer should be embedded to have forward compatible implementations.
@@ -137,11 +189,23 @@ type UnimplementedDraftsServer struct {
 func (UnimplementedDraftsServer) CreateDraft(context.Context, *CreateDraftRequest) (*Document, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDraft not implemented")
 }
+func (UnimplementedDraftsServer) CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBranchDraft not implemented")
+}
+func (UnimplementedDraftsServer) CreateIndexhDraft(context.Context, *CreateIndexDraftRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateIndexhDraft not implemented")
+}
+func (UnimplementedDraftsServer) CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateProfileDraft not implemented")
+}
 func (UnimplementedDraftsServer) DeleteDraft(context.Context, *DeleteDraftRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDraft not implemented")
 }
-func (UnimplementedDraftsServer) GetDraft(context.Context, *GetDraftRequest) (*Document, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDraft not implemented")
+func (UnimplementedDraftsServer) GetStandaloneDraft(context.Context, *GetStandaloneDraftRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStandaloneDraft not implemented")
+}
+func (UnimplementedDraftsServer) GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileDraft not implemented")
 }
 func (UnimplementedDraftsServer) UpdateDraft(context.Context, *UpdateDraftRequest) (*UpdateDraftResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDraft not implemented")
@@ -152,7 +216,7 @@ func (UnimplementedDraftsServer) ListDrafts(context.Context, *ListDraftsRequest)
 func (UnimplementedDraftsServer) ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDocumentDrafts not implemented")
 }
-func (UnimplementedDraftsServer) PublishDraft(context.Context, *PublishDraftRequest) (*Publication, error) {
+func (UnimplementedDraftsServer) PublishDraft(context.Context, *PublishDraftRequest) (*Document, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishDraft not implemented")
 }
 
@@ -185,6 +249,60 @@ func _Drafts_CreateDraft_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Drafts_CreateBranchDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBranchDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).CreateBranchDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/CreateBranchDraft",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).CreateBranchDraft(ctx, req.(*CreateBranchDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Drafts_CreateIndexhDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateIndexDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).CreateIndexhDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/CreateIndexhDraft",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).CreateIndexhDraft(ctx, req.(*CreateIndexDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Drafts_CreateProfileDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateProfileDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).CreateProfileDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/CreateProfileDraft",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).CreateProfileDraft(ctx, req.(*CreateProfileDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Drafts_DeleteDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteDraftRequest)
 	if err := dec(in); err != nil {
@@ -203,20 +321,38 @@ func _Drafts_DeleteDraft_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Drafts_GetDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDraftRequest)
+func _Drafts_GetStandaloneDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStandaloneDraftRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DraftsServer).GetDraft(ctx, in)
+		return srv.(DraftsServer).GetStandaloneDraft(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Drafts/GetDraft",
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/GetStandaloneDraft",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DraftsServer).GetDraft(ctx, req.(*GetDraftRequest))
+		return srv.(DraftsServer).GetStandaloneDraft(ctx, req.(*GetStandaloneDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Drafts_GetProfileDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).GetProfileDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/GetProfileDraft",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).GetProfileDraft(ctx, req.(*GetProfileDraftRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -305,12 +441,28 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Drafts_CreateDraft_Handler,
 		},
 		{
+			MethodName: "CreateBranchDraft",
+			Handler:    _Drafts_CreateBranchDraft_Handler,
+		},
+		{
+			MethodName: "CreateIndexhDraft",
+			Handler:    _Drafts_CreateIndexhDraft_Handler,
+		},
+		{
+			MethodName: "CreateProfileDraft",
+			Handler:    _Drafts_CreateProfileDraft_Handler,
+		},
+		{
 			MethodName: "DeleteDraft",
 			Handler:    _Drafts_DeleteDraft_Handler,
 		},
 		{
-			MethodName: "GetDraft",
-			Handler:    _Drafts_GetDraft_Handler,
+			MethodName: "GetStandaloneDraft",
+			Handler:    _Drafts_GetStandaloneDraft_Handler,
+		},
+		{
+			MethodName: "GetProfileDraft",
+			Handler:    _Drafts_GetProfileDraft_Handler,
 		},
 		{
 			MethodName: "UpdateDraft",
@@ -333,200 +485,314 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "documents/v1alpha/documents.proto",
 }
 
-// PublicationsClient is the client API for Publications service.
+// DocumentsClient is the client API for Documents service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PublicationsClient interface {
-	// Gets a single publication.
-	GetPublication(ctx context.Context, in *GetPublicationRequest, opts ...grpc.CallOption) (*Publication, error)
-	// Lists stored publications. Only the most recent versions show up.
-	ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
-	// Push Local publication to the gateway.
-	PushPublication(ctx context.Context, in *PushPublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Lists publications owned by a given account.
-	ListAccountPublications(ctx context.Context, in *ListAccountPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
+type DocumentsClient interface {
+	// Gets a single document.
+	GetDocument(ctx context.Context, in *GetDocumentRequest, opts ...grpc.CallOption) (*Document, error)
+	// Gets an account's profile document.
+	GetProfileDocument(ctx context.Context, in *GetProfileDocumentRequest, opts ...grpc.CallOption) (*Document, error)
+	// Gets a document within the index(es) of other documents
+	GetDocumentIndex(ctx context.Context, in *GetDocumentIndexRequest, opts ...grpc.CallOption) (*GetDocumentIndexResponse, error)
+	// Lists all documents. Only the most recent versions show up.
+	ListDocuments(ctx context.Context, in *ListDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error)
+	// Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
+	ListDocumentBranches(ctx context.Context, in *ListDocumentBranchesRequest, opts ...grpc.CallOption) (*ListDocumentBranchesResponse, error)
+	// Push Local document to the gateway.
+	PushDocument(ctx context.Context, in *PushDocumentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Lists documents owned by a given account.
+	ListAccountDocuments(ctx context.Context, in *ListAccountDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error)
 }
 
-type publicationsClient struct {
+type documentsClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPublicationsClient(cc grpc.ClientConnInterface) PublicationsClient {
-	return &publicationsClient{cc}
+func NewDocumentsClient(cc grpc.ClientConnInterface) DocumentsClient {
+	return &documentsClient{cc}
 }
 
-func (c *publicationsClient) GetPublication(ctx context.Context, in *GetPublicationRequest, opts ...grpc.CallOption) (*Publication, error) {
-	out := new(Publication)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Publications/GetPublication", in, out, opts...)
+func (c *documentsClient) GetDocument(ctx context.Context, in *GetDocumentRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/GetDocument", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *publicationsClient) ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
-	out := new(ListPublicationsResponse)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Publications/ListPublications", in, out, opts...)
+func (c *documentsClient) GetProfileDocument(ctx context.Context, in *GetProfileDocumentRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/GetProfileDocument", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *publicationsClient) PushPublication(ctx context.Context, in *PushPublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *documentsClient) GetDocumentIndex(ctx context.Context, in *GetDocumentIndexRequest, opts ...grpc.CallOption) (*GetDocumentIndexResponse, error) {
+	out := new(GetDocumentIndexResponse)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/GetDocumentIndex", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) ListDocuments(ctx context.Context, in *ListDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error) {
+	out := new(ListDocumentsResponse)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/ListDocuments", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) ListDocumentBranches(ctx context.Context, in *ListDocumentBranchesRequest, opts ...grpc.CallOption) (*ListDocumentBranchesResponse, error) {
+	out := new(ListDocumentBranchesResponse)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/ListDocumentBranches", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) PushDocument(ctx context.Context, in *PushDocumentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Publications/PushPublication", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/PushDocument", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *publicationsClient) ListAccountPublications(ctx context.Context, in *ListAccountPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
-	out := new(ListPublicationsResponse)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Publications/ListAccountPublications", in, out, opts...)
+func (c *documentsClient) ListAccountDocuments(ctx context.Context, in *ListAccountDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error) {
+	out := new(ListDocumentsResponse)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/ListAccountDocuments", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PublicationsServer is the server API for Publications service.
-// All implementations should embed UnimplementedPublicationsServer
+// DocumentsServer is the server API for Documents service.
+// All implementations should embed UnimplementedDocumentsServer
 // for forward compatibility
-type PublicationsServer interface {
-	// Gets a single publication.
-	GetPublication(context.Context, *GetPublicationRequest) (*Publication, error)
-	// Lists stored publications. Only the most recent versions show up.
-	ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error)
-	// Push Local publication to the gateway.
-	PushPublication(context.Context, *PushPublicationRequest) (*emptypb.Empty, error)
-	// Lists publications owned by a given account.
-	ListAccountPublications(context.Context, *ListAccountPublicationsRequest) (*ListPublicationsResponse, error)
+type DocumentsServer interface {
+	// Gets a single document.
+	GetDocument(context.Context, *GetDocumentRequest) (*Document, error)
+	// Gets an account's profile document.
+	GetProfileDocument(context.Context, *GetProfileDocumentRequest) (*Document, error)
+	// Gets a document within the index(es) of other documents
+	GetDocumentIndex(context.Context, *GetDocumentIndexRequest) (*GetDocumentIndexResponse, error)
+	// Lists all documents. Only the most recent versions show up.
+	ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error)
+	// Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
+	ListDocumentBranches(context.Context, *ListDocumentBranchesRequest) (*ListDocumentBranchesResponse, error)
+	// Push Local document to the gateway.
+	PushDocument(context.Context, *PushDocumentRequest) (*emptypb.Empty, error)
+	// Lists documents owned by a given account.
+	ListAccountDocuments(context.Context, *ListAccountDocumentsRequest) (*ListDocumentsResponse, error)
 }
 
-// UnimplementedPublicationsServer should be embedded to have forward compatible implementations.
-type UnimplementedPublicationsServer struct {
+// UnimplementedDocumentsServer should be embedded to have forward compatible implementations.
+type UnimplementedDocumentsServer struct {
 }
 
-func (UnimplementedPublicationsServer) GetPublication(context.Context, *GetPublicationRequest) (*Publication, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPublication not implemented")
+func (UnimplementedDocumentsServer) GetDocument(context.Context, *GetDocumentRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocument not implemented")
 }
-func (UnimplementedPublicationsServer) ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPublications not implemented")
+func (UnimplementedDocumentsServer) GetProfileDocument(context.Context, *GetProfileDocumentRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileDocument not implemented")
 }
-func (UnimplementedPublicationsServer) PushPublication(context.Context, *PushPublicationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushPublication not implemented")
+func (UnimplementedDocumentsServer) GetDocumentIndex(context.Context, *GetDocumentIndexRequest) (*GetDocumentIndexResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentIndex not implemented")
 }
-func (UnimplementedPublicationsServer) ListAccountPublications(context.Context, *ListAccountPublicationsRequest) (*ListPublicationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListAccountPublications not implemented")
+func (UnimplementedDocumentsServer) ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDocuments not implemented")
+}
+func (UnimplementedDocumentsServer) ListDocumentBranches(context.Context, *ListDocumentBranchesRequest) (*ListDocumentBranchesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDocumentBranches not implemented")
+}
+func (UnimplementedDocumentsServer) PushDocument(context.Context, *PushDocumentRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PushDocument not implemented")
+}
+func (UnimplementedDocumentsServer) ListAccountDocuments(context.Context, *ListAccountDocumentsRequest) (*ListDocumentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAccountDocuments not implemented")
 }
 
-// UnsafePublicationsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PublicationsServer will
+// UnsafeDocumentsServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DocumentsServer will
 // result in compilation errors.
-type UnsafePublicationsServer interface {
-	mustEmbedUnimplementedPublicationsServer()
+type UnsafeDocumentsServer interface {
+	mustEmbedUnimplementedDocumentsServer()
 }
 
-func RegisterPublicationsServer(s grpc.ServiceRegistrar, srv PublicationsServer) {
-	s.RegisterService(&Publications_ServiceDesc, srv)
+func RegisterDocumentsServer(s grpc.ServiceRegistrar, srv DocumentsServer) {
+	s.RegisterService(&Documents_ServiceDesc, srv)
 }
 
-func _Publications_GetPublication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPublicationRequest)
+func _Documents_GetDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocumentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublicationsServer).GetPublication(ctx, in)
+		return srv.(DocumentsServer).GetDocument(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Publications/GetPublication",
+		FullMethod: "/com.seed.documents.v1alpha.Documents/GetDocument",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).GetPublication(ctx, req.(*GetPublicationRequest))
+		return srv.(DocumentsServer).GetDocument(ctx, req.(*GetDocumentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Publications_ListPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPublicationsRequest)
+func _Documents_GetProfileDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileDocumentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublicationsServer).ListPublications(ctx, in)
+		return srv.(DocumentsServer).GetProfileDocument(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Publications/ListPublications",
+		FullMethod: "/com.seed.documents.v1alpha.Documents/GetProfileDocument",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).ListPublications(ctx, req.(*ListPublicationsRequest))
+		return srv.(DocumentsServer).GetProfileDocument(ctx, req.(*GetProfileDocumentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Publications_PushPublication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PushPublicationRequest)
+func _Documents_GetDocumentIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocumentIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublicationsServer).PushPublication(ctx, in)
+		return srv.(DocumentsServer).GetDocumentIndex(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Publications/PushPublication",
+		FullMethod: "/com.seed.documents.v1alpha.Documents/GetDocumentIndex",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).PushPublication(ctx, req.(*PushPublicationRequest))
+		return srv.(DocumentsServer).GetDocumentIndex(ctx, req.(*GetDocumentIndexRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Publications_ListAccountPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListAccountPublicationsRequest)
+func _Documents_ListDocuments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDocumentsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PublicationsServer).ListAccountPublications(ctx, in)
+		return srv.(DocumentsServer).ListDocuments(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Publications/ListAccountPublications",
+		FullMethod: "/com.seed.documents.v1alpha.Documents/ListDocuments",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PublicationsServer).ListAccountPublications(ctx, req.(*ListAccountPublicationsRequest))
+		return srv.(DocumentsServer).ListDocuments(ctx, req.(*ListDocumentsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Publications_ServiceDesc is the grpc.ServiceDesc for Publications service.
+func _Documents_ListDocumentBranches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDocumentBranchesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).ListDocumentBranches(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Documents/ListDocumentBranches",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).ListDocumentBranches(ctx, req.(*ListDocumentBranchesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Documents_PushDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PushDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).PushDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Documents/PushDocument",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).PushDocument(ctx, req.(*PushDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Documents_ListAccountDocuments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccountDocumentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).ListAccountDocuments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Documents/ListAccountDocuments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).ListAccountDocuments(ctx, req.(*ListAccountDocumentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Documents_ServiceDesc is the grpc.ServiceDesc for Documents service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Publications_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "com.seed.documents.v1alpha.Publications",
-	HandlerType: (*PublicationsServer)(nil),
+var Documents_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "com.seed.documents.v1alpha.Documents",
+	HandlerType: (*DocumentsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetPublication",
-			Handler:    _Publications_GetPublication_Handler,
+			MethodName: "GetDocument",
+			Handler:    _Documents_GetDocument_Handler,
 		},
 		{
-			MethodName: "ListPublications",
-			Handler:    _Publications_ListPublications_Handler,
+			MethodName: "GetProfileDocument",
+			Handler:    _Documents_GetProfileDocument_Handler,
 		},
 		{
-			MethodName: "PushPublication",
-			Handler:    _Publications_PushPublication_Handler,
+			MethodName: "GetDocumentIndex",
+			Handler:    _Documents_GetDocumentIndex_Handler,
 		},
 		{
-			MethodName: "ListAccountPublications",
-			Handler:    _Publications_ListAccountPublications_Handler,
+			MethodName: "ListDocuments",
+			Handler:    _Documents_ListDocuments_Handler,
+		},
+		{
+			MethodName: "ListDocumentBranches",
+			Handler:    _Documents_ListDocumentBranches_Handler,
+		},
+		{
+			MethodName: "PushDocument",
+			Handler:    _Documents_PushDocument_Handler,
+		},
+		{
+			MethodName: "ListAccountDocuments",
+			Handler:    _Documents_ListAccountDocuments_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -538,7 +804,7 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MergeClient interface {
 	// Merge changes and publishes.
-	MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error)
+	MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Document, error)
 	// Rebase changes
 	RebaseChanges(ctx context.Context, in *RebaseChangesRequest, opts ...grpc.CallOption) (*Document, error)
 }
@@ -551,8 +817,8 @@ func NewMergeClient(cc grpc.ClientConnInterface) MergeClient {
 	return &mergeClient{cc}
 }
 
-func (c *mergeClient) MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Publication, error) {
-	out := new(Publication)
+func (c *mergeClient) MergeChanges(ctx context.Context, in *MergeChangesRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Merge/MergeChanges", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -574,7 +840,7 @@ func (c *mergeClient) RebaseChanges(ctx context.Context, in *RebaseChangesReques
 // for forward compatibility
 type MergeServer interface {
 	// Merge changes and publishes.
-	MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error)
+	MergeChanges(context.Context, *MergeChangesRequest) (*Document, error)
 	// Rebase changes
 	RebaseChanges(context.Context, *RebaseChangesRequest) (*Document, error)
 }
@@ -583,7 +849,7 @@ type MergeServer interface {
 type UnimplementedMergeServer struct {
 }
 
-func (UnimplementedMergeServer) MergeChanges(context.Context, *MergeChangesRequest) (*Publication, error) {
+func (UnimplementedMergeServer) MergeChanges(context.Context, *MergeChangesRequest) (*Document, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MergeChanges not implemented")
 }
 func (UnimplementedMergeServer) RebaseChanges(context.Context, *RebaseChangesRequest) (*Document, error) {

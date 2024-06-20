@@ -25,19 +25,10 @@ type AccountsClient interface {
 	// Lookup an Account information across the already known accounts.
 	// Can also be used to retrieve our own account.
 	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*Account, error)
-	// Updates profile information of our own Account.
-	// Doesn't support partial updates!
-	// Users should call GetAccount first,
-	// change the necessary fields in place,
-	// and then send the same Profile object back to UpdateProfile.
-	UpdateProfile(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Account, error)
-	// List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
+	// List accounts known to the backend. New accounts can be discovered naturally by
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
-	// Set or unset the trustness of an account. An account is untrusted by default except for our own.
-	// Returns the modified account.
-	SetAccountTrust(ctx context.Context, in *SetAccountTrustRequest, opts ...grpc.CallOption) (*Account, error)
 }
 
 type accountsClient struct {
@@ -57,27 +48,9 @@ func (c *accountsClient) GetAccount(ctx context.Context, in *GetAccountRequest, 
 	return out, nil
 }
 
-func (c *accountsClient) UpdateProfile(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Account, error) {
-	out := new(Account)
-	err := c.cc.Invoke(ctx, "/com.seed.accounts.v1alpha.Accounts/UpdateProfile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *accountsClient) ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error) {
 	out := new(ListAccountsResponse)
 	err := c.cc.Invoke(ctx, "/com.seed.accounts.v1alpha.Accounts/ListAccounts", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountsClient) SetAccountTrust(ctx context.Context, in *SetAccountTrustRequest, opts ...grpc.CallOption) (*Account, error) {
-	out := new(Account)
-	err := c.cc.Invoke(ctx, "/com.seed.accounts.v1alpha.Accounts/SetAccountTrust", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,19 +64,10 @@ type AccountsServer interface {
 	// Lookup an Account information across the already known accounts.
 	// Can also be used to retrieve our own account.
 	GetAccount(context.Context, *GetAccountRequest) (*Account, error)
-	// Updates profile information of our own Account.
-	// Doesn't support partial updates!
-	// Users should call GetAccount first,
-	// change the necessary fields in place,
-	// and then send the same Profile object back to UpdateProfile.
-	UpdateProfile(context.Context, *Profile) (*Account, error)
-	// List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
+	// List accounts known to the backend. New accounts can be discovered naturally by
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
-	// Set or unset the trustness of an account. An account is untrusted by default except for our own.
-	// Returns the modified account.
-	SetAccountTrust(context.Context, *SetAccountTrustRequest) (*Account, error)
 }
 
 // UnimplementedAccountsServer should be embedded to have forward compatible implementations.
@@ -113,14 +77,8 @@ type UnimplementedAccountsServer struct {
 func (UnimplementedAccountsServer) GetAccount(context.Context, *GetAccountRequest) (*Account, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccount not implemented")
 }
-func (UnimplementedAccountsServer) UpdateProfile(context.Context, *Profile) (*Account, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
-}
 func (UnimplementedAccountsServer) ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
-}
-func (UnimplementedAccountsServer) SetAccountTrust(context.Context, *SetAccountTrustRequest) (*Account, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetAccountTrust not implemented")
 }
 
 // UnsafeAccountsServer may be embedded to opt out of forward compatibility for this service.
@@ -152,24 +110,6 @@ func _Accounts_GetAccount_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Accounts_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Profile)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountsServer).UpdateProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.seed.accounts.v1alpha.Accounts/UpdateProfile",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountsServer).UpdateProfile(ctx, req.(*Profile))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Accounts_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListAccountsRequest)
 	if err := dec(in); err != nil {
@@ -188,24 +128,6 @@ func _Accounts_ListAccounts_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Accounts_SetAccountTrust_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetAccountTrustRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountsServer).SetAccountTrust(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.seed.accounts.v1alpha.Accounts/SetAccountTrust",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountsServer).SetAccountTrust(ctx, req.(*SetAccountTrustRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Accounts_ServiceDesc is the grpc.ServiceDesc for Accounts service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -218,16 +140,8 @@ var Accounts_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Accounts_GetAccount_Handler,
 		},
 		{
-			MethodName: "UpdateProfile",
-			Handler:    _Accounts_UpdateProfile_Handler,
-		},
-		{
 			MethodName: "ListAccounts",
 			Handler:    _Accounts_ListAccounts_Handler,
-		},
-		{
-			MethodName: "SetAccountTrust",
-			Handler:    _Accounts_SetAccountTrust_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

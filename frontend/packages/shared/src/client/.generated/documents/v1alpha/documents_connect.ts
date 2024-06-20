@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, MergeChangesRequest, Publication, PublishDraftRequest, PushPublicationRequest, RebaseChangesRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateBranchDraftRequest, CreateDraftRequest, CreateIndexDraftRequest, CreateProfileDraftRequest, DeleteDraftRequest, Document, GetDocumentIndexRequest, GetDocumentIndexResponse, GetDocumentRequest, GetProfileDocumentRequest, GetProfileDraftRequest, GetStandaloneDraftRequest, ListAccountDocumentsRequest, ListDocumentBranchesRequest, ListDocumentBranchesResponse, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDocumentsRequest, ListDocumentsResponse, ListDraftsRequest, ListDraftsResponse, MergeChangesRequest, PublishDraftRequest, PushDocumentRequest, RebaseChangesRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -15,13 +15,46 @@ export const Drafts = {
   typeName: "com.seed.documents.v1alpha.Drafts",
   methods: {
     /**
-     * Creates a new draft with a new permanent document ID.
+     * Creates a new draft of an existing standalone branch
      *
      * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateDraft
      */
     createDraft: {
       name: "CreateDraft",
       I: CreateDraftRequest,
+      O: Document,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Creates a draft for a new branch. 
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateBranchDraft
+     */
+    createBranchDraft: {
+      name: "CreateBranchDraft",
+      I: CreateBranchDraftRequest,
+      O: Document,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Creates a draft for a new index branch. Thows if a draft already exists for this index.
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateIndexhDraft
+     */
+    createIndexhDraft: {
+      name: "CreateIndexhDraft",
+      I: CreateIndexDraftRequest,
+      O: Document,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Create a draft for a profile document. Thows if a draft already exists for this profile.
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateProfileDraft
+     */
+    createProfileDraft: {
+      name: "CreateProfileDraft",
+      I: CreateProfileDraftRequest,
       O: Document,
       kind: MethodKind.Unary,
     },
@@ -39,11 +72,22 @@ export const Drafts = {
     /**
      * Gets a single draft if exists.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Drafts.GetDraft
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.GetStandaloneDraft
      */
-    getDraft: {
-      name: "GetDraft",
-      I: GetDraftRequest,
+    getStandaloneDraft: {
+      name: "GetStandaloneDraft",
+      I: GetStandaloneDraftRequest,
+      O: Document,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Gets a draft for a profile document.
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.GetProfileDraft
+     */
+    getProfileDraft: {
+      name: "GetProfileDraft",
+      I: GetProfileDraftRequest,
       O: Document,
       kind: MethodKind.Unary,
     },
@@ -81,69 +125,102 @@ export const Drafts = {
       kind: MethodKind.Unary,
     },
     /**
-     * Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
+     * Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
      *
      * @generated from rpc com.seed.documents.v1alpha.Drafts.PublishDraft
      */
     publishDraft: {
       name: "PublishDraft",
       I: PublishDraftRequest,
-      O: Publication,
+      O: Document,
       kind: MethodKind.Unary,
     },
   }
 } as const;
 
 /**
- * Publications service provides access to published documents.
+ * Documents service provides access to documents.
  *
- * @generated from service com.seed.documents.v1alpha.Publications
+ * @generated from service com.seed.documents.v1alpha.Documents
  */
-export const Publications = {
-  typeName: "com.seed.documents.v1alpha.Publications",
+export const Documents = {
+  typeName: "com.seed.documents.v1alpha.Documents",
   methods: {
     /**
-     * Gets a single publication.
+     * Gets a single document.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Publications.GetPublication
+     * @generated from rpc com.seed.documents.v1alpha.Documents.GetDocument
      */
-    getPublication: {
-      name: "GetPublication",
-      I: GetPublicationRequest,
-      O: Publication,
+    getDocument: {
+      name: "GetDocument",
+      I: GetDocumentRequest,
+      O: Document,
       kind: MethodKind.Unary,
     },
     /**
-     * Lists stored publications. Only the most recent versions show up.
+     * Gets an account's profile document.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Publications.ListPublications
+     * @generated from rpc com.seed.documents.v1alpha.Documents.GetProfileDocument
      */
-    listPublications: {
-      name: "ListPublications",
-      I: ListPublicationsRequest,
-      O: ListPublicationsResponse,
+    getProfileDocument: {
+      name: "GetProfileDocument",
+      I: GetProfileDocumentRequest,
+      O: Document,
       kind: MethodKind.Unary,
     },
     /**
-     * Push Local publication to the gateway.
+     * Gets a document within the index(es) of other documents
      *
-     * @generated from rpc com.seed.documents.v1alpha.Publications.PushPublication
+     * @generated from rpc com.seed.documents.v1alpha.Documents.GetDocumentIndex
      */
-    pushPublication: {
-      name: "PushPublication",
-      I: PushPublicationRequest,
+    getDocumentIndex: {
+      name: "GetDocumentIndex",
+      I: GetDocumentIndexRequest,
+      O: GetDocumentIndexResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists all documents. Only the most recent versions show up.
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Documents.ListDocuments
+     */
+    listDocuments: {
+      name: "ListDocuments",
+      I: ListDocumentsRequest,
+      O: ListDocumentsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Documents.ListDocumentBranches
+     */
+    listDocumentBranches: {
+      name: "ListDocumentBranches",
+      I: ListDocumentBranchesRequest,
+      O: ListDocumentBranchesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Push Local document to the gateway.
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Documents.PushDocument
+     */
+    pushDocument: {
+      name: "PushDocument",
+      I: PushDocumentRequest,
       O: Empty,
       kind: MethodKind.Unary,
     },
     /**
-     * Lists publications owned by a given account.
+     * Lists documents owned by a given account.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Publications.ListAccountPublications
+     * @generated from rpc com.seed.documents.v1alpha.Documents.ListAccountDocuments
      */
-    listAccountPublications: {
-      name: "ListAccountPublications",
-      I: ListAccountPublicationsRequest,
-      O: ListPublicationsResponse,
+    listAccountDocuments: {
+      name: "ListAccountDocuments",
+      I: ListAccountDocumentsRequest,
+      O: ListDocumentsResponse,
       kind: MethodKind.Unary,
     },
   }
@@ -165,7 +242,7 @@ export const Merge = {
     mergeChanges: {
       name: "MergeChanges",
       I: MergeChangesRequest,
-      O: Publication,
+      O: Document,
       kind: MethodKind.Unary,
     },
     /**

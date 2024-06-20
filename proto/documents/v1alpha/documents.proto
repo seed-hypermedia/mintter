@@ -11,14 +11,26 @@ option go_package = "seed/backend/genproto/documents/v1alpha;documents";
 
 // Drafts service exposes the functionality
 service Drafts {
-  // Creates a new draft with a new permanent document ID.
+  // Creates a new draft of an existing standalone branch
   rpc CreateDraft(CreateDraftRequest) returns (Document);
+
+  // Creates a draft for a new branch. 
+  rpc CreateBranchDraft(CreateBranchDraftRequest) returns (Document);
+
+  // Creates a draft for a new index branch. Thows if a draft already exists for this index.
+  rpc CreateIndexhDraft(CreateIndexDraftRequest) returns (Document);
+
+  // Create a draft for a profile document. Thows if a draft already exists for this profile.
+  rpc CreateProfileDraft(CreateProfileDraftRequest) returns (Document);
 
   // Deletes a draft by its document ID.
   rpc DeleteDraft(DeleteDraftRequest) returns (google.protobuf.Empty);
 
   // Gets a single draft if exists.
-  rpc GetDraft(GetDraftRequest) returns (Document);
+  rpc GetStandaloneDraft(GetStandaloneDraftRequest) returns (Document);
+
+  // Gets a draft for a profile document.
+  rpc GetProfileDraft(GetProfileDraftRequest) returns (Document);
 
   // Updates a draft using granular update operations.
   rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse);
@@ -29,32 +41,59 @@ service Drafts {
   // Lists drafts for a given document.
   rpc ListDocumentDrafts(ListDocumentDraftsRequest) returns (ListDocumentDraftsResponse);
 
-  // Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
-  rpc PublishDraft(PublishDraftRequest) returns (Publication);
+  // Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
+  rpc PublishDraft(PublishDraftRequest) returns (Document);
 }
 
-// Request to create a new draft.
+// Request to create a new draft for an existing standalone branch
 message CreateDraftRequest {
-  // Optional. Existing Document ID can be specified to update
-  // previously published document. A draft will be created
-  // with the content of the most recent known version.
-  string existing_document_id = 1;
+  // Required. ID of the document branch that will be updated.
+  string document_id = 1;
+}
+
+// Request to create a draft for a new standalone branch, optionally based on an existing document.
+message CreateBranchDraftRequest {
+  // Optional. Document which will be branched from. If not specified, a new document will be created.
+  string document_id = 1;
 
   // Optional. Version of the existing document to create draft from.
-  // If version is specified existing_document_id must also be specified.
+  // If version is specified, document_id must also be specified.
   string version = 2;
+}
+
+// Request to create a new branch which will be saved to the index of another document.
+// If this path already exists in the parent, the index will be updated when the draft is published.
+// If this path does not exist in the parent, the index will be created when the draft is published.
+message CreateIndexDraftRequest {
+  // Required. ID of the parent document.
+  string document_id = 1;
+
+  // Required. Path of the document to create a draft for. May include slashes to represent a deep index.
+  string path = 2;
+}
+
+// Request to create a draft for a profile document.
+message CreateProfileDraftRequest {
+  // Required. Account ID to create a profile draft for.
+  string account_id = 1;
 }
 
 // Request to delete an existing draft.
 message DeleteDraftRequest {
-  // ID of the document whose draft needs to be deleted. Only one
-  string document_id = 1;
+  // Required. ID of the branch to delete.
+  string branch_id = 1;
 }
 
 // Request to get a single draft.
-message GetDraftRequest {
-  // ID of the document for which draft was previously created.
+message GetStandaloneDraftRequest {
+  // Required. ID of the document for which draft was previously created.
   string document_id = 1;
+}
+
+// Request the draft for an account's profile document
+message GetProfileDraftRequest {
+  // Required. Account ID to get the profile draft for.
+  string account_id = 1;
 }
 
 // Request to update an existing draft using granular operations.
@@ -91,9 +130,18 @@ message DocumentChange {
     string left_sibling = 3;
   }
 
+  // Operation to replace a metadata field with a new value
+  message SetMetadata {
+    // Metadata key to set.
+    string key = 1;
+
+    // Metadata value to set.
+    string value = 2;
+  }
+
   oneof op {
-    // New title to set on the document.
-    string set_title = 1;
+    // New metadata to set on the document.
+    SetMetadata set_metadata = 1;
 
     // Move operation that creates/moves a block within the document hierarchy.
     MoveBlock move_block = 3;
@@ -140,42 +188,79 @@ message ListDocumentDraftsResponse {
 
 // Request to publish a draft.
 message PublishDraftRequest {
-  // ID of the document which current draft needs to be published.
-  string document_id = 1;
+  // ID of the draft to be published.
+  string draft_id = 1;
 }
 
-// === Publication Service ===
+// === Documents Service ===
 
-// Publications service provides access to published documents.
-service Publications {
-  // Gets a single publication.
-  rpc GetPublication(GetPublicationRequest) returns (Publication);
+// Documents service provides access to documents.
+service Documents {
+  // Gets a single document.
+  rpc GetDocument(GetDocumentRequest) returns (Document);
 
-  // Lists stored publications. Only the most recent versions show up.
-  rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
+  // Gets an account's profile document.
+  rpc GetProfileDocument(GetProfileDocumentRequest) returns (Document);
 
-  // Push Local publication to the gateway.
-  rpc PushPublication(PushPublicationRequest) returns (google.protobuf.Empty);
+  // Gets a document within the index(es) of other documents
+  rpc GetDocumentIndex(GetDocumentIndexRequest) returns (GetDocumentIndexResponse);
 
-  // Lists publications owned by a given account.
-  rpc ListAccountPublications(ListAccountPublicationsRequest) returns (ListPublicationsResponse);
+  // Lists all documents. Only the most recent versions show up.
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+
+  // Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
+  rpc ListDocumentBranches(ListDocumentBranchesRequest) returns (ListDocumentBranchesResponse);
+
+  // Push Local document to the gateway.
+  rpc PushDocument(PushDocumentRequest) returns (google.protobuf.Empty);
+
+  // Lists documents owned by a given account.
+  rpc ListAccountDocuments(ListAccountDocumentsRequest) returns (ListDocumentsResponse);
 }
 
-// Request for getting a single publication.
-message GetPublicationRequest {
+// Request for getting a single document.
+message GetDocumentRequest {
   // Required. ID of the published document.
   string document_id = 1;
 
   // Optional. Specific version of the published document. If empty, the latest one is returned.
   string version = 2;
-
-  // Optional. If true, only local publications will be found. False by default.
-  // Deprecated: use [Entities.DiscoverEntity] API explicitly instead.
-  bool local_only = 3;
 }
 
-// Request for getting a single publication.
-message PushPublicationRequest {
+// Request for getting an account's profile document.
+message GetProfileDocumentRequest {
+  // Required. ID of the account.
+  string account_id = 1;
+
+  // Optional. Specific version of the profile. If empty, the latest one is returned.
+  string version = 2;
+}
+
+// Used to request the document within the indexes of other documents
+message GetDocumentIndexRequest {
+  // the parent document ID
+  string document_id = 1;
+
+  // the path of the document which will be retrieved. may include slashes to represent a deep index
+  string path = 2;
+}
+
+message GetDocumentIndexResponse {
+  // id of the parent document
+  string document_id = 1;
+
+  // version of the parent document
+  string version = 2;
+
+  // path of the child document. may include slashes to represent a deep index
+  string path = 3;
+
+  // the document at the given path
+  Document document = 4;
+}
+
+// Request for getting a single document.
+message PushDocumentRequest {
   // Required. ID of the published document to be pushed.
   string document_id = 1;
 
@@ -183,40 +268,61 @@ message PushPublicationRequest {
   string url = 2;
 }
 
-// Request for listing publications.
-message ListPublicationsRequest {
+// Request for listing documents.
+message ListDocumentsRequest {
   // Optional. Number of results per page. Default is defined by the server.
   int32 page_size = 1;
 
   // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
-
-  // Optional. When provided, the response will only contain
-  // publications *owned* (created) by trusted accounts of this node.
-  // By default, it returns all the publications (trusted_only = false)
-  bool trusted_only = 3;
 }
 
-// Response with list of publications.
-message ListPublicationsResponse {
-  // List of publications matching the request.
+// Response with list of documents.
+message ListDocumentsResponse {
+  // List of documents matching the request.
   // Only most recent versions are returned.
   // Content is omitted, only metadata is present.
-  repeated Publication publications = 1;
+  repeated Document documents = 1;
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
 }
 
-// Request for listing publications owned by a given account.
-message ListAccountPublicationsRequest {
+message ListDocumentBranchesRequest {
+  // Required. ID of the document to list branches for.
+  string document_id = 1;
+}
+
+message ListDocumentBranchesResponse {
+  // List of branches for the document.
+  repeated Branch branches = 1;
+
+  // List of drafts for these branches. Includes a draft that will become a draft when published.
+  repeated Draft drafts = 2;
+}
+
+message Branch {
+  // ID for use when deleting or publishing the branch
+  string branch_id = 1;
+
+  // ID of the top-level doc which will be updated. For standalone branches this is the doc ID.
+  // for index branches this is the parent doc ID.
+  string document_id = 2;
+
+  // the path of the document which is being updated. may include slashes to represent a deep index
+  string path = 3;
+
+}
+
+// Request for listing documents owned by a given account.
+message ListAccountDocumentsRequest {
   // Optional. Number of results per page. Default is defined by the server.
   int32 page_size = 1;
 
   // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
 
-  // Required. Account ID to list publications for.
+  // Required. Account ID to list documents for.
   string account_id = 3;
 }
 
@@ -226,7 +332,7 @@ message ListAccountPublicationsRequest {
 // Merge service provides access to merge documents.
 service Merge {
   // Merge changes and publishes.
-  rpc MergeChanges(MergeChangesRequest) returns (Publication);
+  rpc MergeChanges(MergeChangesRequest) returns (Document);
 
   // Rebase changes
   rpc RebaseChanges(RebaseChangesRequest) returns (Document);
@@ -252,35 +358,45 @@ message RebaseChangesRequest {
 
 // === Types ===
 
-// State of the document after publication.
-// Deprecated: use the Document message instead,
-// it has all the same fields.
-message Publication {
-  // Version points to the state of the publication at some point in time.
-  // Deprecated: use the version field of the Document message instead.
-  string version = 1;
+message Draft {
+  // to identify the draft
+  string draft_id = 1;
 
-  // Published document.
+  // state of the draft
   Document document = 2;
+
+  // the document id where the draft will be merged to
+  string document_id = 3;
+
+  string index_path = 4;
 }
 
-// Document represents metadata and content of a draft or publication.
+// Document represents metadata and content of a document.
 message Document {
   // Permanent ID of the document.
   string id = 1;
 
-  // Title of the document.
-  string title = 2;
-
   // Output only. Author ID of the document.
   string author = 4;
 
-  // Output only. Account IDs of all the editors of the document.
-  // Includes the original author as well.
-  repeated string editors = 11;
+  // Metadata values for a document.
+  map<string, string> metadata = 15;
 
-  // This is WIP feature for block-aware API. It will supersede the `content` field.
-  repeated BlockNode children = 9;
+  // Output only. Set to account ID if this is a profile document.
+  string profile_account_id = 14;
+
+  // Output only. Every account ID who has modified the document.
+  // Includes the original author as well.
+  repeated string authors = 11;
+
+  // Blocks content of the document.
+  repeated BlockNode content = 9;
+
+  // The indexed children documents under this document.
+  // Keys are used as the path names (and slash "/" is not allowed in the key)
+  // Values will refer to other documents as exact versions such as "hm://DOC_ID?v=1"
+  // Values may refer to "latest" versions with "hm://DOC_ID"
+  map<string, string> index = 16;
 
   // Output only. Time when document was created.
   google.protobuf.Timestamp create_time = 6;
@@ -295,7 +411,7 @@ message Document {
   string version = 12;
 
   // Output only. Previous version of the document,
-  // unless this is the first version.
+  // Empty if this is the first version.
   string previous_version = 13;
 }
 
