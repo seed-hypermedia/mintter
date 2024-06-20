@@ -12,25 +12,25 @@ option go_package = "seed/backend/genproto/documents/v1alpha;documents";
 // Drafts service exposes the functionality
 service Drafts {
   // Creates a new draft of an existing standalone branch
-  rpc CreateDraft(CreateDraftRequest) returns (Document);
+  rpc CreateDraft(CreateDraftRequest) returns (Draft);
 
   // Creates a draft for a new branch. 
-  rpc CreateBranchDraft(CreateBranchDraftRequest) returns (Document);
+  rpc CreateBranchDraft(CreateBranchDraftRequest) returns (Draft);
 
   // Creates a draft for an index branch. Thows if a draft already exists for this index.
-  rpc CreateIndexDraft(CreateIndexDraftRequest) returns (Document);
+  rpc CreateIndexDraft(CreateIndexDraftRequest) returns (Draft);
 
   // Create a draft for a profile document. Thows if a draft already exists for this profile.
-  rpc CreateProfileDraft(CreateProfileDraftRequest) returns (Document);
+  rpc CreateProfileDraft(CreateProfileDraftRequest) returns (Draft);
 
   // Deletes a draft by its document ID.
   rpc DeleteDraft(DeleteDraftRequest) returns (google.protobuf.Empty);
 
   // Gets a single draft if exists.
-  rpc GetStandaloneDraft(GetStandaloneDraftRequest) returns (Document);
+  rpc GetDraft(GetDraftRequest) returns (Draft);
 
   // Gets a draft for a profile document.
-  rpc GetProfileDraft(GetProfileDraftRequest) returns (Document);
+  rpc GetProfileDraft(GetProfileDraftRequest) returns (Draft);
 
   // Updates a draft using granular update operations.
   rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse);
@@ -41,8 +41,8 @@ service Drafts {
   // Lists drafts for a given document.
   rpc ListDocumentDrafts(ListDocumentDraftsRequest) returns (ListDocumentDraftsResponse);
 
-  // Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
-  rpc PublishDraft(PublishDraftRequest) returns (Document);
+  // Publishes a draft. Returns the branch that was published.
+  rpc PublishDraft(PublishDraftRequest) returns (Branch);
 }
 
 // Request to create a new draft for an existing standalone branch
@@ -85,9 +85,9 @@ message DeleteDraftRequest {
 }
 
 // Request to get a single draft.
-message GetStandaloneDraftRequest {
-  // Required. ID of the document for which draft was previously created.
-  string document_id = 1;
+message GetDraftRequest {
+  // Required. ID of the draft that was previously created.
+  string draft_id = 1;
 }
 
 // Request the draft for an account's profile document
@@ -399,10 +399,15 @@ message Draft {
   // state of the draft
   Document document = 2;
 
-  // the document id where the draft will be merged to
-  string document_id = 3;
+  // True if this is a profile draft
+  bool is_profile = 3;
 
-  string index_path = 4;
+  // The top-level entity that this draft will update once published. An Account ID for profile drafts, otherwise Document ID.
+  string entity_id = 4;
+
+  // Optional. The path where the draft will be updated once published
+  string path = 5;
+
 }
 
 // Document represents metadata and content of a document.
