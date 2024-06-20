@@ -17,8 +17,8 @@ service Drafts {
   // Creates a draft for a new branch. 
   rpc CreateBranchDraft(CreateBranchDraftRequest) returns (Document);
 
-  // Creates a draft for a new index branch. Thows if a draft already exists for this index.
-  rpc CreateIndexhDraft(CreateIndexDraftRequest) returns (Document);
+  // Creates a draft for an index branch. Thows if a draft already exists for this index.
+  rpc CreateIndexDraft(CreateIndexDraftRequest) returns (Document);
 
   // Create a draft for a profile document. Thows if a draft already exists for this profile.
   rpc CreateProfileDraft(CreateProfileDraftRequest) returns (Document);
@@ -139,9 +139,21 @@ message DocumentChange {
     string value = 2;
   }
 
+  // Operation to replace an index field with a new value
+  message SetIndex {
+    // Index key to set.
+    string key = 1;
+
+    // Index value to set.
+    string value = 2;
+  }
+  
   oneof op {
     // New metadata to set on the document.
     SetMetadata set_metadata = 1;
+
+    // New index to set on the document.
+    SetIndex set_index = 2;
 
     // Move operation that creates/moves a block within the document hierarchy.
     MoveBlock move_block = 3;
@@ -205,6 +217,12 @@ service Documents {
   // Gets a document within the index(es) of other documents
   rpc GetDocumentIndex(GetDocumentIndexRequest) returns (GetDocumentIndexResponse);
 
+  // Immediately changes a document
+  rpc ChangeDocument(ChangeDocumentRequest) returns (Document);
+
+  // Immediately changes an account's profile document
+  rpc ChangeProfileDocument(ChangeProfileDocumentRequest) returns (Document);
+
   // Lists all documents. Only the most recent versions show up.
   rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
 
@@ -257,6 +275,22 @@ message GetDocumentIndexResponse {
 
   // the document at the given path
   Document document = 4;
+}
+
+message ChangeDocumentRequest {
+  // Required. ID of the document to be updated.
+  string document_id = 1;
+
+  // Required. Changes to be applied to the document.
+  repeated DocumentChange changes = 2;
+}
+
+message ChangeProfileDocumentRequest {
+  // Required. Account ID to update the profile document for.
+  string account_id = 1;
+
+  // Required. Changes to be applied to the profile document.
+  repeated DocumentChange changes = 2;
 }
 
 // Request for getting a single document.
