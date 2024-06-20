@@ -83,11 +83,7 @@ export const BlockGroup = Node.create<{
           if (typeof element === 'string') {
             return false
           }
-          return (
-            element.getAttribute('data-node-type') === 'blockGroup' &&
-            element.getAttribute('data-list-type') === 'ul' &&
-            null
-          )
+          return {listType: 'ul'}
         },
         priority: 200,
       },
@@ -98,11 +94,7 @@ export const BlockGroup = Node.create<{
           if (typeof element === 'string') {
             return false
           }
-          return (
-            element.getAttribute('data-node-type') === 'blockGroup' &&
-            element.getAttribute('data-list-type') === 'ol' &&
-            null
-          )
+          return {listType: 'ol', start: element.getAttribute('start')}
         },
         priority: 200,
       },
