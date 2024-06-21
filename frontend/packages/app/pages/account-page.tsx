@@ -42,7 +42,6 @@ import { Trash } from '@tamagui/lucide-icons'
 import React, { ReactNode, useMemo } from 'react'
 import { VirtuosoHandle } from 'react-virtuoso'
 import { AccessoryLayout } from '../components/accessory-sidebar'
-import { AccountTrustButton } from '../components/account-trust'
 import { EntityCitationsAccessory } from '../components/citations'
 import { useCopyGatewayReference } from '../components/copy-gateway-reference'
 import { useDeleteDialog } from '../components/delete-dialog'
@@ -385,13 +384,6 @@ function AccountPageHeader() {
                   </YGroup>
                 </Popover.Content>
               </Popover>
-
-              {isMe ? null : (
-                <AccountTrustButton
-                  accountId={accountId}
-                  isTrusted={account.isTrusted}
-                />
-              )}
             </XStack>
           </XStack>
           <XStack>

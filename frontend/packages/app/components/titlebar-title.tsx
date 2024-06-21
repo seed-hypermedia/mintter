@@ -10,7 +10,6 @@ import {
   FontSizeTokens,
   Home,
   Popover,
-  SizableText,
   Spinner,
   TitleText,
   XStack,
@@ -49,19 +48,12 @@ export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
   }, [route])
 
   if (route.key === 'feed') {
-    let subtitle: string | null = null
-    if (route.tab === 'all') {
-      subtitle = '- All Content'
-    } else {
-      subtitle = '- Trusted Content'
-    }
     return (
       <>
         <Home size={12} />
         <TitleText size={size} fontWeight="bold" data-testid="titlebar-title">
           Home Feed
         </TitleText>
-        <SizableText>{subtitle}</SizableText>
       </>
     )
   }

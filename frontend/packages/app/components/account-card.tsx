@@ -1,9 +1,8 @@
 // tamagui-ignore
 import * as Ariakit from '@ariakit/react'
-import {UIAvatar, XStack, YStack} from '@shm/ui'
-import {SizableText} from 'tamagui'
-import {useAccount} from '../models/accounts'
-import {AccountTrustButton} from './account-trust'
+import { UIAvatar, XStack, YStack } from '@shm/ui'
+import { SizableText } from 'tamagui'
+import { useAccount } from '../models/accounts'
 
 export function AccountCard({
   accountId,
@@ -48,15 +47,7 @@ export function AccountCard({
                 url={account.data.profile?.avatar}
                 label={account.data.profile?.alias || accountId}
               />
-              {accountId && !hideActions ? (
-                <XStack alignItems="flex-end" gap="$3">
-                  <AccountTrustButton
-                    iconOnly
-                    accountId={accountId}
-                    isTrusted={account.data.isTrusted}
-                  />
-                </XStack>
-              ) : null}
+
             </XStack>
             <YStack>
               <SizableText size="$5" fontWeight="bold">

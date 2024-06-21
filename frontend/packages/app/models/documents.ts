@@ -92,7 +92,6 @@ export function usePublicationList(
 
   const allPublications =
     pubListQuery.data?.pages.flatMap((page) => page.publications) || []
-  console.log(`== ~ allPublications:`, allPublications)
   return {
     ...pubListQuery,
     data: {

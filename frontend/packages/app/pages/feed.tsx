@@ -16,11 +16,8 @@ import {
 import {
   Button,
   ButtonText,
-  Globe,
   List,
   PageContainer,
-  RadioButtons,
-  Section,
   SizableText,
   Spinner,
   TextProps,
@@ -29,9 +26,9 @@ import {
   View,
   XStack,
   YStack,
-  toast,
+  toast
 } from '@shm/ui'
-import { ArrowRight, ChevronUp, Verified } from '@tamagui/lucide-icons'
+import { ArrowRight, ChevronUp } from '@tamagui/lucide-icons'
 import React, { PropsWithChildren, ReactNode } from 'react'
 import { VirtuosoHandle } from 'react-virtuoso'
 import Footer from '../components/footer'
@@ -44,11 +41,6 @@ import { useFeedWithLatest, useResourceFeedWithLatest } from '../models/feed'
 import { appRouteOfId, useNavRoute } from '../utils/navigation'
 import { useNavigate } from '../utils/useNavigate'
 import { AppPublicationContentProvider } from './publication-content-provider'
-
-const feedTabsOptions = [
-  { key: 'trusted', label: 'Trusted Content', icon: Verified },
-  { key: 'all', label: 'All Content', icon: Globe },
-] as const
 
 export default function FeedPage() {
   const route = useNavRoute()
@@ -551,18 +543,9 @@ const Feed = React.memo(function Feed({ tab }: { tab: 'trusted' | 'all' }) {
         ref={scrollRef}
         header={
           <PageContainer marginVertical="$6">
-            <Section paddingVertical={0}>
-              <XStack f={1} ai="center" gap="$3">
-                <RadioButtons
-                  value={route.tab}
-                  options={feedTabsOptions}
-                  onValue={(tab) => {
-                    replace({ ...route, tab })
-                  }}
-                />
-                {feed.isFetching ? <Spinner /> : null}
-              </XStack>
-            </Section>
+            <XStack f={1} ai="center" gap="$3">
+              {feed.isFetching ? <Spinner /> : null}
+            </XStack>
           </PageContainer>
         }
         footer={<FeedPageFooter feedQuery={feed} />}
