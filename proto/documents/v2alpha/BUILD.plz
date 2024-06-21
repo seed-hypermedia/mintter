@@ -1,0 +1,9 @@
+subinclude("//build/rules/seed:defs")
+
+mtt_proto_codegen(
+    srcs = glob(["*.proto"]),
+    languages = [
+        "go",
+        "js",
+    ],
+)
