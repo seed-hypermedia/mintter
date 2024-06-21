@@ -3,6 +3,7 @@ package networking
 import (
 	"context"
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	daemon "seed/backend/daemon/api/daemon/v1alpha"
 	"seed/backend/daemon/storage"
@@ -10,7 +11,7 @@ import (
 	"seed/backend/hyper"
 	"seed/backend/logging"
 	"seed/backend/mttnet"
-	"seed/backend/pkg/future"
+	"seed/backend/pkg/must"
 	"testing"
 	"time"
 
@@ -46,7 +47,10 @@ func makeTestServer(t *testing.T, u coretest.Tester) *Server {
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := mttnet.New(cfg, db, blobs, u.Identity, zap.NewNop())
+	ks := core.NewMemoryKeyStore()
+	must.Do(ks.StoreKey(context.Background(), "main", u.Account))
+
+	n, err := mttnet.New(cfg, u.Device, ks, db, blobs, zap.NewNop())
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
@@ -68,8 +72,5 @@ func makeTestServer(t *testing.T, u coretest.Tester) *Server {
 
 	t.Cleanup(cancel)
 
-	fut := future.New[*mttnet.Node]()
-	require.NoError(t, fut.Resolve(n))
-
-	return NewServer(blobs, fut.ReadOnly)
+	return NewServer(blobs, n)
 }

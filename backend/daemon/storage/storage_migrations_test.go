@@ -29,21 +29,17 @@ func TestMigrateMatchesFreshSchema(t *testing.T) {
 	err := copyDir("./testdata/seed-test-db-snapshot", tmpDir)
 	require.NoError(t, err)
 
-	oldDir, err := New(tmpDir, zap.NewNop())
+	oldDir, err := newStore(tmpDir, zap.NewNop())
 	require.NoError(t, err)
 	require.NoError(t, oldDir.Migrate())
+	defer oldDir.Close()
 
-	newDir, err := New(t.TempDir(), zap.NewNop())
+	newDir, err := newStore(t.TempDir(), zap.NewNop())
 	require.NoError(t, err)
 	require.NoError(t, newDir.Migrate())
+	defer newDir.Close()
 
-	oldDB, err := OpenSQLite(oldDir.SQLitePath(), 0, 1)
-	require.NoError(t, err)
-	defer oldDB.Close()
-
-	newDB, err := OpenSQLite(newDir.SQLitePath(), 0, 1)
-	require.NoError(t, err)
-	defer newDB.Close()
+	oldDB, newDB := oldDir.db, newDir.db
 
 	oldSchema, err := sqlitegen.IntrospectSchema(oldDB)
 	require.NoError(t, err)

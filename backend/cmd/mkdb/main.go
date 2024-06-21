@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	"seed/backend/daemon"
 	"seed/backend/daemon/storage"
@@ -39,17 +40,18 @@ func run() error {
 		return err
 	}
 
-	dir, err := storage.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped(), cfg.LogLevel)
+	dir, err := storage.Open(cfg.Base.DataDir, alice.Device.Wrapped(), core.NewMemoryKeyStore(), cfg.LogLevel)
 	if err != nil {
 		return err
 	}
+	defer dir.Close()
 
-	app, err := daemon.Load(ctx, cfg, dir, "debug")
-	if err != nil {
+	if err := dir.KeyStore().StoreKey(ctx, "main", alice.Account); err != nil {
 		return err
 	}
 
-	if err := app.RPC.Daemon.RegisterAccount(ctx, alice.Account); err != nil {
+	app, err := daemon.Load(ctx, cfg, dir)
+	if err != nil {
 		return err
 	}
 

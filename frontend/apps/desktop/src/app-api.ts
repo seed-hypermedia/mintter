@@ -1,7 +1,7 @@
-import { resolveHmIdToAppRoute } from '@shm/app/utils/navigation'
-import { NavRoute, defaultRoute, navRouteSchema } from '@shm/app/utils/routes'
-import type { AppWindowEvent } from '@shm/app/utils/window-events'
-import { API_GRPC_URL, API_HTTP_URL } from '@shm/shared'
+import {resolveHmIdToAppRoute} from '@shm/app/utils/navigation'
+import {NavRoute, defaultRoute, navRouteSchema} from '@shm/app/utils/routes'
+import type {AppWindowEvent} from '@shm/app/utils/window-events'
+import {API_GRPC_URL, API_HTTP_URL} from '@shm/shared'
 import {
   BrowserWindow,
   NativeImage,
@@ -9,24 +9,25 @@ import {
   ipcMain,
   nativeTheme,
 } from 'electron'
-import { createIPCHandler } from 'electron-trpc/main'
-import { writeFile } from 'fs-extra'
-import { decompressFromEncodedURIComponent } from 'lz-string'
+import {createIPCHandler} from 'electron-trpc/main'
+import {writeFile} from 'fs-extra'
+import {decompressFromEncodedURIComponent} from 'lz-string'
 import path from 'path'
 import z from 'zod'
-import { commentsApi } from './app-comments'
-import { diagnosisApi } from './app-diagnosis'
-import { experimentsApi } from './app-experiments'
-import { favoritesApi } from './app-favorites'
-import { gatewaySettingsApi } from './app-gateway-settings'
-import { grpcClient } from './app-grpc'
-import { invalidateQueries, queryInvalidation } from './app-invalidation'
-import { userDataPath } from './app-paths'
-import { recentsApi } from './app-recents'
-import { appSettingsApi } from './app-settings'
-import { t } from './app-trpc'
-import { uploadFile, webImportingApi } from './app-web-importing'
-import { welcomingApi } from './app-welcoming'
+import {commentsApi} from './app-comments'
+import {diagnosisApi} from './app-diagnosis'
+import {experimentsApi} from './app-experiments'
+import {favoritesApi} from './app-favorites'
+import {gatewaySettingsApi} from './app-gateway-settings'
+import {grpcClient} from './app-grpc'
+import {invalidateQueries, queryInvalidation} from './app-invalidation'
+import {userDataPath} from './app-paths'
+import {recentsApi} from './app-recents'
+import {secureStorageApi} from './app-secure-storage'
+import {appSettingsApi} from './app-settings'
+import {t} from './app-trpc'
+import {uploadFile, webImportingApi} from './app-web-importing'
+import {welcomingApi} from './app-welcoming'
 import {
   closeAppWindow,
   createAppWindow,
@@ -35,7 +36,7 @@ import {
   getFocusedWindow,
   getWindowsState,
 } from './app-windows'
-import { info, loggingDir } from './logger'
+import {info, loggingDir} from './logger'
 
 ipcMain.on('invalidate_queries', (_event, info) => {
   invalidateQueries(info)
@@ -153,6 +154,7 @@ export const router = t.router({
   favorites: favoritesApi,
   comments: commentsApi,
   gatewaySettings: gatewaySettingsApi,
+  secureStorage: secureStorageApi,
   recents: recentsApi,
   appSettings: appSettingsApi,
   closeAppWindow: t.procedure.input(z.string()).mutation(async ({input}) => {

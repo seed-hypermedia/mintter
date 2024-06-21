@@ -1,17 +1,14 @@
 package mttnet
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	p2p "seed/backend/genproto/p2p/v1alpha"
 	"seed/backend/hyper"
-	"seed/backend/hyper/hypersql"
 	"strings"
 	"time"
 
-	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -245,33 +242,34 @@ func (n *Node) handshakeInfo(ctx context.Context) (*p2p.HandshakeInfo, error) {
 }
 
 func (n *Node) getDelegation(ctx context.Context) (cid.Cid, error) {
-	var out cid.Cid
+	panic("TODO(hm24): delegations are gone")
+	// var out cid.Cid
 
-	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
-	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		acc := n.me.Account().Principal()
-		dev := n.me.DeviceKey().Principal()
+	// // TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	// if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+	// 	acc := n.me.Account().Principal()
+	// 	dev := n.me.DeviceKey().Principal()
 
-		list, err := hypersql.KeyDelegationsList(conn, acc)
-		if err != nil {
-			return err
-		}
+	// 	list, err := hypersql.KeyDelegationsList(conn, acc)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		for _, res := range list {
-			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
-				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
-				return nil
-			}
-		}
+	// 	for _, res := range list {
+	// 		if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+	// 			out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
+	// 			return nil
+	// 		}
+	// 	}
 
-		return nil
-	}); err != nil {
-		return cid.Undef, err
-	}
+	// 	return nil
+	// }); err != nil {
+	// 	return cid.Undef, err
+	// }
 
-	if !out.Defined() {
-		return out, fmt.Errorf("BUG: failed to find our own key delegation")
-	}
+	// if !out.Defined() {
+	// 	return out, fmt.Errorf("BUG: failed to find our own key delegation")
+	// }
 
-	return out, nil
+	// return out, nil
 }

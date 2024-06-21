@@ -9,20 +9,18 @@ import (
 	daemon "seed/backend/genproto/daemon/v1alpha"
 	"seed/backend/hyper"
 	"seed/backend/logging"
-	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestGenMnemonic(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 18})
+	resp, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{WordCount: 18})
 	require.NoError(t, err)
 	require.Equal(t, 18, len(resp.Mnemonic))
 }
@@ -33,14 +31,14 @@ func TestRegister(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.Register(ctx, &daemon.RegisterRequest{
+	resp, err := srv.RegisterKey(ctx, &daemon.RegisterKeyRequest{
 		Mnemonic:   testMnemonic,
 		Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
-	require.Equal(t, "z6MkrGJF5qWkmaD1XsXpxwnX7uhjfR5bAWURvrSPsF12eCAH", resp.AccountId)
+	require.Equal(t, "z6MkujA2tVCu6hcYvnuehpVZuhijVXNAqHgk3rpYtsgxebeb", resp.PublicKey)
 
-	_, err = srv.Register(ctx, &daemon.RegisterRequest{
+	_, err = srv.RegisterKey(ctx, &daemon.RegisterKeyRequest{
 		Mnemonic: testMnemonic,
 	})
 	require.Error(t, err, "calling Register more than once must fail")
@@ -68,11 +66,11 @@ func TestGetInfo_Ready(t *testing.T) {
 	ctx := context.Background()
 
 	seed, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
-		MnemonicsLength: 15,
+		WordCount: 15,
 	})
 	require.NoError(t, err)
 
-	reg, err := srv.Register(ctx, &daemon.RegisterRequest{
+	reg, err := srv.RegisterKey(ctx, &daemon.RegisterKeyRequest{
 		Mnemonic: seed.Mnemonic,
 	})
 	require.NoError(t, err)
@@ -80,11 +78,14 @@ func TestGetInfo_Ready(t *testing.T) {
 
 	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
-	require.Equal(t, srv.repo.Device().PeerID().String(), info.DeviceId)
+	require.Equal(t, srv.store.Device().PeerID().String(), info.PeerId)
 
-	acc := srv.repo.Identity().MustGet().Account()
-	require.Equal(t, acc.Principal().String(), info.AccountId)
-	testutil.ProtoEqual(t, timestamppb.New(srv.startTime), info.StartTime, "start time doesn't match")
+	// acc := srv.repo.Identity().MustGet().Account()
+
+	panic("TODO list keys and check account key is there")
+
+	// require.Equal(t, acc.Principal().String(), info.AccountId)
+	// testutil.ProtoEqual(t, timestamppb.New(srv.startTime), info.StartTime, "start time doesn't match")
 }
 
 func newTestServer(t *testing.T, name string) *Server {

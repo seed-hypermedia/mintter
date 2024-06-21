@@ -10,6 +10,7 @@ import (
 	"seed/backend/daemon"
 	"seed/backend/daemon/storage"
 	accounts "seed/backend/genproto/accounts/v1alpha"
+	groups "seed/backend/genproto/groups/v1alpha"
 	"seed/backend/hyper"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/colx"
@@ -18,6 +19,7 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/multiformats/go-multiaddr"
+	"google.golang.org/grpc"
 )
 
 // App is the site daemon app.
@@ -30,7 +32,7 @@ type App struct {
 }
 
 // Load the site daemon.
-func Load(ctx context.Context, address string, cfg config.Config, dir *storage.Dir) (*App, error) {
+func Load(ctx context.Context, address string, cfg config.Config, dir *storage.Store) (*App, error) {
 	u, err := url.Parse(address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse address: %w", err)
@@ -55,18 +57,18 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 
 	site := NewServer(address, blobsPromise.ReadOnly, nodePromise.ReadOnly, dbPromise.ReadOnly, cfg.Syncing.AllowPush)
 
-	app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
-		Path:    "/.well-known/hypermedia-site",
-		Handler: site,
-		Mode:    daemon.RouteNav,
-	})
+	app, err := daemon.Load(ctx, cfg, dir,
+		daemon.WithHTTPHandler("/.well-known/hypermedia-site", site, daemon.RouteNav),
+		daemon.WithP2PService(func(srv grpc.ServiceRegistrar) { groups.RegisterWebsiteServer(srv, site) }),
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
 	// This is some ugly stuff. Site server needs some stuff that are passed from the daemon.
 	go func() {
-		if err := dbPromise.Resolve(app.DB); err != nil {
+		if err := dbPromise.Resolve(app.Storage.DB()); err != nil {
 			panic(err)
 		}
 
@@ -84,13 +86,14 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 		}
 	}()
 
-	if _, ok := dir.Identity().Get(); !ok {
+	// If we don't have the key stored yet, we generate a new one and store it.
+	if _, err := app.Storage.KeyStore().GetKey(ctx, "main"); err != nil {
 		account, err := core.NewKeyPairRandom()
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate random account key pair: %w", err)
 		}
 
-		if err := app.RPC.Daemon.RegisterAccount(ctx, account); err != nil {
+		if err := app.RPC.Daemon.RegisterAccount(ctx, "main", account); err != nil {
 			return nil, fmt.Errorf("failed to create registration: %w", err)
 		}
 	}

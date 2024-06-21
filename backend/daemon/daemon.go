@@ -7,23 +7,18 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"runtime"
 	"strconv"
 	"time"
 
 	"seed/backend/config"
-	"seed/backend/core"
 	"seed/backend/daemon/api"
+	daemon "seed/backend/daemon/api/daemon/v1alpha"
 	"seed/backend/daemon/storage"
 	"seed/backend/hyper"
 	"seed/backend/logging"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/cleanup"
 	"seed/backend/pkg/future"
-	"seed/backend/syncing"
-	"seed/backend/wallet"
-
-	groups "seed/backend/genproto/groups/v1alpha"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
@@ -45,17 +40,54 @@ type App struct {
 
 	log *zap.Logger
 
-	Storage      *storage.Dir
-	DB           *sqlitex.Pool
+	Storage      *storage.Store
 	HTTPListener net.Listener
 	HTTPServer   *http.Server
 	GRPCListener net.Listener
 	GRPCServer   *grpc.Server
 	RPC          api.Server
-	Net          *future.ReadOnly[*mttnet.Node]
-	Syncing      *future.ReadOnly[*syncing.Service]
-	Blobs        *hyper.Storage
-	Wallet       *wallet.Service
+	Net          *mttnet.Node
+	// Syncing      *future.ReadOnly[*syncing.Service]
+	Blobs *hyper.Storage
+	// Wallet *wallet.Service
+	// TODO(hm24): add wallet and syncing service back.
+}
+
+type options struct {
+	extraHTTPHandlers []func(*Router)
+	extraP2PServices  []func(grpc.ServiceRegistrar)
+	grpc              grpcOpts
+}
+
+type grpcOpts struct {
+	serverOptions []grpc.ServerOption
+	extraServices []func(grpc.ServiceRegistrar)
+}
+
+// Option is a function that can be passed to Load to configure the app.
+type Option func(*options)
+
+// WithHTTPHandler add an extra HTTP handler to the app's HTTP server.
+func WithHTTPHandler(route string, h http.Handler, mode int) Option {
+	return func(o *options) {
+		o.extraHTTPHandlers = append(o.extraHTTPHandlers, func(r *Router) {
+			r.Handle(route, h, mode)
+		})
+	}
+}
+
+// WithP2PService adds an extra gRPC service to the P2P node.
+func WithP2PService(fn func(grpc.ServiceRegistrar)) Option {
+	return func(o *options) {
+		o.extraP2PServices = append(o.extraP2PServices, fn)
+	}
+}
+
+// WithGRPCServerOption adds an extra gRPC server option to the daemon gRPC server.
+func WithGRPCServerOption(opt grpc.ServerOption) Option {
+	return func(o *options) {
+		o.grpc.serverOptions = append(o.grpc.serverOptions, opt)
+	}
 }
 
 // Load all of the dependencies for the app, and start
@@ -71,12 +103,17 @@ type App struct {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...interface{}) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option) (a *App, err error) {
 	a = &App{
 		log:     logging.New("seed/daemon", cfg.LogLevel),
 		Storage: r,
 	}
 	a.g, ctx = errgroup.WithContext(ctx)
+
+	var opts options
+	for _, opt := range oo {
+		opt(&opts)
+	}
 
 	// If errors occurred during loading, we need to close everything
 	// we managed to initialize so far, and wait for all the goroutines
@@ -108,75 +145,59 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	otel.SetTracerProvider(tp)
 
-	a.DB, err = initSQLite(&a.clean, a.Storage.SQLitePath())
-	if err != nil {
-		return nil, err
-	}
-
-	a.Blobs = hyper.NewStorage(a.DB, logging.New("seed/hyper", cfg.LogLevel))
+	a.Blobs = hyper.NewStorage(a.Storage.DB(), logging.New("seed/hyper", cfg.LogLevel))
 	if err := a.Blobs.MaybeReindex(ctx); err != nil {
 		return nil, fmt.Errorf("failed to reindex database: %w", err)
 	}
 
-	me := a.Storage.Identity()
-
-	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs, cfg.LogLevel, extraOpts...)
+	a.Net, err = initNetwork(&a.clean, a.g, a.Storage, cfg.P2P, a.Blobs, cfg.LogLevel, opts.extraP2PServices...)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, me, a.Net, cfg.LogLevel)
+	// TODO(hm24): put the syncing back.
+	// a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.Storage.DB(), a.Blobs, me, a.Net, cfg.LogLevel)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// TODO(hm24): put the wallet back.
+	// a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage.DB(), a.Net, me, cfg.Lndhub.Mainnet)
+
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.Storage.DB(), a.Blobs, a.Net,
+		nil, // TODO(hm24): put the syncing back a.Syncing,
+		nil, // TODO(hm24): put the wallet back a.Wallet,
+		cfg.LogLevel, opts.grpc)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
-
-	extraHTTPHandlers := []GenericHandler{}
-	for _, extra := range extraOpts {
-		if httpHandler, ok := extra.(GenericHandler); ok {
-			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
-		}
-	}
-
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.LogLevel, extraOpts...)
-	if err != nil {
-		return nil, err
-	}
-
-	// Lazily initialize the file manager, because we need to wait for the P2P node to become ready.
-	fm := &lazyFileManager{fm: future.New[*mttnet.FileManager]()}
-	a.g.Go(func() error {
-		n, err := a.Net.Await(ctx)
-		if err != nil {
-			return err
-		}
-
+	var fm *mttnet.FileManager
+	{
 		bs := a.Blobs.IPFSBlockstore()
-		var e exchange.Interface = n.Bitswap()
+		var e exchange.Interface = a.Net.Bitswap()
 		if cfg.Syncing.NoDiscovery {
 			e = offline.Exchange(bs)
 		}
 
-		files := mttnet.NewFileManager(logging.New("seed/file-manager", cfg.LogLevel), bs, e, n.Provider())
-		if err := fm.fm.Resolve(files); err != nil {
-			return err
-		}
-		return nil
-	})
+		fm = mttnet.NewFileManager(logging.New("seed/file-manager", cfg.LogLevel), bs, e, a.Net.Provider())
+	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Blobs, a.Wallet, fm, extraHTTPHandlers...)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Blobs,
+		nil, // TODO(hm24) put the wallet back
+		fm, opts.extraHTTPHandlers...)
 	if err != nil {
 		return nil, err
 	}
 
 	a.setupLogging(ctx, cfg)
 
-	if !cfg.Syncing.NoPull {
-		a.g.Go(func() error {
-			return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval, false)
-		})
-	}
+	// TODO(hm24): groups are dead.
+	// if !cfg.Syncing.NoPull {
+	// 	a.g.Go(func() error {
+	// 		return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval, false)
+	// 	})
+	// }
 
 	return
 }
@@ -215,10 +236,7 @@ func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 			zap.String("dataDir", cfg.DataDir),
 		)
 
-		n, err := a.Net.Await(ctx)
-		if err != nil {
-			return err
-		}
+		n := a.Net
 
 		select {
 		case <-n.Ready():
@@ -248,170 +266,140 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initSQLite(clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
-	poolSize := int(float64(runtime.NumCPU()) / 2)
-	if poolSize == 0 {
-		poolSize = 2
-	}
-
-	pool, err := storage.OpenSQLite(path, 0, poolSize)
-	if err != nil {
-		return nil, err
-	}
-
-	clean.Add(pool)
-
-	return pool, nil
-}
-
 func initNetwork(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
-	me *future.ReadOnly[core.Identity],
+	store *storage.Store,
 	cfg config.P2P,
-	db *sqlitex.Pool,
 	blobs *hyper.Storage,
 	LogLevel string,
-	extraServers ...interface{},
-) (*future.ReadOnly[*mttnet.Node], error) {
-	f := future.New[*mttnet.Node]()
-
+	extraServers ...func(grpc.ServiceRegistrar),
+) (*mttnet.Node, error) {
+	started := make(chan struct{})
 	done := make(chan struct{})
 	ctx, cancel := context.WithCancel(context.Background())
 	clean.AddErrFunc(func() error {
 		cancel()
 		// Wait until the network fully stops if it was ever started.
-		if _, ok := f.Get(); ok {
-			<-done
-		}
-
-		return nil
-	})
-
-	g.Go(func() error {
-		id, err := me.Await(ctx)
-		if err != nil {
-			return err
-		}
-
-		n, err := mttnet.New(cfg, db, blobs, id, logging.New("seed/network", LogLevel), extraServers...)
-		if err != nil {
-			return err
-		}
-
-		g.Go(func() error {
-			err := n.Start(ctx)
-			close(done)
-			return err
-		})
-
 		select {
-		case <-n.Ready():
-		case <-ctx.Done():
-			return ctx.Err()
+		case <-started:
+			select {
+			case <-done:
+				return nil
+			}
+		default:
+			return nil
 		}
-
-		if err := f.Resolve(n); err != nil {
-			return err
-		}
-
-		return nil
 	})
 
-	return f.ReadOnly, nil
-}
+	n, err := mttnet.New(cfg, store.Device(), store.KeyStore(), store.DB(), blobs, logging.New("seed/network", LogLevel))
+	if err != nil {
+		return nil, err
+	}
 
-func initSyncing(
-	cfg config.Syncing,
-	clean *cleanup.Stack,
-	g *errgroup.Group,
-	db *sqlitex.Pool,
-	blobs *hyper.Storage,
-	me *future.ReadOnly[core.Identity],
-	net *future.ReadOnly[*mttnet.Node],
-	LogLevel string,
-) (*future.ReadOnly[*syncing.Service], error) {
-	f := future.New[*syncing.Service]()
-
-	done := make(chan struct{})
-	ctx, cancel := context.WithCancel(context.Background())
-	clean.AddErrFunc(func() error {
-		cancel()
-		// Wait for syncing service to stop fully if it was ever started.
-		if _, ok := f.Get(); ok {
-			<-done
-		}
-		return nil
-	})
+	for _, svc := range extraServers {
+		n.RegisterRPCService(svc)
+	}
 
 	g.Go(func() error {
-		id, err := me.Await(ctx)
-		if err != nil {
-			return err
-		}
-
-		node, err := net.Await(ctx)
-		if err != nil {
-			return err
-		}
-
-		svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), id, db, blobs, node)
-		if cfg.NoPull {
-			close(done)
-		} else {
-			g.Go(func() error {
-				err := svc.Start(ctx)
-				close(done)
-				return err
-			})
-		}
-
-		if err := f.Resolve(svc); err != nil {
-			return err
-		}
-
-		return nil
+		close(started)
+		err := n.Start(ctx)
+		close(done)
+		return err
 	})
 
-	return f.ReadOnly, nil
+	select {
+	case <-n.Ready():
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+
+	return n, nil
 }
+
+// TODO(hm24): put the syncing back.
+// func initSyncing(
+// 	cfg config.Syncing,
+// 	clean *cleanup.Stack,
+// 	g *errgroup.Group,
+// 	db *sqlitex.Pool,
+// 	blobs *hyper.Storage,
+// 	me *future.ReadOnly[core.Identity],
+// 	net *future.ReadOnly[*mttnet.Node],
+// 	LogLevel string,
+// ) (*future.ReadOnly[*syncing.Service], error) {
+// 	f := future.New[*syncing.Service]()
+
+// 	done := make(chan struct{})
+// 	ctx, cancel := context.WithCancel(context.Background())
+// 	clean.AddErrFunc(func() error {
+// 		cancel()
+// 		// Wait for syncing service to stop fully if it was ever started.
+// 		if _, ok := f.Get(); ok {
+// 			<-done
+// 		}
+// 		return nil
+// 	})
+
+// 	g.Go(func() error {
+// 		id, err := me.Await(ctx)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		node, err := net.Await(ctx)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), id, db, blobs, node)
+// 		if cfg.NoPull {
+// 			close(done)
+// 		} else {
+// 			g.Go(func() error {
+// 				err := svc.Start(ctx)
+// 				close(done)
+// 				return err
+// 			})
+// 		}
+
+// 		if err := f.Resolve(svc); err != nil {
+// 			return err
+// 		}
+
+// 		return nil
+// 	})
+
+// 	return f.ReadOnly, nil
+// }
 
 func initGRPC(
 	ctx context.Context,
 	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
-	repo *storage.Dir,
+	repo *storage.Store,
 	pool *sqlitex.Pool,
 	blobs *hyper.Storage,
-	node *future.ReadOnly[*mttnet.Node],
-	sync *future.ReadOnly[*syncing.Service],
-	wallet *wallet.Service,
+	node *mttnet.Node,
+	sync any, // TODO(hm24): put the syncing back any*future.ReadOnly[*syncing.Service],
+	wallet daemon.Wallet,
 	LogLevel string,
-	extras ...interface{},
+	opts grpcOpts,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
-	opts := []grpc.ServerOption{}
-	for _, extra := range extras {
-		if opt, ok := extra.(grpc.ServerOption); ok {
-			opts = append(opts, opt)
-		}
-	}
-	srv = grpc.NewServer(opts...)
+	srv = grpc.NewServer(opts.serverOptions...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, LogLevel)
+	rpc = api.New(ctx, repo, pool, blobs, node, wallet, LogLevel)
 	rpc.Register(srv)
 	reflection.Register(srv)
 
-	for _, extra := range extras {
-		if extraServer, ok := extra.(groups.WebsiteServer); ok {
-			groups.RegisterWebsiteServer(srv, extraServer)
-			break
-		}
+	for _, extra := range opts.extraServices {
+		extra(srv)
 	}
 
 	g.Go(func() error {

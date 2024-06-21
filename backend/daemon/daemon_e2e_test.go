@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/rand"
 	"seed/backend/core"
+	"seed/backend/daemon/storage"
 	accounts "seed/backend/genproto/accounts/v1alpha"
 	daemon "seed/backend/genproto/daemon/v1alpha"
 	documents "seed/backend/genproto/documents/v1alpha"
@@ -17,13 +18,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestDaemonSmoke(t *testing.T) {
@@ -40,39 +39,34 @@ func TestDaemonSmoke(t *testing.T) {
 	dc := daemon.NewDaemonClient(conn)
 	nc := networking.NewNetworkingClient(conn)
 
+	_ = nc
+
 	acc, err := ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.Error(t, err)
 	require.Nil(t, acc)
 
-	seed, err := dc.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
-		MnemonicsLength: 12,
-	})
+	seed, err := dc.GenMnemonic(ctx, &daemon.GenMnemonicRequest{})
 	require.NoError(t, err)
 
-	reg, err := dc.Register(ctx, &daemon.RegisterRequest{
+	reg, err := dc.RegisterKey(ctx, &daemon.RegisterKeyRequest{
+		Name:     "main",
 		Mnemonic: seed.Mnemonic,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, reg)
-	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
+	require.NotEqual(t, "", reg.PublicKey, "account ID must be generated after registration")
 
-	_, err = core.DecodePrincipal(reg.AccountId)
+	_, err = core.DecodePrincipal(reg.PublicKey)
 	require.NoError(t, err, "account must have principal encoding")
 
-	_, err = dmn.Storage.Identity().Await(ctx)
-	require.NoError(t, err)
-
-	_, err = dmn.Net.Await(ctx)
-	require.NoError(t, err)
-
-	me := dmn.Storage.Identity().MustGet()
-	require.Equal(t, me.Account().String(), reg.AccountId)
+	me := must.Do2(dmn.Storage.KeyStore().GetKey(ctx, "main"))
+	require.Equal(t, me.String(), reg.PublicKey)
 
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
-	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
+	require.Equal(t, reg.PublicKey, acc.Id, "must return account after registration")
 	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
-	require.Equal(t, acc.Id, me.Account().String())
+	require.Equal(t, acc.Id, me.String())
 
 	profileUpdate := &accounts.Profile{
 		Alias:  "fulanito",
@@ -90,18 +84,20 @@ func TestDaemonSmoke(t *testing.T) {
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
 
-	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
-	require.NoError(t, err)
-	require.NotNil(t, infoResp)
-	require.Equal(t, me.Account().String(), infoResp.AccountId)
-	require.Equal(t, me.DeviceKey().PeerID().String(), infoResp.DeviceId)
+	panic("TODO: list signing keys and check our primary key is registered")
 
-	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		DeviceId: infoResp.DeviceId,
-	})
-	require.NoError(t, err)
-	require.NotNil(t, peerInfo)
-	require.Equal(t, me.Account().String(), peerInfo.AccountId)
+	// infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
+	// require.NoError(t, err)
+	// require.NotNil(t, infoResp)
+	// require.Equal(t, me.Account().String(), infoResp.AccountId)
+	// require.Equal(t, me.DeviceKey().PeerID().String(), infoResp.DeviceId)
+
+	// peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
+	// 	DeviceId: infoResp.DeviceId,
+	// })
+	// require.NoError(t, err)
+	// require.NotNil(t, peerInfo)
+	// require.Equal(t, me.Account().String(), peerInfo.AccountId)
 }
 
 func TestDaemonListPublications(t *testing.T) {
@@ -141,6 +137,14 @@ func TestDaemonPushPublication(t *testing.T) {
 	require.Error(t, err)
 }
 
+func mustGetMainKey(s *storage.Store) core.KeyPair {
+	k, err := s.KeyStore().GetKey(context.Background(), "main")
+	if err != nil {
+		panic(err)
+	}
+	return k
+}
+
 func TestMergeE2E(t *testing.T) {
 	t.Parallel()
 	acfg := makeTestConfig(t)
@@ -164,8 +168,8 @@ func TestMergeE2E(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
-	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, mustGetMainKey(bob.Storage).Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, mustGetMainKey(alice.Storage).Principal()))
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -193,8 +197,8 @@ func TestMergeE2E(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, mergedPub.Document.PreviousVersion, secondVersion.Version)
 	require.Contains(t, mergedPub.Document.PreviousVersion, forkedVersion.Version)
-	require.Contains(t, mergedPub.Document.Editors, bob.Storage.Identity().MustGet().Account().String())
-	require.Contains(t, mergedPub.Document.Editors, alice.Storage.Identity().MustGet().Account().String())
+	require.Contains(t, mergedPub.Document.Editors, mustGetMainKey(bob.Storage).String())
+	require.Contains(t, mergedPub.Document.Editors, mustGetMainKey(alice.Storage).String())
 }
 
 func TestRebaseE2E(t *testing.T) {
@@ -220,8 +224,8 @@ func TestRebaseE2E(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
-	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, mustGetMainKey(bob.Storage).Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, mustGetMainKey(alice.Storage).Principal()))
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -253,8 +257,8 @@ func TestRebaseE2E(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, rebasedDoc.PreviousVersion, version1.Version)
 	require.Contains(t, rebasedDoc.PreviousVersion, version2.Version)
-	require.Contains(t, rebasedDoc.Editors, bob.Storage.Identity().MustGet().Account().String())
-	require.Contains(t, rebasedDoc.Editors, alice.Storage.Identity().MustGet().Account().String())
+	require.Contains(t, rebasedDoc.Editors, mustGetMainKey(bob.Storage).String())
+	require.Contains(t, rebasedDoc.Editors, mustGetMainKey(alice.Storage).String())
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
@@ -268,22 +272,22 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	var alice *App
 	{
 		cfg := makeTestConfig(t)
-		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		cfg.P2P.BootstrapPeers = carol.Net.Libp2p().AddrsFull()
 		alice = makeTestApp(t, "alice", cfg, true)
 	}
 
 	var bob *App
 	{
 		cfg := makeTestConfig(t)
-		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		cfg.P2P.BootstrapPeers = carol.Net.Libp2p().AddrsFull()
 		bob = makeTestApp(t, "bob", cfg, true)
 	}
 
 	// Make sure bob and alice don't know each other.
-	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(alice.Storage.Device().ID()))
-	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(alice.Storage.Device().ID())
-	require.NoError(t, alice.Net.MustGet().Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
-	alice.Net.MustGet().Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
+	require.NoError(t, bob.Net.Libp2p().Network().ClosePeer(alice.Storage.Device().ID()))
+	bob.Net.Libp2p().Peerstore().RemovePeer(alice.Storage.Device().ID())
+	require.NoError(t, alice.Net.Libp2p().Network().ClosePeer(bob.Storage.Device().ID()))
+	alice.Net.Libp2p().Peerstore().RemovePeer(bob.Storage.Device().ID())
 
 	pub := publishDocument(t, ctx, alice, "", "", "")
 
@@ -313,8 +317,8 @@ func TestAPIDeleteAndRestoreEntity(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
-	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, mustGetMainKey(bob.Storage).Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, mustGetMainKey(alice.Storage).Principal()))
 
 	pub := publishDocument(t, ctx, alice, "", "", "")
 	linkedDoc := publishDocument(t, ctx, alice, pub.Document.Id+"?v="+pub.Version+"#"+pub.Document.Children[0].Block.Id, "", "")
@@ -591,8 +595,8 @@ func TestPeriodicSync(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bob.Storage.Identity().MustGet().Account().Principal()))
-	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Storage.Identity().MustGet().Account().Principal()))
+	require.NoError(t, alice.Blobs.SetAccountTrust(ctx, mustGetMainKey(bob.Storage).Principal()))
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, mustGetMainKey(alice.Storage).Principal()))
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -611,41 +615,41 @@ func TestPeriodicSync(t *testing.T) {
 	checkListAccounts(t, bob, alice, "bob to alice")
 }
 
-func TestMultiDevice(t *testing.T) {
-	t.Parallel()
+// func TestMultiDevice(t *testing.T) {
+// 	t.Parallel()
 
-	alice1 := makeTestApp(t, "alice", makeTestConfig(t), true)
-	alice2 := makeTestApp(t, "alice-2", makeTestConfig(t), true)
-	ctx := context.Background()
+// 	alice1 := makeTestApp(t, "alice", makeTestConfig(t), true)
+// 	alice2 := makeTestApp(t, "alice-2", makeTestConfig(t), true)
+// 	ctx := context.Background()
 
-	_, err := alice1.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
-		Addrs: getAddrs(t, alice2),
-	})
-	require.NoError(t, err)
-	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
-	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+// 	_, err := alice1.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+// 		Addrs: getAddrs(t, alice2),
+// 	})
+// 	require.NoError(t, err)
+// 	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+// 	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
-	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
+// 	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
 
-	{
-		sr := must.Do2(alice1.Syncing.MustGet().SyncAll(ctx))
-		require.Equal(t, int64(1), sr.NumSyncOK)
-		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID()}, sr.Peers)
-	}
+// 	{
+// 		sr := must.Do2(alice1.Syncing.MustGet().SyncAll(ctx))
+// 		require.Equal(t, int64(1), sr.NumSyncOK)
+// 		require.Equal(t, int64(0), sr.NumSyncFailed)
+// 		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID()}, sr.Peers)
+// 	}
 
-	{
-		sr := must.Do2(alice2.Syncing.MustGet().SyncAll(ctx))
-		require.Equal(t, int64(1), sr.NumSyncOK)
-		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID()}, sr.Peers)
-	}
-	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
-	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
-	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
+// 	{
+// 		sr := must.Do2(alice2.Syncing.MustGet().SyncAll(ctx))
+// 		require.Equal(t, int64(1), sr.NumSyncOK)
+// 		require.Equal(t, int64(0), sr.NumSyncFailed)
+// 		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID()}, sr.Peers)
+// 	}
+// 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+// 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+// 	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
 
-	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
-}
+// 	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
+// }
 
 func TestNetworkingListPeers(t *testing.T) {
 	t.Parallel()
@@ -659,8 +663,8 @@ func TestNetworkingListPeers(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	pid := bob.Storage.Identity().MustGet().DeviceKey().PeerID()
-	acc := bob.Storage.Identity().MustGet().Account().Principal()
+	pid := bob.Storage.Device().PeerID()
+	acc := must.Do2(bob.Storage.KeyStore().GetKey(ctx, "main")).Principal()
 	pList, err := alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.Peers, 1)
@@ -710,7 +714,7 @@ func TestAccountRootDocument(t *testing.T) {
 }
 
 func getAddrs(t *testing.T, a *App) []string {
-	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
+	return mttnet.AddrInfoToStrings(a.Net.AddrInfo())
 }
 
 func publishDocument(t *testing.T, ctx context.Context, publisher *App, link string, DocumentID string, DocumentVersion string) *documents.Publication {

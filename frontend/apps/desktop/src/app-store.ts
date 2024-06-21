@@ -12,3 +12,8 @@ export const commentDraftStore = new Store<Record<string, any>>({
   name: 'CommentDraft',
   cwd: userDataPath,
 })
+
+export const secureStore = new Store<Record<string, any>>({
+  name: 'SecureStore',
+  cwd: userDataPath,
+})

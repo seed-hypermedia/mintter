@@ -11,6 +11,7 @@ import (
 	_ "net/http/pprof"
 
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/daemon"
 	"seed/backend/daemon/storage"
 	"seed/backend/logging"
@@ -61,25 +62,33 @@ func main() {
 			return err
 		}
 
-		log := logging.New("seedd", cfg.LogLevel)
+		log := logging.New("seed-daemon", cfg.LogLevel)
 		if err := sentry.Init(sentry.ClientOptions{}); err != nil {
 			log.Debug("SentryInitError", zap.Error(err))
 		} else {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		dir, err := storage.InitRepo(cfg.Base.DataDir, nil, cfg.LogLevel)
+		keyStoreEnvironment := cfg.P2P.TestnetName
+		if keyStoreEnvironment == "" {
+			keyStoreEnvironment = "main"
+		}
+		ks := core.NewOSKeyStore(keyStoreEnvironment)
+
+		dir, err := storage.Open(cfg.Base.DataDir, nil, ks, cfg.LogLevel)
 		if err != nil {
 			return err
 		}
-		app, err := daemon.Load(ctx, cfg, dir, cfg.LogLevel,
-			grpc.ChainUnaryInterceptor(
+		defer dir.Close()
+
+		app, err := daemon.Load(ctx, cfg, dir,
+			daemon.WithGRPCServerOption(grpc.ChainUnaryInterceptor(
 				otelgrpc.UnaryServerInterceptor(),
 				daemon.GRPCDebugLoggingInterceptor(),
-			),
-			grpc.ChainStreamInterceptor(
+			)),
+			daemon.WithGRPCServerOption(grpc.ChainStreamInterceptor(
 				otelgrpc.StreamServerInterceptor(),
-			),
+			)),
 		)
 		if err != nil {
 			return err

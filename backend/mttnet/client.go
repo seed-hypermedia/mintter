@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"seed/backend/core"
 	p2p "seed/backend/genproto/p2p/v1alpha"
 	"sync"
 	"time"
@@ -26,7 +25,7 @@ import (
 // Users are responsible to call Close() for graceful shutdown.
 type Client struct {
 	opts  []grpc.DialOption
-	me    core.Identity
+	me    peer.ID
 	host  host.Host
 	mu    sync.Mutex
 	conns map[peer.ID]*singleConn
@@ -46,7 +45,7 @@ func (sc *singleConn) Close() error {
 }
 
 // newClient creates a new Client using the provided libp2p host.
-func newClient(me core.Identity, h host.Host, protoID protocol.ID) *Client {
+func newClient(me peer.ID, h host.Host, protoID protocol.ID) *Client {
 	return &Client{
 		opts: []grpc.DialOption{
 			grpc.WithContextDialer(func(ctx context.Context, target string) (net.Conn, error) {
@@ -97,7 +96,7 @@ func (c *Client) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, e
 	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
 	defer cancel()
 
-	if c.me.DeviceKey().ID() == pid {
+	if c.me == pid {
 		return nil, errDialSelf
 	}
 

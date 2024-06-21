@@ -9,7 +9,6 @@ import (
 	accounts "seed/backend/genproto/accounts/v1alpha"
 	"seed/backend/hyper"
 	"seed/backend/logging"
-	"seed/backend/pkg/future"
 	"seed/backend/testutil"
 	"testing"
 	"time"
@@ -130,8 +129,8 @@ func newTestServer(t *testing.T, name string) *Server {
 	_, err := daemon.Register(ctx, blobs, u.Account, u.Device.PublicKey, time.Now().UTC().Add(-1*time.Hour))
 	require.NoError(t, err)
 
-	fut := future.New[core.Identity]()
-	require.NoError(t, fut.Resolve(u.Identity))
+	ks := core.NewMemoryKeyStore()
+	require.NoError(t, ks.StoreKey(ctx, "main", u.Account))
 
-	return NewServer(fut.ReadOnly, blobs)
+	return NewServer(ks, blobs)
 }

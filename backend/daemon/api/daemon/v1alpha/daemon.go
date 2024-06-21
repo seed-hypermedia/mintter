@@ -8,7 +8,6 @@ import (
 	"seed/backend/core"
 	daemon "seed/backend/genproto/daemon/v1alpha"
 	"seed/backend/hyper"
-	"seed/backend/pkg/future"
 	sync "sync"
 	"time"
 
@@ -19,11 +18,10 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// Repo is a subset of the [ondisk.OnDisk] used by this server.
-type Repo interface {
+// Storage is a subset of the [ondisk.OnDisk] used by this server.
+type Storage interface {
 	Device() core.KeyPair
-	Identity() *future.ReadOnly[core.Identity]
-	CommitAccount(core.PublicKey) error
+	KeyStore() core.KeyStore
 }
 
 // Wallet is a subset of the wallet service used by this server.
@@ -33,8 +31,8 @@ type Wallet interface {
 
 // Server implements the Daemon gRPC API.
 type Server struct {
+	store     Storage
 	blobs     *hyper.Storage
-	repo      Repo
 	startTime time.Time
 	wallet    Wallet
 
@@ -44,10 +42,10 @@ type Server struct {
 }
 
 // NewServer creates a new Server.
-func NewServer(r Repo, blobs *hyper.Storage, w Wallet, syncFunc func() error) *Server {
+func NewServer(store Storage, blobs *hyper.Storage, w Wallet, syncFunc func() error) *Server {
 	return &Server{
+		store:         store,
 		blobs:         blobs,
-		repo:          r,
 		startTime:     time.Now(),
 		wallet:        w,
 		forceSyncFunc: syncFunc,
@@ -56,7 +54,11 @@ func NewServer(r Repo, blobs *hyper.Storage, w Wallet, syncFunc func() error) *S
 
 // GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.
 func (srv *Server) GenMnemonic(_ context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
-	words, err := core.NewBIP39Mnemonic(req.MnemonicsLength)
+	if req.WordCount == 0 {
+		req.WordCount = 12
+	}
+
+	words, err := core.NewBIP39Mnemonic(uint32(req.WordCount))
 	if err != nil {
 		return nil, err
 	}
@@ -64,15 +66,20 @@ func (srv *Server) GenMnemonic(_ context.Context, req *daemon.GenMnemonicRequest
 	return &daemon.GenMnemonicResponse{Mnemonic: words}, nil
 }
 
-// Register implement the corresponding gRPC method.
-func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
+// RegisterKey implement the corresponding gRPC method.
+func (srv *Server) RegisterKey(ctx context.Context, req *daemon.RegisterKeyRequest) (*daemon.NamedKey, error) {
+	// We only want one concurrent register request to happen.
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
-	// Check if account already exist
+	// TODO(hm24): Simply make name required when multiple keys are supported across the whole app.
 	{
-		if _, ok := srv.repo.Identity().Get(); ok {
-			return nil, status.Errorf(codes.AlreadyExists, "account is already registered")
+		if req.Name == "" {
+			req.Name = "main"
+		}
+
+		if req.Name != "main" {
+			return nil, status.Error(codes.InvalidArgument, "TODO: support for multiple keys is not implemented yet")
 		}
 	}
 
@@ -81,36 +88,74 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create account: %v", err)
 	}
 
-	if err := srv.RegisterAccount(ctx, acc); err != nil {
+	if err := srv.RegisterAccount(ctx, req.Name, acc); err != nil {
 		return nil, err
 	}
 
-	return &daemon.RegisterResponse{
-		AccountId: acc.String(),
+	return &daemon.NamedKey{
+		PublicKey: acc.Principal().String(),
+		Name:      req.Name,
+		AccountId: "a/" + acc.Principal().String(), // TODO(burdiyan): finalize the decision about what Account ID should look like.
 	}, nil
 }
 
-// RegisterAccount performs registration given an existing account key pair.
-func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error {
-	_, err := RegisterWithRepo(ctx, srv.repo, srv.blobs, acc, srv.repo.Device().PublicKey, time.Now().UTC())
+// DeleteKey implement the corresponding gRPC method.
+func (srv *Server) DeleteKey(ctx context.Context, req *daemon.DeleteKeyRequest) (*emptypb.Empty, error) {
+	return nil, srv.store.KeyStore().DeleteKey(ctx, req.Name)
+}
+
+// ListKeys implement the corresponding gRPC method.
+func (srv *Server) ListKeys(ctx context.Context, req *daemon.ListKeysRequest) (*daemon.ListKeysResponse, error) {
+	//var ret []*daemon.NamedKey
+	out := &daemon.ListKeysResponse{}
+	keys, err := srv.store.KeyStore().ListKeys(ctx)
 	if err != nil {
+		return out, err
+	}
+	out.Keys = make([]*daemon.NamedKey, 0, len(keys))
+	for _, key := range keys {
+		out.Keys = append(out.Keys, &daemon.NamedKey{
+			Name:      key.Name,
+			PublicKey: key.PublicKey.String(),
+			AccountId: "a/" + key.PublicKey.String(), // TODO(juligasa): finalize the decision about what Account ID should look like.
+		})
+	}
+	return out, nil
+}
+
+// UpdateKey implement the corresponding gRPC method.
+func (srv *Server) UpdateKey(ctx context.Context, req *daemon.UpdateKeyRequest) (*daemon.NamedKey, error) {
+	if err := srv.store.KeyStore().ChangeKeyName(ctx, req.CurrentName, req.NewName); err != nil {
+		return &daemon.NamedKey{}, err
+	}
+
+	kp, err := srv.store.KeyStore().GetKey(ctx, req.NewName)
+	if err != nil {
+		return &daemon.NamedKey{}, err
+	}
+
+	return &daemon.NamedKey{
+		PublicKey: kp.PublicKey.String(),
+		Name:      req.NewName,
+		AccountId: "a/" + kp.PublicKey.String(), // TODO(burdiyan): finalize the decision about what Account ID should look like.}, nil
+	}, nil
+}
+
+func (srv *Server) RegisterAccount(ctx context.Context, name string, kp core.KeyPair) error {
+	if err := srv.store.KeyStore().StoreKey(ctx, name, kp); err != nil {
 		return err
 	}
 
-	if err := srv.wallet.ConfigureSeedLNDHub(ctx, acc); err != nil {
-		return fmt.Errorf("failed to configure wallet when registering: %w", err)
+	if _, err := Register(ctx, srv.blobs, kp, kp.PublicKey, time.Now().UTC()); err != nil {
+		return err
 	}
-
+	// TODO(hm24): Uncomment this when introducing wallet again
+	/*
+		if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
+			return fmt.Errorf("failed to configure wallet when registering: %w", err)
+		}
+	*/
 	return nil
-}
-
-// RegisterWithRepo creates key delegation from account to device and stores the keys in files.
-func RegisterWithRepo(ctx context.Context, repo Repo, bs *hyper.Storage, acc core.KeyPair, device core.PublicKey, at time.Time) (cid.Cid, error) {
-	if err := repo.CommitAccount(acc.PublicKey); err != nil {
-		return cid.Undef, err
-	}
-
-	return Register(ctx, bs, acc, device, at)
 }
 
 // Register creates key delegation from account to device.
@@ -134,14 +179,8 @@ func Register(ctx context.Context, bs *hyper.Storage, account core.KeyPair, devi
 
 // GetInfo implements the corresponding gRPC method.
 func (srv *Server) GetInfo(context.Context, *daemon.GetInfoRequest) (*daemon.Info, error) {
-	me, ok := srv.repo.Identity().Get()
-	if !ok {
-		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
-	}
-
 	resp := &daemon.Info{
-		AccountId: me.Account().Principal().String(),
-		DeviceId:  srv.repo.Device().PeerID().String(),
+		PeerId:    srv.store.Device().PeerID().String(),
 		StartTime: timestamppb.New(srv.startTime),
 	}
 

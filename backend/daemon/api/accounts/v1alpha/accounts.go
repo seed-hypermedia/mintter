@@ -10,7 +10,6 @@ import (
 	accounts "seed/backend/genproto/accounts/v1alpha"
 	"seed/backend/hyper"
 	"seed/backend/hyper/hypersql"
-	"seed/backend/pkg/future"
 	"strings"
 
 	"crawshaw.io/sqlite"
@@ -24,14 +23,14 @@ type Profile = accounts.Profile
 
 // Server implement the accounts gRPC server.
 type Server struct {
-	me    *future.ReadOnly[core.Identity]
+	keys  core.KeyStore
 	blobs *hyper.Storage
 }
 
 // NewServer creates a new Server.
-func NewServer(id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
+func NewServer(ks core.KeyStore, blobs *hyper.Storage) *Server {
 	return &Server{
-		me:    id,
+		keys:  ks,
 		blobs: blobs,
 	}
 }
@@ -44,11 +43,11 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 
 	var aid core.Principal
 	if in.Id == "" {
-		me, err := srv.getMe()
+		me, err := srv.keys.GetKey(ctx, "main")
 		if err != nil {
 			return nil, err
 		}
-		aid = me.Account().Principal()
+		aid = me.Principal()
 	} else {
 		p, err := core.DecodePrincipal(in.Id)
 		if err != nil {
@@ -130,21 +129,18 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	return acc, nil
 }
 
-func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) (cid.Cid, error) {
+func getDelegation(ctx context.Context, account, device core.Principal, blobs *hyper.Storage) (cid.Cid, error) {
 	var out cid.Cid
 
 	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
 	if err := blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		acc := me.Account().Principal()
-		dev := me.DeviceKey().Principal()
-
-		list, err := hypersql.KeyDelegationsList(conn, acc)
+		list, err := hypersql.KeyDelegationsList(conn, account)
 		if err != nil {
 			return err
 		}
 
 		for _, res := range list {
-			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+			if bytes.Equal(device, res.KeyDelegationsViewDelegate) {
 				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
 				return nil
 			}
@@ -179,8 +175,8 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 var rootDocMatch = regexp.MustCompile(`^hm:\/\/d\/[a-zA-Z0-9]+$`)
 
 // UpdateProfile is public so it can be called from sites.
-func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
-	eid := hyper.EntityID("hm://a/" + me.Account().Principal().String())
+func UpdateProfile(ctx context.Context, me core.KeyPair, blobs *hyper.Storage, in *accounts.Profile) error {
+	eid := hyper.EntityID("hm://a/" + me.Principal().String())
 
 	e, err := blobs.LoadEntity(ctx, eid)
 	if err != nil {
@@ -238,12 +234,12 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		return nil
 	}
 
-	del, err := getDelegation(ctx, me, blobs)
+	del, err := getDelegation(ctx, me.Principal(), me.Principal(), blobs)
 	if err != nil {
 		return err
 	}
 
-	change, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch)
+	change, err := e.CreateChange(e.NextTimestamp(), me, del, patch)
 	if err != nil {
 		return err
 	}
@@ -257,38 +253,7 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 
 // SetAccountTrust implements the corresponding gRPC method.
 func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountTrustRequest) (*accounts.Account, error) {
-	acc, err := core.DecodePrincipal(in.Id)
-	if err != nil {
-		return nil, err
-	}
-	if in.IsTrusted {
-		err = srv.blobs.SetAccountTrust(ctx, acc)
-	} else {
-		me, ok := srv.me.Get()
-		if !ok {
-			return nil, fmt.Errorf("account not initialized yet")
-		}
-		if acc.String() == me.Account().Principal().String() {
-			return nil, fmt.Errorf("cannot untrust self")
-		}
-		err = srv.blobs.UnsetAccountTrust(ctx, acc)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	updatedAcc, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
-		Id: acc.String(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	if updatedAcc.IsTrusted != in.IsTrusted {
-		return nil, fmt.Errorf("Expected trusted %t but got %t", in.IsTrusted, updatedAcc.IsTrusted)
-	}
-
-	return updatedAcc, nil
+	panic("TODO: remove account trust as we are getting rid of it")
 }
 
 // ListAccounts implements the corresponding gRPC method.
@@ -315,10 +280,10 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	return resp, nil
 }
 
-func (srv *Server) getMe() (core.Identity, error) {
-	me, ok := srv.me.Get()
-	if !ok {
-		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
+func (srv *Server) getMe() (core.KeyPair, error) {
+	kp, err := srv.keys.GetKey(context.Background(), "main")
+	if err != nil {
+		return core.KeyPair{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet: %v", err)
 	}
-	return me, nil
+	return kp, nil
 }

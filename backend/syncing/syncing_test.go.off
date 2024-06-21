@@ -68,7 +68,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 	cfg.P2P.NoRelay = true
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoMetrics = true
-	n, err := mttnet.New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), "debug")
+	n, err := mttnet.New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

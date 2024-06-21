@@ -2,33 +2,29 @@ package daemontest
 
 import (
 	"os"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	"seed/backend/daemon/storage"
 	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 // MakeTestRepo creates a new testing repository.
-func MakeTestRepo(t *testing.T, tt coretest.Tester) *storage.Dir {
+func MakeTestRepo(t *testing.T, tt coretest.Tester) *storage.Store {
 	t.Helper()
 
 	dir := testutil.MakeRepoPath(t)
 
-	log, err := zap.NewDevelopment(zap.WithCaller(false))
-	require.NoError(t, err)
+	ks := core.NewMemoryKeyStore()
 
-	repo, err := storage.NewWithDeviceKey(dir, log, tt.Device.Wrapped())
+	repo, err := storage.Open(dir, tt.Device.Wrapped(), ks, "debug")
 	require.NoError(t, err)
 	t.Cleanup(func() {
+		repo.Close()
 		require.NoError(t, os.RemoveAll(dir))
-		err := log.Sync()
-		_ = err
 	})
-
-	require.NoError(t, repo.Migrate())
 
 	return repo
 }

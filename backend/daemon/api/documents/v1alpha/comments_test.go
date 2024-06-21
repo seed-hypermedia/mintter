@@ -3,6 +3,7 @@ package documents
 import (
 	"context"
 	. "seed/backend/genproto/documents/v1alpha"
+	"seed/backend/pkg/must"
 	"seed/backend/testutil"
 	"testing"
 
@@ -43,9 +44,11 @@ func TestCommentsSmoke(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	me := must.Do2(api.keys.GetKey(ctx, "main"))
+
 	require.Equal(t, target, cmt.Target, "top-level comment must target document")
 	require.NotNil(t, cmt.CreateTime, "create time must be set")
-	require.Equal(t, api.me.MustGet().Account().String(), cmt.Author, "comment author must match my node")
+	require.Equal(t, me.String(), cmt.Author, "comment author must match my node")
 	require.Equal(t, "", cmt.ThreadRoot, "top-level comment must not have thread root")
 	require.Equal(t, "", cmt.RepliedComment, "top-level comment must not have replied comment")
 

@@ -3,6 +3,7 @@ package mttnet
 import (
 	"context"
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	accounts "seed/backend/daemon/api/accounts/v1alpha"
 	daemon "seed/backend/daemon/api/daemon/v1alpha"
@@ -50,7 +51,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	// TODO(burdiyan): because key delegations are not changes to the account entity, it needs a profile update
 	// so that we can share our own account with other peers. This should be fixed, but in practice shouldn't
 	// cause major issues.
-	require.NoError(t, accounts.UpdateProfile(context.Background(), u.Identity, blobs, &accounts.Profile{
+	require.NoError(t, accounts.UpdateProfile(context.Background(), u.Account, blobs, &accounts.Profile{
 		Alias: name,
 		Bio:   "Test Seed user",
 	}))
@@ -61,7 +62,10 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), "debug")
+	ks := core.NewMemoryKeyStore()
+	require.NoError(t, ks.StoreKey(context.Background(), "main", u.Account))
+
+	n, err := New(cfg, u.Device, ks, db, blobs, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

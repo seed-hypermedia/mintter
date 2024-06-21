@@ -116,7 +116,8 @@ type Node struct {
 	log      *zap.Logger
 	blobs    *hyper.Storage
 	db       *sqlitex.Pool
-	me       core.Identity
+	device   core.KeyPair
+	keys     core.KeyStore
 	cfg      config.P2P
 	invoicer Invoicer
 	client   *Client
@@ -133,10 +134,10 @@ type Node struct {
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger, extraServers ...interface{}) (*Node, error) {
+func New(cfg config.P2P, device core.KeyPair, ks core.KeyStore, db *sqlitex.Pool, blobs *hyper.Storage, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
-	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped())
+	host, closeHost, err := newLibp2p(cfg, device.Wrapped())
 	if err != nil {
 		return nil, fmt.Errorf("failed to start libp2p host: %w", err)
 	}
@@ -167,14 +168,15 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 
 	protoInfo := newProtocolInfo(protocolPrefix, protocolVersion+testnetSuffix)
 
-	client := newClient(me, host, protoInfo.ID)
+	client := newClient(device.PeerID(), host, protoInfo.ID)
 	clean.Add(client)
 
 	n := &Node{
 		log:       log,
 		blobs:     blobs,
 		db:        db,
-		me:        me,
+		device:    device,
+		keys:      ks,
 		cfg:       cfg,
 		client:    client,
 		protocol:  protoInfo,
@@ -189,13 +191,6 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 	rpc := &rpcMux{Node: n}
 	p2p.RegisterP2PServer(n.grpc, rpc)
 
-	for _, extra := range extraServers {
-		if extraServer, ok := extra.(groups_proto.WebsiteServer); ok {
-			groups_proto.RegisterWebsiteServer(n.grpc, extraServer)
-			break
-		}
-	}
-
 	return n, nil
 }
 
@@ -204,14 +199,15 @@ func (n *Node) SetInvoicer(inv Invoicer) {
 	n.invoicer = inv
 }
 
-// ID returns the node's identity.
-func (n *Node) ID() core.Identity {
-	return n.me
-}
-
 // Provider returns the underlying providing system for convenience.
 func (n *Node) Provider() provider.System {
 	return n.providing
+}
+
+// RegisterRPCService allows registering additional gRPC services to be exposed over libp2p.
+// This function must be called before calling Start().
+func (n *Node) RegisterRPCService(fn func(grpc.ServiceRegistrar)) {
+	fn(n.grpc)
 }
 
 // ProvideCID notifies the providing system to provide the given CID on the DHT.

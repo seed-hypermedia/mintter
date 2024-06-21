@@ -2,10 +2,11 @@ package backend
 
 import (
 	"context"
-	"os"
+	"seed/backend/core"
 	"seed/backend/daemon/storage"
 	"seed/backend/hyper"
 	"seed/backend/pkg/must"
+	"seed/backend/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,23 +23,16 @@ func TestDBMigrateManual(t *testing.T) {
 	// ```
 	//
 	// Before running the test duplicate your entire production data directory to /tmp/seed-db-migrate-test.
-	if os.Getenv("SEED_MANUAL_DB_MIGRATE_TEST") == "" {
-		t.SkipNow()
-		return
-	}
+	testutil.Manual(t)
 
-	dir, err := storage.InitRepo("/tmp/seed-db-migrate-test", nil, "debug")
+	dir, err := storage.Open("/tmp/seed-db-migrate-test", nil, core.NewMemoryKeyStore(), "debug")
 	require.NoError(t, err)
+	defer dir.Close()
 
-	_ = dir
+	db := dir.DB()
 
 	log := must.Do2(zap.NewDevelopment())
 
-	db, err := storage.OpenSQLite(dir.SQLitePath(), 0, 1)
-	require.NoError(t, err)
-	defer db.Close()
-
 	blobs := hyper.NewStorage(db, log)
-
 	require.NoError(t, blobs.Reindex(context.Background()))
 }

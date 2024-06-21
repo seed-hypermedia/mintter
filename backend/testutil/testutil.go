@@ -4,6 +4,7 @@ package testutil
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"unicode"
 	"unicode/utf8"
@@ -149,4 +150,25 @@ func (m *MockedGRPCServerStream[T]) Send(msg T) error {
 	}
 	m.C <- msg
 	return nil
+}
+
+// Manual marks the test to run only if it's triggered manually, either with -run flag or by IDE.
+func Manual(t *testing.T) {
+	tname := t.Name()
+	for _, arg := range os.Args {
+		if strings.Contains(arg, "__debug_bin") {
+			return
+		}
+		runValue, ok := strings.CutPrefix(arg, "-test.run=")
+		if !ok {
+			continue
+		}
+
+		// VSCode uses the regexp format for the run flag.
+		if runValue == tname || runValue == "^"+tname+"$" {
+			return
+		}
+	}
+
+	t.Skip("manual test is skipped")
 }

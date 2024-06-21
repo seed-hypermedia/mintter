@@ -9,7 +9,7 @@ import (
 	documents "seed/backend/genproto/documents/v1alpha"
 	"seed/backend/hyper"
 	"seed/backend/logging"
-	"seed/backend/pkg/future"
+	"seed/backend/pkg/must"
 	"seed/backend/testutil"
 	"testing"
 	"time"
@@ -31,7 +31,7 @@ func TestAPICreateDraft(t *testing.T) {
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 	require.NotEqual(t, "", doc.Id)
-	require.Equal(t, api.me.MustGet().Account().Principal().String(), doc.Author)
+	require.Equal(t, must.Do2(api.keys.GetKey(ctx, "main")).String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 
@@ -898,7 +898,7 @@ func TestPublisherAndEditors(t *testing.T) {
 	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	require.Equal(t, "Document title", draft.Title)
-	wantEditors := []string{api.me.MustGet().Account().Principal().String()}
+	wantEditors := []string{must.Do2(api.keys.GetKey(ctx, "main")).String()}
 	require.Equal(t, wantEditors, draft.Editors)
 }
 
@@ -959,16 +959,12 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	u := coretest.NewTester("alice")
 
 	db := storage.MakeTestDB(t)
+	ks := core.NewMemoryKeyStore()
+	require.NoError(t, ks.StoreKey(context.Background(), "main", u.Account))
 
-	fut := future.New[core.Identity]()
-	require.NoError(t, fut.Resolve(u.Identity))
-
-	srv := NewServer(fut.ReadOnly, db, nil, nil, "debug")
+	srv := NewServer(ks, db, nil, nil, "debug")
 	bs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
-	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
-	require.NoError(t, err)
-
-	_, err = srv.me.Await(context.Background())
+	_, err := daemon.Register(context.Background(), bs, u.Account, u.Account.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	return srv

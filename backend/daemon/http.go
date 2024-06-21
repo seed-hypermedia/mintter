@@ -9,10 +9,8 @@ import (
 	"net"
 	"net/http"
 	"runtime/debug"
-	"seed/backend/graphql"
 	"seed/backend/hyper"
 	"seed/backend/pkg/cleanup"
-	"seed/backend/wallet"
 	"strconv"
 	"time"
 
@@ -39,20 +37,10 @@ var (
 	date   string
 )
 
-// GenericHandler is to be called bay anyone wanting to register a
-// new http handler.
-type GenericHandler struct {
-	// Path where the endpoint will be hosted.
-	Path string
-	// HTTP handler.
-	Handler http.Handler
-	// RoutePrefix | RouteNav.
-	Mode int
-}
-
 // setupGraphQLHandlers sets up the GraphQL endpoints.
-func setupGraphQLHandlers(r *Router, wallet *wallet.Service) {
-	r.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
+// TODO(hm24) add the wallet service back.
+func setupGraphQLHandlers(r *Router, wallet any) {
+	// r.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
 	r.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), RouteNav)
 }
 
@@ -146,9 +134,9 @@ func initHTTP(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	blobs *hyper.Storage,
-	wallet *wallet.Service,
+	wallet any, // TODO(hm24) put the wallet back in.
 	ipfsHandler IPFSFileHandler,
-	extraHandlers ...GenericHandler,
+	extraHandlers ...func(*Router),
 ) (srv *http.Server, lis net.Listener, err error) {
 	router := &Router{r: mux.NewRouter()}
 
@@ -161,8 +149,8 @@ func initHTTP(
 	setupGraphQLHandlers(router, wallet)
 	setupIPFSFileHandlers(router, ipfsHandler)
 	setupGRPCWebHandler(router, rpc)
-	for _, handler := range extraHandlers {
-		router.Handle(handler.Path, handler.Handler, handler.Mode)
+	for _, handle := range extraHandlers {
+		handle(router)
 	}
 	router.Handle("/", http.HandlerFunc(router.Index), 0)
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	"seed/backend/daemon"
 	"seed/backend/daemon/storage"
@@ -81,7 +82,7 @@ func TestSiteSync(t *testing.T) {
 	group, err = alice.RPC.Groups.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group.Id,
 		UpdatedMembers: map[string]groups.Role{
-			bob.Storage.Identity().MustGet().Account().Principal().String(): groups.Role_EDITOR,
+			must.Do2(bob.Storage.KeyStore().GetKey(ctx, "main")).String(): groups.Role_EDITOR,
 		},
 	})
 	require.NoError(t, err)
@@ -110,7 +111,7 @@ func TestSiteSync(t *testing.T) {
 	// Make sure referenced materials are correctly published.
 
 	bobOnSite, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{
-		Id: bob.Storage.Identity().MustGet().Account().Principal().String(),
+		Id: must.Do2(bob.Storage.KeyStore().GetKey(ctx, "main")).String(),
 	})
 	require.NoError(t, err, "site must get bob's account from the group")
 	require.NotEqual(t, "", bobOnSite.Profile.Alias, "site must have bob's account because he's a member of the group")
@@ -122,12 +123,14 @@ func makeTestSite(t *testing.T, name string) *App {
 	user := coretest.NewTester(name)
 
 	cfg := testConfig(t)
-	dir, err := storage.InitRepo(cfg.Base.DataDir, user.Device.Wrapped(), "debug")
+	dir, err := storage.Open(cfg.Base.DataDir, user.Device.Wrapped(), core.NewMemoryKeyStore(), "debug")
 	require.NoError(t, err)
 
 	app, err := Load(ctx, "http://127.0.0.1:"+strconv.Itoa(cfg.HTTP.Port), cfg, dir)
 	require.NoError(t, err)
 	t.Cleanup(func() {
+		defer dir.Close()
+
 		cancel()
 		err := app.Wait()
 		if err != nil {

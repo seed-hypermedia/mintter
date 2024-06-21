@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"seed/backend/core"
 	documents "seed/backend/genproto/documents/v1alpha"
 	"seed/backend/hlc"
 	"seed/backend/hyper"
@@ -101,6 +102,15 @@ func (srv *Server) CreateComment(ctx context.Context, in *documents.CreateCommen
 	}
 
 	return commentToProto(ctx, srv.blobs, hb.CID, hb.Decoded.(hyper.Comment))
+}
+
+func (srv *Server) getMe() (core.Identity, error) {
+	me, err := srv.keys.GetKey(context.TODO(), "main")
+	if err != nil {
+		return core.Identity{}, err
+	}
+
+	return core.NewIdentity(me.PublicKey, me), nil
 }
 
 // GetComment gets a comment by ID.

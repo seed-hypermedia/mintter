@@ -1,4 +1,4 @@
-import {GRPCClient, Info} from '@shm/shared'
+import { GRPCClient, Info } from '@shm/shared'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -6,8 +6,8 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import {useGRPCClient} from '../app-context'
-import {queryKeys} from './query-keys'
+import { useGRPCClient } from '../app-context'
+import { queryKeys } from './query-keys'
 
 function queryDaemonInfo(
   grpcClient: GRPCClient,
@@ -40,7 +40,7 @@ export function useMnemonics() {
   return useQuery({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
-      const data = await grpcClient.daemon.genMnemonic({mnemonicsLength: 12})
+      const data = await grpcClient.daemon.genMnemonic({})
       return data.mnemonic
     },
     refetchOnReconnect: false,

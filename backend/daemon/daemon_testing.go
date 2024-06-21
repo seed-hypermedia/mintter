@@ -3,6 +3,7 @@ package daemon
 import (
 	"context"
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/core/coretest"
 	accounts "seed/backend/daemon/api/accounts/v1alpha"
 	"seed/backend/daemon/storage"
@@ -27,24 +28,19 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 
 	u := coretest.NewTester(name)
 
-	repo, err := storage.InitRepo(cfg.Base.DataDir, u.Device.Wrapped(), "debug")
+	repo, err := storage.Open(cfg.Base.DataDir, u.Device.Wrapped(), core.NewMemoryKeyStore(), "debug")
 	require.NoError(t, err)
 
-	app, err := Load(ctx, cfg, repo, "debug")
+	app, err := Load(ctx, cfg, repo)
 	require.NoError(t, err)
 	t.Cleanup(func() {
+		defer repo.Close()
 		cancel()
 		require.Equal(t, context.Canceled, app.Wait())
 	})
 
 	if register {
-		err = app.RPC.Daemon.RegisterAccount(ctx, u.Account)
-		require.NoError(t, err)
-
-		_, err = app.Net.Await(ctx)
-		require.NoError(t, err)
-
-		_, err = app.Storage.Identity().Await(ctx)
+		err = app.RPC.Daemon.RegisterAccount(ctx, "main", u.Account)
 		require.NoError(t, err)
 
 		prof := &accounts.Profile{

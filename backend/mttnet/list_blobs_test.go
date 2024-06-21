@@ -21,67 +21,68 @@ import (
 )
 
 func TestListBlobs(t *testing.T) {
-	t.Parallel()
+	panic("TODO(hm24): fix the test")
+	// t.Parallel()
 
-	alice, stopalice := makeTestPeer(t, "alice")
-	defer stopalice()
-	ctx := context.Background()
-	lis := bufconn.Listen(1024 * 1024) // mocked connection.
-	go func() {
-		if err := alice.grpc.Serve(lis); err != nil {
-			panic(err)
-		}
-	}()
+	// alice, stopalice := makeTestPeer(t, "alice")
+	// defer stopalice()
+	// ctx := context.Background()
+	// lis := bufconn.Listen(1024 * 1024) // mocked connection.
+	// go func() {
+	// 	if err := alice.grpc.Serve(lis); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
 
-	del, err := getDelegation(ctx, alice.me, alice.blobs)
-	require.NoError(t, err)
+	// del, err := getDelegation(ctx, alice.me, alice.blobs)
+	// require.NoError(t, err)
 
-	entity := hyper.NewEntity("alice-test-id")
-	c1, err := entity.CreateChange(entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
-		"name": "alice",
-	})
-	require.NoError(t, err)
+	// entity := hyper.NewEntity("alice-test-id")
+	// c1, err := entity.CreateChange(entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
+	// 	"name": "alice",
+	// })
+	// require.NoError(t, err)
 
-	require.NoError(t, alice.blobs.SaveBlob(ctx, c1))
+	// require.NoError(t, alice.blobs.SaveBlob(ctx, c1))
 
-	blobs := flattenBlobStream(t, ctx, lis, "")
-	require.Len(t, blobs, 3, "alice must list 3 blobs initially")
-	cursor := blobs[2].Cursor
-	require.NotEqual(t, "", cursor, "last blob must have cursor")
+	// blobs := flattenBlobStream(t, ctx, lis, "")
+	// require.Len(t, blobs, 3, "alice must list 3 blobs initially")
+	// cursor := blobs[2].Cursor
+	// require.NotEqual(t, "", cursor, "last blob must have cursor")
 
-	blobs = flattenBlobStream(t, ctx, lis, blobs[2].Cursor)
-	require.Len(t, blobs, 0, "alice must not return any blobs after cursor")
+	// blobs = flattenBlobStream(t, ctx, lis, blobs[2].Cursor)
+	// require.Len(t, blobs, 0, "alice must not return any blobs after cursor")
 
-	// Make a draft change.
-	c2, err := entity.CreateChange(entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
-		"draftField": true,
-	})
-	require.NoError(t, err)
-	require.NoError(t, alice.blobs.SaveDraftBlob(ctx, entity.ID(), c2))
-	blobs = flattenBlobStream(t, ctx, lis, cursor)
-	require.Len(t, blobs, 0, "alice must not list draft blobs")
+	// // Make a draft change.
+	// c2, err := entity.CreateChange(entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
+	// 	"draftField": true,
+	// })
+	// require.NoError(t, err)
+	// require.NoError(t, alice.blobs.SaveDraftBlob(ctx, entity.ID(), c2))
+	// blobs = flattenBlobStream(t, ctx, lis, cursor)
+	// require.Len(t, blobs, 0, "alice must not list draft blobs")
 
-	// Make a non-draft change after draft.
-	c3, err := hyper.NewChange(entity.ID(), []cid.Cid{c1.CID}, entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
-		"nonDraftField": true,
-	})
-	require.NoError(t, err)
-	require.NoError(t, alice.blobs.SaveBlob(ctx, c3))
+	// // Make a non-draft change after draft.
+	// c3, err := hyper.NewChange(entity.ID(), []cid.Cid{c1.CID}, entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
+	// 	"nonDraftField": true,
+	// })
+	// require.NoError(t, err)
+	// require.NoError(t, alice.blobs.SaveBlob(ctx, c3))
 
-	blobs = flattenBlobStream(t, ctx, lis, cursor)
-	require.Len(t, blobs, 1, "alice must list 1 non-draft blob after cursor")
-	require.Equal(t, c3.CID.Bytes(), blobs[0].Cid, "alice must list the correct CID")
-	cursor = blobs[0].Cursor
+	// blobs = flattenBlobStream(t, ctx, lis, cursor)
+	// require.Len(t, blobs, 1, "alice must list 1 non-draft blob after cursor")
+	// require.Equal(t, c3.CID.Bytes(), blobs[0].Cid, "alice must list the correct CID")
+	// cursor = blobs[0].Cursor
 
-	blobs = flattenBlobStream(t, ctx, lis, cursor)
-	require.Len(t, blobs, 0, "alice must not list draft blobs")
+	// blobs = flattenBlobStream(t, ctx, lis, cursor)
+	// require.Len(t, blobs, 0, "alice must not list draft blobs")
 
-	_, err = alice.blobs.PublishDraft(ctx, entity.ID())
-	require.NoError(t, err, "alice must publish the draft")
+	// _, err = alice.blobs.PublishDraft(ctx, entity.ID())
+	// require.NoError(t, err, "alice must publish the draft")
 
-	blobs = flattenBlobStream(t, ctx, lis, cursor)
-	require.Len(t, blobs, 1, "alice must propagate published draft")
-	require.Equal(t, c2.CID.Bytes(), blobs[0].Cid, "alice draft blob CID must match")
+	// blobs = flattenBlobStream(t, ctx, lis, cursor)
+	// require.Len(t, blobs, 1, "alice must propagate published draft")
+	// require.Equal(t, c2.CID.Bytes(), blobs[0].Cid, "alice draft blob CID must match")
 }
 
 func flattenBlobStream(t *testing.T, ctx context.Context, lis *bufconn.Listener, cursor string) []*p2p.Blob {

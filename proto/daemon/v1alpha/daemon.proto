@@ -7,58 +7,125 @@ import "google/protobuf/empty.proto";
 
 option go_package = "seed/backend/genproto/daemon/v1alpha;daemon";
 
-// Daemon API encapsulates main functionality of the Seed daemon.
+// Daemon API allows to control and administer the Seed Daemon.
 service Daemon {
-  // Generates a set of mnemonic words used to derive Seed Account Key, and the underlying
-  // seed lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
-  // mnemonic of 12-24 human-readable english words.
-  // The seed could be reconstructed given these words and the passphrase.
+  // Generates a set of BIP-39-compatible mnemonic words encoding a cryptographic seed.
+  // This is a stateless call, and the generated mnemonic is not stored anywhere.
+  // Subsequent call to RegisterKey can be used to register a new signing key derived from the mnemonic.
   rpc GenMnemonic(GenMnemonicRequest) returns (GenMnemonicResponse);
 
   // After generating the seed, this call is used to commit the seed and
   // create an account binding between the device and account.
-  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc RegisterKey(RegisterKeyRequest) returns (NamedKey);
 
   // Get generic information about the running node.
   rpc GetInfo(GetInfoRequest) returns (Info);
 
   // Force-trigger periodic background sync of Seed objects.
   rpc ForceSync(ForceSyncRequest) returns (google.protobuf.Empty);
+
+  // Lists all the signing keys registered on this Daemon.
+  rpc ListKeys(ListKeysRequest) returns (ListKeysResponse);
+
+  // Updates the existing key.
+  rpc UpdateKey(UpdateKeyRequest) returns (NamedKey);
+
+  // Deletes a key from the underlying key store.
+  rpc DeleteKey(DeleteKeyRequest) returns (google.protobuf.Empty);
 }
 
+// Request to generate mnemonic words.
 message GenMnemonicRequest {
-  // Number of mnemonic words to encode the seed
-  uint32 mnemonics_length = 1;
+  // Optional. Number of mnemonic words to encode the seed.
+  // Usually 12 or 24 words.
+  // By default 12 words are generated.
+  int32 word_count = 1;
 }
 
+// Response with the generated mnemonic.
 message GenMnemonicResponse {
   // The list of human-friendly words that can be used to backup the seed. These
   // words must be stored in a secret place by the user.
   repeated string mnemonic = 1;
 }
 
-message RegisterRequest {
+// Request to register a new account key derived from the mnemonic.
+message RegisterKeyRequest {
+  // Required. The list of BIP-39 mnemonic words.
   repeated string mnemonic = 1;
 
+  // Optional. Passphrase for the seed.
   string passphrase = 2;
+
+  // Required. Private name/label for the signing key, to easily identify keys when they are more than one.
+  // Name must be unique across all the registered keys.
+  string name = 3;
 }
 
-message RegisterResponse {
-  string account_id = 1;
-}
-
+// Request to get basic information about the running daemon.
 message GetInfoRequest {}
 
+// Request to force the syncing process.
 message ForceSyncRequest {}
+
+// Request to list signing keys.
+message ListKeysRequest {}
+
+// Response with the list of registered signing keys.
+message ListKeysResponse {
+  // List of registered keys.
+  repeated NamedKey keys = 1;
+}
+
+// Request to change the key name.
+message UpdateKeyRequest {
+  // Current name of the key.
+  string current_name = 1;
+
+  // New name for the key.
+  string new_name = 2;
+}
+
+// Request to delete an existing key.
+message DeleteKeyRequest {
+  // Name of the key to delete.
+  string name = 1;
+}
 
 // Info is a generic information about the running node.
 message Info {
-  // Account ID this node belongs to.
-  string account_id = 1;
+  // Current state of the daemon.
+  State state = 1;
 
-  // Libp2p Peer ID in CID form (a.k.a. Device ID) assigned to this node.
-  string device_id = 2;
+  // Libp2p Peer ID of this node.
+  string peer_id = 2;
 
   // Start time of the node.
-  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp start_time = 4;
+}
+
+// State describes various states of the daemon.
+enum State {
+  // Daemon in starting up and it not ready to use yet.
+  STARTING = 0;
+
+  // Daemon is running a data migration, which may take a while.
+  // Callers should poll and wait until the daemon becomes ACTIVE.
+  MIGRATING = 1;
+
+  // Daemon is active and ready to use.
+  ACTIVE = 3;
+}
+
+// Signing key with an internal name.
+message NamedKey {
+  // Public key in Multikey format.
+  // https://www.w3.org/TR/vc-data-integrity/#multikey.
+  string public_key = 1;
+
+  // Private name for the key. Useful to identify the keys when there're more than one.
+  string name = 2;
+
+  // Account ID representation of this key.
+  string account_id = 3;
 }
