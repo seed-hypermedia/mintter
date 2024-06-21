@@ -24,27 +24,27 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DraftsClient interface {
 	// Creates a new draft of an existing standalone branch
-	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*Draft, error)
 	// Creates a draft for a new branch.
-	CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Document, error)
-	// Creates a draft for a new index branch. Thows if a draft already exists for this index.
-	CreateIndexhDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Draft, error)
+	// Creates a draft for an index branch. Thows if a draft already exists for this index.
+	CreateIndexDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Draft, error)
 	// Create a draft for a profile document. Thows if a draft already exists for this profile.
-	CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Draft, error)
 	// Deletes a draft by its document ID.
 	DeleteDraft(ctx context.Context, in *DeleteDraftRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
-	GetStandaloneDraft(ctx context.Context, in *GetStandaloneDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Draft, error)
 	// Gets a draft for a profile document.
-	GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Draft, error)
 	// Updates a draft using granular update operations.
 	UpdateDraft(ctx context.Context, in *UpdateDraftRequest, opts ...grpc.CallOption) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
 	// Lists drafts for a given document.
 	ListDocumentDrafts(ctx context.Context, in *ListDocumentDraftsRequest, opts ...grpc.CallOption) (*ListDocumentDraftsResponse, error)
-	// Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
-	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Publishes a draft. Returns the branch that was published.
+	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Branch, error)
 }
 
 type draftsClient struct {
@@ -55,8 +55,8 @@ func NewDraftsClient(cc grpc.ClientConnInterface) DraftsClient {
 	return &draftsClient{cc}
 }
 
-func (c *draftsClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
+func (c *draftsClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *draftsClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, 
 	return out, nil
 }
 
-func (c *draftsClient) CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
+func (c *draftsClient) CreateBranchDraft(ctx context.Context, in *CreateBranchDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateBranchDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,17 +73,17 @@ func (c *draftsClient) CreateBranchDraft(ctx context.Context, in *CreateBranchDr
 	return out, nil
 }
 
-func (c *draftsClient) CreateIndexhDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateIndexhDraft", in, out, opts...)
+func (c *draftsClient) CreateIndexDraft(ctx context.Context, in *CreateIndexDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateIndexDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *draftsClient) CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
+func (c *draftsClient) CreateProfileDraft(ctx context.Context, in *CreateProfileDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/CreateProfileDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -100,17 +100,17 @@ func (c *draftsClient) DeleteDraft(ctx context.Context, in *DeleteDraftRequest, 
 	return out, nil
 }
 
-func (c *draftsClient) GetStandaloneDraft(ctx context.Context, in *GetStandaloneDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
-	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetStandaloneDraft", in, out, opts...)
+func (c *draftsClient) GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *draftsClient) GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
+func (c *draftsClient) GetProfileDraft(ctx context.Context, in *GetProfileDraftRequest, opts ...grpc.CallOption) (*Draft, error) {
+	out := new(Draft)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/GetProfileDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -145,8 +145,8 @@ func (c *draftsClient) ListDocumentDrafts(ctx context.Context, in *ListDocumentD
 	return out, nil
 }
 
-func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Document, error) {
-	out := new(Document)
+func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Branch, error) {
+	out := new(Branch)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Drafts/PublishDraft", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -159,52 +159,52 @@ func (c *draftsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest
 // for forward compatibility
 type DraftsServer interface {
 	// Creates a new draft of an existing standalone branch
-	CreateDraft(context.Context, *CreateDraftRequest) (*Document, error)
+	CreateDraft(context.Context, *CreateDraftRequest) (*Draft, error)
 	// Creates a draft for a new branch.
-	CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Document, error)
-	// Creates a draft for a new index branch. Thows if a draft already exists for this index.
-	CreateIndexhDraft(context.Context, *CreateIndexDraftRequest) (*Document, error)
+	CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Draft, error)
+	// Creates a draft for an index branch. Thows if a draft already exists for this index.
+	CreateIndexDraft(context.Context, *CreateIndexDraftRequest) (*Draft, error)
 	// Create a draft for a profile document. Thows if a draft already exists for this profile.
-	CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Document, error)
+	CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Draft, error)
 	// Deletes a draft by its document ID.
 	DeleteDraft(context.Context, *DeleteDraftRequest) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
-	GetStandaloneDraft(context.Context, *GetStandaloneDraftRequest) (*Document, error)
+	GetDraft(context.Context, *GetDraftRequest) (*Draft, error)
 	// Gets a draft for a profile document.
-	GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Document, error)
+	GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Draft, error)
 	// Updates a draft using granular update operations.
 	UpdateDraft(context.Context, *UpdateDraftRequest) (*UpdateDraftResponse, error)
 	// List currently stored drafts.
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
 	// Lists drafts for a given document.
 	ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error)
-	// Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
-	PublishDraft(context.Context, *PublishDraftRequest) (*Document, error)
+	// Publishes a draft. Returns the branch that was published.
+	PublishDraft(context.Context, *PublishDraftRequest) (*Branch, error)
 }
 
 // UnimplementedDraftsServer should be embedded to have forward compatible implementations.
 type UnimplementedDraftsServer struct {
 }
 
-func (UnimplementedDraftsServer) CreateDraft(context.Context, *CreateDraftRequest) (*Document, error) {
+func (UnimplementedDraftsServer) CreateDraft(context.Context, *CreateDraftRequest) (*Draft, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDraft not implemented")
 }
-func (UnimplementedDraftsServer) CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Document, error) {
+func (UnimplementedDraftsServer) CreateBranchDraft(context.Context, *CreateBranchDraftRequest) (*Draft, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBranchDraft not implemented")
 }
-func (UnimplementedDraftsServer) CreateIndexhDraft(context.Context, *CreateIndexDraftRequest) (*Document, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateIndexhDraft not implemented")
+func (UnimplementedDraftsServer) CreateIndexDraft(context.Context, *CreateIndexDraftRequest) (*Draft, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateIndexDraft not implemented")
 }
-func (UnimplementedDraftsServer) CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Document, error) {
+func (UnimplementedDraftsServer) CreateProfileDraft(context.Context, *CreateProfileDraftRequest) (*Draft, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProfileDraft not implemented")
 }
 func (UnimplementedDraftsServer) DeleteDraft(context.Context, *DeleteDraftRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDraft not implemented")
 }
-func (UnimplementedDraftsServer) GetStandaloneDraft(context.Context, *GetStandaloneDraftRequest) (*Document, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStandaloneDraft not implemented")
+func (UnimplementedDraftsServer) GetDraft(context.Context, *GetDraftRequest) (*Draft, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDraft not implemented")
 }
-func (UnimplementedDraftsServer) GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Document, error) {
+func (UnimplementedDraftsServer) GetProfileDraft(context.Context, *GetProfileDraftRequest) (*Draft, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileDraft not implemented")
 }
 func (UnimplementedDraftsServer) UpdateDraft(context.Context, *UpdateDraftRequest) (*UpdateDraftResponse, error) {
@@ -216,7 +216,7 @@ func (UnimplementedDraftsServer) ListDrafts(context.Context, *ListDraftsRequest)
 func (UnimplementedDraftsServer) ListDocumentDrafts(context.Context, *ListDocumentDraftsRequest) (*ListDocumentDraftsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDocumentDrafts not implemented")
 }
-func (UnimplementedDraftsServer) PublishDraft(context.Context, *PublishDraftRequest) (*Document, error) {
+func (UnimplementedDraftsServer) PublishDraft(context.Context, *PublishDraftRequest) (*Branch, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishDraft not implemented")
 }
 
@@ -267,20 +267,20 @@ func _Drafts_CreateBranchDraft_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Drafts_CreateIndexhDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Drafts_CreateIndexDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateIndexDraftRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DraftsServer).CreateIndexhDraft(ctx, in)
+		return srv.(DraftsServer).CreateIndexDraft(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Drafts/CreateIndexhDraft",
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/CreateIndexDraft",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DraftsServer).CreateIndexhDraft(ctx, req.(*CreateIndexDraftRequest))
+		return srv.(DraftsServer).CreateIndexDraft(ctx, req.(*CreateIndexDraftRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -321,20 +321,20 @@ func _Drafts_DeleteDraft_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Drafts_GetStandaloneDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStandaloneDraftRequest)
+func _Drafts_GetDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDraftRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DraftsServer).GetStandaloneDraft(ctx, in)
+		return srv.(DraftsServer).GetDraft(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.seed.documents.v1alpha.Drafts/GetStandaloneDraft",
+		FullMethod: "/com.seed.documents.v1alpha.Drafts/GetDraft",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DraftsServer).GetStandaloneDraft(ctx, req.(*GetStandaloneDraftRequest))
+		return srv.(DraftsServer).GetDraft(ctx, req.(*GetDraftRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -445,8 +445,8 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Drafts_CreateBranchDraft_Handler,
 		},
 		{
-			MethodName: "CreateIndexhDraft",
-			Handler:    _Drafts_CreateIndexhDraft_Handler,
+			MethodName: "CreateIndexDraft",
+			Handler:    _Drafts_CreateIndexDraft_Handler,
 		},
 		{
 			MethodName: "CreateProfileDraft",
@@ -457,8 +457,8 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Drafts_DeleteDraft_Handler,
 		},
 		{
-			MethodName: "GetStandaloneDraft",
-			Handler:    _Drafts_GetStandaloneDraft_Handler,
+			MethodName: "GetDraft",
+			Handler:    _Drafts_GetDraft_Handler,
 		},
 		{
 			MethodName: "GetProfileDraft",
@@ -495,6 +495,10 @@ type DocumentsClient interface {
 	GetProfileDocument(ctx context.Context, in *GetProfileDocumentRequest, opts ...grpc.CallOption) (*Document, error)
 	// Gets a document within the index(es) of other documents
 	GetDocumentIndex(ctx context.Context, in *GetDocumentIndexRequest, opts ...grpc.CallOption) (*GetDocumentIndexResponse, error)
+	// Immediately changes a document
+	ChangeDocument(ctx context.Context, in *ChangeDocumentRequest, opts ...grpc.CallOption) (*Document, error)
+	// Immediately changes an account's profile document
+	ChangeProfileDocument(ctx context.Context, in *ChangeProfileDocumentRequest, opts ...grpc.CallOption) (*Document, error)
 	// Lists all documents. Only the most recent versions show up.
 	ListDocuments(ctx context.Context, in *ListDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error)
 	// Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
@@ -534,6 +538,24 @@ func (c *documentsClient) GetProfileDocument(ctx context.Context, in *GetProfile
 func (c *documentsClient) GetDocumentIndex(ctx context.Context, in *GetDocumentIndexRequest, opts ...grpc.CallOption) (*GetDocumentIndexResponse, error) {
 	out := new(GetDocumentIndexResponse)
 	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/GetDocumentIndex", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) ChangeDocument(ctx context.Context, in *ChangeDocumentRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/ChangeDocument", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) ChangeProfileDocument(ctx context.Context, in *ChangeProfileDocumentRequest, opts ...grpc.CallOption) (*Document, error) {
+	out := new(Document)
+	err := c.cc.Invoke(ctx, "/com.seed.documents.v1alpha.Documents/ChangeProfileDocument", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -586,6 +608,10 @@ type DocumentsServer interface {
 	GetProfileDocument(context.Context, *GetProfileDocumentRequest) (*Document, error)
 	// Gets a document within the index(es) of other documents
 	GetDocumentIndex(context.Context, *GetDocumentIndexRequest) (*GetDocumentIndexResponse, error)
+	// Immediately changes a document
+	ChangeDocument(context.Context, *ChangeDocumentRequest) (*Document, error)
+	// Immediately changes an account's profile document
+	ChangeProfileDocument(context.Context, *ChangeProfileDocumentRequest) (*Document, error)
 	// Lists all documents. Only the most recent versions show up.
 	ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error)
 	// Lists branches of a document. Includes standalone and index branches, and any drafts for these branches
@@ -608,6 +634,12 @@ func (UnimplementedDocumentsServer) GetProfileDocument(context.Context, *GetProf
 }
 func (UnimplementedDocumentsServer) GetDocumentIndex(context.Context, *GetDocumentIndexRequest) (*GetDocumentIndexResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentIndex not implemented")
+}
+func (UnimplementedDocumentsServer) ChangeDocument(context.Context, *ChangeDocumentRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeDocument not implemented")
+}
+func (UnimplementedDocumentsServer) ChangeProfileDocument(context.Context, *ChangeProfileDocumentRequest) (*Document, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeProfileDocument not implemented")
 }
 func (UnimplementedDocumentsServer) ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDocuments not implemented")
@@ -683,6 +715,42 @@ func _Documents_GetDocumentIndex_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DocumentsServer).GetDocumentIndex(ctx, req.(*GetDocumentIndexRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Documents_ChangeDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).ChangeDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Documents/ChangeDocument",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).ChangeDocument(ctx, req.(*ChangeDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Documents_ChangeProfileDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeProfileDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).ChangeProfileDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.documents.v1alpha.Documents/ChangeProfileDocument",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).ChangeProfileDocument(ctx, req.(*ChangeProfileDocumentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -777,6 +845,14 @@ var Documents_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentIndex",
 			Handler:    _Documents_GetDocumentIndex_Handler,
+		},
+		{
+			MethodName: "ChangeDocument",
+			Handler:    _Documents_ChangeDocument_Handler,
+		},
+		{
+			MethodName: "ChangeProfileDocument",
+			Handler:    _Documents_ChangeProfileDocument_Handler,
 		},
 		{
 			MethodName: "ListDocuments",

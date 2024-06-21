@@ -7,6 +7,56 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
 
 /**
+ * Relationship between a document and an account
+ *
+ * @generated from enum com.seed.documents.v1alpha.RoleType
+ */
+export enum RoleType {
+  /**
+   * No permissions.
+   *
+   * @generated from enum value: ROLE_UNSPECIFIED = 0;
+   */
+  ROLE_UNSPECIFIED = 0,
+
+  /**
+   * The role for an owner. All permissions are granted.
+   *
+   * @generated from enum value: OWNER = 1;
+   */
+  OWNER = 1,
+
+  /**
+   * Allowed to invite/remove writers+collaborators, edit content, and merge suggested changes
+   *
+   * @generated from enum value: EDITOR = 2;
+   */
+  EDITOR = 2,
+
+  /**
+   * Allowed to change content
+   *
+   * @generated from enum value: WRITER = 3;
+   */
+  WRITER = 3,
+
+  /**
+   * Their comments and suggested changes will be distributed alongside the document
+   *
+   * @generated from enum value: COLLABORATOR = 4;
+   */
+  COLLABORATOR = 4,
+}
+// Retrieve enum metadata with: proto3.getEnumType(RoleType)
+proto3.util.setEnumType(RoleType, "com.seed.documents.v1alpha.RoleType", [
+  { no: 0, name: "ROLE_UNSPECIFIED" },
+  { no: 1, name: "OWNER" },
+  { no: 2, name: "EDITOR" },
+  { no: 3, name: "WRITER" },
+  { no: 4, name: "COLLABORATOR" },
+]);
+
+/**
  * Request to create a new draft for an existing standalone branch
  *
  * @generated from message com.seed.documents.v1alpha.CreateDraftRequest
@@ -233,41 +283,41 @@ export class DeleteDraftRequest extends Message<DeleteDraftRequest> {
 /**
  * Request to get a single draft.
  *
- * @generated from message com.seed.documents.v1alpha.GetStandaloneDraftRequest
+ * @generated from message com.seed.documents.v1alpha.GetDraftRequest
  */
-export class GetStandaloneDraftRequest extends Message<GetStandaloneDraftRequest> {
+export class GetDraftRequest extends Message<GetDraftRequest> {
   /**
-   * Required. ID of the document for which draft was previously created.
+   * Required. ID of the draft that was previously created.
    *
-   * @generated from field: string document_id = 1;
+   * @generated from field: string draft_id = 1;
    */
-  documentId = "";
+  draftId = "";
 
-  constructor(data?: PartialMessage<GetStandaloneDraftRequest>) {
+  constructor(data?: PartialMessage<GetDraftRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.seed.documents.v1alpha.GetStandaloneDraftRequest";
+  static readonly typeName = "com.seed.documents.v1alpha.GetDraftRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "draft_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetStandaloneDraftRequest {
-    return new GetStandaloneDraftRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetDraftRequest {
+    return new GetDraftRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetStandaloneDraftRequest {
-    return new GetStandaloneDraftRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetDraftRequest {
+    return new GetDraftRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetStandaloneDraftRequest {
-    return new GetStandaloneDraftRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetDraftRequest {
+    return new GetDraftRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: GetStandaloneDraftRequest | PlainMessage<GetStandaloneDraftRequest> | undefined, b: GetStandaloneDraftRequest | PlainMessage<GetStandaloneDraftRequest> | undefined): boolean {
-    return proto3.util.equals(GetStandaloneDraftRequest, a, b);
+  static equals(a: GetDraftRequest | PlainMessage<GetDraftRequest> | undefined, b: GetDraftRequest | PlainMessage<GetDraftRequest> | undefined): boolean {
+    return proto3.util.equals(GetDraftRequest, a, b);
   }
 }
 
@@ -429,6 +479,14 @@ export class DocumentChange extends Message<DocumentChange> {
     case: "setMetadata";
   } | {
     /**
+     * New index to set on the document.
+     *
+     * @generated from field: com.seed.documents.v1alpha.DocumentChange.SetIndex set_index = 2;
+     */
+    value: DocumentChange_SetIndex;
+    case: "setIndex";
+  } | {
+    /**
      * Move operation that creates/moves a block within the document hierarchy.
      *
      * @generated from field: com.seed.documents.v1alpha.DocumentChange.MoveBlock move_block = 3;
@@ -451,6 +509,14 @@ export class DocumentChange extends Message<DocumentChange> {
      */
     value: string;
     case: "deleteBlock";
+  } | {
+    /**
+     * Update membership for an account on this document.
+     *
+     * @generated from field: com.seed.documents.v1alpha.DocumentChange.UpdateMember update_member = 6;
+     */
+    value: DocumentChange_UpdateMember;
+    case: "updateMember";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   constructor(data?: PartialMessage<DocumentChange>) {
@@ -462,9 +528,11 @@ export class DocumentChange extends Message<DocumentChange> {
   static readonly typeName = "com.seed.documents.v1alpha.DocumentChange";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "set_metadata", kind: "message", T: DocumentChange_SetMetadata, oneof: "op" },
+    { no: 2, name: "set_index", kind: "message", T: DocumentChange_SetIndex, oneof: "op" },
     { no: 3, name: "move_block", kind: "message", T: DocumentChange_MoveBlock, oneof: "op" },
     { no: 4, name: "replace_block", kind: "message", T: Block, oneof: "op" },
     { no: 5, name: "delete_block", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
+    { no: 6, name: "update_member", kind: "message", T: DocumentChange_UpdateMember, oneof: "op" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentChange {
@@ -559,6 +627,12 @@ export class DocumentChange_SetMetadata extends Message<DocumentChange_SetMetada
   /**
    * Metadata value to set.
    *
+   * "ipfs://ABC" - Use CID as reference material
+   * "hm://DOC_ID" - Document ID as reference material
+   * other random data
+   * "https://example.com"
+   * DATE FORMAT
+   *
    * @generated from field: string value = 2;
    */
   value = "";
@@ -589,6 +663,111 @@ export class DocumentChange_SetMetadata extends Message<DocumentChange_SetMetada
 
   static equals(a: DocumentChange_SetMetadata | PlainMessage<DocumentChange_SetMetadata> | undefined, b: DocumentChange_SetMetadata | PlainMessage<DocumentChange_SetMetadata> | undefined): boolean {
     return proto3.util.equals(DocumentChange_SetMetadata, a, b);
+  }
+}
+
+/**
+ * Operation to replace an index field with a new value
+ *
+ * @generated from message com.seed.documents.v1alpha.DocumentChange.SetIndex
+ */
+export class DocumentChange_SetIndex extends Message<DocumentChange_SetIndex> {
+  /**
+   * Index key to set.
+   *
+   * @generated from field: string key = 1;
+   */
+  key = "";
+
+  /**
+   * Index value to set.
+   *
+   * example values
+   * "DOC_ID"
+   * "@CHANGE_ID"
+   * "@CHANGE_ID.CHANGE_ID2"
+   * "#FRAGMENT"
+   * "a/ACCOUNT_ID"
+   *
+   * @generated from field: string value = 2;
+   */
+  value = "";
+
+  constructor(data?: PartialMessage<DocumentChange_SetIndex>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.documents.v1alpha.DocumentChange.SetIndex";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "value", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentChange_SetIndex {
+    return new DocumentChange_SetIndex().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DocumentChange_SetIndex {
+    return new DocumentChange_SetIndex().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DocumentChange_SetIndex {
+    return new DocumentChange_SetIndex().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DocumentChange_SetIndex | PlainMessage<DocumentChange_SetIndex> | undefined, b: DocumentChange_SetIndex | PlainMessage<DocumentChange_SetIndex> | undefined): boolean {
+    return proto3.util.equals(DocumentChange_SetIndex, a, b);
+  }
+}
+
+/**
+ * Operation to change membership
+ *
+ * @generated from message com.seed.documents.v1alpha.DocumentChange.UpdateMember
+ */
+export class DocumentChange_UpdateMember extends Message<DocumentChange_UpdateMember> {
+  /**
+   * Account ID to update the role for.
+   *
+   * @generated from field: string account_id = 1;
+   */
+  accountId = "";
+
+  /**
+   * New role to set for the account.
+   *
+   * @generated from field: com.seed.documents.v1alpha.RoleType role = 2;
+   */
+  role = RoleType.ROLE_UNSPECIFIED;
+
+  constructor(data?: PartialMessage<DocumentChange_UpdateMember>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.documents.v1alpha.DocumentChange.UpdateMember";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "role", kind: "enum", T: proto3.getEnumType(RoleType) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentChange_UpdateMember {
+    return new DocumentChange_UpdateMember().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DocumentChange_UpdateMember {
+    return new DocumentChange_UpdateMember().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DocumentChange_UpdateMember {
+    return new DocumentChange_UpdateMember().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DocumentChange_UpdateMember | PlainMessage<DocumentChange_UpdateMember> | undefined, b: DocumentChange_UpdateMember | PlainMessage<DocumentChange_UpdateMember> | undefined): boolean {
+    return proto3.util.equals(DocumentChange_UpdateMember, a, b);
   }
 }
 
@@ -1022,6 +1201,100 @@ export class GetDocumentIndexResponse extends Message<GetDocumentIndexResponse> 
 
   static equals(a: GetDocumentIndexResponse | PlainMessage<GetDocumentIndexResponse> | undefined, b: GetDocumentIndexResponse | PlainMessage<GetDocumentIndexResponse> | undefined): boolean {
     return proto3.util.equals(GetDocumentIndexResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message com.seed.documents.v1alpha.ChangeDocumentRequest
+ */
+export class ChangeDocumentRequest extends Message<ChangeDocumentRequest> {
+  /**
+   * Required. ID of the document to be updated.
+   *
+   * @generated from field: string document_id = 1;
+   */
+  documentId = "";
+
+  /**
+   * Required. Changes to be applied to the document.
+   *
+   * @generated from field: repeated com.seed.documents.v1alpha.DocumentChange changes = 2;
+   */
+  changes: DocumentChange[] = [];
+
+  constructor(data?: PartialMessage<ChangeDocumentRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.documents.v1alpha.ChangeDocumentRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "changes", kind: "message", T: DocumentChange, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ChangeDocumentRequest {
+    return new ChangeDocumentRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ChangeDocumentRequest {
+    return new ChangeDocumentRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ChangeDocumentRequest {
+    return new ChangeDocumentRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ChangeDocumentRequest | PlainMessage<ChangeDocumentRequest> | undefined, b: ChangeDocumentRequest | PlainMessage<ChangeDocumentRequest> | undefined): boolean {
+    return proto3.util.equals(ChangeDocumentRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message com.seed.documents.v1alpha.ChangeProfileDocumentRequest
+ */
+export class ChangeProfileDocumentRequest extends Message<ChangeProfileDocumentRequest> {
+  /**
+   * Required. Account ID to update the profile document for.
+   *
+   * @generated from field: string account_id = 1;
+   */
+  accountId = "";
+
+  /**
+   * Required. Changes to be applied to the profile document.
+   *
+   * @generated from field: repeated com.seed.documents.v1alpha.DocumentChange changes = 2;
+   */
+  changes: DocumentChange[] = [];
+
+  constructor(data?: PartialMessage<ChangeProfileDocumentRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.documents.v1alpha.ChangeProfileDocumentRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "changes", kind: "message", T: DocumentChange, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ChangeProfileDocumentRequest {
+    return new ChangeProfileDocumentRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ChangeProfileDocumentRequest {
+    return new ChangeProfileDocumentRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ChangeProfileDocumentRequest {
+    return new ChangeProfileDocumentRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ChangeProfileDocumentRequest | PlainMessage<ChangeProfileDocumentRequest> | undefined, b: ChangeProfileDocumentRequest | PlainMessage<ChangeProfileDocumentRequest> | undefined): boolean {
+    return proto3.util.equals(ChangeProfileDocumentRequest, a, b);
   }
 }
 
@@ -1490,16 +1763,25 @@ export class Draft extends Message<Draft> {
   document?: Document;
 
   /**
-   * the document id where the draft will be merged to
+   * True if this is a profile draft
    *
-   * @generated from field: string document_id = 3;
+   * @generated from field: bool is_profile = 3;
    */
-  documentId = "";
+  isProfile = false;
 
   /**
-   * @generated from field: string index_path = 4;
+   * The top-level entity that this draft will update once published. An Account ID for profile drafts, otherwise Document ID.
+   *
+   * @generated from field: string entity_id = 4;
    */
-  indexPath = "";
+  entityId = "";
+
+  /**
+   * Optional. The path where the draft will be updated once published
+   *
+   * @generated from field: string path = 5;
+   */
+  path = "";
 
   constructor(data?: PartialMessage<Draft>) {
     super();
@@ -1511,8 +1793,9 @@ export class Draft extends Message<Draft> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "draft_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "document", kind: "message", T: Document },
-    { no: 3, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "index_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "is_profile", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "entity_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Draft {

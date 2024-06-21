@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateBranchDraftRequest, CreateDraftRequest, CreateIndexDraftRequest, CreateProfileDraftRequest, DeleteDraftRequest, Document, GetDocumentIndexRequest, GetDocumentIndexResponse, GetDocumentRequest, GetProfileDocumentRequest, GetProfileDraftRequest, GetStandaloneDraftRequest, ListAccountDocumentsRequest, ListDocumentBranchesRequest, ListDocumentBranchesResponse, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDocumentsRequest, ListDocumentsResponse, ListDraftsRequest, ListDraftsResponse, MergeChangesRequest, PublishDraftRequest, PushDocumentRequest, RebaseChangesRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { Branch, ChangeDocumentRequest, ChangeProfileDocumentRequest, CreateBranchDraftRequest, CreateDraftRequest, CreateIndexDraftRequest, CreateProfileDraftRequest, DeleteDraftRequest, Document, Draft, GetDocumentIndexRequest, GetDocumentIndexResponse, GetDocumentRequest, GetDraftRequest, GetProfileDocumentRequest, GetProfileDraftRequest, ListAccountDocumentsRequest, ListDocumentBranchesRequest, ListDocumentBranchesResponse, ListDocumentDraftsRequest, ListDocumentDraftsResponse, ListDocumentsRequest, ListDocumentsResponse, ListDraftsRequest, ListDraftsResponse, MergeChangesRequest, PublishDraftRequest, PushDocumentRequest, RebaseChangesRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -22,7 +22,7 @@ export const Drafts = {
     createDraft: {
       name: "CreateDraft",
       I: CreateDraftRequest,
-      O: Document,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
@@ -33,18 +33,18 @@ export const Drafts = {
     createBranchDraft: {
       name: "CreateBranchDraft",
       I: CreateBranchDraftRequest,
-      O: Document,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
-     * Creates a draft for a new index branch. Thows if a draft already exists for this index.
+     * Creates a draft for an index branch. Thows if a draft already exists for this index.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateIndexhDraft
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.CreateIndexDraft
      */
-    createIndexhDraft: {
-      name: "CreateIndexhDraft",
+    createIndexDraft: {
+      name: "CreateIndexDraft",
       I: CreateIndexDraftRequest,
-      O: Document,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
@@ -55,7 +55,7 @@ export const Drafts = {
     createProfileDraft: {
       name: "CreateProfileDraft",
       I: CreateProfileDraftRequest,
-      O: Document,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
@@ -72,12 +72,12 @@ export const Drafts = {
     /**
      * Gets a single draft if exists.
      *
-     * @generated from rpc com.seed.documents.v1alpha.Drafts.GetStandaloneDraft
+     * @generated from rpc com.seed.documents.v1alpha.Drafts.GetDraft
      */
-    getStandaloneDraft: {
-      name: "GetStandaloneDraft",
-      I: GetStandaloneDraftRequest,
-      O: Document,
+    getDraft: {
+      name: "GetDraft",
+      I: GetDraftRequest,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
@@ -88,7 +88,7 @@ export const Drafts = {
     getProfileDraft: {
       name: "GetProfileDraft",
       I: GetProfileDraftRequest,
-      O: Document,
+      O: Draft,
       kind: MethodKind.Unary,
     },
     /**
@@ -125,14 +125,14 @@ export const Drafts = {
       kind: MethodKind.Unary,
     },
     /**
-     * Publishes a draft. I.e. draft will become a document, and will no longer appear in drafts section.
+     * Publishes a draft. Returns the branch that was published.
      *
      * @generated from rpc com.seed.documents.v1alpha.Drafts.PublishDraft
      */
     publishDraft: {
       name: "PublishDraft",
       I: PublishDraftRequest,
-      O: Document,
+      O: Branch,
       kind: MethodKind.Unary,
     },
   }
@@ -177,6 +177,28 @@ export const Documents = {
       name: "GetDocumentIndex",
       I: GetDocumentIndexRequest,
       O: GetDocumentIndexResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Immediately changes a document
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Documents.ChangeDocument
+     */
+    changeDocument: {
+      name: "ChangeDocument",
+      I: ChangeDocumentRequest,
+      O: Document,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Immediately changes an account's profile document
+     *
+     * @generated from rpc com.seed.documents.v1alpha.Documents.ChangeProfileDocument
+     */
+    changeProfileDocument: {
+      name: "ChangeProfileDocument",
+      I: ChangeProfileDocumentRequest,
+      O: Document,
       kind: MethodKind.Unary,
     },
     /**
