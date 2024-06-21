@@ -136,18 +136,32 @@ export class ListAccountsResponse extends Message<ListAccountsResponse> {
  */
 export class Account extends Message<Account> {
   /**
-   * Hypermedia Account ID.
+   * Hyper Media Account ID.
    *
    * @generated from field: string id = 1;
    */
   id = "";
 
   /**
-   * If there is an unpublished draft for this account's profile document
+   * Profile information of this account.
    *
-   * @generated from field: bool has_profile_draft = 5;
+   * @generated from field: com.seed.accounts.v1alpha.Profile profile = 2;
    */
-  hasProfileDraft = false;
+  profile?: Profile;
+
+  /**
+   * List of known devices of this Account.
+   *
+   * @generated from field: map<string, com.seed.accounts.v1alpha.Device> devices = 3;
+   */
+  devices: { [key: string]: Device } = {};
+
+  /**
+   * Defining if the account is trusted or not.
+   *
+   * @generated from field: bool is_trusted = 4;
+   */
+  isTrusted = false;
 
   constructor(data?: PartialMessage<Account>) {
     super();
@@ -158,7 +172,9 @@ export class Account extends Message<Account> {
   static readonly typeName = "com.seed.accounts.v1alpha.Account";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "has_profile_draft", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "profile", kind: "message", T: Profile },
+    { no: 3, name: "devices", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: Device} },
+    { no: 4, name: "is_trusted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Account {
@@ -175,6 +191,158 @@ export class Account extends Message<Account> {
 
   static equals(a: Account | PlainMessage<Account> | undefined, b: Account | PlainMessage<Account> | undefined): boolean {
     return proto3.util.equals(Account, a, b);
+  }
+}
+
+/**
+ * Profile information of the user Account.
+ *
+ * @generated from message com.seed.accounts.v1alpha.Profile
+ */
+export class Profile extends Message<Profile> {
+  /**
+   * Optional. Alias is a user-defined handle for their profile.
+   * There's no enforcement on this being unique.
+   *
+   * @generated from field: string alias = 1;
+   */
+  alias = "";
+
+  /**
+   * Optional. Description of the user's profile.
+   *
+   * @generated from field: string bio = 2;
+   */
+  bio = "";
+
+  /**
+   * Optional. CID to the avatar image hosted on IPFS.
+   *
+   * @generated from field: string avatar = 3;
+   */
+  avatar = "";
+
+  /**
+   * Optional. Hypermedia ID of the Account's root/entrypoint document.
+   *
+   * @generated from field: string root_document = 4;
+   */
+  rootDocument = "";
+
+  constructor(data?: PartialMessage<Profile>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.accounts.v1alpha.Profile";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "alias", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "bio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "avatar", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "root_document", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Profile {
+    return new Profile().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Profile {
+    return new Profile().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Profile {
+    return new Profile().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Profile | PlainMessage<Profile> | undefined, b: Profile | PlainMessage<Profile> | undefined): boolean {
+    return proto3.util.equals(Profile, a, b);
+  }
+}
+
+/**
+ * @generated from message com.seed.accounts.v1alpha.Device
+ */
+export class Device extends Message<Device> {
+  /**
+   * CID-encoded Peer ID of this device.
+   *
+   * @generated from field: string device_id = 1;
+   */
+  deviceId = "";
+
+  constructor(data?: PartialMessage<Device>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.accounts.v1alpha.Device";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "device_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Device {
+    return new Device().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Device {
+    return new Device().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Device {
+    return new Device().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Device | PlainMessage<Device> | undefined, b: Device | PlainMessage<Device> | undefined): boolean {
+    return proto3.util.equals(Device, a, b);
+  }
+}
+
+/**
+ * @generated from message com.seed.accounts.v1alpha.SetAccountTrustRequest
+ */
+export class SetAccountTrustRequest extends Message<SetAccountTrustRequest> {
+  /**
+   * ID of the Account to trust/untrust.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Whether to trust or not the account.
+   *
+   * @generated from field: bool is_trusted = 2;
+   */
+  isTrusted = false;
+
+  constructor(data?: PartialMessage<SetAccountTrustRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.accounts.v1alpha.SetAccountTrustRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "is_trusted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SetAccountTrustRequest {
+    return new SetAccountTrustRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SetAccountTrustRequest {
+    return new SetAccountTrustRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SetAccountTrustRequest {
+    return new SetAccountTrustRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SetAccountTrustRequest | PlainMessage<SetAccountTrustRequest> | undefined, b: SetAccountTrustRequest | PlainMessage<SetAccountTrustRequest> | undefined): boolean {
+    return proto3.util.equals(SetAccountTrustRequest, a, b);
   }
 }
 

@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse } from "./accounts_pb";
+import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse, Profile, SetAccountTrustRequest } from "./accounts_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -27,7 +27,22 @@ export const Accounts = {
       kind: MethodKind.Unary,
     },
     /**
-     * List accounts known to the backend. New accounts can be discovered naturally by
+     * Updates profile information of our own Account.
+     * Doesn't support partial updates!
+     * Users should call GetAccount first,
+     * change the necessary fields in place,
+     * and then send the same Profile object back to UpdateProfile.
+     *
+     * @generated from rpc com.seed.accounts.v1alpha.Accounts.UpdateProfile
+     */
+    updateProfile: {
+      name: "UpdateProfile",
+      I: Profile,
+      O: Account,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
      * interacting with the network, or users can ask to discover specific accounts using
      * the Networking API.
      *
@@ -37,6 +52,18 @@ export const Accounts = {
       name: "ListAccounts",
       I: ListAccountsRequest,
       O: ListAccountsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Set or unset the trustness of an account. An account is untrusted by default except for our own.
+     * Returns the modified account.
+     *
+     * @generated from rpc com.seed.accounts.v1alpha.Accounts.SetAccountTrust
+     */
+    setAccountTrust: {
+      name: "SetAccountTrust",
+      I: SetAccountTrustRequest,
+      O: Account,
       kind: MethodKind.Unary,
     },
   }

@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package com.seed.documents.v2alpha;
+
+import "documents/v2alpha/documents.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "seed/backend/genproto/documents/v2alpha;documents";
+
+// Comments service allows users to add comments to documents.
+service Comments {
+  // Creates a new comment.
+  rpc CreateComment(CreateCommentRequest) returns (Comment);
+
+  // Gets a single comment by ID.
+  rpc GetComment(GetCommentRequest) returns (Comment);
+
+  // Lists comments for a given target.
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+}
+
+// Request to create a comment.
+message CreateCommentRequest {
+  // Required. The URI of the target hypermedia resource which is being commented.
+  // It's best to use versioned URIs to propagate better context and intent,
+  // even if the comments are eventually "overlaid" onto the newer versions of the resource.
+  string target = 1;
+
+  // Optional. If a comment is a reply to another comment, this must be the ID of the replied comment.
+  // The target of the reply and the replied comment must be the same
+  // (although version could differ if the reply is made reading a newer version of the document).
+  string replied_comment = 2;
+
+  // Required. Content of the comment.
+  repeated BlockNode content = 3;
+}
+
+// Request to get a comment.
+message GetCommentRequest {
+  // Required. ID of the comment to retrieve.
+  string id = 1;
+}
+
+// Request to list comments.
+message ListCommentsRequest {
+  // Required. The URI of the target resource for which comments should be listed.
+  string target = 1;
+
+  // Optional. The maximum number of comments to return.
+  int32 page_size = 2;
+
+  // Optional. The page token obtained from a previous request (if any).
+  string page_token = 3;
+}
+
+// Response with a list of comments.
+message ListCommentsResponse {
+  // List of comments.
+  repeated Comment comments = 1;
+
+  // Token to retrieve the next page of comments (if necessary).
+  string next_page_token = 2;
+}
+
+// Comment is a unit of discussion.
+// Comments are created targeting some hypermedia resource (ideally with a versioned link).
+// Replies are created targeting the same resource, in addition to pointing to the comment they are replying to.
+message Comment {
+  // ID of the current comment.
+  string id = 1;
+
+  // The URI of the target resource which the comment is attached to.
+  // This is normally a Hypermedia Document, but potentially can be anything.
+  // Reply comments should share the same target as the comment they are replying to,
+  // but could potentially point to a different version.
+  string target = 2;
+
+  // The ID of the top-level non-reply comment of the conversation thread.
+  string thread_root = 3;
+
+  // The ID of the comment to which this comment is a reply.
+  // For initial comments this field is empty.
+  string replied_comment = 4;
+
+  // Account ID of the author of the comment.
+  string author = 5;
+
+  // Content of the comment.
+  repeated BlockNode content = 6;
+
+  // Timestamp when the comment was created.
+  google.protobuf.Timestamp create_time = 7;
+}

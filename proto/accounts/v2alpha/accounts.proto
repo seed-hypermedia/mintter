@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package com.seed.accounts.v2alpha;
+
+option go_package = "seed/backend/genproto/accounts/v2alpha;accounts";
+
+// Accounts API service.
+service Accounts {
+  // Lookup an Account information across the already known accounts.
+  // Can also be used to retrieve our own account.
+  rpc GetAccount(GetAccountRequest) returns (Account);
+
+  // List accounts known to the backend. New accounts can be discovered naturally by
+  // interacting with the network, or users can ask to discover specific accounts using
+  // the Networking API.
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+}
+
+message GetAccountRequest {
+  // ID of the Account to be looked up. If empty - our own account will be returned.
+  string id = 1;
+}
+
+message ListAccountsRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+
+  string next_page_token = 2;
+}
+
+message Account {
+  // Hypermedia Account ID.
+  string id = 1;
+
+  // If there is an unpublished draft for this account's profile document
+  bool has_profile_draft = 5;
+}
