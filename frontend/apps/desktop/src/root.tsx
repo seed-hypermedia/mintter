@@ -19,8 +19,8 @@ import React, {Suspense, useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import {ErrorBoundary} from 'react-error-boundary'
 import superjson from 'superjson'
+import {AccountWizardDialog} from './app-account'
 import type {GoDaemonState} from './app-api'
-import {CurrentAccountContextProvider} from './current-account'
 import {createIPC} from './ipc'
 import type {AppInfoType} from './preload'
 import './root.css'
@@ -251,21 +251,20 @@ function MainApp({
               window.location.reload()
             }}
           >
-            <CurrentAccountContextProvider>
-              <NavigationContainer
-                initialNav={
-                  // @ts-expect-error
-                  window.initNavState
+            <NavigationContainer
+              initialNav={
+                // @ts-expect-error
+                window.initNavState
+              }
+            >
+              <AccountWizardDialog />
+              <Main
+                className={
+                  // this is used by editor.css which doesn't know tamagui styles, boooo!
+                  darkMode ? 'seed-app-dark' : 'seed-app-light'
                 }
-              >
-                <Main
-                  className={
-                    // this is used by editor.css which doesn't know tamagui styles, boooo!
-                    darkMode ? 'seed-app-dark' : 'seed-app-light'
-                  }
-                />
-              </NavigationContainer>
-            </CurrentAccountContextProvider>
+              />
+            </NavigationContainer>
             <Toaster
             // position="bottom-center"
             // toastOptions={{className: 'toaster'}}

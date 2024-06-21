@@ -20,14 +20,7 @@ export {
   ListAccountsResponse,
   Profile,
 } from './.generated/accounts/v1alpha/accounts_pb'
-export type {
-  GenMnemonicRequest,
-  GenMnemonicResponse,
-  GetInfoRequest,
-  Info,
-  RegisterRequest,
-  RegisterResponse,
-} from './.generated/daemon/v1alpha/daemon_pb'
+export * from './.generated/daemon/v1alpha/daemon_pb'
 export {
   ChangeInfo,
   GetChangeInfoRequest,

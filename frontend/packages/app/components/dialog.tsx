@@ -140,9 +140,25 @@ export function AppDialog<
             height="100vh"
             bg={'#00000088'}
             width="100vw"
+            animation="fast"
+            opacity={0.8}
+            enterStyle={{opacity: 0}}
+            exitStyle={{opacity: 0}}
             onPress={() => setIsOpen(false)}
           />
-          <Component.Content zIndex="$zIndex.5" backgroundColor={'$background'}>
+          <Component.Content
+            backgroundColor={'$background'}
+            animation={[
+              'fast',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+          >
             <ContentComponent
               isOpen={isOpen}
               onClose={() => {

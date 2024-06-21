@@ -110,7 +110,6 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
       >
         <YStack
           flex={1}
-          // @ts-expect-error
           overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
           // paddingVertical="$2"
         >
