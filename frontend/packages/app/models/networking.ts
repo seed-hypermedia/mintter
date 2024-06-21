@@ -79,7 +79,6 @@ export function usePeers(
   options: UseQueryOptions<PeerInfo[], ConnectError> = {},
 ) {
   const client = useGRPCClient()
-  // let isDaemonReady = useDaemonReady()
   return useQuery<PeerInfo[], ConnectError>({
     queryKey: [queryKeys.GET_PEERS, filterConnected],
     queryFn: async () => {

@@ -1,23 +1,24 @@
-import { useListen } from '@shm/app/app-context'
+import {useListen} from '@shm/app/app-context'
 
-import { AppErrorPage } from '@shm/app//components/app-error'
-import { TitleBar } from '@shm/app/components/titlebar'
-import { getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
-import { useNavigate } from '@shm/app/utils/useNavigate'
-import { YStack } from '@shm/ui'
-import { ReactElement, lazy, useMemo } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Launcher } from '../components/launcher'
-import { AppSidebar } from '../components/sidebar'
-import { DraftStatusContext } from '../models/draft-machine'
-import { SidebarContextProvider } from '../src/sidebar-context'
-import { NavRoute } from '../utils/routes'
-import { getWindowType } from '../utils/window-types'
-import { BaseLoading, NotFoundPage } from './base'
-import { DocumentPlaceholder } from './document-placeholder'
+import {AppErrorPage} from '@shm/app//components/app-error'
+import {TitleBar} from '@shm/app/components/titlebar'
+import {getRouteKey, useNavRoute} from '@shm/app/utils/navigation'
+import {useNavigate} from '@shm/app/utils/useNavigate'
+import {YStack} from '@shm/ui'
+import {ReactElement, lazy, useMemo} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {Launcher} from '../components/launcher'
+import {AppSidebar} from '../components/sidebar'
+import {DraftStatusContext} from '../models/draft-machine'
+import {SidebarContextProvider} from '../src/sidebar-context'
+import {NavRoute} from '../utils/routes'
+import {getWindowType} from '../utils/window-types'
+import {BaseLoading, NotFoundPage} from './base'
+import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
 var Feed = lazy(() => import('@shm/app/pages/feed'))
+var Home = lazy(() => import('./home'))
 var Account = lazy(() => import('@shm/app/pages/account-page'))
 var Contacts = lazy(() => import('@shm/app/pages/contacts-page'))
 var Publication = lazy(() => import('@shm/app/pages/publication'))
@@ -30,10 +31,10 @@ var Favorites = lazy(() => import('@shm/app/pages/favorites'))
 var DeletedContent = lazy(() => import('@shm/app/pages/deleted-content'))
 var DraftRebase = lazy(() => import('@shm/app/pages/draft-rebase'))
 
-export default function Main({ className }: { className?: string }) {
+export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
   const navigate = useNavigate()
-  const { PageComponent, Fallback } = useMemo(
+  const {PageComponent, Fallback} = useMemo(
     () => getPageComponent(navR),
     [navR],
   )
@@ -87,6 +88,11 @@ export default function Main({ className }: { className?: string }) {
 
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
+    case 'home':
+      return {
+        PageComponent: Home,
+        Fallback: BaseLoading,
+      }
     case 'feed':
       return {
         PageComponent: Feed,

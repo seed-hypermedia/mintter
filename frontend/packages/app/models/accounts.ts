@@ -39,7 +39,6 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
 }
 
 export function useAllAccounts(filterSites?: boolean) {
-  // let isDaemonReady = useDaemonReady()
   const grpcClient = useGRPCClient()
   const contacts = useQuery<{accounts: Array<HMAccount>}, ConnectError>({
     // enabled: !!isDaemonReady,

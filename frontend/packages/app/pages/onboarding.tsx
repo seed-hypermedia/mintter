@@ -1,8 +1,8 @@
 import appError from '@shm/app/errors'
-import { useSetProfile } from '@shm/app/models/accounts'
-import { useAccountRegistration, useMnemonics } from '@shm/app/models/daemon'
-import { trpc } from '@shm/desktop/src/trpc'
-import { Profile as ProfileType } from '@shm/shared'
+import {useSetProfile} from '@shm/app/models/accounts'
+import {useAccountRegistration, useMnemonics} from '@shm/app/models/daemon'
+import {trpc} from '@shm/desktop/src/trpc'
+import {Profile as ProfileType} from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -45,11 +45,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import { SeedIcon } from '../components/seed-icon'
-import { useConnectPeer } from '../models/contacts'
-import { useWalletOptIn } from '../models/wallet'
-import { useDaemonReady } from '../node-status-context'
-import { isHttpUrl } from '../utils/navigation'
+import {useAppContext} from '../app-context'
+import {SeedIcon} from '../components/seed-icon'
+import {useConnectPeer} from '../models/contacts'
+import {useWalletOptIn} from '../models/wallet'
+import {isHttpUrl} from '../utils/navigation'
 
 const CONTENT_MAX_WIDTH = 500
 
@@ -90,8 +90,8 @@ function Welcome(props: OnboardingStepProps) {
 
         <YStack flex={2} gap="$5">
           <StepParagraph>
-            Welcome to Seed, the decentralized knowledge collaboration app
-            that fosters constructive dialogue and critical debate.
+            Welcome to Seed, the decentralized knowledge collaboration app that
+            fosters constructive dialogue and critical debate.
           </StepParagraph>
           <StepParagraph>
             Join us today to create and join communities, share knowledge, and
@@ -127,6 +127,7 @@ function Mnemonics(props: OnboardingStepProps) {
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
   const [error, setError] = useState('')
   const mnemonics = useMnemonics()
+  const {ipc} = useAppContext()
   const [check1, setCheck1] = useState(false)
   const [check2, setCheck2] = useState(false)
   const [check3, setCheck3] = useState(false)
@@ -328,9 +329,8 @@ function Mnemonics(props: OnboardingStepProps) {
               <Tabs.Content value="ownwords" paddingVertical="$4">
                 <YStack gap="$4">
                   <StepParagraph>
-                    If you aready have a BIP-39 seed, you can reuse it with
-                    Seed and we will derive a seprate Seed-specific key
-                    from it
+                    If you aready have a BIP-39 seed, you can reuse it with Seed
+                    and we will derive a seprate Seed-specific key from it
                   </StepParagraph>
                   <XStack
                     backgroundColor="$backgroundHover"
@@ -543,8 +543,8 @@ function NewDevice(props: OnboardingStepProps) {
                 }}
               >
                 I understand that after this point I will not be able to recover
-                my 12-word recovery phrase. Seed cannot help me recover them
-                if I lose it.
+                my 12-word recovery phrase. Seed cannot help me recover them if
+                I lose it.
               </CheckboxField>
               {error || register.status == 'error' ? (
                 <XStack
@@ -606,8 +606,8 @@ function Profile(props: OnboardingStepProps) {
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
             <StepParagraph>
-              Link your personal data with your new Seed account. You can
-              fill this information later if you prefer.
+              Link your personal data with your new Seed account. You can fill
+              this information later if you prefer.
             </StepParagraph>
             <XStack maxWidth={CONTENT_MAX_WIDTH}>
               <YStack flex={1}>
@@ -650,9 +650,9 @@ function Analytics(props: OnboardingStepProps) {
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
             <StepParagraph>
-              Pre-release versions of Seed automatically send anonymized
-              crash reports when things go wrong. This helps us fix bugs and
-              improve performance.
+              Pre-release versions of Seed automatically send anonymized crash
+              reports when things go wrong. This helps us fix bugs and improve
+              performance.
             </StepParagraph>
             <StepParagraph>
               We strongly believe privacy is a basic human right, so the full
@@ -720,7 +720,6 @@ const SuggestedSites = import.meta.env.DEV
   : ['seedhypermedia.com', 'hyper.media', 'mintter.com']
 
 function ConnectSite(props: OnboardingStepProps) {
-  const isDaemonReady = useDaemonReady()
   const connectPeer = useConnectPeer({
     syncImmediately: true,
     aggressiveInvalidation: true,
@@ -807,13 +806,12 @@ function ConnectSite(props: OnboardingStepProps) {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
-        {connectPeer.isLoading || !isDaemonReady ? <Spinner /> : null}
+        {connectPeer.isLoading ? <Spinner /> : null}
         <Button id="btn-skip" onPress={() => props.complete()} size="$4">
           Skip
         </Button>
         <NextButton
           size="$4"
-          disabled={!isDaemonReady}
           onPress={() => {
             const domainToUse =
               siteDomain === '' ? SuggestedSites[0] : siteDomain

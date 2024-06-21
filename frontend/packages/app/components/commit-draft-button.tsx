@@ -1,5 +1,5 @@
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { AuthorVariant } from '@shm/shared'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {AuthorVariant} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -7,20 +7,16 @@ import {
   Tooltip,
   YStack,
   YStackProps,
-  toast
+  toast,
 } from '@shm/ui'
-import { Check } from '@tamagui/lucide-icons'
-import { PropsWithChildren } from 'react'
-import { useGRPCClient } from '../app-context'
-import { useMyAccount } from '../models/accounts'
-import {
-  usePublishDraft,
-  usePushPublication
-} from '../models/documents'
-import { DraftStatusContext } from '../models/draft-machine'
-import { useGatewayHost, usePushOnPublish } from '../models/gateway-settings'
-import { useDaemonReady } from '../node-status-context'
-import { useMediaDialog } from './media-dialog'
+import {Check} from '@tamagui/lucide-icons'
+import {PropsWithChildren} from 'react'
+import {useGRPCClient} from '../app-context'
+import {useMyAccount} from '../models/accounts'
+import {usePublishDraft, usePushPublication} from '../models/documents'
+import {DraftStatusContext} from '../models/draft-machine'
+import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
+import {useMediaDialog} from './media-dialog'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -32,12 +28,11 @@ export default function CommitDraftButton() {
   const myAccount = useMyAccount()
   const myAuthorVariant: AuthorVariant | null = myAccount.data?.id
     ? {
-      key: 'author',
-      author: myAccount.data.id,
-    }
+        key: 'author',
+        author: myAccount.data.id,
+      }
     : null
   const mediaDialog = useMediaDialog()
-  const isDaemonReady = useDaemonReady()
   const canPublish = DraftStatusContext.useSelector(
     (s) => s.matches('idle') || s.matches('saved'),
   )
@@ -48,7 +43,7 @@ export default function CommitDraftButton() {
   const push = usePushPublication()
   const gwHost = useGatewayHost()
   const publish = usePublishDraft({
-    onSuccess: ({ pub: publishedDoc }) => {
+    onSuccess: ({pub: publishedDoc}) => {
       if (!publishedDoc || !draftId || !myAuthorVariant) return
       if (pushOnPublish.data === 'always') {
         toast.promise(push.mutateAsync(draftId), {
@@ -79,32 +74,30 @@ export default function CommitDraftButton() {
   return (
     <>
       {mediaDialog.content}
-
+      <SaveIndicatorStatus />
       {hasUpdateError ? null : (
         <Button
           size="$2"
-          disabled={!isDaemonReady || !canPublish || hasUpdateError}
+          disabled={!canPublish || hasUpdateError}
           opacity={!canPublish ? 0.5 : 1}
           onPress={() => {
-            grpcClient.drafts
-              .getDraft({ documentId: draftId })
-              .then((draft) => {
-                const hasEmptyMedia = draft.children.find((block) => {
-                  return (
-                    block.block &&
-                    ['image', 'video', 'file'].includes(block.block.type) &&
-                    !block.block.ref
-                  )
-                })
-                if (hasEmptyMedia) {
-                  mediaDialog.open({
-                    draftId,
-                    publish,
-                  })
-                } else {
-                  publish.mutate({ draftId })
-                }
+            grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
+              const hasEmptyMedia = draft.children.find((block) => {
+                return (
+                  block.block &&
+                  ['image', 'video', 'file'].includes(block.block.type) &&
+                  !block.block.ref
+                )
               })
+              if (hasEmptyMedia) {
+                mediaDialog.open({
+                  draftId,
+                  publish,
+                })
+              } else {
+                publish.mutate({draftId})
+              }
+            })
           }}
           theme="green"
         >
@@ -115,7 +108,7 @@ export default function CommitDraftButton() {
   )
 }
 
-function StatusWrapper({ children, ...props }: PropsWithChildren<YStackProps>) {
+function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
   return (
     <YStack space="$2" opacity={0.6}>
       {children}

@@ -1,5 +1,3 @@
-import {useEffect} from 'react'
-
 export type AppIPC = {
   invoke: (cmd: string, data?: any) => Promise<any>
   send: (cmd: string, data?: any) => Promise<any>

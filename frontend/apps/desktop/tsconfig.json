@@ -24,7 +24,10 @@
         "name": "@nderscore/tamagui-typescript-plugin",
         "pathToApp": "."
       }
-    ]
+    ],
+    "paths": {
+      "@shm/ui": ["frontend/packages/ui/src/index.ts"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

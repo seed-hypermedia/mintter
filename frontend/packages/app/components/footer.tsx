@@ -1,19 +1,11 @@
-import { useConnectionSummary } from '@shm/app/models/contacts'
-import { useDaemonReady } from '@shm/app/node-status-context'
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { VERSION } from '@shm/shared'
-import {
-  Button,
-  ButtonProps,
-  Clock,
-  FooterWrapper,
-  SizableText,
-  XStack,
-} from '@shm/ui'
-import { Cable } from '@tamagui/lucide-icons'
-import { ReactNode } from 'react'
-import { OnlineIndicator } from './indicator'
-import { useNetworkDialog } from './network-dialog'
+import {useConnectionSummary} from '@shm/app/models/contacts'
+import {useNavRoute} from '@shm/app/utils/navigation'
+import {VERSION} from '@shm/shared'
+import {Button, ButtonProps, FooterWrapper, SizableText, XStack} from '@shm/ui'
+import {Cable} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
+import {OnlineIndicator} from './indicator'
+import {useNetworkDialog} from './network-dialog'
 
 export function FooterButton({
   active,
@@ -67,18 +59,8 @@ function FooterNetworkingButton() {
 }
 
 export default function Footer({children}: {children?: ReactNode}) {
-  let isDaemonReady = useDaemonReady()
-
   return (
     <FooterWrapper style={{flex: 'none'}}>
-      {!isDaemonReady ? (
-        <XStack alignItems="center" gap="$2" paddingHorizontal="$3">
-          <Clock size={10} />
-          <SizableText size="$1" userSelect="none">
-            Initializing node...
-          </SizableText>
-        </XStack>
-      ) : null}
       <FooterNetworkingButton />
       <XStack alignItems="center" paddingHorizontal="$2">
         <SizableText
