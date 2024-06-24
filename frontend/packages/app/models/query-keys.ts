@@ -16,6 +16,9 @@ export const queryKeys = {
 
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
+  KEYS_LIST: 'KEYS_LIST',
+  KEYS_GET: 'KEYS_GET',
+  GENERATE_MNEMONIC: 'GENERATE_MNEMONIC',
 
   // networking
   GET_PEERS: 'GET_PEERS', // , filterConnected: boolean

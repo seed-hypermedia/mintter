@@ -1,5 +1,6 @@
 import {useGRPCClient} from '@shm/app/app-context'
 import {DialogTitle} from '@shm/app/components/dialog'
+import {queryKeys} from '@shm/app/models/query-keys'
 import {eventStream} from '@shm/shared'
 import {
   Add,
@@ -14,6 +15,7 @@ import {
 } from '@shm/ui'
 import {useMutation, useQuery} from '@tanstack/react-query'
 import {useEffect, useMemo, useState} from 'react'
+import {trpc} from './trpc'
 
 export type NamedKey = {
   name: string
@@ -25,6 +27,9 @@ let [dispatchWizardEvent, wizardEvents] = eventStream<boolean>()
 let [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
 
 export function CurrentAccountSidebarSection() {
+  const read = trpc.secureStorage.read.useQuery('main')
+
+  console.log(`== ~ CurrentAccountSidebarSection ~ read:`, read.data)
   return (
     <XStack>
       <Button
@@ -54,6 +59,7 @@ export function AccountWizardDialog() {
   const [existingWords, setExistingWords] = useState<string>('')
   const [isSaveWords, setSaveWords] = useState<null | boolean>(null)
 
+  const saveWords = trpc.secureStorage.write.useMutation()
   const {refetch: refetchKeys} = useQuery({
     queryKey: ['LIST_KEYS'],
     queryFn: async () => {
@@ -63,7 +69,7 @@ export function AccountWizardDialog() {
   })
 
   const {data: genWords, refetch: refetchWords} = useQuery({
-    queryKey: ['GENERATE_WORDS'],
+    queryKey: [queryKeys.GENERATE_MNEMONIC],
     enabled: step == 'create' && newAccount == true,
     queryFn: async () => {
       const words = await client.daemon.genMnemonic({})
@@ -240,6 +246,7 @@ export function AccountWizardDialog() {
                       if (isSaveWords) {
                         console.log('== SAVE WORDS TOO!')
                         // TODO: @Eric here we need to store the words
+                        saveWords.mutate({key: 'main', value: words})
                       }
                       refetchKeys()
                       setStep('complete')
@@ -273,7 +280,10 @@ export function AccountWizardDialog() {
                 <Button
                   f={1}
                   onPress={() => {
-                    addExistingAccount.mutate()
+                    addExistingAccount.mutateAsync().then(() => {
+                      refetchKeys()
+                      setStep('complete')
+                    })
                   }}
                 >
                   Add Existing account
