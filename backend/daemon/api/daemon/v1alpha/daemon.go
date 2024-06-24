@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -50,6 +51,11 @@ func NewServer(store Storage, blobs *hyper.Storage, w Wallet, syncFunc func() er
 		wallet:        w,
 		forceSyncFunc: syncFunc,
 	}
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	daemon.RegisterDaemonServer(rpc, srv)
 }
 
 // GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.

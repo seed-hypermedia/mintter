@@ -14,6 +14,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -30,6 +31,11 @@ func NewServer(blobs *hyper.Storage, node *mttnet.Node) *Server {
 		blobs: blobs,
 		net:   node,
 	}
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	networking.RegisterNetworkingServer(rpc, srv)
 }
 
 // Connect implements the Connect RPC method.

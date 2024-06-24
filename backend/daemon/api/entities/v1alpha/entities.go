@@ -26,6 +26,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/exp/slices"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -49,6 +50,11 @@ func NewServer(blobs *hyper.Storage, disc Discoverer) *Server {
 		blobs: blobs,
 		disc:  disc,
 	}
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	entities.RegisterEntitiesServer(rpc, srv)
 }
 
 // GetChange implements the Changes server.

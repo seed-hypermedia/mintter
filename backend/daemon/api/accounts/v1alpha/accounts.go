@@ -14,6 +14,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -33,6 +34,11 @@ func NewServer(ks core.KeyStore, blobs *hyper.Storage) *Server {
 		keys:  ks,
 		blobs: blobs,
 	}
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	accounts.RegisterAccountsServer(rpc, srv)
 }
 
 // GetAccount implements the corresponding gRPC method.

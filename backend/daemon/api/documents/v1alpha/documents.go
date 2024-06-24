@@ -25,6 +25,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -67,6 +68,16 @@ func NewServer(keys core.KeyStore, db *sqlitex.Pool, disc Discoverer, gwClient G
 	}
 
 	return srv
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	documents.RegisterContentGraphServer(rpc, srv)
+	documents.RegisterDraftsServer(rpc, srv)
+	documents.RegisterPublicationsServer(rpc, srv)
+	documents.RegisterChangesServer(rpc, srv)
+	documents.RegisterCommentsServer(rpc, srv)
+	documents.RegisterMergeServer(rpc, srv)
 }
 
 // CreateDraft implements the corresponding gRPC method.

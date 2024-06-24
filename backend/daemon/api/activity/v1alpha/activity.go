@@ -19,6 +19,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -36,6 +37,11 @@ func NewServer(db *sqlitex.Pool) *Server {
 		db:        db,
 		startTime: time.Now(),
 	}
+}
+
+// RegisterServer registers the server with the gRPC server.
+func (srv *Server) RegisterServer(rpc grpc.ServiceRegistrar) {
+	activity.RegisterActivityFeedServer(rpc, srv)
 }
 
 // ListEvents list all the events seen locally.

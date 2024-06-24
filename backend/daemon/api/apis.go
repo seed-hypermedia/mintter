@@ -17,6 +17,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"google.golang.org/grpc"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -55,6 +56,16 @@ func New(
 		Networking: networking.NewServer(blobs, node),
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{}),
 	}
+}
+
+// Register API services on the given gRPC server.
+func (s Server) Register(srv *grpc.Server) {
+	s.Accounts.RegisterServer(srv)
+	s.Daemon.RegisterServer(srv)
+	s.Documents.RegisterServer(srv)
+	s.Activity.RegisterServer(srv)
+	s.Networking.RegisterServer(srv)
+	s.Entities.RegisterServer(srv)
 }
 
 type lazyGwClient struct {
