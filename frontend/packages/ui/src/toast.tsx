@@ -1,4 +1,4 @@
-import {AlertCircle, CheckCircle2} from '@tamagui/lucide-icons'
+import { AlertCircle, CheckCircle2 } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   ReactElement,
@@ -8,13 +8,12 @@ import {
   useState,
 } from 'react'
 import {
-  AnimatePresence,
   Button,
   SizableText,
   Spinner,
   XStack,
   YStack,
-  styled,
+  styled
 } from 'tamagui'
 
 function DecorationIcon({
@@ -209,7 +208,7 @@ export function Toaster() {
       position="absolute"
       ai="center"
     >
-      <AnimatePresence>
+      {/* <AnimatePresence> */}
         {state.map((item) => (
           <ToastView
             key={item.key}
@@ -237,7 +236,7 @@ export function Toaster() {
             }}
           />
         ))}
-      </AnimatePresence>
+      {/* </AnimatePresence> */}
     </YStack>
   )
 }
@@ -308,9 +307,9 @@ function PromiseToast<V>({
       errorText = messages.error(state.error)
     return (
       <XStack gap="$3" ai="center">
-        <AnimatePresence>
+        {/* <AnimatePresence> */}
           <ErrorToastDecoration />
-        </AnimatePresence>
+        {/* </AnimatePresence> */}
         <SizableText>{errorText}</SizableText>
       </XStack>
     )
@@ -322,9 +321,9 @@ function PromiseToast<V>({
       successText = messages.success(state.value)
     return (
       <XStack gap="$3" ai="center">
-        <AnimatePresence>
+        {/* <AnimatePresence> */}
           <SuccessToastDecoration />
-        </AnimatePresence>
+        {/* </AnimatePresence> */}
         <SizableText>{successText}</SizableText>
       </XStack>
     )

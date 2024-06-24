@@ -86,7 +86,7 @@
   },
   "devDependencies": {
     "@shm/prettier": "*",
-    "@tamagui/vite-plugin": "1.90.2",
+    "@tamagui/vite-plugin": "1.95.0",
     "@types/node": "20.6.5",
     "@types/prosemirror-dev-tools": "3.0.3",
     "@types/react": "18.2.21",

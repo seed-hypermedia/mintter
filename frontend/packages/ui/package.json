@@ -26,27 +26,27 @@
   "dependencies": {
     "@hookform/resolvers": "3.3.1",
     "@shm/shared": "*",
-    "@tamagui/animations-moti": "1.90.2",
-    "@tamagui/animations-react-native": "1.90.2",
-    "@tamagui/cli": "1.90.2",
-    "@tamagui/config": "1.90.2",
-    "@tamagui/create-theme": "1.90.2",
-    "@tamagui/font-inter": "1.90.2",
-    "@tamagui/helpers-icon": "1.90.2",
-    "@tamagui/lucide-icons": "1.90.2",
-    "@tamagui/react-native-media-driver": "1.90.2",
-    "@tamagui/shorthands": "1.90.2",
-    "@tamagui/theme-builder": "1.90.2",
-    "@tamagui/themes": "1.90.2",
-    "@tamagui/web": "1.90.2",
+    "@tamagui/animations-moti": "1.95.0",
+    "@tamagui/animations-react-native": "1.95.0",
+    "@tamagui/cli": "1.95.0",
+    "@tamagui/config": "1.95.0",
+    "@tamagui/create-theme": "1.95.0",
+    "@tamagui/font-inter": "1.95.0",
+    "@tamagui/helpers-icon": "1.95.0",
+    "@tamagui/lucide-icons": "1.95.0",
+    "@tamagui/react-native-media-driver": "1.95.0",
+    "@tamagui/shorthands": "1.95.0",
+    "@tamagui/theme-builder": "1.95.0",
+    "@tamagui/themes": "1.95.0",
+    "@tamagui/web": "1.95.0",
     "react": "18.2.0",
     "react-native-reanimated": "^3.7.0",
     "react-virtuoso": "4.6.2",
-    "tamagui": "1.90.2"
+    "tamagui": "1.95.0"
   },
   "devDependencies": {
     "@shm/prettier": "*",
-    "@tamagui/build": "1.90.2",
+    "@tamagui/build": "1.95.0",
     "@tamagui/use-did-finish-ssr": "^1.100.5"
   }
 }
