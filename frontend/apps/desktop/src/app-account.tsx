@@ -14,7 +14,6 @@ import {
 } from '@shm/ui'
 import {useMutation, useQuery} from '@tanstack/react-query'
 import {useEffect, useMemo, useState} from 'react'
-import {trpc} from './trpc'
 
 export type NamedKey = {
   name: string
@@ -26,34 +25,21 @@ let [dispatchWizardEvent, wizardEvents] = eventStream<boolean>()
 let [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
 
 export function CurrentAccountSidebarSection() {
-  const client = useGRPCClient()
-  const getWords = trpc.secureStorage.read.useQuery('main')
-
-  console.log(`== ~ CurrentAccountSidebarSection ~ getWords:`, getWords)
-  const {data: keys} = useQuery({
-    queryKey: ['LIST_KEYS'],
-    queryFn: async () => {
-      const res = await client.daemon.listKeys({})
-      return res.keys
-    },
-  })
-  if (keys?.length == 0) {
-    return (
-      <XStack>
-        <Button
-          icon={Add}
-          chromeless
-          borderRadius={0}
-          f={1}
-          onPress={() => {
-            dispatchWizardEvent(true)
-          }}
-        >
-          Add Account
-        </Button>
-      </XStack>
-    )
-  }
+  return (
+    <XStack>
+      <Button
+        icon={Add}
+        chromeless
+        borderRadius={0}
+        f={1}
+        onPress={() => {
+          dispatchWizardEvent(true)
+        }}
+      >
+        Add Account
+      </Button>
+    </XStack>
+  )
 
   return null
 }
@@ -67,10 +53,6 @@ export function AccountWizardDialog() {
   const [step, setStep] = useState<AccountStep>('start')
   const [existingWords, setExistingWords] = useState<string>('')
   const [isSaveWords, setSaveWords] = useState<null | boolean>(null)
-  const saveWords = trpc.secureStorage.write.useMutation()
-  const getWords = trpc.secureStorage.read.useQuery('main')
-
-  console.log(`== ~ AccountWizardDialog ~ getWords:`, getWords.data)
 
   const {refetch: refetchKeys} = useQuery({
     queryKey: ['LIST_KEYS'],
