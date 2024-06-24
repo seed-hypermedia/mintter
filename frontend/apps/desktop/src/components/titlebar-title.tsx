@@ -1,6 +1,15 @@
+import { useSizeObserver } from '@shm/app/components/app-embeds'
 import { useDraftTitle } from '@shm/app/models/documents'
+import { useEntitiesContent, useEntityRoutes } from '@shm/app/models/entities'
 import { usePublicationVariant } from '@shm/app/models/publication'
 import { useNavRoute } from '@shm/app/utils/navigation'
+import {
+  AccountRoute,
+  DocumentRoute,
+  DraftRoute,
+  NavRoute
+} from '@shm/app/utils/routes'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import { getDocumentTitle } from '@shm/shared'
 import {
   Button,
@@ -19,16 +28,7 @@ import {
 import { Sparkles, Star } from '@tamagui/lucide-icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AiOutlineEllipsis } from 'react-icons/ai'
-import { useEntitiesContent, useEntityRoutes } from '../models/entities'
 import { useFixedDraftTitle } from '../pages/draft'
-import {
-  AccountRoute,
-  DocumentRoute,
-  DraftRoute,
-  NavRoute
-} from '../utils/routes'
-import { useNavigate } from '../utils/useNavigate'
-import { useSizeObserver } from './app-embeds'
 import { getItemDetails } from './sidebar-neo'
 
 export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {

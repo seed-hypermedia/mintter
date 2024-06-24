@@ -1,3 +1,11 @@
+import { useAppContext } from '@shm/app/app-context'
+import {
+  EmbedAccount,
+  EmbedComment,
+  EmbedInline,
+  EmbedPublication,
+} from '@shm/app/components/app-embeds'
+import { useExperiments } from '@shm/app/models/experiments'
 import { useNavRoute } from '@shm/app/utils/navigation'
 import { useOpenUrl } from '@shm/desktop/src/open-url'
 import { trpc } from '@shm/desktop/src/trpc'
@@ -11,15 +19,7 @@ import {
   contentTextUnit,
 } from '@shm/shared'
 import 'allotment/dist/style.css'
-import { useAppContext } from '../app-context'
-import {
-  EmbedAccount,
-  EmbedComment,
-  EmbedInline,
-  EmbedPublication,
-} from '../components/app-embeds'
 import { useFullReferenceUrl } from '../components/titlebar-common'
-import { useExperiments } from '../models/experiments'
 
 export function AppPublicationContentProvider({
   children,

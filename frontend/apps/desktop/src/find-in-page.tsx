@@ -1,5 +1,4 @@
 import { StyleProvider } from '@shm/app/app-context'
-import { FindInPage } from '@shm/app/pages/find-in-page'
 import { useStream } from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
@@ -7,6 +6,7 @@ import '@tamagui/font-inter/css/700.css'
 import React, { useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createIPC } from './ipc'
+import { FindInPage } from './pages/find-in-page'
 
 function FindInPageView() {
   const ipc = useMemo(() => createIPC(), [])

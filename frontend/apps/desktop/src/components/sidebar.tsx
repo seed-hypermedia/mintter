@@ -1,3 +1,15 @@
+import { useAccount } from '@shm/app/models/accounts'
+import { useDocumentEmbeds } from '@shm/app/models/documents'
+import { useFavorites } from '@shm/app/models/favorites'
+import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
+import { getRouteContext, getRouteParentContext } from '@shm/app/utils/route-context'
+import {
+  AccountRoute,
+  BaseEntityRoute,
+  DocumentRoute,
+  NavRoute,
+} from '@shm/app/utils/routes'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import { CurrentAccountSidebarSection } from '@shm/desktop/src/app-account'
 import {
   HMBlockNode,
@@ -9,18 +21,6 @@ import {
 import { Button, Home, SizableText, XStack, YStack } from '@shm/ui'
 import { Contact, FileText, Hash, Sparkles, Star } from '@tamagui/lucide-icons'
 import { PropsWithChildren, ReactNode, memo, useMemo } from 'react'
-import { useAccount } from '../models/accounts'
-import { useDocumentEmbeds } from '../models/documents'
-import { useFavorites } from '../models/favorites'
-import { appRouteOfId, getRouteKey, useNavRoute } from '../utils/navigation'
-import { getRouteContext, getRouteParentContext } from '../utils/route-context'
-import {
-  AccountRoute,
-  BaseEntityRoute,
-  DocumentRoute,
-  NavRoute,
-} from '../utils/routes'
-import { useNavigate } from '../utils/useNavigate'
 import {
   GenericSidebarContainer,
   SidebarDivider,

@@ -1,3 +1,4 @@
+import { useDeletedContent, useUndeleteEntity } from '@shm/app/models/entities'
 import {
   HMDeletedEntity,
   HYPERMEDIA_ENTITY_TYPES,
@@ -5,9 +6,8 @@ import {
   formattedDateMedium,
   unpackHmId,
 } from '@shm/shared'
-import {Button, List, SizableText, Tooltip, View, XStack} from '@shm/ui'
-import {ShieldX} from '@tamagui/lucide-icons'
-import {useDeletedContent, useUndeleteEntity} from '../models/entities'
+import { Button, List, SizableText, Tooltip, View, XStack } from '@shm/ui'
+import { ShieldX } from '@tamagui/lucide-icons'
 
 export default function DeletedContent() {
   const deleted = useDeletedContent()
@@ -16,7 +16,7 @@ export default function DeletedContent() {
       items={deleted.data || []}
       header={<View height={20} />}
       footer={<View height={20} />}
-      renderItem={({item}) => {
+      renderItem={({ item }) => {
         return (
           <XStack
             paddingVertical="$1.5"
@@ -50,7 +50,7 @@ export default function DeletedContent() {
   )
 }
 
-function UndeleteButton({item}: {item: HMDeletedEntity}) {
+function UndeleteButton({ item }: { item: HMDeletedEntity }) {
   const undelete = useUndeleteEntity()
   const unpackedId = item.id ? unpackHmId(item.id) : null
   if (!unpackedId) return null
@@ -64,7 +64,7 @@ function UndeleteButton({item}: {item: HMDeletedEntity}) {
         size="$2"
         onPress={() => {
           if (!item.id) return
-          undelete.mutate({id: item.id})
+          undelete.mutate({ id: item.id })
         }}
         icon={ShieldX}
       ></Button>

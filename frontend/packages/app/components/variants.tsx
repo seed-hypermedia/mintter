@@ -31,7 +31,6 @@ import { ComponentProps, PropsWithChildren, useMemo } from 'react'
 import { useAccount } from '../models/accounts'
 import { useEntityTimeline } from '../models/changes'
 import { useGatewayUrl } from '../models/gateway-settings'
-import { getAccountName } from '../pages/account-page'
 import { DocumentRoute, NavRoute } from '../utils/routes'
 import CommitDraftButton from './commit-draft-button'
 import DiscardDraftButton from './discard-draft-button'
@@ -282,7 +281,7 @@ function AuthorVariantItem({
               <SizableText
                 color={isActive ? '$blue11' : isMerged ? '$color10' : '$color'}
               >
-                {getAccountName(author.data?.profile)}
+                {author.data?.profile}
               </SizableText>
               {isMerged ? (
                 <Tooltip

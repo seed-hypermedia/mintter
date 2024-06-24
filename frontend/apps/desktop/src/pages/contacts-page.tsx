@@ -1,5 +1,17 @@
+import { Avatar } from '@shm/app/components/avatar'
+import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
+import { useDeleteDialog } from '@shm/app/components/delete-dialog'
+import { FavoriteButton } from '@shm/app/components/favoriting'
 import Footer from '@shm/app/components/footer'
-import { useAccountIsConnected, useAllAccounts } from '@shm/app/models/accounts'
+import { OnlineIndicator } from '@shm/app/components/indicator'
+import { ListItem, copyLinkMenuItem } from '@shm/app/components/list-item'
+import { MainWrapper, MainWrapperNoScroll } from '@shm/app/components/main-wrapper'
+import { MenuItemType } from '@shm/app/components/options-dropdown'
+import { useAccountIsConnected, useAllAccounts, useMyAccount } from '@shm/app/models/accounts'
+import { useFavorite } from '@shm/app/models/favorites'
+import { useGatewayUrl } from '@shm/app/models/gateway-settings'
+import { getAvatarUrl } from '@shm/app/utils/account-url'
+import { AccountRoute } from '@shm/app/utils/routes'
 import { useNavigate } from '@shm/app/utils/useNavigate'
 import { HMAccount, createHmId, hmId } from '@shm/shared'
 import {
@@ -12,19 +24,6 @@ import {
   YStack,
 } from '@shm/ui'
 import { Trash } from '@tamagui/lucide-icons'
-import { Avatar } from '../components/avatar'
-import { useCopyGatewayReference } from '../components/copy-gateway-reference'
-import { useDeleteDialog } from '../components/delete-dialog'
-import { FavoriteButton } from '../components/favoriting'
-import { OnlineIndicator } from '../components/indicator'
-import { ListItem, copyLinkMenuItem } from '../components/list-item'
-import { MainWrapper, MainWrapperNoScroll } from '../components/main-wrapper'
-import { MenuItemType } from '../components/options-dropdown'
-import { useMyAccount } from '../models/accounts'
-import { useFavorite } from '../models/favorites'
-import { useGatewayUrl } from '../models/gateway-settings'
-import { getAvatarUrl } from '../utils/account-url'
-import { AccountRoute } from '../utils/routes'
 
 export function ContactItem({
   account,

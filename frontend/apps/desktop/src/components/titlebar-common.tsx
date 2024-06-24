@@ -1,11 +1,30 @@
+import { useAppContext } from '@shm/app/app-context'
 import { ContactsPrompt } from '@shm/app/components/contacts-prompt'
-import { useMyAccount } from '@shm/app/models/accounts'
+import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
+import { useDeleteDialog } from '@shm/app/components/delete-dialog'
+import { useAppDialog } from '@shm/app/components/dialog'
+import { EditDocButton } from '@shm/app/components/edit-doc-button'
+import { useEditProfileDialog } from '@shm/app/components/edit-profile-dialog'
+import { useFavoriteMenuItem } from '@shm/app/components/favoriting'
+import { MenuItemType, OptionsDropdown } from '@shm/app/components/options-dropdown'
+import {
+  DraftPublicationButtons,
+  PublicationVariants,
+  VersionContext,
+} from '@shm/app/components/variants'
+import { useAccount, useMyAccount } from '@shm/app/models/accounts'
+import { usePushPublication } from '@shm/app/models/documents'
+import { useGatewayHost, useGatewayUrl } from '@shm/app/models/gateway-settings'
 import { usePublicationVariant } from '@shm/app/models/publication'
+import { SidebarWidth, useSidebarContext } from '@shm/app/src/sidebar-context'
 import {
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
 } from '@shm/app/utils/navigation'
+import { useOpenDraft } from '@shm/app/utils/open-draft'
+import { NavRoute } from '@shm/app/utils/routes'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   BlockRange,
   ExpandedBlockRange,
@@ -42,28 +61,8 @@ import {
   X
 } from '@tamagui/lucide-icons'
 import { ReactNode, useState } from 'react'
-import { useAppContext } from '../app-context'
-import { useAccount } from '../models/accounts'
-import { usePushPublication } from '../models/documents'
-import { useGatewayHost, useGatewayUrl } from '../models/gateway-settings'
 import { RemoveProfileDocDialog } from '../pages/account-page'
-import { SidebarWidth, useSidebarContext } from '../src/sidebar-context'
-import { useOpenDraft } from '../utils/open-draft'
-import { NavRoute } from '../utils/routes'
-import { useNavigate } from '../utils/useNavigate'
-import { useCopyGatewayReference } from './copy-gateway-reference'
-import { useDeleteDialog } from './delete-dialog'
-import { useAppDialog } from './dialog'
-import { EditDocButton } from './edit-doc-button'
-import { useEditProfileDialog } from './edit-profile-dialog'
-import { useFavoriteMenuItem } from './favoriting'
-import { MenuItemType, OptionsDropdown } from './options-dropdown'
 import { TitleBarProps } from './titlebar'
-import {
-  DraftPublicationButtons,
-  PublicationVariants,
-  VersionContext,
-} from './variants'
 
 export function DocOptionsButton() {
   const route = useNavRoute()

@@ -1,8 +1,25 @@
+import { AccessoryLayout } from '@shm/app/components/accessory-sidebar'
 import { Avatar } from '@shm/app/components/avatar'
-import Footer from '@shm/app/components/footer'
+import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
+import { useDeleteDialog } from '@shm/app/components/delete-dialog'
+import { FavoriteButton } from '@shm/app/components/favoriting'
+import Footer, { FooterButton } from '@shm/app/components/footer'
 import { OnlineIndicator } from '@shm/app/components/indicator'
+import { ListItem, copyLinkMenuItem } from '@shm/app/components/list-item'
+import { MainWrapperNoScroll } from '@shm/app/components/main-wrapper'
+import { PublicationListItem } from '@shm/app/components/publication-list-item'
+import { useAccount, useMyAccount } from '@shm/app/models/accounts'
 import { useAccountWithDevices } from '@shm/app/models/contacts'
+import { useEntityMentions } from '@shm/app/models/content-graph'
+import {
+  useAccountPublicationFullList,
+  useDraftList,
+  usePublication,
+} from '@shm/app/models/documents'
+import { useResourceFeedWithLatest } from '@shm/app/models/feed'
+import { getAvatarUrl } from '@shm/app/utils/account-url'
 import { useNavRoute } from '@shm/app/utils/navigation'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   Event,
   HMAccount,
@@ -41,26 +58,8 @@ import { PageContainer } from '@shm/ui/src/container'
 import { Trash } from '@tamagui/lucide-icons'
 import React, { ReactNode, useMemo } from 'react'
 import { VirtuosoHandle } from 'react-virtuoso'
-import { AccessoryLayout } from '../components/accessory-sidebar'
 import { EntityCitationsAccessory } from '../components/citations'
-import { useCopyGatewayReference } from '../components/copy-gateway-reference'
-import { useDeleteDialog } from '../components/delete-dialog'
-import { FavoriteButton } from '../components/favoriting'
-import { FooterButton } from '../components/footer'
-import { ListItem, copyLinkMenuItem } from '../components/list-item'
-import { MainWrapperNoScroll } from '../components/main-wrapper'
-import { PublicationListItem } from '../components/publication-list-item'
 import { CopyReferenceButton } from '../components/titlebar-common'
-import { useAccount, useMyAccount } from '../models/accounts'
-import { useEntityMentions } from '../models/content-graph'
-import {
-  useAccountPublicationFullList,
-  useDraftList,
-  usePublication,
-} from '../models/documents'
-import { useResourceFeedWithLatest } from '../models/feed'
-import { getAvatarUrl } from '../utils/account-url'
-import { useNavigate } from '../utils/useNavigate'
 import { FeedItem, FeedPageFooter, NewUpdatesButton } from './feed'
 import { AppPublicationContentProvider } from './publication-content-provider'
 

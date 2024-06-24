@@ -1,5 +1,5 @@
-import {YStack} from '@shm/ui'
-import {Placeholder} from '../components/placeholder-box'
+import { Placeholder } from '@shm/app/components/placeholder-box'
+import { YStack } from '@shm/ui'
 
 export function DocumentPlaceholder() {
   return (

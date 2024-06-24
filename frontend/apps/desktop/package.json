@@ -34,6 +34,7 @@
     "@connectrpc/connect-web": "1.1.3",
     "@electron-forge/maker-dmg": "7.1.0",
     "@electron-forge/maker-rpm": "7.1.0",
+    "@juggle/resize-observer": "3.4.0",
     "@sentry/electron": "4.7.0",
     "@sentry/vite-plugin": "latest",
     "@shm/app": "*",

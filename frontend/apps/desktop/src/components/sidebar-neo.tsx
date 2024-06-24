@@ -1,3 +1,17 @@
+import { useAccount, useMyAccount } from '@shm/app/models/accounts'
+import {
+  getEntityRoutes,
+  useEntitiesContent,
+  useEntityContent,
+  useEntityRoutes,
+} from '@shm/app/models/entities'
+import { useFavorites } from '@shm/app/models/favorites'
+import { useDocumentDrafts, usePublicationVariant } from '@shm/app/models/publication'
+import { focusDraftBlock } from '@shm/app/src/draft-focusing'
+import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
+import { getRouteContext } from '@shm/app/utils/route-context'
+import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '@shm/app/utils/routes'
+import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   HMAccount,
   HMBlockNode,
@@ -18,20 +32,6 @@ import {
 } from '@tamagui/lucide-icons'
 import { ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, SizableText, Spinner, View } from 'tamagui'
-import { useAccount, useMyAccount } from '../models/accounts'
-import {
-  getEntityRoutes,
-  useEntitiesContent,
-  useEntityContent,
-  useEntityRoutes,
-} from '../models/entities'
-import { useFavorites } from '../models/favorites'
-import { useDocumentDrafts, usePublicationVariant } from '../models/publication'
-import { focusDraftBlock } from '../src/draft-focusing'
-import { appRouteOfId, getRouteKey, useNavRoute } from '../utils/navigation'
-import { getRouteContext } from '../utils/route-context'
-import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '../utils/routes'
-import { useNavigate } from '../utils/useNavigate'
 import {
   FocusButton,
   SidebarDivider,

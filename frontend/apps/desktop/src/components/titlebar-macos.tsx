@@ -1,11 +1,11 @@
-import {TitleBarProps} from '@shm/app/components/titlebar'
-import {TitleText, TitlebarWrapper, View, XStack} from '@shm/ui'
+import { TitleText, TitlebarWrapper, View, XStack } from '@shm/ui'
+import { TitleBarProps } from './titlebar'
 import {
   NavMenuButton,
   NavigationButtons,
   PageActionButtons,
 } from './titlebar-common'
-import {Title} from './titlebar-title'
+import { Title } from './titlebar-title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {

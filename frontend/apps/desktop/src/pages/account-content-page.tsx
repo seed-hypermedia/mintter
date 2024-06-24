@@ -1,11 +1,11 @@
+import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
+import { copyLinkMenuItem } from '@shm/app/components/list-item'
 import { PublicationListItem } from '@shm/app/components/publication-list-item'
+import { useAllAccounts } from '@shm/app/models/accounts'
+import { useAccountPublications } from '@shm/app/models/documents'
 import { Profile, unpackDocId } from '@shm/shared'
 import { List } from '@shm/ui'
 import { useMemo } from 'react'
-import { useCopyGatewayReference } from '../components/copy-gateway-reference'
-import { copyLinkMenuItem } from '../components/list-item'
-import { useAllAccounts } from '../models/accounts'
-import { useAccountPublications } from '../models/documents'
 
 export function getAccountName(profile: Profile | undefined) {
   if (!profile) return ''

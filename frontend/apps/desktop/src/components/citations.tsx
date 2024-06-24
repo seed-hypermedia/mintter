@@ -1,4 +1,10 @@
+import { AccessoryContainer } from '@shm/app/components/accessory-sidebar'
+import { AccountLinkAvatar } from '@shm/app/components/account-link-avatar'
+import { useAccount } from '@shm/app/models/accounts'
+import { useComment } from '@shm/app/models/comments'
 import { useEntityMentions } from '@shm/app/models/content-graph'
+import { useDocTextContent, usePublication } from '@shm/app/models/documents'
+import { DocumentRoute } from '@shm/app/utils/routes'
 import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   BlockRange,
@@ -20,13 +26,7 @@ import {
   copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
 import { useMemo } from 'react'
-import { useAccount } from '../models/accounts'
-import { useComment } from '../models/comments'
-import { useDocTextContent, usePublication } from '../models/documents'
 import { AppPublicationContentProvider } from '../pages/publication-content-provider'
-import { DocumentRoute } from '../utils/routes'
-import { AccessoryContainer } from './accessory-sidebar'
-import { AccountLinkAvatar } from './account-link-avatar'
 
 function CitationItem({ mention }: { mention: Mention }) {
   if (!mention.source) throw 'Invalid citation'

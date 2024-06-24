@@ -1,5 +1,15 @@
-import {trpc} from '@shm/desktop/src/trpc'
-import {HMComment, createHmId, unpackHmId} from '@shm/shared'
+import {
+  CommentGroup,
+  CommentPageTitlebarWithDocId,
+  CommentPresentation,
+  CommentThread,
+} from '@shm/app/components/comments'
+import { MainWrapperStandalone } from '@shm/app/components/main-wrapper'
+import { useComment, usePublicationCommentGroups } from '@shm/app/models/comments'
+import { useNavRoute } from '@shm/app/utils/navigation'
+import { useNavigate } from '@shm/app/utils/useNavigate'
+import { trpc } from '@shm/desktop/src/trpc'
+import { HMComment, createHmId, unpackHmId } from '@shm/shared'
 import {
   Button,
   ChevronUp,
@@ -9,17 +19,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
-import {Reply} from '@tamagui/lucide-icons'
-import {
-  CommentGroup,
-  CommentPageTitlebarWithDocId,
-  CommentPresentation,
-  CommentThread,
-} from '../components/comments'
-import {MainWrapperStandalone} from '../components/main-wrapper'
-import {useComment, usePublicationCommentGroups} from '../models/comments'
-import {useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
+import { Reply } from '@tamagui/lucide-icons'
 
 export default function CommentPage() {
   const route = useNavRoute()
@@ -79,7 +79,7 @@ export default function CommentPage() {
           <XStack jc="center" marginHorizontal="$2">
             <Button
               onPress={() => {
-                replace({...route, showThread: true})
+                replace({ ...route, showThread: true })
               }}
               icon={ChevronUp}
               chromeless

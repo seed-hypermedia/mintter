@@ -6653,6 +6653,7 @@ __metadata:
     "@electron-forge/maker-zip": 6.4.1
     "@electron-forge/plugin-vite": 6.4.1
     "@electron-forge/shared-types": 6.4.2
+    "@juggle/resize-observer": 3.4.0
     "@playwright/test": 1.40.1
     "@sentry/electron": 4.7.0
     "@sentry/vite-plugin": latest
@@ -10779,12 +10780,12 @@ __metadata:
   linkType: hard
 
 "@whatwg-node/server@npm:^0.9.1":
-  version: 0.9.35
-  resolution: "@whatwg-node/server@npm:0.9.35"
+  version: 0.9.36
+  resolution: "@whatwg-node/server@npm:0.9.36"
   dependencies:
     "@whatwg-node/fetch": ^0.9.17
     tslib: ^2.3.1
-  checksum: 4631c4f14b081a6e215335aa13bc9d1086eeebb60698420702b10efbb3e75c228cae2d4fcd22b80355364a63031669d89784d52cc91a6a50e2d7e3d231246e0b
+  checksum: eecd896b2308d6b0c4d3d74c246c7872ec1e81b991caaa7c6069bb532b9bed7e3bdac7003e12c9ba6c571b69a88b70f2f70f448c1d61e50b5e99ab82053ecfa2
   languageName: node
   linkType: hard
 

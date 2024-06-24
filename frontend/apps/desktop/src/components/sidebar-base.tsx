@@ -1,3 +1,13 @@
+import { useAppContext } from '@shm/app/app-context'
+import { Avatar } from '@shm/app/components/avatar'
+import { MenuItemType, OptionsDropdown } from '@shm/app/components/options-dropdown'
+import appError from '@shm/app/errors'
+import { EmbedsContent } from '@shm/app/models/documents'
+import { SidebarWidth, useSidebarContext } from '@shm/app/src/sidebar-context'
+import { getAvatarUrl } from '@shm/app/utils/account-url'
+import { NavRoute } from '@shm/app/utils/routes'
+import { useNavigate } from '@shm/app/utils/useNavigate'
+import { useTriggerWindowEvent } from '@shm/app/utils/window-events'
 import {
   Account,
   getBlockNode,
@@ -35,21 +45,11 @@ import {
   useEffect,
   useState,
 } from 'react'
-import {useAppContext} from '../app-context'
-import appError from '../errors'
-import {EmbedsContent} from '../models/documents'
-import {getAccountName} from '../pages/account-page'
-import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {getAvatarUrl} from '../utils/account-url'
-import {NavRoute} from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
-import {useTriggerWindowEvent} from '../utils/window-events'
-import {Avatar} from './avatar'
-import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import { getAccountName } from '../pages/account-page'
 
 const HoverRegionWidth = 30
 
-export function GenericSidebarContainer({children}: {children: ReactNode}) {
+export function GenericSidebarContainer({ children }: { children: ReactNode }) {
   const ctx = useSidebarContext()
   const isFocused = useIsWindowFocused({
     onBlur: () => ctx.onMenuHoverLeave(),
@@ -58,7 +58,7 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)
   const isVisible = isLocked || isHoverVisible
-  const {platform} = useAppContext()
+  const { platform } = useAppContext()
   let top = platform === 'darwin' ? 40 : 72
   let bottom = 24
   if (!isLocked) {
@@ -111,7 +111,7 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
         <YStack
           flex={1}
           overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
-          // paddingVertical="$2"
+        // paddingVertical="$2"
         >
           {children}
         </YStack>
@@ -138,7 +138,7 @@ export function GenericSidebarContainer({children}: {children: ReactNode}) {
               backgroundColor={'$colorTransparent'}
               chromeless
               onPress={() => {
-                navigate({key: 'settings'})
+                navigate({ key: 'settings' })
               }}
               icon={Settings}
             />
@@ -237,7 +237,7 @@ export function SidebarItem({
         textAlign="left"
         outlineColor="transparent"
         backgroundColor={active ? activeBg : '$colorTransparent'}
-        hoverStyle={active ? {backgroundColor: activeBg} : {}}
+        hoverStyle={active ? { backgroundColor: activeBg } : {}}
         userSelect="none"
         gap="$2"
         group="item"
@@ -247,7 +247,7 @@ export function SidebarItem({
         iconAfter={
           iconAfter || (
             <>
-              <XStack opacity={0} $group-item-hover={{opacity: 1}}>
+              <XStack opacity={0} $group-item-hover={{ opacity: 1 }}>
                 {rightHover}
               </XStack>
               {menuItems ? (
@@ -262,7 +262,7 @@ export function SidebarItem({
           {isValidElement(icon) ? (
             icon
           ) : icon ? (
-            <View width={18}>{createElement(icon, {size: 18})}</View>
+            <View width={18}>{createElement(icon, { size: 18 })}</View>
           ) : (
             <View width={18} />
           )}
@@ -344,7 +344,7 @@ export function MyAccountItem({
       space="$2"
       userSelect="none"
       backgroundColor={active ? '$blue4' : '$colorTransparent'}
-      hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
+      hoverStyle={active ? { backgroundColor: '$blue4' } : {}}
       cursor={active ? undefined : 'pointer'}
       title={
         <YStack>
@@ -366,7 +366,7 @@ export function MyAccountItem({
           appError('Account has not loaded.')
           return
         }
-        onRoute({key: 'account', accountId: account?.id})
+        onRoute({ key: 'account', accountId: account?.id })
       }}
       icon={
         <Avatar
@@ -436,9 +436,9 @@ export function getDocOutline(
       if (embed?.type === 'd') {
         const children = embed.query.refId.blockRef
           ? getBlockNode(
-              embed?.data?.document?.children,
-              embed.query.refId.blockRef,
-            )?.children
+            embed?.data?.document?.children,
+            embed.query.refId.blockRef,
+          )?.children
           : embed?.data?.document?.children
         outline.push({
           id: child.block.id,
@@ -516,15 +516,15 @@ export function activeDocOutline(
   const outlineContent = outline.map((item) => {
     const childrenOutline = item.children
       ? activeDocOutline(
-          item.children,
-          activeBlock,
-          focusBlock,
-          embeds,
-          onBlockSelect,
-          onBlockFocus,
-          onNavigate,
-          level + 1,
-        )
+        item.children,
+        activeBlock,
+        focusBlock,
+        embeds,
+        onBlockSelect,
+        onBlockFocus,
+        onNavigate,
+        level + 1,
+      )
       : null
     if (childrenOutline?.isBlockActive) {
       isBlockActive = true
@@ -567,7 +567,7 @@ export function activeDocOutline(
       />
     )
   })
-  return {outlineContent, isBlockActive, isBlockFocused}
+  return { outlineContent, isBlockActive, isBlockFocused }
 }
 
 export function SidebarDivider() {
