@@ -1,5 +1,4 @@
 import { CloseButton, WindowsLinuxWindowControls } from '@shm/app/components/window-controls'
-import { SystemMenu } from '@shm/app/components/windows-linux-titlebar'
 import {
   TitleText,
   TitlebarRow,
@@ -15,6 +14,7 @@ import {
 } from './titlebar-common'
 import { Title } from './titlebar-title'
 import './titlebar-windows-linux.css'
+import { SystemMenu } from './windows-linux-titlebar'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   if (props.clean) {

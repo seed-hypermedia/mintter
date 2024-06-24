@@ -1,6 +1,4 @@
 import {
-  HMEditorContainer,
-  HyperMediaEditorView,
   getBlockInfoFromPos,
 } from '@shm/app/editor'
 import { StateStream, unpackHmId } from '@shm/shared'
@@ -25,6 +23,7 @@ import { XStack } from 'tamagui'
 
 import { useNavRoute } from '@shm/app/utils/navigation'
 import { useNavigate } from '@shm/app/utils/useNavigate'
+import { HMEditorContainer, HyperMediaEditorView } from 'src/components/editor'
 import './comment-draft.css'
 import { AppPublicationContentProvider } from './publication-content-provider'
 

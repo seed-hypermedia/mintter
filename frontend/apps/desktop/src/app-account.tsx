@@ -1,7 +1,7 @@
-import {useGRPCClient} from '@shm/app/app-context'
-import {DialogTitle} from '@shm/app/components/dialog'
-import {queryKeys} from '@shm/app/models/query-keys'
-import {eventStream} from '@shm/shared'
+import { useGRPCClient } from '@shm/app/app-context'
+import { DialogTitle } from '@shm/app/components/dialog'
+import { queryKeys } from '@shm/app/models/query-keys'
+import { eventStream } from '@shm/shared'
 import {
   Add,
   Button,
@@ -13,9 +13,10 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {useMutation, useQuery} from '@tanstack/react-query'
-import {useEffect, useMemo, useState} from 'react'
-import {trpc} from './trpc'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
+import { useAccountKeys } from './models/daemon'
+import { trpc } from './trpc'
 
 export type NamedKey = {
   name: string
@@ -60,15 +61,9 @@ export function AccountWizardDialog() {
   const [isSaveWords, setSaveWords] = useState<null | boolean>(null)
 
   const saveWords = trpc.secureStorage.write.useMutation()
-  const {refetch: refetchKeys} = useQuery({
-    queryKey: ['LIST_KEYS'],
-    queryFn: async () => {
-      const res = await client.daemon.listKeys({})
-      return res.keys
-    },
-  })
+  const { refetch: refetchKeys } = useAccountKeys()
 
-  const {data: genWords, refetch: refetchWords} = useQuery({
+  const { data: genWords, refetch: refetchWords } = useQuery({
     queryKey: [queryKeys.GENERATE_MNEMONIC],
     enabled: step == 'create' && newAccount == true,
     queryFn: async () => {
@@ -157,8 +152,8 @@ export function AccountWizardDialog() {
           width="100vw"
           animation="fast"
           opacity={0.8}
-          enterStyle={{opacity: 0}}
-          exitStyle={{opacity: 0}}
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
         />
         <Dialog.Content
           backgroundColor={'$background'}
@@ -170,8 +165,8 @@ export function AccountWizardDialog() {
               },
             },
           ]}
-          enterStyle={{y: -10, opacity: 0}}
-          exitStyle={{y: -10, opacity: 0}}
+          enterStyle={{ y: -10, opacity: 0 }}
+          exitStyle={{ y: -10, opacity: 0 }}
         >
           <DialogTitle>Account</DialogTitle>
           {step == 'start' ? (
@@ -246,7 +241,7 @@ export function AccountWizardDialog() {
                       if (isSaveWords) {
                         console.log('== SAVE WORDS TOO!')
                         // TODO: @Eric here we need to store the words
-                        saveWords.mutate({key: 'main', value: words})
+                        saveWords.mutate({ key: 'main', value: words })
                       }
                       refetchKeys()
                       setStep('complete')

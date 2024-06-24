@@ -3,8 +3,6 @@ import Footer from '@shm/app/components/footer'
 import { MainWrapper } from '@shm/app/components/main-wrapper'
 import {
   BlockNoteEditor,
-  HMEditorContainer,
-  HyperMediaEditorView,
   getBlockInfoFromPos,
 } from '@shm/app/editor'
 import { useMyAccount } from '@shm/app/models/accounts'
@@ -55,6 +53,7 @@ import {
 import { useSelector } from '@xstate/react'
 import { useEffect, useRef, useState } from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { HMEditorContainer, HyperMediaEditorView } from 'src/components/editor'
 import { ActorRefFrom } from 'xstate'
 import { AppPublicationContentProvider } from './publication-content-provider'
 

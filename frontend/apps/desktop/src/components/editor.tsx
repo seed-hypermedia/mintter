@@ -1,6 +1,3 @@
-import {HyperDocsEditor} from '@shm/app/models/documents'
-import {useOpenUrl} from '@shm/desktop/src/open-url'
-import {YStack} from '@shm/ui'
 import {
   BlockNoteView,
   FormattingToolbarPositioner,
@@ -8,11 +5,14 @@ import {
   LinkMenuPositioner,
   SideMenuPositioner,
   SlashMenuPositioner,
-} from './blocknote'
-import './blocknote/core/style.css'
-import './editor.css'
-import {HMFormattingToolbar} from './hm-formatting-toolbar'
-import {HypermediaLinkToolbar} from './hyperlink-toolbar'
+} from '@shm/app/editor/blocknote'
+import '@shm/app/editor/blocknote/core/style.css'
+import '@shm/app/editor/editor.css'
+import { HMFormattingToolbar } from '@shm/app/editor/hm-formatting-toolbar'
+import { HypermediaLinkToolbar } from '@shm/app/editor/hyperlink-toolbar'
+import { HyperDocsEditor } from '@shm/app/models/documents'
+import { useOpenUrl } from '@shm/desktop/src/open-url'
+import { YStack } from '@shm/ui'
 
 export function HyperMediaEditorView({
   editor,
@@ -39,7 +39,7 @@ export function HyperMediaEditorView({
   )
 }
 
-export function HMEditorContainer({children}: {children: React.ReactNode}) {
+export function HMEditorContainer({ children }: { children: React.ReactNode }) {
   return (
     <YStack
       className="editor"

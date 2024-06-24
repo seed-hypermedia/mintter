@@ -1,9 +1,9 @@
-import {TitlebarWrapper, XStack} from '@shm/ui'
-import {AlertCircle} from '@tamagui/lucide-icons'
-import {ErrorBarProps} from './error-bar'
-import {NavMenuButton, NavigationButtons} from './titlebar-common'
+import { TitlebarWrapper, XStack } from '@shm/ui'
+import { AlertCircle } from '@tamagui/lucide-icons'
+import { ErrorBarProps } from './error-bar'
+import { NavMenuButton, NavigationButtons } from './titlebar-common'
 
-export default function ErrorBar({isSidebarLocked}: ErrorBarProps) {
+export default function ErrorBar({ isSidebarLocked }: ErrorBarProps) {
   return (
     <TitlebarWrapper>
       <XStack jc="space-between">
