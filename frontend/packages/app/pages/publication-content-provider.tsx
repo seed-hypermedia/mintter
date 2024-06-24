@@ -66,7 +66,7 @@ export function AppPublicationContentProvider({
         ipfsBlobPrefix={`${API_FILE_URL}/`}
         saveCidAsFile={saveCidAsFile}
         routeParams={
-          route.key == 'publication'
+          route.key == 'document'
             ? {
               documentId: route.documentId,
               version: route.versionId,

@@ -15,9 +15,9 @@ import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {
   BaseAccountRoute,
+  BaseDocumentRoute,
   BaseDraftRoute,
   BaseEntityRoute,
-  BasePublicationRoute,
   NavRoute,
 } from '../utils/routes'
 import {useAccount, useAccounts} from './accounts'
@@ -54,11 +54,6 @@ export function useDeleteEntity(
       } else if (hmId?.type === 'c') {
         invalidate([queryKeys.COMMENT, variables.id])
         invalidate([queryKeys.PUBLICATION_COMMENTS])
-      } else if (hmId?.type === 'g') {
-        invalidate([queryKeys.GET_GROUP, variables.id])
-        invalidate([queryKeys.GET_GROUPS])
-        invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT])
-        invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
       }
       invalidate([queryKeys.FEED])
       invalidate([queryKeys.FEED_LATEST_EVENT])
@@ -109,11 +104,6 @@ export function useUndeleteEntity(
       } else if (hmId?.type === 'c') {
         invalidate([queryKeys.COMMENT, variables.id])
         invalidate([queryKeys.PUBLICATION_COMMENTS])
-      } else if (hmId?.type === 'g') {
-        invalidate([queryKeys.GET_GROUP, variables.id])
-        invalidate([queryKeys.GET_GROUPS])
-        invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT])
-        invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
       }
       invalidate([queryKeys.FEED])
       invalidate([queryKeys.FEED_LATEST_EVENT])
@@ -128,10 +118,9 @@ export function useUndeleteEntity(
 }
 
 export function getEntityRoutes(route: NavRoute): BaseEntityRoute[] {
-  if (route.key === 'publication') {
+  if (route.key === 'document') {
     const {context, ...baseRoute} = route
     if (context) return [...context, baseRoute]
-    const firstVariant = route.variants?.[0]
     return [baseRoute]
   }
   if (route.key === 'account') {
@@ -195,9 +184,9 @@ export function useEntitiesContent(
     const accounts: BaseAccountRoute[] = routes.filter(
       (r) => r.key === 'account',
     ) as BaseAccountRoute[]
-    const publications: BasePublicationRoute[] = routes.filter(
-      (r) => r.key === 'publication',
-    ) as BasePublicationRoute[]
+    const publications: BaseDocumentRoute[] = routes.filter(
+      (r) => r.key === 'document',
+    ) as BaseDocumentRoute[]
     const drafts: BaseDraftRoute[] = routes.filter(
       (r) => r.key === 'draft',
     ) as BaseDraftRoute[]
@@ -237,9 +226,9 @@ export function useEntitiesContent(
         return {route, entity: {type: 'a', account, document}}
       }
     }
-    const publicationRouteIndex = publications.findIndex((r) => r === route)
-    if (publicationRouteIndex >= 0) {
-      const publication = pubQueries[publicationRouteIndex].data
+    const DocumentRouteIndex = publications.findIndex((r) => r === route)
+    if (DocumentRouteIndex >= 0) {
+      const publication = pubQueries[DocumentRouteIndex].data
       const document = publication?.document
       if (publication) {
         return {route, entity: {type: 'd', publication, document}}

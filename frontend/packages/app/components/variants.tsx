@@ -7,8 +7,8 @@ import { useNavigate } from '@shm/app/utils/useNavigate'
 import {
   API_FILE_URL,
   AuthorVariant,
+  Document,
   HYPERMEDIA_ENTITY_TYPES,
-  Publication,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   formattedDateMedium,
@@ -32,7 +32,7 @@ import { useAccount } from '../models/accounts'
 import { useEntityTimeline } from '../models/changes'
 import { useGatewayUrl } from '../models/gateway-settings'
 import { getAccountName } from '../pages/account-page'
-import { NavRoute, PublicationRoute } from '../utils/routes'
+import { DocumentRoute, NavRoute } from '../utils/routes'
 import CommitDraftButton from './commit-draft-button'
 import DiscardDraftButton from './discard-draft-button'
 import { EditDocButton, useEditDraft } from './edit-doc-button'
@@ -113,14 +113,13 @@ export function VersionContext({ route }: { route: NavRoute }) {
   let unpackedId: UnpackedHypermediaId | null = null
   let latestVersionRoute: NavRoute | null = null
   const gwUrl = useGatewayUrl()
-  const pubRoute = route.key === 'publication' ? route : null
+  const pubRoute = route.key === 'document' ? route : null
   const latestPub = usePublicationVariant({
     documentId: pubRoute?.documentId,
-    variants: pubRoute?.variants,
     enabled: !!pubRoute?.documentId,
     // version not specified, so we are fetching the latest
   })
-  if (route.key === 'publication') {
+  if (route.key === 'document') {
     const { accessory, documentId, versionId, variants } = route
     unpackedId = unpackHmId(documentId)
     exactVersion = versionId || null
@@ -130,11 +129,10 @@ export function VersionContext({ route }: { route: NavRoute }) {
       latestPub.data?.publication?.version !== versionId
     ) {
       latestVersionRoute = {
-        key: 'publication',
+        key: 'document',
         documentId,
         accessory,
         versionId: undefined,
-        variants,
       }
     }
   }
@@ -176,7 +174,7 @@ export function VersionContext({ route }: { route: NavRoute }) {
   )
 }
 
-export function PublicationVariants({ route }: { route: PublicationRoute }) {
+export function PublicationVariants({ route }: { route: DocumentRoute }) {
   const publication = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
@@ -223,8 +221,8 @@ function AuthorVariantItem({
   isMerged,
 }: {
   authorVersion: AuthorVersion
-  route: PublicationRoute
-  publication: Publication | undefined
+  route: DocumentRoute
+  publication: Document | undefined
   isMerged?: boolean
 }) {
   const authorVariants = route.variants?.filter(
@@ -381,10 +379,10 @@ function AuthorVariants({
   route,
   publication,
 }: {
-  route: PublicationRoute
-  publication: Publication | undefined
+  route: DocumentRoute
+  publication: Document | undefined
 }) {
-  if (route.key !== 'publication') throw new Error('Uh')
+  if (route.key !== 'document') throw new Error('Uh')
   const timeline = useEntityTimeline(route.documentId)
   const myAccount = useMyAccount()
   const myVersion = timeline.data?.authorVersions.find(
@@ -492,7 +490,7 @@ function TabsView({
 
 export function PageContextButton({ }: {}) {
   const route = useNavRoute()
-  if (route.key === 'publication') {
+  if (route.key === 'document') {
     return <PublicationVariants route={route} />
   }
   return null

@@ -23,9 +23,9 @@ import { useEntitiesContent, useEntityRoutes } from '../models/entities'
 import { useFixedDraftTitle } from '../pages/draft'
 import {
   AccountRoute,
+  DocumentRoute,
   DraftRoute,
-  NavRoute,
-  PublicationRoute
+  NavRoute
 } from '../utils/routes'
 import { useNavigate } from '../utils/useNavigate'
 import { useSizeObserver } from './app-embeds'
@@ -88,7 +88,7 @@ export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
 
   if (
     route.key === 'account' ||
-    route.key === 'publication'
+    route.key === 'document'
   ) {
     return <BreadcrumbTitle route={route} />
   }
@@ -113,7 +113,7 @@ type CrumbDetails = {
 function BreadcrumbTitle({
   route,
 }: {
-  route: PublicationRoute | AccountRoute
+  route: DocumentRoute | AccountRoute
 }) {
   const entityRoutes = useEntityRoutes(route)
   const entityContents = useEntitiesContent(entityRoutes)
@@ -403,13 +403,12 @@ function PublicationTitle({
   route,
   size = '$4',
 }: {
-  route: PublicationRoute
+  route: DocumentRoute
   size?: FontSizeTokens
 }) {
   let pub = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
-    variants: route.variants,
     enabled: !!route.documentId,
   })
 

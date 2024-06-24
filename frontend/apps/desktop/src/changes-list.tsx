@@ -99,7 +99,7 @@ function ChangeItem({
     </SizableText>
   )
   const variants =
-    navRoute.key === 'publication' ? navRoute.variants : undefined
+    navRoute.key === 'document' ? navRoute.variants : undefined
   const topRow = shouldDisplayAuthorName ? (
     <XStack paddingTop="$2" gap="$2">
       <AccountLinkAvatar accountId={author?.data?.id} size={24} />
@@ -117,12 +117,11 @@ function ChangeItem({
   )
   const dateRow = shouldDisplayAuthorName ? changeTimeText : null
   let destRoute: NavRoute | null = null
-  if (navRoute.key === 'publication') {
+  if (navRoute.key === 'document') {
     destRoute = {
-      key: 'publication',
+      key: 'document',
       documentId: entityId,
       versionId: change.id,
-      variants: navRoute.variants,
       accessory: { key: 'versions' },
     }
   }

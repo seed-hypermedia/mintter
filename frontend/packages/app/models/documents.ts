@@ -5,6 +5,7 @@ import {slashMenuItems} from '@shm/app/src/slash-menu-items'
 import {useOpenUrl} from '@shm/desktop/src/open-url'
 import {trpc} from '@shm/desktop/src/trpc'
 import {
+  Document,
   DocumentChange,
   GRPCClient,
   HMAccount,
@@ -13,7 +14,6 @@ import {
   HMDocument,
   HMPublication,
   ListPublicationsResponse,
-  Publication,
   UnpackedHypermediaId,
   fromHMBlock,
   hmDocument,
@@ -397,7 +397,7 @@ function changesToJSON(changes: DocumentChange[]) {
 export function usePublishDraft(
   opts?: UseMutationOptions<
     {
-      pub: Publication
+      pub: Document
       isFirstPublish: boolean
       isProfileDocument: boolean
     },
@@ -425,7 +425,7 @@ export function usePublishDraft(
     }: {
       draftId: string
     }): Promise<{
-      pub: Publication
+      pub: Document
       isFirstPublish: boolean
       isProfileDocument: boolean
     }> => {

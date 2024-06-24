@@ -6,7 +6,7 @@ import { useNavRoute } from '@shm/app/utils/navigation'
 import { useNavigate } from '@shm/app/utils/useNavigate'
 import { EntityVersionsAccessory } from '@shm/desktop/src/changes-list'
 import {
-  Publication,
+  Document,
   PublicationContent,
   PublicationHeading,
   createHmId,
@@ -25,7 +25,7 @@ import {
 } from '@shm/ui'
 import { History, MessageSquare } from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import { ReactNode, useCallback, useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { AccessoryLayout } from '../components/accessory-sidebar'
 import { BaseAccountLinkAvatar } from '../components/account-link-avatar'
@@ -34,7 +34,6 @@ import { EntityCommentsAccessory } from '../components/comments'
 import { PushToGatewayDialog } from '../components/copy-gateway-reference'
 import { useAppDialog } from '../components/dialog'
 import { FavoriteButton } from '../components/favoriting'
-import { FirstPublishDialog } from '../components/first-publish-dialog'
 import { MainWrapper } from '../components/main-wrapper'
 import { CopyReferenceButton } from '../components/titlebar-common'
 import { useAccounts } from '../models/accounts'
@@ -47,7 +46,7 @@ import { AppPublicationContentProvider } from './publication-content-provider'
 
 export default function PublicationPage() {
   const route = useNavRoute()
-  if (route.key !== 'publication')
+  if (route.key !== 'document')
     throw new Error('Publication page expects publication route')
 
   const docId = route?.documentId
@@ -61,25 +60,11 @@ export default function PublicationPage() {
   const publication = usePublicationVariant({
     documentId: docId,
     versionId: route.versionId,
-    variants: route.variants,
   })
 
   const mentions = useEntityMentions(
     publication.status == 'success' ? docId : undefined,
   )
-  const firstPubDialog = useAppDialog(FirstPublishDialog, {
-    onClose: useCallback(() => {
-      replace({ ...route, showFirstPublicationMessage: false })
-    }, [replace, route]),
-  })
-
-  const showFirstPublicationMessage = route.showFirstPublicationMessage
-  const pubVersion = publication.data?.publication?.version
-  useEffect(() => {
-    if (showFirstPublicationMessage && pubVersion) {
-      firstPubDialog.open({ route, version: pubVersion })
-    }
-  }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
   const id = unpackDocId(docId)
 
@@ -134,7 +119,6 @@ export default function PublicationPage() {
         FallbackComponent={AppErrorPage}
         onReset={() => publication.refetch()}
       >
-        {firstPubDialog.content}
         {pushToGatewayDialog.content}
         <CitationsProvider
           documentId={docId}
@@ -186,7 +170,6 @@ export default function PublicationPage() {
                         {id && (
                           <FavoriteButton
                             url={createHmId('d', id.eid, {
-                              variants: route.variants,
                             })}
                           />
                         )}
@@ -198,8 +181,8 @@ export default function PublicationPage() {
                   </PublicationHeading>
                   {publication.data?.publication ? (
                     <>
-                      <PublicationPageMeta
-                        publication={publication.data?.publication}
+                      <DocumentPageMeta
+                        document={publication.data?.publication.document}
                       />
                       <PublicationContent
                         ref={rangeRef}
@@ -219,7 +202,7 @@ export default function PublicationPage() {
           </AccessoryLayout>
           <Footer>
             {publication.data?.variantVersion && (
-              <PublicationVersionsFooterButton
+              <DocumentVersionsFooterButton
                 variantVersion={publication.data?.variantVersion}
               />
             )}
@@ -254,8 +237,8 @@ export default function PublicationPage() {
 
 function PublicationCommentaryButton() {
   const route = useNavRoute()
-  if (route.key !== 'publication')
-    throw new Error('Publication page expects publication actor')
+  if (route.key !== 'document')
+    throw new Error('Document page expects document route')
 
   const docId = route?.documentId ? unpackHmId(route?.documentId) : null
   const accessory = route?.accessory
@@ -283,14 +266,14 @@ function PublicationCommentaryButton() {
   )
 }
 
-function PublicationVersionsFooterButton({
+function DocumentVersionsFooterButton({
   variantVersion,
 }: {
   variantVersion: string
 }) {
   const route = useNavRoute()
-  if (route.key !== 'publication')
-    throw new Error('Publication page expects publication actor')
+  if (route.key !== 'document')
+    throw new Error('Document page expects document route')
   const docId = route?.documentId
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
@@ -310,8 +293,8 @@ function PublicationVersionsFooterButton({
   )
 }
 
-function PublicationPageMeta({ publication }: { publication: Publication }) {
-  const editors = useAccounts(publication.document?.editors || [])
+function DocumentPageMeta({ document }: { document: Document }) {
+  const editors = useAccounts(document.document?.editors || [])
   const navigate = useNavigate()
 
   return (
@@ -381,7 +364,7 @@ function PublicationPageMeta({ publication }: { publication: Publication }) {
         </XStack>
         <XStack ai="center">
           <Text marginHorizontal="$4" color="$color10">
-            {formattedDateMedium(publication.document?.publishTime)}
+            {formattedDateMedium(document.document?.publishTime)}
           </Text>
         </XStack>
       </XStack>

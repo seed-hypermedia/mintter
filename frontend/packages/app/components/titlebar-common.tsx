@@ -68,7 +68,7 @@ import {
 export function DocOptionsButton() {
   const route = useNavRoute()
   const dispatch = useNavigationDispatch()
-  if (route.key !== 'publication')
+  if (route.key !== 'document')
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
     )
@@ -95,7 +95,6 @@ export function DocOptionsButton() {
         }
         onCopy({
           ...id,
-          variants: route.variants,
         })
       },
     },
@@ -131,7 +130,6 @@ export function DocOptionsButton() {
   const docUrl = id
     ? createHmId('d', id.eid, {
       version: route.versionId,
-      variants: route.variants,
     })
     : null
   menuItems.push(useFavoriteMenuItem(docUrl))
@@ -191,14 +189,8 @@ export function AccountOptionsButton() {
       icon: ArrowUpRight,
       onPress: () => {
         spawn({
-          key: 'publication',
+          key: 'document',
           documentId: rootDocument,
-          variants: [
-            {
-              key: 'author',
-              author: accountId,
-            },
-          ],
         })
       },
     })
@@ -260,11 +252,10 @@ export function useFullReferenceUrl(route: NavRoute): {
   ) => void
   content: ReactNode
 } | null {
-  const pubRoute = route.key === 'publication' ? route : null
+  const pubRoute = route.key === 'document' ? route : null
   const pub = usePublicationVariant({
     documentId: pubRoute?.documentId,
     versionId: pubRoute?.versionId,
-    variants: pubRoute?.variants,
     enabled: !!pubRoute?.documentId,
   })
   const gwUrl = useGatewayUrl()
@@ -293,7 +284,6 @@ export function useFullReferenceUrl(route: NavRoute): {
           version: pub.data?.publication?.version || null,
           blockRef: blockId || focusBlockId || null,
           blockRange,
-          variants: pubRoute.variants,
         })
       },
     }
@@ -334,13 +324,12 @@ function getReferenceUrlOfRoute(
   hostname?: string | undefined,
   exactVersion?: string | undefined,
 ) {
-  if (route.key === 'publication') {
+  if (route.key === 'document') {
     const docId = unpackHmId(route.documentId)
     if (!docId || docId.type !== 'd') return null
     const url = createPublicWebHmUrl('d', docId.eid, {
       version: exactVersion || route.versionId,
       hostname,
-      variants: route.variants,
     })
     if (!url) return null
     return {
@@ -430,7 +419,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key == 'account' && route.tab === 'groups') {
     buttonGroup = [<CreateDropdown key="create" />]
-  } else if (route.key === 'publication') {
+  } else if (route.key === 'document') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,
       <PublicationVariants key="variants" route={route} />,

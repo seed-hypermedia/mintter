@@ -1,4 +1,4 @@
-import {CurrentAccountSidebarSection} from '@shm/desktop/src/app-account'
+import { CurrentAccountSidebarSection } from '@shm/desktop/src/app-account'
 import {
   HMBlockNode,
   HMDocument,
@@ -6,27 +6,27 @@ import {
   getDocumentTitle,
   unpackHmId,
 } from '@shm/shared'
-import {Button, Home, SizableText, XStack, YStack} from '@shm/ui'
-import {Contact, FileText, Hash, Sparkles, Star} from '@tamagui/lucide-icons'
-import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
-import {useAccount} from '../models/accounts'
-import {useDocumentEmbeds} from '../models/documents'
-import {useFavorites} from '../models/favorites'
+import { Button, Home, SizableText, XStack, YStack } from '@shm/ui'
+import { Contact, FileText, Hash, Sparkles, Star } from '@tamagui/lucide-icons'
+import { PropsWithChildren, ReactNode, memo, useMemo } from 'react'
+import { useAccount } from '../models/accounts'
+import { useDocumentEmbeds } from '../models/documents'
+import { useFavorites } from '../models/favorites'
 import {
   useProfilePublication,
   useProfilePublicationWithDraft,
   usePublicationVariant,
   usePublicationVariantWithDraft,
 } from '../models/publication'
-import {appRouteOfId, getRouteKey, useNavRoute} from '../utils/navigation'
-import {getRouteContext, getRouteParentContext} from '../utils/route-context'
+import { appRouteOfId, getRouteKey, useNavRoute } from '../utils/navigation'
+import { getRouteContext, getRouteParentContext } from '../utils/route-context'
 import {
   AccountRoute,
   BaseEntityRoute,
+  DocumentRoute,
   NavRoute,
-  PublicationRoute,
 } from '../utils/routes'
-import {useNavigate} from '../utils/useNavigate'
+import { useNavigate } from '../utils/useNavigate'
 import {
   GenericSidebarContainer,
   SidebarDivider,
@@ -35,7 +35,7 @@ import {
   activeDocOutline,
   getDocOutline,
 } from './sidebar-base'
-import {SidebarNeo} from './sidebar-neo'
+import { SidebarNeo } from './sidebar-neo'
 
 export const AppSidebar = memo(MainAppSidebar)
 
@@ -49,7 +49,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'home'}
         onPress={() => {
-          navigate({key: 'home'})
+          navigate({ key: 'home' })
         }}
         title="Home"
         bold
@@ -58,7 +58,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'feed'}
         onPress={() => {
-          navigate({key: 'feed'})
+          navigate({ key: 'feed' })
         }}
         title="Feed"
         bold
@@ -67,7 +67,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'explore'}
         onPress={() => {
-          navigate({key: 'explore'})
+          navigate({ key: 'explore' })
         }}
         title="Explore Content"
         bold
@@ -77,7 +77,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'contacts'}
         onPress={() => {
-          navigate({key: 'contacts'})
+          navigate({ key: 'contacts' })
         }}
         icon={Contact}
         title="Contacts"
@@ -122,7 +122,7 @@ function SidebarFavorites() {
     <SidebarGroupItem
       active={route.key == 'favorites'}
       onPress={() => {
-        navigate({key: 'favorites'})
+        navigate({ key: 'favorites' })
       }}
       title="Favorites"
       bold
@@ -142,7 +142,7 @@ function SidebarFavorites() {
         ]
       }
       items={favorites.map((fav) => {
-        const {key, url} = fav
+        const { key, url } = fav
         if (key === 'account') {
           return <FavoriteAccountItem key={url} url={url} />
         }
@@ -155,7 +155,7 @@ function SidebarFavorites() {
   )
 }
 
-function FavoriteAccountItem({url}: {url: string}) {
+function FavoriteAccountItem({ url }: { url: string }) {
   const id = unpackHmId(url)
   const route = useNavRoute()
   const accountId = id?.eid
@@ -167,34 +167,32 @@ function FavoriteAccountItem({url}: {url: string}) {
       active={route.key === 'account' && route.accountId === accountId}
       indented
       onPress={() => {
-        navigate({key: 'account', accountId})
+        navigate({ key: 'account', accountId })
       }}
       title={account.data?.profile?.alias || 'Unknown Account'}
     />
   )
 }
 
-function FavoritePublicationItem({url}: {url: string}) {
+function FavoritePublicationItem({ url }: { url: string }) {
   const id = unpackHmId(url)
   const route = useNavRoute()
   const navigate = useNavigate()
   const pub = usePublicationVariant({
     documentId: id?.qid,
     versionId: id?.version || undefined,
-    variants: id?.variants || undefined,
   })
   const documentId = id?.qid
   if (!documentId) return null
   return (
     <SidebarItem
       indented
-      active={route.key === 'publication' && route.documentId === documentId}
+      active={route.key === 'document' && route.documentId === documentId}
       onPress={() => {
         navigate({
-          key: 'publication',
+          key: 'document',
           documentId,
           versionId: id?.version || undefined,
-          variants: id?.variants || undefined,
         })
       }}
       title={getDocumentTitle(pub.data?.publication?.document)}
@@ -210,11 +208,11 @@ function RouteOutline({
   myAccountId: string | undefined
 }) {
   if (route.key === 'draft') {
-    if (route.contextRoute?.key === 'publication') {
+    if (route.contextRoute?.key === 'document') {
       return (
         <>
           <SidebarDivider />
-          <PublicationRouteOutline route={route.contextRoute} />
+          <DocumentRouteOutline route={route.contextRoute} />
         </>
       )
     }
@@ -236,11 +234,11 @@ function RouteOutline({
       </>
     )
   }
-  if (route.key === 'publication') {
+  if (route.key === 'document') {
     return (
       <>
         <SidebarDivider />
-        <PublicationRouteOutline route={route} />
+        <DocumentRouteOutline route={route} />
       </>
     )
   }
@@ -260,7 +258,7 @@ function useNavigateBlock(fromRoute: NavRoute) {
       const destRoute = entityId ? appRouteOfId(entityId) : fromRoute
       // uh, I'm sure this code is buggy:
       const context = entityId ? getRouteContext(fromRoute, parentBlockId) : []
-      if (destRoute?.key === 'publication') {
+      if (destRoute?.key === 'document') {
         navigate({
           ...destRoute,
           context,
@@ -276,7 +274,7 @@ function useNavigateBlock(fromRoute: NavRoute) {
       } else if (destRoute) {
         navigate(destRoute)
       }
-    } else if (fromRoute.key === 'publication') {
+    } else if (fromRoute.key === 'document') {
       replace({
         ...fromRoute,
         blockId,
@@ -296,7 +294,7 @@ function useNavigateBlock(fromRoute: NavRoute) {
   ) {
     const context = getRouteParentContext(fromRoute)
     const destRoute = entityId ? appRouteOfId(entityId) : fromRoute
-    if (destRoute?.key === 'publication') {
+    if (destRoute?.key === 'document') {
       navigate({
         ...destRoute,
         context,
@@ -314,7 +312,7 @@ function useNavigateBlock(fromRoute: NavRoute) {
       navigate(destRoute)
     }
   }
-  return {navigateBlock, focusBlock}
+  return { navigateBlock, focusBlock }
 }
 
 function useContextItems(context: BaseEntityRoute[] | undefined) {
@@ -327,7 +325,7 @@ function useContextItems(context: BaseEntityRoute[] | undefined) {
             getContext={() => context.slice(0, index)}
           />
         )
-      if (contextRoute.key === 'publication')
+      if (contextRoute.key === 'document')
         return (
           <PublicationContextItem
             route={contextRoute}
@@ -336,7 +334,7 @@ function useContextItems(context: BaseEntityRoute[] | undefined) {
         )
       return null
     }) || null
-  return {items}
+  return { items }
 }
 
 function useIntermediateContext(
@@ -346,11 +344,11 @@ function useIntermediateContext(
 ) {
   const headings = useMemo(() => {
     if (!blockId || !document) return null
-    let blockHeadings: null | {id: string; text: string}[] = null
+    let blockHeadings: null | { id: string; text: string }[] = null
     if (!blockId) return []
     function findBlock(
       nodes: HMBlockNode[] | undefined,
-      parentHeadings: {id: string; text: string}[],
+      parentHeadings: { id: string; text: string }[],
     ) {
       return nodes?.find((blockNode) => {
         if (!blockId) return null
@@ -361,14 +359,14 @@ function useIntermediateContext(
         if (blockNode.children?.length) {
           return findBlock(blockNode.children, [
             ...parentHeadings,
-            {id: blockNode.block.id, text: blockNode.block.text},
+            { id: blockNode.block.id, text: blockNode.block.text },
           ])
         }
         return false
       })
     }
     findBlock(document.children, [])
-    return blockHeadings as null | {id: string; text: string}[]
+    return blockHeadings as null | { id: string; text: string }[]
   }, [document, blockId])
   const navigate = useNavigate()
   return headings?.map((heading) => {
@@ -377,7 +375,7 @@ function useIntermediateContext(
         icon={Hash}
         title={heading.text}
         onPress={() => {
-          navigate({...route, blockId: heading.id})
+          navigate({ ...route, blockId: heading.id })
         }}
       />
     )
@@ -400,7 +398,7 @@ function AccountContextItem({
         title={account.data?.profile?.alias || 'Unknown Account'}
         icon={Contact}
         onPress={() => {
-          navigate({...route, blockId: undefined, isBlockFocused: undefined})
+          navigate({ ...route, blockId: undefined, isBlockFocused: undefined })
         }}
       />
       {useIntermediateContext(
@@ -416,13 +414,12 @@ function PublicationContextItem({
   route,
   getContext,
 }: {
-  route: PublicationRoute
+  route: DocumentRoute
   getContext: () => BaseEntityRoute[]
 }) {
   const pub = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
-    variants: route.variants,
   })
   const navigate = useNavigate()
   return (
@@ -431,7 +428,7 @@ function PublicationContextItem({
         title={getDocumentTitle(pub.data?.publication?.document)}
         icon={FileText}
         onPress={() => {
-          navigate({...route, blockId: undefined})
+          navigate({ ...route, blockId: undefined })
         }}
       />
       {useIntermediateContext(
@@ -447,7 +444,7 @@ function isDraftActive(route: NavRoute, documentId: string | undefined) {
   return route.key === 'draft' && route.draftId === documentId
 }
 
-function AccountRouteOutline({route}: {route: AccountRoute}) {
+function AccountRouteOutline({ route }: { route: AccountRoute }) {
   const activeRoute = useNavRoute()
   const isActive =
     activeRoute.key === 'account' && activeRoute.accountId === route.accountId
@@ -466,8 +463,8 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
   )
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const {navigateBlock, focusBlock} = useNavigateBlock(route)
-  const {outlineContent, isBlockActive, isBlockFocused} = activeDocOutline(
+  const { navigateBlock, focusBlock } = useNavigateBlock(route)
+  const { outlineContent, isBlockActive, isBlockFocused } = activeDocOutline(
     docOutline,
     route.isBlockFocused ? undefined : route.blockId,
     route.isBlockFocused ? route.blockId : undefined,
@@ -476,7 +473,7 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
     focusBlock,
     navigate,
   )
-  const {items: parentContext} = useContextItems(route.context)
+  const { items: parentContext } = useContextItems(route.context)
   const isRootActive = isActive && !isBlockFocused
   return (
     <>
@@ -505,24 +502,23 @@ function AccountRouteOutline({route}: {route: AccountRoute}) {
           isDraftActive(activeRoute, profilePub?.data?.document?.id)
             ? null
             : () => {
-                navigate({
-                  key: 'draft',
-                  draftId: profilePub.data?.drafts?.[0]?.id,
-                  contextRoute: route,
-                })
-              }
+              navigate({
+                key: 'draft',
+                draftId: profilePub.data?.drafts?.[0]?.id,
+                contextRoute: route,
+              })
+            }
         }
       ></DraftItems>
     </>
   )
 }
 
-function PublicationRouteOutline({route}: {route: PublicationRoute}) {
+function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
   const activeRoute = useNavRoute()
   const pub = usePublicationVariantWithDraft({
     documentId: route.documentId,
     versionId: route.versionId,
-    variants: route.variants,
   })
   const pubEmbeds = useDocumentEmbeds(pub.data?.document, !!pub.data, {
     skipCards: true,
@@ -530,8 +526,8 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
   const outline = getDocOutline(pub?.data?.document?.children || [], pubEmbeds)
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const {navigateBlock, focusBlock} = useNavigateBlock(route)
-  const {outlineContent, isBlockActive} = activeDocOutline(
+  const { navigateBlock, focusBlock } = useNavigateBlock(route)
+  const { outlineContent, isBlockActive } = activeDocOutline(
     outline,
     route.isBlockFocused ? undefined : route.blockId,
     route.isBlockFocused ? route.blockId : undefined,
@@ -540,7 +536,7 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
     focusBlock,
     navigate,
   )
-  const {items: parentContext} = useContextItems(route.context)
+  const { items: parentContext } = useContextItems(route.context)
   return (
     <>
       {parentContext}
@@ -550,7 +546,7 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
             active={!isBlockActive}
             onPress={() => {
               if (route.blockId) {
-                replace({...route, blockId: undefined})
+                replace({ ...route, blockId: undefined })
               }
             }}
             title={pub.data?.document?.title}
@@ -564,11 +560,11 @@ function PublicationRouteOutline({route}: {route: PublicationRoute}) {
           isDraftActive(activeRoute, pub?.data?.document?.id)
             ? null
             : navigate({
-                key: 'draft',
-                draftId: pub.data?.drafts?.[0]?.id,
-                contextRoute: route,
-                variant: null,
-              })
+              key: 'draft',
+              draftId: pub.data?.drafts?.[0]?.id,
+              contextRoute: route,
+              variant: null,
+            })
         }}
       ></DraftItems>
     </>

@@ -66,20 +66,13 @@ export function AccountPublications({ accountId }: { accountId: string }) {
                   onCopy({
                     ...id,
                     version: publication.version || null,
-                    variants: [{ key: 'author', author: accountId }],
                   })
-                }, 'Publication'),
+                }, 'Document'),
               ]}
               openRoute={{
-                key: 'publication',
+                key: 'document',
                 documentId: docId,
                 versionId: publication.version,
-                variants: [
-                  {
-                    key: 'author',
-                    author: accountId,
-                  },
-                ],
               }}
             />
           )

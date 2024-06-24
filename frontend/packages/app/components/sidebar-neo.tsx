@@ -214,9 +214,6 @@ export function getItemDetails(
     if (myAccount?.profile?.rootDocument === entity.document?.id) {
       const myAlias = myAccount?.profile?.alias
       title = myAlias ? `${myAlias} Home` : 'My Account Home'
-    } else if (entity.homeGroup) {
-      const groupTitle = entity.homeGroup.title
-      title = groupTitle ? `${groupTitle} Home` : 'Group Home'
     } else {
       title = getDocumentTitle(entity.document)
     }
@@ -502,7 +499,7 @@ function _SidebarEmbedOutlineItem({
                 onPress={() => {
                   if (!destRoute) return
                   if (
-                    destRoute.key === 'publication' ||
+                    destRoute.key === 'document' ||
                     destRoute.key === 'account'
                   ) {
                     navigate({
@@ -524,7 +521,7 @@ function _SidebarEmbedOutlineItem({
                 ? (childBlockId) => {
                   if (!destRoute) return
                   if (
-                    destRoute.key === 'publication' ||
+                    destRoute.key === 'document' ||
                     destRoute.key === 'account'
                   ) {
                     navigate({
@@ -773,20 +770,18 @@ function FavoritePublicationItem({
   const pub = usePublicationVariant({
     documentId: id?.qid,
     versionId: id?.version || undefined,
-    variants: id?.variants || undefined,
   })
   const documentId = id?.qid
   if (!documentId) return null
   return (
     <SidebarItem
       indented
-      active={route.key === 'publication' && route.documentId === documentId}
+      active={route.key === 'document' && route.documentId === documentId}
       onPress={() => {
         onNavigate({
-          key: 'publication',
+          key: 'document',
           documentId,
           versionId: id?.version || undefined,
-          variants: id?.variants || undefined,
         })
       }}
       title={getDocumentTitle(pub.data?.publication?.document)}

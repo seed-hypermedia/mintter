@@ -1,7 +1,7 @@
-import {useAppContext} from '@shm/app/app-context'
-import {fetchWebLink} from '@shm/app/models/web-links'
-import {useNavigate} from '@shm/app/utils/useNavigate'
-import {trpc} from '@shm/desktop/src/trpc'
+import { useAppContext } from '@shm/app/app-context'
+import { fetchWebLink } from '@shm/app/models/web-links'
+import { useNavigate } from '@shm/app/utils/useNavigate'
+import { trpc } from '@shm/desktop/src/trpc'
 import {
   GRPCClient,
   HYPERMEDIA_ENTITY_TYPES,
@@ -22,24 +22,24 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import {useEffect, useLayoutEffect, useRef, useState} from 'react'
-import {useGRPCClient} from '../app-context'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useGRPCClient } from '../app-context'
 import appError from '../errors'
-import {useConnectPeer} from '../models/contacts'
-import {useGatewayHost} from '../models/gateway-settings'
-import {useRecents} from '../models/recents'
-import {useSearch} from '../models/search'
-import {importWebCapture} from '../models/web-importer'
-import {AppQueryClient} from '../query-client'
+import { useConnectPeer } from '../models/contacts'
+import { useGatewayHost } from '../models/gateway-settings'
+import { useRecents } from '../models/recents'
+import { useSearch } from '../models/search'
+import { importWebCapture } from '../models/web-importer'
+import { AppQueryClient } from '../query-client'
 import {
   appRouteOfId,
   isHttpUrl,
   resolveHmIdToAppRoute,
   useHmIdToAppRouteResolver,
 } from '../utils/navigation'
-import {NavRoute} from '../utils/routes'
-import {useListenAppEvent} from '../utils/window-events'
-import {dialogBoxShadow, useAppDialog} from './dialog'
+import { NavRoute } from '../utils/routes'
+import { useListenAppEvent } from '../utils/window-events'
+import { dialogBoxShadow, useAppDialog } from './dialog'
 
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
@@ -63,7 +63,7 @@ function useURLHandler() {
 
     connect.mutate(httpSearch)
     if (experiments.data?.webImporting) {
-      const webResult = await webQuery.mutateAsync({webUrl: httpSearch})
+      const webResult = await webQuery.mutateAsync({ webUrl: httpSearch })
       if (webResult.hypermedia) {
         const unpacked = await resolveHmUrl(webResult.hypermedia.url)
         if (unpacked?.navRoute) return unpacked.navRoute
@@ -83,14 +83,8 @@ function useURLHandler() {
       if (!ownerId)
         throw new Error('Conversion succeeded but ownerId is not here')
       return {
-        key: 'publication',
+        key: 'document',
         documentId,
-        variants: [
-          {
-            key: 'author',
-            author: ownerId,
-          },
-        ],
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
@@ -117,7 +111,7 @@ type SwitcherItem = {
   subtitle?: string
   onSelect: () => void
 }
-function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
+function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const grpcClient = useGRPCClient()
@@ -160,7 +154,7 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
                 }
               })
               .catch((error) => {
-                appError(`Launcher Error: ${error}`, {error})
+                appError(`Launcher Error: ${error}`, { error })
               })
               .finally(() => {
                 setActionPromise(null)
@@ -192,7 +186,7 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
       })
       .filter(Boolean) || []
   const recentItems =
-    recents.data?.map(({url, title, subtitle, type, variants}) => {
+    recents.data?.map(({ url, title, subtitle, type }) => {
       return {
         key: url,
         title,
@@ -203,7 +197,7 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
             toast.error('Failed to open recent: ' + url)
             return
           }
-          const openId = id.type === 'd' ? {...id, variants} : id
+          const openId = id.type === 'd' ? { ...id } : id
           const appRoute = appRouteOfId(openId)
           if (!appRoute) {
             toast.error('Failed to open recent: ' + url)
@@ -300,7 +294,6 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
         borderBottomStartRadius={0}
         borderTopRightRadius={6}
         borderTopLeftRadius={6}
-        // @ts-expect-error tamagui confused about boxShadow I guess
         boxShadow={dialogBoxShadow}
         padding="$3"
         paddingBottom={0}
@@ -341,12 +334,12 @@ function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
   )
 }
 
-export function LauncherItem({item, selected = false, onFocus, onMouseEnter}) {
+export function LauncherItem({ item, selected = false, onFocus, onMouseEnter }) {
   const elm = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     if (selected) {
-      elm.current?.scrollIntoView({block: 'nearest'})
+      elm.current?.scrollIntoView({ block: 'nearest' })
     }
   }, [selected])
 
@@ -376,7 +369,6 @@ export function Launcher() {
     contentProps: {
       backgroundColor: '$colorTransparent',
       padding: 0,
-      // @ts-expect-error tamagui confused about boxShadow I guess
       boxShadow: 'none',
       height: '75%',
     },

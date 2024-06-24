@@ -60,7 +60,6 @@ function DocumentFavoriteItem({
   const doc = usePublicationVariant({
     documentId: id.qid,
     versionId: id.version || undefined,
-    variants: id.variants || undefined,
   })
   if (!doc.data?.publication) return null
   function findAccount(id?: string) {
@@ -77,12 +76,11 @@ function DocumentFavoriteItem({
           findAccount(accountId),
         ) || []
       }
-      menuItems={() => [copyLinkMenuItem(onCopy, 'Publication')]}
+      menuItems={() => [copyLinkMenuItem(onCopy, 'Document')]}
       openRoute={{
-        key: 'publication',
+        key: 'document',
         documentId: id.qid,
         versionId: id.version || undefined,
-        variants: id.variants || undefined,
       }}
     />
   )

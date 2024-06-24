@@ -4,7 +4,6 @@ import {
   Document,
   HMAccount,
   HMPublication,
-  PublicationVariant,
   createHmId,
   getDocumentTitle,
   unpackDocId
@@ -29,7 +28,6 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   publication,
   debugId,
   hasDraft,
-  variants,
   menuItems = () => [],
   onPointerEnter,
   pathName,
@@ -42,7 +40,6 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   debugId?: string
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
-  variants?: PublicationVariant[]
   menuItems?: () => (MenuItemType | null)[]
   pathName?: string
   onPointerEnter?: () => void
@@ -55,7 +52,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const route = useNavRoute()
-  const docRoute = openRoute.key === 'publication' ? openRoute : null
+  const docRoute = openRoute.key === 'document' ? openRoute : null
   const docHmId = docRoute?.documentId
     ? unpackDocId(docRoute.documentId)
     : undefined
@@ -63,7 +60,6 @@ export const PublicationListItem = React.memo(function PublicationListItem({
     docHmId && docRoute
       ? createHmId('d', docHmId.eid, {
         version: docRoute.versionId,
-        variants: docRoute.variants,
       })
       : undefined
   const favorite = useFavorite(docUrl)

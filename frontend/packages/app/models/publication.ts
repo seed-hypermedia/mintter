@@ -1,6 +1,6 @@
 import {
   AuthorVariant,
-  Publication,
+  Document,
   PublicationVariant,
   hmDocument,
 } from '@shm/shared'
@@ -17,7 +17,7 @@ export function usePublicationVariant({
   variants,
   latest,
   ...options
-}: UseQueryOptions<Publication> & {
+}: UseQueryOptions<Document> & {
   documentId?: string
   versionId?: string
   variants?: undefined | PublicationVariant[]

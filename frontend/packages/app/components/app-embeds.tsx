@@ -15,7 +15,7 @@ import {
   unpackHmId,
   usePublicationContentContext,
 } from '@shm/shared'
-import {blockStyles} from '@shm/shared/src/publication-content'
+import { blockStyles } from '@shm/shared/src/publication-content'
 import {
   Button,
   ButtonText,
@@ -26,7 +26,7 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {ArrowUpRightSquare} from '@tamagui/lucide-icons'
+import { ArrowUpRightSquare } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   PropsWithChildren,
@@ -36,17 +36,17 @@ import {
   useRef,
   useState,
 } from 'react'
-import {YStackProps} from 'tamagui'
-import {useAccount, useAccounts} from '../models/accounts'
-import {useComment} from '../models/comments'
-import {usePublication} from '../models/documents'
-import {usePublicationVariant} from '../models/publication'
-import {getAvatarUrl} from '../utils/account-url'
-import {useNavRoute} from '../utils/navigation'
-import {getRouteContext, useOpenInContext} from '../utils/route-context'
-import {useNavigate} from '../utils/useNavigate'
-import {BaseAccountLinkAvatar} from './account-link-avatar'
-import {Avatar} from './avatar'
+import { YStackProps } from 'tamagui'
+import { useAccount, useAccounts } from '../models/accounts'
+import { useComment } from '../models/comments'
+import { usePublication } from '../models/documents'
+import { usePublicationVariant } from '../models/publication'
+import { getAvatarUrl } from '../utils/account-url'
+import { useNavRoute } from '../utils/navigation'
+import { getRouteContext, useOpenInContext } from '../utils/route-context'
+import { useNavigate } from '../utils/useNavigate'
+import { BaseAccountLinkAvatar } from './account-link-avatar'
+import { Avatar } from './avatar'
 
 function EmbedWrapper({
   hmRef,
@@ -174,23 +174,21 @@ function EmbedWrapper({
       onPress={
         !disableEmbedClick
           ? () => {
-              // if (comment && route.key == 'publication' && route.documentId == )
-              // open(hmRef, true)
-              if (comment) {
-                if (
-                  route.key == 'publication' &&
-                  unpackRef?.qid == route.documentId
-                ) {
-                  navigate({
-                    ...route,
-                    blockId: unpackRef?.blockRef!,
-                    versionId: unpackRef?.version!,
-                  })
-                }
-              } else {
-                open(hmRef, parentBlockId)
+            if (comment) {
+              if (
+                route.key == 'document' &&
+                unpackRef?.qid == route.documentId
+              ) {
+                navigate({
+                  ...route,
+                  blockId: unpackRef?.blockRef!,
+                  versionId: unpackRef?.version!,
+                })
               }
+            } else {
+              open(hmRef, parentBlockId)
             }
+          }
           : undefined
       }
       {...props}
@@ -230,19 +228,19 @@ export function useSizeObserver(onRect: (rect: DOMRect) => void) {
 
 const EmbedSideAnnotation = forwardRef<
   HTMLDivElement,
-  {hmId: string; sidePos: 'bottom' | 'right'}
->(function EmbedSideAnnotation({hmId, sidePos}, ref) {
+  { hmId: string; sidePos: 'bottom' | 'right' }
+>(function EmbedSideAnnotation({ hmId, sidePos }, ref) {
   const unpacked = unpackHmId(hmId)
 
   // @ts-expect-error
   const sideStyles: YStackProps =
     sidePos == 'right'
       ? {
-          position: 'absolute',
-          top: 32,
-          right: -16,
-          transform: 'translateX(100%)',
-        }
+        position: 'absolute',
+        top: 32,
+        right: -16,
+        transform: 'translateX(100%)',
+      }
       : {}
 
   if (unpacked && unpacked.type == 'c')
@@ -318,7 +316,7 @@ const EmbedSideAnnotation = forwardRef<
         size="$1"
         color="$blue9"
         opacity={0}
-        $group-item-hover={{opacity: 1}}
+        $group-item-hover={{ opacity: 1 }}
       >
         Go to Document →
       </SizableText>
@@ -327,7 +325,7 @@ const EmbedSideAnnotation = forwardRef<
 })
 
 const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
-  props: {unpackedRef?: UnpackedHypermediaId; sideStyles: YStackProps},
+  props: { unpackedRef?: UnpackedHypermediaId; sideStyles: YStackProps },
   ref,
 ) {
   const comment = useComment(props.unpackedRef?.id)
@@ -343,7 +341,6 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
   const pubTarget = usePublicationVariant({
     documentId: unpackedTarget?.qid,
     versionId: unpackedTarget?.version || undefined,
-    variants: unpackedTarget?.variants || [],
   })
 
   const editors = useAccounts(
@@ -414,7 +411,7 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
           size="$1"
           color="$blue9"
           opacity={0}
-          $group-item-hover={{opacity: 1}}
+          $group-item-hover={{ opacity: 1 }}
         >
           Go to Document →
         </SizableText>
@@ -442,9 +439,8 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
       showReferenced && props.version
         ? props.version
         : props.latest
-        ? undefined
-        : props.version || undefined,
-    variants: props.variants || undefined,
+          ? undefined
+          : props.version || undefined,
     enabled: !!documentId,
   })
   const route = useNavRoute()
@@ -466,9 +462,8 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
             onPress={() => {
               if (!documentId) return
               navigate({
-                key: 'publication',
+                key: 'document',
                 documentId,
-                variants: props.variants || undefined,
                 versionId: props.version || undefined,
                 context: getRouteContext(
                   route,
@@ -491,7 +486,6 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
   const pub = usePublicationVariant({
     documentId: docId,
     versionId: props.latest ? undefined : props.version || undefined,
-    variants: props.variants || undefined,
     enabled: !!docId,
   })
   let textContent = useMemo(() => {
@@ -627,8 +621,8 @@ export function EmbedComment(props: EntityComponentProps) {
   )
 }
 
-function AvatarComponent({accountId}: {accountId: string}) {
-  let {data: account} = useAccount(accountId)
+function AvatarComponent({ accountId }: { accountId: string }) {
+  let { data: account } = useAccount(accountId)
   return (
     <Avatar
       label={account?.profile?.alias}
@@ -658,7 +652,7 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
   return (
     <InlineEmbedButton
       dataRef={props?.id}
-      onPress={() => navigate({key: 'account', accountId})}
+      onPress={() => navigate({ key: 'account', accountId })}
     >
       {(accountId &&
         accountQuery.status == 'success' &&
@@ -681,7 +675,7 @@ function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
       dataRef={props?.id}
       onPress={() =>
         navigate({
-          key: 'publication',
+          key: 'document',
           documentId: pubId,
           versionId: props?.version || undefined,
         })

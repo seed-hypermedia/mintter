@@ -1,30 +1,30 @@
-import type {Interceptor} from '@connectrpc/connect'
-import {createGrpcWebTransport} from '@connectrpc/connect-web'
-import {AppContextProvider, StyleProvider} from '@shm/app/app-context'
-import {AppIPC} from '@shm/app/app-ipc'
-import {AppErrorContent, RootAppError} from '@shm/app/components/app-error'
+import type { Interceptor } from '@connectrpc/connect'
+import { createGrpcWebTransport } from '@connectrpc/connect-web'
+import { AppContextProvider, StyleProvider } from '@shm/app/app-context'
+import { AppIPC } from '@shm/app/app-ipc'
+import { AppErrorContent, RootAppError } from '@shm/app/components/app-error'
 import Main from '@shm/app/pages/main'
-import {AppQueryClient, getQueryClient} from '@shm/app/query-client'
-import {NavigationContainer} from '@shm/app/utils/navigation-container'
-import {useListenAppEvent} from '@shm/app/utils/window-events'
-import {WindowUtils} from '@shm/app/window-utils'
-import {API_HTTP_URL, createGRPCClient} from '@shm/shared'
-import type {StateStream} from '@shm/shared/src/utils/stream'
-import {Spinner, Toaster, YStack, toast, useStream} from '@shm/ui'
+import { AppQueryClient, getQueryClient } from '@shm/app/query-client'
+import { NavigationContainer } from '@shm/app/utils/navigation-container'
+import { useListenAppEvent } from '@shm/app/utils/window-events'
+import { WindowUtils } from '@shm/app/window-utils'
+import { API_HTTP_URL, createGRPCClient } from '@shm/shared'
+import type { StateStream } from '@shm/shared/src/utils/stream'
+import { Spinner, Toaster, YStack, toast, useStream } from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
-import {ipcLink} from 'electron-trpc/renderer'
-import React, {Suspense, useEffect, useMemo, useState} from 'react'
+import { ipcLink } from 'electron-trpc/renderer'
+import React, { Suspense, useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
-import {ErrorBoundary} from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import superjson from 'superjson'
-import {AccountWizardDialog} from './app-account'
-import type {GoDaemonState} from './app-api'
-import {createIPC} from './ipc'
-import type {AppInfoType} from './preload'
+import { AccountWizardDialog } from './app-account'
+import type { GoDaemonState } from './app-api'
+import { createIPC } from './ipc'
+import type { AppInfoType } from './preload'
 import './root.css'
-import {client, trpc} from './trpc'
+import { client, trpc } from './trpc'
 
 const logger = {
   log: wrapLogger(console.log),
@@ -38,7 +38,7 @@ function wrapLogger(logFn: (...args: any[]) => void) {
         if (typeof item === 'string') return item
         try {
           return JSON.stringify(item, null, 2)
-        } catch {}
+        } catch { }
         return item // on main thread this will likely be rendered as [object Object]
       }),
     )
@@ -203,8 +203,6 @@ function MainApp({
           utils.gatewaySettings.getPushOnPublish.invalidate()
         } else if (value[0] === 'trpc.recents.getRecents') {
           utils.recents.getRecents.invalidate()
-        } else if (value[0] === 'trpc.recents.getDocVariants') {
-          utils.recents.getDocVariants.invalidate()
         } else if (value[0] === 'trpc.appSettings.getAutoUpdatePreference') {
           utils.appSettings.getAutoUpdatePreference.invalidate()
         } else if (queryClient.client) {
@@ -233,7 +231,7 @@ function MainApp({
           ipc.send?.('open-external-link', url)
         }}
         saveCidAsFile={async (cid: string, name: string) => {
-          ipc.send?.('save-file', {cid, name})
+          ipc.send?.('save-file', { cid, name })
         }}
         windowUtils={windowUtils}
         darkMode={darkMode}

@@ -42,7 +42,7 @@ export type NavigationContext = {
 export function getRouteKey(route: NavRoute): string {
   if (route.key === 'account') return `account:${route.accountId}`
   if (route.key === 'draft') return `draft:${route.draftId}`
-  if (route.key === 'publication') return `pub:${route.documentId}` // version changes and publication page remains mounted
+  if (route.key === 'document') return `document:${route.documentId}` // version changes and publication page remains mounted
   return route.key
 }
 
@@ -178,11 +178,10 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
   let navRoute: NavRoute | undefined = undefined
   if (id?.type === 'd') {
     navRoute = {
-      key: 'publication',
+      key: 'document',
       documentId: createHmId('d', id.eid),
       versionId: id.version || undefined,
       blockId: id.blockRef || undefined,
-      variants: id.variants || undefined,
     }
   } else if (id?.type === 'a') {
     navRoute = {
@@ -230,16 +229,10 @@ export async function resolveHmIdToAppRoute(
     return {
       ...hmIds,
       navRoute: {
-        key: 'publication',
+        key: 'document',
         documentId: docId,
         versionId: hmIds.latest ? undefined : hmIds.version || undefined,
         blockId: hmIds.blockRef || undefined,
-        variants: hmIds.variants || [
-          {
-            key: 'author',
-            author: pub.document.author,
-          },
-        ],
       },
     }
   }

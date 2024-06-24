@@ -13,7 +13,7 @@ import { queryKeys } from '../models/query-keys'
 import { generateBlockId } from '../utils/media-drag'
 import {
   AccountRoute,
-  PublicationRoute,
+  DocumentRoute,
 } from '../utils/routes'
 
 export function useEditDraft(
@@ -27,7 +27,7 @@ export function useEditDraft(
   }: {
     version: string | undefined
     navMode?: NavMode
-    contextRoute: PublicationRoute | AccountRoute
+    contextRoute: DocumentRoute | AccountRoute
     variants?: PublicationVariant[]
     isProfileDocument?: boolean
   },
@@ -130,7 +130,7 @@ export function EditDocButton({
 }: {
   docId: string | undefined
   navMode?: NavMode
-  contextRoute: PublicationRoute | AccountRoute
+  contextRoute: DocumentRoute | AccountRoute
   variants?: PublicationVariant[]
   baseVersion?: string
   isProfileDocument?: boolean

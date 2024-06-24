@@ -1,4 +1,4 @@
-import { createHmId, publicationVariantSchema } from '@shm/shared'
+import { createHmId } from '@shm/shared'
 import { z } from 'zod'
 
 export const defaultRoute: NavRoute = { key: 'home' }
@@ -32,22 +32,21 @@ export type EntityVersionsAccessory = z.infer<
 export const entityCitationsAccessorySchema = z.object({
   key: z.literal('citations'),
 })
-export type PublicationCitationsAccessory = z.infer<
+export type EntityCitationsAccessory = z.infer<
   typeof entityCitationsAccessorySchema
 >
 
-export const publicationCommentsAccessorySchema = z.object({
+export const documentCommentsAccessorySchema = z.object({
   key: z.literal('comments'),
 })
-export type PublicationCommentsAccessory = z.infer<
-  typeof publicationCommentsAccessorySchema
+export type DocumentCommentsAccessory = z.infer<
+  typeof documentCommentsAccessorySchema
 >
 
-export const basePublicationRouteSchema = z.object({
-  key: z.literal('publication'),
+export const baseDocumentRouteSchema = z.object({
+  key: z.literal('document'),
   documentId: z.string(),
   versionId: z.string().optional(),
-  variants: z.array(publicationVariantSchema).optional(),
   blockId: z.string().optional(),
   isBlockFocused: z.boolean().optional(),
   blockRange: z
@@ -57,18 +56,17 @@ export const basePublicationRouteSchema = z.object({
       expanded: z.boolean().optional(),
     })
     .optional(),
-  showFirstPublicationMessage: z.boolean().optional(),
   immediatelyPromptPush: z.boolean().optional(),
   accessory: z
     .discriminatedUnion('key', [
       entityVersionsAccessorySchema,
       entityCitationsAccessorySchema,
-      publicationCommentsAccessorySchema,
+      documentCommentsAccessorySchema,
     ])
     .nullable()
     .optional(),
 })
-export type BasePublicationRoute = z.infer<typeof basePublicationRouteSchema>
+export type BaseDocumentRoute = z.infer<typeof baseDocumentRouteSchema>
 
 export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
@@ -90,7 +88,7 @@ export const baseDraftRouteSchema = z.object({
 export type BaseDraftRoute = z.infer<typeof baseDraftRouteSchema>
 
 export const baseEntityRouteSchema = z.discriminatedUnion('key', [
-  basePublicationRouteSchema,
+  baseDocumentRouteSchema,
   baseAccountRouteSchema,
   baseDraftRouteSchema,
 ])
@@ -102,10 +100,10 @@ export const accountRouteSchema = baseAccountRouteSchema.extend({
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
 
-export const publicationRouteSchema = basePublicationRouteSchema.extend({
+export const DocumentRouteSchema = baseDocumentRouteSchema.extend({
   context: z.array(baseEntityRouteSchema).optional(),
 })
-export type PublicationRoute = z.infer<typeof publicationRouteSchema>
+export type DocumentRoute = z.infer<typeof DocumentRouteSchema>
 
 export const favoritesSchema = z.object({
   key: z.literal('favorites'),
@@ -143,7 +141,7 @@ export type DeletedContentRoute = z.infer<typeof deletedContentRouteSchema>
 
 export const draftRouteSchema = baseDraftRouteSchema.extend({
   contextRoute: z
-    .discriminatedUnion('key', [publicationRouteSchema, accountRouteSchema])
+    .discriminatedUnion('key', [DocumentRouteSchema, accountRouteSchema])
     .optional(),
 })
 export type DraftRoute = z.infer<typeof draftRouteSchema>
@@ -153,7 +151,7 @@ export const navRouteSchema = z.discriminatedUnion('key', [
   contactsRouteSchema,
   accountRouteSchema,
   settingsRouteSchema,
-  publicationRouteSchema,
+  DocumentRouteSchema,
   draftRouteSchema,
   draftRebaseRouteSchema,
   commentRouteSchema,
@@ -166,9 +164,9 @@ export const navRouteSchema = z.discriminatedUnion('key', [
 export type NavRoute = z.infer<typeof navRouteSchema>
 
 export function getRecentsRouteEntityUrl(route: NavRoute) {
-  // this is used to uniquely identify an item for the recents list. So it references the entity without specifying version or variant
+  // this is used to uniquely identify an item for the recents list. So it references the entity without specifying version
   if (route.key === 'account') return createHmId('a', route.accountId)
-  if (route.key === 'publication') return route.documentId
+  if (route.key === 'document') return route.documentId
   // comments do not show up in the recents list, we do not know how to display them
   return null
 }

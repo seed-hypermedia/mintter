@@ -1,4 +1,4 @@
-import {createPublicWebHmUrl, unpackDocId} from '@shm/shared'
+import { createPublicWebHmUrl, unpackDocId } from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -8,15 +8,15 @@ import {
   Spinner,
   XStack,
 } from '@shm/ui'
-import {useAppContext} from '../app-context'
-import {useGatewayUrl} from '../models/gateway-settings'
-import {useIsHMUrlReady} from '../models/networking'
-import {PublicationRoute} from '../utils/routes'
+import { useAppContext } from '../app-context'
+import { useGatewayUrl } from '../models/gateway-settings'
+import { useIsHMUrlReady } from '../models/networking'
+import { DocumentRoute } from '../utils/routes'
 
 export function FirstPublishDialog({
   input,
 }: {
-  input: {route: PublicationRoute; version: string}
+  input: { route: DocumentRoute; version: string }
 }) {
   const id = unpackDocId(input.route.documentId)
   const gwUrl = useGatewayUrl()
@@ -26,8 +26,8 @@ export function FirstPublishDialog({
       version: input.version,
       hostname: gwUrl.data,
     })
-  const {externalOpen} = useAppContext()
-  const {didTimeout, linkMeta} = useIsHMUrlReady(webUrl, 45)
+  const { externalOpen } = useAppContext()
+  const { didTimeout, linkMeta } = useIsHMUrlReady(webUrl, 45)
   return (
     <>
       <DialogTitle>Congrats on your first publication!</DialogTitle>

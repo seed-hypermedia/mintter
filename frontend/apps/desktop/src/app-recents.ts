@@ -1,10 +1,10 @@
-import { NavRoute, getRecentsRouteEntityUrl } from '@shm/app/utils/routes'
-import { PublicationVariant, getPublicationVariant } from '@shm/shared'
-import { z } from 'zod'
-import { grpcClient } from './app-grpc'
-import { invalidateQueries } from './app-invalidation'
-import { appStore } from './app-store'
-import { t } from './app-trpc'
+import {NavRoute, getRecentsRouteEntityUrl} from '@shm/app/utils/routes'
+import {getPublicationVariant} from '@shm/shared'
+import {z} from 'zod'
+import {grpcClient} from './app-grpc'
+import {invalidateQueries} from './app-invalidation'
+import {appStore} from './app-store'
+import {t} from './app-trpc'
 
 const RECENTS_STORAGE_KEY = 'Recents-v001'
 
@@ -14,12 +14,10 @@ type RecentEntry = {
   title: string
   subtitle?: string
   time: number
-  variants?: PublicationVariant[]
 }
 
 type RecentsState = {
   recents: RecentEntry[]
-  docVariants: Record<string, PublicationVariant[]>
 }
 
 let recentsState: RecentsState = (appStore.get(
@@ -33,14 +31,10 @@ const MAX_RECENTS = 20
 export function updateRecents(updater: (state: RecentsState) => RecentsState) {
   const newState = updater(recentsState)
   const prevRecents = recentsState.recents
-  const prevDocVariants = recentsState.docVariants
   recentsState = newState
   appStore.set(RECENTS_STORAGE_KEY, recentsState)
   if (prevRecents !== recentsState.recents) {
     invalidateQueries(['trpc.recents.getRecents'])
-  }
-  if (prevDocVariants !== recentsState.docVariants) {
-    invalidateQueries(['trpc.recents.getDocVariants'])
   }
 }
 
@@ -53,17 +47,16 @@ async function getRouteTitles(route: NavRoute) {
     })
     title = account.profile?.alias || account.id
     subtitle = 'Account'
-  } else if (route.key === 'publication') {
+  } else if (route.key === 'document') {
     const {publication} = await getPublicationVariant(
       grpcClient,
       route.documentId,
-      route.variants,
       route.versionId,
     )
     if (publication?.document?.title) {
       title = publication.document.title
     }
-    subtitle = 'Publication'
+    subtitle = 'Document'
   }
   return {
     title,
@@ -75,16 +68,8 @@ export async function updateRecentRoute(route: NavRoute) {
   const url = getRecentsRouteEntityUrl(route)
   const type: RecentEntry['type'] = route.key === 'draft' ? 'draft' : 'entity'
   const time = Date.now()
-  const variants = route.key === 'publication' ? route.variants : undefined
   const titles = await getRouteTitles(route)
   updateRecents((state: RecentsState): RecentsState => {
-    let docVariants = state.docVariants
-    if (route.key === 'publication' && route.documentId && route.variants) {
-      docVariants = {
-        ...docVariants,
-        [route.documentId]: route.variants,
-      }
-    }
     let recents = state.recents
     if (url) {
       recents = [
@@ -92,7 +77,6 @@ export async function updateRecentRoute(route: NavRoute) {
           type,
           url,
           time,
-          variants,
           ...titles,
         },
         ...state.recents
@@ -104,7 +88,6 @@ export async function updateRecentRoute(route: NavRoute) {
     }
     return {
       recents,
-      docVariants,
     }
   })
 }
@@ -112,9 +95,6 @@ export async function updateRecentRoute(route: NavRoute) {
 export const recentsApi = t.router({
   getRecents: t.procedure.query(async () => {
     return recentsState.recents
-  }),
-  getDocVariants: t.procedure.query(async () => {
-    return recentsState.docVariants
   }),
   deleteRecent: t.procedure.input(z.string()).mutation(({input}) => {
     updateRecents((state: RecentsState): RecentsState => {

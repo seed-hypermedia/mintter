@@ -152,7 +152,7 @@ function MainAccountPage() {
     const docs = documents.map((d) => {
       if (d.publication?.document?.id)
         allPubIds.add(d.publication?.document?.id)
-      return { key: 'publication', ...d }
+      return { key: 'document', ...d }
     })
     if (!isMe) return docs
     const newDrafts = drafts.documents
@@ -167,7 +167,7 @@ function MainAccountPage() {
     | 'profile'
     | Event
     | {
-      key: 'publication'
+      key: 'document'
       publication: HMPublication
       author: HMAccount | undefined
       editors: (HMAccount | undefined)[]
@@ -219,9 +219,8 @@ function MainAccountPage() {
                     onCopyId({
                       ...id,
                       version: item.publication.version || null,
-                      variants: [{ key: 'author', author: accountId }],
                     })
-                  }, 'Publication'),
+                  }, 'Document'),
                   {
                     label: 'Delete Publication',
                     key: 'delete',
@@ -235,15 +234,9 @@ function MainAccountPage() {
                   },
                 ]}
                 openRoute={{
-                  key: 'publication',
+                  key: 'document',
                   documentId: docId,
                   versionId: item.publication.version,
-                  variants: [
-                    {
-                      key: 'author',
-                      author: accountId,
-                    },
-                  ],
                 }}
               />
             )

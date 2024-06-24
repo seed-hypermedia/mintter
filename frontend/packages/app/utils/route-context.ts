@@ -4,10 +4,7 @@ import {BaseEntityRoute, NavRoute} from './routes'
 import {useNavigate} from './useNavigate'
 
 export function getRouteParentContext(route: NavRoute) {
-  if (route.key == 'publication') {
-    return route.context
-  }
-  if (route.key == 'group') {
+  if (route.key == 'document') {
     return route.context
   }
   if (route.key == 'account') {
@@ -43,17 +40,9 @@ export function useOpenInContext() {
     if (!id) return
     if (id.type == 'd') {
       navigate({
-        key: 'publication',
+        key: 'document',
         documentId: id.qid,
-        variants: id.variants || undefined,
         versionId: id.version || undefined,
-        context,
-      })
-    } else if (id.type == 'g') {
-      navigate({
-        key: 'group',
-        groupId: id.qid,
-        version: id.version || undefined,
         context,
       })
     } else if (id.type == 'a') {
@@ -67,16 +56,10 @@ export function useOpenInContext() {
 }
 
 function getThisRouteContext(route: NavRoute): BaseEntityRoute | undefined {
-  if (route.key == 'publication') {
+  if (route.key == 'document') {
     const pubRoute = {...route}
     delete pubRoute.context
     return pubRoute
-  }
-  if (route.key == 'group') {
-    const groupRoute = {...route}
-    delete groupRoute.context
-    delete groupRoute.tab
-    return groupRoute
   }
   if (route.key == 'account') {
     const accountRoute = {...route}

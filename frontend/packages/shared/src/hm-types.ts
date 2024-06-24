@@ -3,9 +3,9 @@ import type {
   Account,
   ChangeInfo,
   Device,
+  Document,
   MttLink,
   Profile,
-  Publication,
 } from '@shm/shared'
 import {HMTimestamp} from './utils'
 
@@ -18,7 +18,7 @@ export type HMChangeInfo = {
   deps?: string[]
 }
 
-export type ServerPublication = Publication
+export type ServerPublication = Document
 export type HMPublication = {
   document?: HMDocument
   version?: string

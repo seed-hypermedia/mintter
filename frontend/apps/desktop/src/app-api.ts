@@ -139,7 +139,7 @@ export function openRoute(route: NavRoute) {
 
 function getRouteRefocusKey(route: NavRoute): string | null {
   if (route.key === 'account') return null
-  if (route.key === 'publication') return null
+  if (route.key === 'document') return null
   if (route.key === 'comment') return null
   if (route.key === 'comment-draft') return null
   if (route.key === 'draft') return null

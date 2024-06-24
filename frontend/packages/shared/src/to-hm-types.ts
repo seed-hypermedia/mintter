@@ -9,13 +9,10 @@ import {
   HMLink,
   HMPublication,
   MttLink,
-  Publication,
 } from '@shm/shared'
 import {DeletedEntity} from './client/.generated/entities/v1alpha/entities_pb'
 
-export function hmPublication(
-  input?: Publication | null,
-): HMPublication | null {
+export function hmPublication(input?: Document | null): HMPublication | null {
   if (!input) return null
   return input.toJson() as HMPublication
 }

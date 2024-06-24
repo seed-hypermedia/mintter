@@ -4,7 +4,7 @@ import {DocumentChange, GRPCClient} from '@shm/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {NavMode, useNavRoute} from './navigation'
-import {AccountRoute, DraftRoute, PublicationRoute} from './routes'
+import {AccountRoute, DocumentRoute, DraftRoute} from './routes'
 import {useNavigate} from './useNavigate'
 
 export function useOpenDraft(navigateMode: NavMode = 'spawn') {
@@ -19,9 +19,8 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   }) {
     createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
-        let contextRoute: undefined | PublicationRoute | AccountRoute =
-          undefined
-        if (route.key === 'publication' || route.key === 'account') {
+        let contextRoute: undefined | DocumentRoute | AccountRoute = undefined
+        if (route.key === 'document' || route.key === 'account') {
           contextRoute = route
         }
         const draftRoute: DraftRoute = {
