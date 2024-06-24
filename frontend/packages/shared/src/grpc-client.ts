@@ -1,50 +1,38 @@
 import {createPromiseClient, PromiseClient} from '@connectrpc/connect'
 import {
   Accounts,
-  ActivityFeed,
   Changes,
   Comments,
   ContentGraph,
   Daemon,
   Drafts,
   Entities,
-  Groups,
   Merge,
   Networking,
-  Publications,
-  Website,
 } from './client'
 
 export type GRPCClient = {
   accounts: PromiseClient<typeof Accounts>
-  contentGraph: PromiseClient<typeof ContentGraph>
   changes: PromiseClient<typeof Changes>
   comments: PromiseClient<typeof Comments>
-  groups: PromiseClient<typeof Groups>
-  entities: PromiseClient<typeof Entities>
-  drafts: PromiseClient<typeof Drafts>
-  publications: PromiseClient<typeof Publications>
+  contentGraph: PromiseClient<typeof ContentGraph>
   daemon: PromiseClient<typeof Daemon>
+  drafts: PromiseClient<typeof Drafts>
+  entities: PromiseClient<typeof Entities>
   networking: PromiseClient<typeof Networking>
-  website: PromiseClient<typeof Website>
-  activityFeed: PromiseClient<typeof ActivityFeed>
   merge: PromiseClient<typeof Merge>
 }
 
 export function createGRPCClient(transport: any): GRPCClient {
   return {
     accounts: createPromiseClient(Accounts, transport),
-    contentGraph: createPromiseClient(ContentGraph, transport),
     changes: createPromiseClient(Changes, transport),
     comments: createPromiseClient(Comments, transport),
-    drafts: createPromiseClient(Drafts, transport),
-    publications: createPromiseClient(Publications, transport),
+    contentGraph: createPromiseClient(ContentGraph, transport),
     daemon: createPromiseClient(Daemon, transport),
-    networking: createPromiseClient(Networking, transport),
-    groups: createPromiseClient(Groups, transport),
+    drafts: createPromiseClient(Drafts, transport),
     entities: createPromiseClient(Entities, transport),
-    website: createPromiseClient(Website, transport),
-    activityFeed: createPromiseClient(ActivityFeed, transport),
+    networking: createPromiseClient(Networking, transport),
     merge: createPromiseClient(Merge, transport),
   } as const
 }

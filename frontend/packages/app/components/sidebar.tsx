@@ -12,12 +12,6 @@ import { PropsWithChildren, ReactNode, memo, useMemo } from 'react'
 import { useAccount } from '../models/accounts'
 import { useDocumentEmbeds } from '../models/documents'
 import { useFavorites } from '../models/favorites'
-import {
-  useProfilePublication,
-  useProfilePublicationWithDraft,
-  usePublicationVariant,
-  usePublicationVariantWithDraft,
-} from '../models/publication'
 import { appRouteOfId, getRouteKey, useNavRoute } from '../utils/navigation'
 import { getRouteContext, getRouteParentContext } from '../utils/route-context'
 import {
@@ -389,8 +383,7 @@ function AccountContextItem({
   route: AccountRoute
   getContext: () => BaseEntityRoute[]
 }) {
-  const account = useAccount(route.accountId)
-  const pub = useProfilePublication(route.accountId)
+  const pub = useProfileDocument(route.accountId)
   const navigate = useNavigate()
   return (
     <>

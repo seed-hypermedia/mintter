@@ -6,8 +6,8 @@ import { copyLinkMenuItem } from '../components/list-item'
 import { MainWrapperNoScroll } from '../components/main-wrapper'
 import { PublicationListItem } from '../components/publication-list-item'
 import { useAllAccounts } from '../models/accounts'
+import { usePublication } from '../models/documents'
 import { FavoriteItem, useFavorites } from '../models/favorites'
-import { usePublicationVariant } from '../models/publication'
 import { ContactItem } from './contacts-page'
 
 export default function FavoritesPage() {
@@ -57,9 +57,9 @@ function DocumentFavoriteItem({
   allAccounts?: HMAccount[]
 }) {
   if (id.type !== 'd') throw new Error('Not a document')
-  const doc = usePublicationVariant({
-    documentId: id.qid,
-    versionId: id.version || undefined,
+  const doc = usePublication({
+    id: id.qid,
+    version: id.version || undefined,
   })
   if (!doc.data?.publication) return null
   function findAccount(id?: string) {
