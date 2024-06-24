@@ -87,7 +87,7 @@ export function useSetTrusted(
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.GET_ACCOUNT, input.accountId])
       invalidate([queryKeys.GET_ALL_ACCOUNTS])
-      invalidate([queryKeys.GET_PUBLICATION_LIST, 'trusted'])
+      invalidate([queryKeys.DOCUMENT_LIST, 'trusted'])
       opts?.onSuccess?.(result, input, ctx)
     },
     ...opts,

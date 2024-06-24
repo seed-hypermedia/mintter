@@ -1,5 +1,7 @@
 export * from './.generated/accounts/v2alpha/accounts_connect'
 export * from './.generated/accounts/v2alpha/accounts_pb'
+export * from './.generated/activity/v1alpha/activity_connect'
+export * from './.generated/activity/v1alpha/activity_pb'
 export * from './.generated/daemon/v1alpha/daemon_connect'
 export * from './.generated/daemon/v1alpha/daemon_pb'
 export * from './.generated/documents/v2alpha/changes_connect'

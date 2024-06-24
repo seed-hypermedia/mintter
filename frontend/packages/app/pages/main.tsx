@@ -1,6 +1,6 @@
 import { useListen } from '@shm/app/app-context'
 
-import { AppErrorPage } from '@shm/app//components/app-error'
+import { AppErrorPage } from '@shm/app/components/app-error'
 import { TitleBar } from '@shm/app/components/titlebar'
 import { getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
 import { useNavigate } from '@shm/app/utils/useNavigate'

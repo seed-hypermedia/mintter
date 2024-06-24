@@ -45,9 +45,9 @@ export function useDeleteEntity(
     ) => {
       const hmId = unpackHmId(variables.id)
       if (hmId?.type === 'd') {
-        invalidate([queryKeys.GET_PUBLICATION, variables.id])
-        invalidate([queryKeys.GET_ACCOUNT_PUBLICATIONS])
-        invalidate([queryKeys.GET_PUBLICATION_LIST])
+        invalidate([queryKeys.DOCUMENT, variables.id])
+        invalidate([queryKeys.ACCOUNT_DOCUMENTS])
+        invalidate([queryKeys.DOCUMENT_LIST])
       } else if (hmId?.type === 'a') {
         invalidate([queryKeys.GET_ALL_ACCOUNTS])
         invalidate([queryKeys.GET_ACCOUNT, hmId.eid])
@@ -95,9 +95,9 @@ export function useUndeleteEntity(
     onSuccess: (result: void, variables: {id: string}, context) => {
       const hmId = unpackHmId(variables.id)
       if (hmId?.type === 'd') {
-        invalidate([queryKeys.GET_PUBLICATION, variables.id])
-        invalidate([queryKeys.GET_ACCOUNT_PUBLICATIONS])
-        invalidate([queryKeys.GET_PUBLICATION_LIST])
+        invalidate([queryKeys.DOCUMENT, variables.id])
+        invalidate([queryKeys.ACCOUNT_DOCUMENTS])
+        invalidate([queryKeys.DOCUMENT_LIST])
       } else if (hmId?.type === 'a') {
         invalidate([queryKeys.GET_ALL_ACCOUNTS])
         invalidate([queryKeys.GET_ACCOUNT, hmId.eid])

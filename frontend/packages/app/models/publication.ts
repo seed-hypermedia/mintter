@@ -6,7 +6,7 @@ import {queryKeys} from './query-keys'
 export function useDocumentDrafts(docId: string | undefined) {
   const grpcClient = useGRPCClient()
   const drafts = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DRAFTS, docId],
+    queryKey: [queryKeys.DOCUMENT_DRAFTS, docId],
     enabled: !!docId,
     queryFn: async () => {
       const result = await grpcClient.drafts.listDocumentDrafts({
@@ -23,4 +23,8 @@ export function useDocumentDrafts(docId: string | undefined) {
     },
   })
   return drafts
+}
+
+export function usePublicationVariant() {
+  throw new Error('not implemented right now')
 }

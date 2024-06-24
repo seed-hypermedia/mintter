@@ -1,3 +1,4 @@
+import {PlainMessage} from '@bufbuild/protobuf'
 import {EditorInlineContent} from '@shm/app/editor'
 import type {
   Account,
@@ -210,19 +211,7 @@ export type HMBlockNode = {
   children?: Array<HMBlockNode>
 }
 
-export type HMDocument = {
-  title?: string
-  id?: string
-  author?: string
-  webUrl?: string
-  editors?: Array<string>
-  children?: Array<HMBlockNode>
-  createTime?: HMTimestamp
-  updateTime?: HMTimestamp
-  publishTime?: HMTimestamp
-  version?: string
-  previousVersion?: string
-}
+export type HMDocument = PlainMessage<Document>
 
 export type HMDeletedEntity = {
   id?: string

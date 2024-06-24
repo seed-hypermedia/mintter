@@ -5,6 +5,7 @@ import {
   Comments,
   ContentGraph,
   Daemon,
+  Documents,
   Drafts,
   Entities,
   Merge,
@@ -17,6 +18,7 @@ export type GRPCClient = {
   comments: PromiseClient<typeof Comments>
   contentGraph: PromiseClient<typeof ContentGraph>
   daemon: PromiseClient<typeof Daemon>
+  documents: PromiseClient<typeof Documents>
   drafts: PromiseClient<typeof Drafts>
   entities: PromiseClient<typeof Entities>
   networking: PromiseClient<typeof Networking>
@@ -30,6 +32,7 @@ export function createGRPCClient(transport: any): GRPCClient {
     comments: createPromiseClient(Comments, transport),
     contentGraph: createPromiseClient(ContentGraph, transport),
     daemon: createPromiseClient(Daemon, transport),
+    documents: createPromiseClient(Documents, transport),
     drafts: createPromiseClient(Drafts, transport),
     entities: createPromiseClient(Entities, transport),
     networking: createPromiseClient(Networking, transport),

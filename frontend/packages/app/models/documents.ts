@@ -67,10 +67,7 @@ export function usePublicationList(
   const grpcClient = useGRPCClient()
   const pubListQuery = useInfiniteQuery({
     ...queryOpts,
-    queryKey: [
-      queryKeys.GET_PUBLICATION_LIST,
-      trustedOnly ? 'trusted' : 'global',
-    ],
+    queryKey: [queryKeys.DOCUMENT_LIST, trustedOnly ? 'trusted' : 'global'],
     refetchOnMount: true,
     queryFn: async (context) => {
       const result = await grpcClient.publications.listPublications({
@@ -178,7 +175,7 @@ export function useDeleteDraft(
     onSuccess: (response, documentId, context) => {
       setTimeout(() => {
         invalidate([queryKeys.GET_DRAFT_LIST])
-        invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+        invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
         invalidate([queryKeys.ENTITY_TIMELINE, documentId])
         invalidate([queryKeys.EDITOR_DRAFT, documentId])
         queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
@@ -227,7 +224,7 @@ export function queryPublication(
   versionId?: string,
 ): UseQueryOptions<HMPublication> | FetchQueryOptions<HMPublication> {
   return {
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
+    queryKey: [queryKeys.DOCUMENT, documentId, versionId],
     enabled: !!documentId,
     // retry: false, // to test error handling faster
     // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
@@ -453,10 +450,10 @@ export function usePublishDraft(
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
-      invalidate([queryKeys.GET_PUBLICATION_LIST])
+      invalidate([queryKeys.DOCUMENT_LIST])
       invalidate([queryKeys.GET_DRAFT_LIST])
-      invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
-      invalidate([queryKeys.GET_PUBLICATION, documentId])
+      invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
+      invalidate([queryKeys.DOCUMENT, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.GET_ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
       invalidate([queryKeys.GET_ACCOUNT, myAccount.data?.id])
@@ -499,14 +496,14 @@ type MoveBlockAction = {
 }
 
 export function useDraft({
-  documentId,
+  draftId,
   ...options
 }: UseQueryOptions<HMDocument | null> & {
-  documentId?: string
+  draftId?: string
 }) {
   const grpcClient = useGRPCClient()
   const diagnosis = useDraftDiagnosis()
-  return useQuery(queryDraft({documentId, grpcClient, diagnosis, ...options}))
+  return useQuery(queryDraft({draftId, grpcClient, diagnosis, ...options}))
 }
 
 export function useDrafts(
@@ -515,44 +512,42 @@ export function useDrafts(
 ) {
   const grpcClient = useGRPCClient()
   return useQueries({
-    queries: ids.map((draftId) =>
-      queryDraft({documentId: draftId, grpcClient}),
-    ),
+    queries: ids.map((draftId) => queryDraft({draftId: draftId, grpcClient})),
     ...(options || {}),
   })
 }
 
 export function queryDraft({
-  documentId,
+  draftId,
   grpcClient,
   diagnosis,
   ...options
 }: {
-  documentId?: string
+  draftId?: string
   grpcClient: GRPCClient
   diagnosis?: ReturnType<typeof useDraftDiagnosis>
 } & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
-    enabled: !!documentId,
-    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
+    enabled: !!draftId,
+    queryKey: [queryKeys.EDITOR_DRAFT, draftId],
     useErrorBoundary: false,
     queryFn: async () => {
       try {
         let serverDraft = await grpcClient.drafts.getDraft({
-          documentId,
+          draftId,
         })
 
         // const doc = serverDraft
         const doc = serverDraft ? hmDocument(serverDraft) : null
 
-        diagnosis?.append(documentId!, {
+        diagnosis?.append(draftId!, {
           key: 'getDraft',
           value: doc,
         })
 
         return doc
       } catch (error) {
-        diagnosis?.append(documentId!, {
+        diagnosis?.append(draftId!, {
           key: 'getDraftError',
           value: JSON.stringify(error),
         })
@@ -634,7 +629,7 @@ export function useDraftEditor({
           // @ts-expect-error
           if (event.output) {
             invalidate([queryKeys.GET_DRAFT_LIST])
-            invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+            invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
             invalidate([queryKeys.EDITOR_DRAFT, documentId])
           }
         },
@@ -661,7 +656,7 @@ export function useDraftEditor({
                   value: `Delete draft ${documentId} success`,
                 })
                 invalidate([queryKeys.GET_DRAFT_LIST])
-                invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+                invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
               })
           } catch (error) {
             diagnosis?.append(documentId!, {
@@ -754,7 +749,7 @@ export function useDraftEditor({
                   })
 
                   invalidate([queryKeys.GET_DRAFT_LIST])
-                  invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+                  invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
 
                   return res
                 })
@@ -776,7 +771,7 @@ export function useDraftEditor({
             })
 
             invalidate([queryKeys.GET_DRAFT_LIST])
-            invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+            invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
 
             return newDraft
           } catch (error) {
@@ -883,7 +878,7 @@ export function useDraftEditor({
           title: state.context.title,
         }).then(() => {
           invalidate([queryKeys.GET_DRAFT_LIST])
-          invalidate([queryKeys.GET_PUBLICATION_DRAFTS, documentId])
+          invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
           invalidate([queryKeys.EDITOR_DRAFT, documentId])
         })
       }
@@ -1431,7 +1426,7 @@ export function useAccountPublicationFullList(
 export function useAccountPublications(accountId?: string | undefined) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_ACCOUNT_PUBLICATIONS, accountId],
+    queryKey: [queryKeys.ACCOUNT_DOCUMENTS, accountId],
     enabled: !!accountId,
     queryFn: async () => {
       const result = await grpcClient.publications.listAccountPublications({

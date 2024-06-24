@@ -99,7 +99,7 @@ export function useEditDraft(
         isProfileDocument,
       })
       invalidate([queryKeys.GET_DRAFT_LIST])
-      invalidate([queryKeys.GET_PUBLICATION_DRAFTS, draft.id])
+      invalidate([queryKeys.DOCUMENT_DRAFTS, draft.id])
     } catch (error: any) {
       if (
         error?.message.match('[failed_precondition]') &&

@@ -30,11 +30,11 @@ export const queryKeys = {
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
-  GET_PUBLICATION_DRAFTS: 'GET_PUBLICATION_DRAFTS', //, docId: string
-  GET_ACCOUNT_PUBLICATIONS: 'GET_ACCOUNT_PUBLICATIONS', //, accountId: string
-  GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST', // 'trusted' | 'global'
+  DOCUMENT_DRAFTS: 'DOCUMENT_DRAFTS', //, docId: string
+  ACCOUNT_DOCUMENTS: 'ACCOUNT_DOCUMENTS', //, accountId: string
+  DOCUMENT_LIST: 'DOCUMENT_LIST', // 'trusted' | 'global'
   EDITOR_DRAFT: 'EDITOR_DRAFT', // , docId: string
-  GET_PUBLICATION: 'GET_PUBLICATION', //, docId: string, versionId?: string
+  DOCUMENT: 'DOCUMENT', //, docId: string, versionId?: string
 
   // comments
   COMMENT: 'COMMENT', //, commentId: string
@@ -95,13 +95,13 @@ export function labelOfQueryKey(key: QueryKey) {
     // documents
     case queryKeys.GET_DRAFT_LIST:
       return 'Drafts'
-    case queryKeys.GET_ACCOUNT_PUBLICATIONS:
+    case queryKeys.ACCOUNT_DOCUMENTS:
       return 'Account Publications'
-    case queryKeys.GET_PUBLICATION_LIST:
+    case queryKeys.DOCUMENT_LIST:
       return 'Publications'
     case queryKeys.EDITOR_DRAFT:
       return `Editor Draft ${abbreviateCid(arg1)}`
-    case queryKeys.GET_PUBLICATION:
+    case queryKeys.DOCUMENT:
       return `Publication ${abbreviateCid(arg1)}`
 
     // comments

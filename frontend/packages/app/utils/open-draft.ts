@@ -30,7 +30,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
           contextRoute,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])
-        invalidate([queryKeys.GET_PUBLICATION_DRAFTS, docId])
+        invalidate([queryKeys.DOCUMENT_DRAFTS, docId])
         navigate(draftRoute)
       })
       .catch((err) => {
