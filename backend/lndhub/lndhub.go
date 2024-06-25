@@ -131,11 +131,15 @@ func (c *Client) GetLndaddressDomain() string {
 // fail otherwise).
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
-	pubKey, err := c.keyStorage.GetKey(ctx, c.keyName)
+	kp, err := c.keyStorage.GetKey(ctx, c.keyName)
 	if err != nil {
 		return resp, fmt.Errorf("could not get signing key, is account initialized?: %w", err)
 	}
-	pubKeyBytes, err := pubKey.PublicKey.MarshalBinary()
+	pubKey, err := kp.ID().ExtractPublicKey()
+	if err != nil {
+		return resp, fmt.Errorf("Invalid pubkey: %w", err)
+	}
+	pubKeyBytes, err := pubKey.Raw()
 	if err != nil {
 		return resp, fmt.Errorf("Invalid pubkey: %w", err)
 	}
@@ -172,7 +176,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 			return fmt.Errorf("Nickname cannot contain uppercase letters %s", nickname)
 		}
 	}
-	pubKey, err := c.keyStorage.GetKey(ctx, c.keyName)
+	kp, err := c.keyStorage.GetKey(ctx, c.keyName)
 	if err != nil {
 		return fmt.Errorf("could not get signing key, is account initialized?: %w", err)
 	}
@@ -196,7 +200,11 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	if err != nil {
 		return err
 	}
-	pubKeyBytes, err := pubKey.PublicKey.MarshalBinary()
+	pubKey, err := kp.ID().ExtractPublicKey()
+	if err != nil {
+		return fmt.Errorf("Invalid pubkey: %w", err)
+	}
+	pubKeyBytes, err := pubKey.Raw()
 	if err != nil {
 		return fmt.Errorf("Invalid pubkey: %w", err)
 	}
