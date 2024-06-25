@@ -139,7 +139,7 @@ func (ks *osKeyStore) ListKeys(ctx context.Context) ([]NamedKey, error) {
 
 	secret, err := keyring.Get(ks.serviceName, collectionName)
 	if err != nil {
-		return ret, errEmptyEnvironment
+		return ret, nil
 	}
 
 	collection := keyCollection{}
