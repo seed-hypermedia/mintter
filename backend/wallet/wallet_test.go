@@ -70,10 +70,9 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	_, err = bob.InsertWallet(ctx, bobURI, "default")
 	require.NoError(t, err)
 
-	//TODO(juligasa): get bobs account by exporting wallet until sync is working
-	bobAccount, err := bob.net.AccountForDevice(ctx, bob.net.AddrInfo().ID)
+	kp, err := bob.keyStore.GetKey(ctx, "main")
 	require.NoError(t, err)
-
+	bobAccount := kp.Principal()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
