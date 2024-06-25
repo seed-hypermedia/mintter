@@ -2,31 +2,19 @@ package core
 
 import (
 	"context"
-	"crypto/rand"
 	"seed/backend/testutil"
 	"testing"
 
-	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/stretchr/testify/require"
 )
 
 func TestOSKeyStore(t *testing.T) {
 	testutil.Manual(t)
-	var kp KeyPair
-	{
-		priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
-		require.NoError(t, err)
-		kp, err = NewKeyPair(priv)
-		require.NoError(t, err)
-	}
+	kp, err := NewKeyPairRandom()
+	require.NoError(t, err)
 
-	var kp2 KeyPair
-	{
-		priv2, _, err := crypto.GenerateEd25519Key(rand.Reader)
-		require.NoError(t, err)
-		kp2, err = NewKeyPair(priv2)
-		require.NoError(t, err)
-	}
+	kp2, err := NewKeyPairRandom()
+	require.NoError(t, err)
 
 	ks := NewOSKeyStore("test-manual")
 	ctx := context.Background()

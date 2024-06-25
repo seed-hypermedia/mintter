@@ -149,12 +149,10 @@ func (srv *Server) RegisterAccount(ctx context.Context, name string, kp core.Key
 	if _, err := Register(ctx, srv.blobs, kp, kp.PublicKey, time.Now().UTC()); err != nil {
 		return err
 	}
-	// TODO(hm24): Uncomment this when introducing wallet again
-	/*
-		if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
-			return fmt.Errorf("failed to configure wallet when registering: %w", err)
-		}
-	*/
+
+	if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
+		return fmt.Errorf("failed to configure wallet when registering: %w", err)
+	}
 	return nil
 }
 

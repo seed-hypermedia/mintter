@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"seed/backend/core"
 	lndhub "seed/backend/lndhub/lndhubsql"
-	"seed/backend/pkg/future"
 	"strconv"
 	"strings"
 	"time"
@@ -57,7 +56,8 @@ type Client struct {
 	http            *http.Client
 	db              *sqlitex.Pool
 	WalletID        string
-	pubKey          *future.ReadOnly[string]
+	keyStorage      core.KeyStore
+	keyName         string
 	lndhubDomain    string
 	lnaddressDomain string
 }
@@ -103,37 +103,15 @@ type Invoice struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity], lndhubDomain, lnaddressDomain string) *Client {
-	f := future.New[string]()
-	client := Client{
+func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, keyStorage core.KeyStore, keyName, lndhubDomain, lnaddressDomain string) *Client {
+	return &Client{
 		http:            h,
 		db:              db,
-		pubKey:          f.ReadOnly,
+		keyStorage:      keyStorage,
+		keyName:         keyName,
 		lndhubDomain:    lndhubDomain,
 		lnaddressDomain: lnaddressDomain,
 	}
-	go func() {
-		id, err := identity.Await(ctx)
-		if errors.Is(err, context.Canceled) {
-			return
-		}
-		if err != nil {
-			panic(err)
-		}
-		pubkeyRaw, err := id.Account().ID().ExtractPublicKey()
-		if err != nil {
-			panic(err)
-		}
-		pubkeyBytes, err := pubkeyRaw.Raw()
-		if err != nil {
-			panic(err)
-		}
-		if err := f.Resolve(hex.EncodeToString(pubkeyBytes)); err != nil {
-			panic(err)
-		}
-	}()
-
-	return &client
 }
 
 // GetLndhubDomain gets the lndhub domain set at creation.
@@ -147,23 +125,26 @@ func (c *Client) GetLndaddressDomain() string {
 }
 
 // Create creates an account or changes the nickname on already created one. If the login is a CID, then the password must
-// be the signature of the message 'sign in into seed lndhub' and the token the pubkey whose private counterpart
+// be the signature of the message 'sign in into mintter lndhub' and the token the pubkey whose private counterpart
 // was used to sign the password. If login is not a CID, then there is no need for the token and password can be
 // anything. Nickname can be anything in both cases as long as it's unique across all seed lndhub users (it will
 // fail otherwise).
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
+	pubKey, err := c.keyStorage.GetKey(ctx, c.keyName)
+	if err != nil {
+		return resp, fmt.Errorf("could not get signing key, is account initialized?: %w", err)
+	}
+	pubKeyBytes, err := pubKey.PublicKey.MarshalBinary()
+	if err != nil {
+		return resp, fmt.Errorf("Invalid pubkey: %w", err)
+	}
 
 	conn, release, err := c.db.Conn(ctx)
 	if err != nil {
 		return resp, err
 	}
 	defer release()
-
-	pubKey, err := c.pubKey.Await(ctx)
-	if err != nil {
-		return resp, err
-	}
 	err = c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
@@ -172,7 +153,7 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 			Password: pass,  // signed message
 			Nickname: strings.ToLower(nickname),
 		},
-		Token: pubKey,
+		Token: hex.EncodeToString(pubKeyBytes),
 	}, 2, &resp)
 	if err != nil {
 		return resp, err
@@ -190,6 +171,10 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 		if unicode.IsUpper(c) && unicode.IsLetter(c) {
 			return fmt.Errorf("Nickname cannot contain uppercase letters %s", nickname)
 		}
+	}
+	pubKey, err := c.keyStorage.GetKey(ctx, c.keyName)
+	if err != nil {
+		return fmt.Errorf("could not get signing key, is account initialized?: %w", err)
 	}
 	var resp createResponse
 
@@ -211,10 +196,11 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	if err != nil {
 		return err
 	}
-	pubKey, err := c.pubKey.Await(ctx)
+	pubKeyBytes, err := pubKey.PublicKey.MarshalBinary()
 	if err != nil {
-		return err
+		return fmt.Errorf("Invalid pubkey: %w", err)
 	}
+
 	err = c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
@@ -223,7 +209,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 			Password: pass,  // signed message
 			Nickname: nickname,
 		},
-		Token: pubKey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+		Token: hex.EncodeToString(pubKeyBytes), // this token is the pubkey bytes whose private counterpart was used to sign the password
 	}, 2, &resp)
 	if err != nil {
 		return err

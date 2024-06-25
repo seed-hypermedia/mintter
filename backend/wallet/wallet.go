@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"regexp"
 	"seed/backend/core"
+	"seed/backend/daemon/storage"
 	p2p "seed/backend/genproto/p2p/v1alpha"
 	"seed/backend/hyper/hypersql"
 	"seed/backend/lndhub"
 	"seed/backend/lndhub/lndhubsql"
 	"seed/backend/mttnet"
-	"seed/backend/pkg/future"
 	"seed/backend/wallet/walletsql"
 	wallet "seed/backend/wallet/walletsql"
 	"strings"
@@ -38,8 +38,10 @@ type AccountID = cid.Cid
 type Service struct {
 	lightningClient lnclient
 	pool            *sqlitex.Pool
-	net             *future.ReadOnly[*mttnet.Node]
+	net             *mttnet.Node
 	log             *zap.Logger
+	keyStore        core.KeyStore
+	keyName         string
 }
 
 // Credentials struct holds all we need to connect to different lightning nodes (lndhub, LND, core-lightning, ...).
@@ -56,7 +58,7 @@ type Credentials struct {
 // New is the constructor of the wallet service. Since it needs to authenticate to the internal wallet provider (lndhub)
 // it may take time in case node is offline. This is why it's initialized in a gorutine and calls to the service functions
 // will fail until the initial wallet is successfully initialized.
-func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity], mainnet bool) *Service {
+func New(ctx context.Context, log *zap.Logger, storage *storage.Store, keyName string, net *mttnet.Node, mainnet bool) *Service {
 	lndhubDomain := "ln.testnet.mintter.com"
 	lnaddressDomain := "ln.testnet.mintter.com"
 	if mainnet {
@@ -65,50 +67,45 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		lnaddressDomain = "ln.mintter.com"
 	}
 	srv := &Service{
-		pool: db,
+		pool: storage.DB(),
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me, lndhubDomain, lnaddressDomain),
+			Lndhub: lndhub.NewClient(ctx, &http.Client{}, storage.DB(), storage.KeyStore(), keyName, lndhubDomain, lnaddressDomain),
 		},
-		net: net,
-		log: log,
+		net:      net,
+		log:      log,
+		keyStore: storage.KeyStore(),
+		keyName:  keyName,
 	}
-	go func() {
-		n, err := net.Await(ctx)
-		if err != nil {
-			return
-		}
+	srv.net.SetInvoicer(srv)
+	// Check if the user already had a lndhub wallet (reusing db)
+	// if not, then Auth will simply fail.
+	conn, release, err := storage.DB().Conn(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer release()
+	defaultWallet, err := walletsql.GetDefaultWallet(conn)
+	if err != nil {
+		log.Warn("Problem getting default wallet", zap.Error(err))
+		return srv
+	}
+	if defaultWallet.Type == lndhubsql.LndhubGoWalletType {
+		srv.lightningClient.Lndhub.WalletID = defaultWallet.ID
+		return srv
+	}
+	wallets, err := walletsql.ListWallets(conn, 1)
+	if err != nil {
+		log.Warn("Could not get if db already had wallets", zap.Error(err))
+		return srv
+	}
 
-		n.SetInvoicer(srv)
-		// Check if the user already had a lndhub wallet (reusing db)
-		// if not, then Auth will simply fail.
-		conn, release, err := db.Conn(ctx)
-		if err != nil {
-			panic(err)
+	for _, w := range wallets {
+		if w.Type == lndhubsql.LndhubGoWalletType {
+			srv.lightningClient.Lndhub.WalletID = w.ID
+			return srv
 		}
-		defer release()
-		defaultWallet, err := walletsql.GetDefaultWallet(conn)
-		if err != nil {
-			log.Warn("Problem getting default wallet", zap.Error(err))
-			return
-		}
-		if defaultWallet.Type == lndhubsql.LndhubGoWalletType {
-			srv.lightningClient.Lndhub.WalletID = defaultWallet.ID
-			return
-		}
-		wallets, err := walletsql.ListWallets(conn, 1)
-		if err != nil {
-			log.Warn("Could not get if db already had wallets", zap.Error(err))
-			return
-		}
-
-		for _, w := range wallets {
-			if w.Type == lndhubsql.LndhubGoWalletType {
-				srv.lightningClient.Lndhub.WalletID = w.ID
-				return
-			}
-		}
-		log.Info("None of the wallets already in db is lndhub compatible.", zap.Int("Number of wallets", len(wallets)))
-	}()
+	}
+	log.Info("None of the wallets already in db is lndhub compatible.", zap.Int("Number of wallets", len(wallets)))
 
 	return srv
 }
@@ -133,13 +130,11 @@ type InvoiceRequest struct {
 // inbound liquidity) we ask the next device. We return in the first device that
 // can issue the invoice. If none of them can, then an error is raised.
 func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principal, request InvoiceRequest) (string, error) {
-	net, ok := srv.net.Get()
-	if !ok {
-		srv.log.Debug("Trying to get remote invoice, but networking not ready yet")
-		return "", fmt.Errorf("network is not ready yet")
+	me, err := srv.keyStore.GetKey(ctx, srv.keyName)
+	if err != nil {
+		return "", err
 	}
-
-	if net.ID().Account().Principal().String() == account.String() {
+	if me.String() == account.String() {
 		err := fmt.Errorf("cannot remotely issue an invoice to myself")
 		srv.log.Debug(err.Error())
 		return "", err
@@ -167,7 +162,7 @@ func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principa
 		if err != nil {
 			return "", fmt.Errorf("failed to extract peer ID: %w", err)
 		}
-		p2pc, err := net.Client(ctx, pid)
+		p2pc, err := srv.net.Client(ctx, pid)
 		if err != nil {
 			continue
 		}
@@ -246,7 +241,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		}
 		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, ret.Address, creds.Login, creds.Password, creds.Nickname)
 		if err != nil {
-			srv.log.Debug("Could not insert wallet", zap.String("Login", creds.Login), zap.String("Nickname", creds.Nickname), zap.Error(err))
+			srv.log.Warn("couldn't insert wallet", zap.String("Login", creds.Login), zap.String("Nickname", creds.Nickname), zap.Error(err))
 			return ret, err
 		}
 		creds.Nickname = newWallet.Nickname
@@ -264,7 +259,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx)
 	if err != nil {
 		_ = wallet.RemoveWallet(conn, ret.ID)
-		srv.log.Debug("couldn't authenticate new wallet", zap.String("msg", err.Error()))
+		srv.log.Warn("couldn't authenticate new wallet", zap.String("msg", err.Error()))
 		return ret, fmt.Errorf("couldn't authenticate new wallet %s", name)
 	}
 
@@ -371,15 +366,14 @@ func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, 
 		if err != nil {
 			return "", err
 		}
-		net, ok := srv.net.Get()
-		if !ok {
-			return "", fmt.Errorf("network is not ready yet")
+		me, err := srv.keyStore.GetKey(ctx, srv.keyName)
+		if err != nil {
+			return "", err
 		}
-
 		uri, err = EncodeCredentialsURL(Credentials{
 			Domain:     srv.lightningClient.Lndhub.GetLndhubDomain(),
 			WalletType: lndhubsql.LndhubGoWalletType,
-			Login:      net.ID().Account().Principal().String(),
+			Login:      me.String(),
 			Password:   loginSignature,
 		})
 		if err != nil {

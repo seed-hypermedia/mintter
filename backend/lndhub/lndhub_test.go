@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"seed/backend/core"
 	"seed/backend/daemon/storage"
-	"seed/backend/pkg/future"
 	"seed/backend/wallet/walletsql"
 	"strings"
 	"testing"
@@ -17,7 +16,6 @@ import (
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/btcsuite/btcd/btcutil"
-	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,23 +41,17 @@ func TestCreate(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
-	identity := future.New[core.Identity]()
-	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly, lndhubDomain, lnaddressDomain)
 	keypair, err := core.NewKeyPairRandom()
 	require.NoError(t, err)
-	priv, pub, err := crypto.GenerateEd25519Key(nil)
-	require.NoError(t, err)
-	pubkeyBytes, err := pub.Raw()
+	pubKeyBytes, err := keypair.PublicKey.MarshalBinary()
 	require.NoError(t, err)
 
-	pubkey, err := core.NewPublicKey(pub.(*crypto.Ed25519PublicKey))
-	require.NoError(t, err)
-
-	login := pubkey.Principal().String()
-	passwordBytes, err := priv.Sign([]byte(SigningMessage))
+	ks := core.NewMemoryKeyStore()
+	login := keypair.String()
+	passwordBytes, err := keypair.Sign([]byte(SigningMessage))
 	password := hex.EncodeToString(passwordBytes)
 	require.NoError(t, err)
-	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))
+	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, ks, "main", lndhubDomain, lnaddressDomain)
 	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, lndhubDomain)
 
 	makeTestWallet(t, conn, walletsql.Wallet{
@@ -68,9 +60,12 @@ func TestCreate(t *testing.T) {
 		Name:    nickname,
 		Type:    "lndhub.go",
 		Balance: 0,
-	}, login, password, hex.EncodeToString(pubkeyBytes))
+	}, login, password, hex.EncodeToString(pubKeyBytes))
 
 	user, err := lndHubClient.Create(ctx, connectionURL, login, password, nickname)
+	require.Error(t, err)
+	require.NoError(t, ks.StoreKey(ctx, "main", keypair))
+	user, err = lndHubClient.Create(ctx, connectionURL, login, password, nickname)
 	require.NoError(t, err)
 	require.EqualValues(t, login, user.Login)
 	require.EqualValues(t, password, user.Password)

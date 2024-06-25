@@ -19,6 +19,7 @@ import (
 	"seed/backend/mttnet"
 	"seed/backend/pkg/cleanup"
 	"seed/backend/pkg/future"
+	"seed/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
@@ -48,9 +49,9 @@ type App struct {
 	RPC          api.Server
 	Net          *mttnet.Node
 	// Syncing      *future.ReadOnly[*syncing.Service]
-	Blobs *hyper.Storage
-	// Wallet *wallet.Service
-	// TODO(hm24): add wallet and syncing service back.
+	Blobs  *hyper.Storage
+	Wallet *wallet.Service
+	// TODO(hm24): add syncing service back.
 }
 
 type options struct {
@@ -161,12 +162,11 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option
 	// 	return nil, err
 	// }
 
-	// TODO(hm24): put the wallet back.
-	// a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage.DB(), a.Net, me, cfg.Lndhub.Mainnet)
+	a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage, "main", a.Net, cfg.Lndhub.Mainnet)
 
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.Storage.DB(), a.Blobs, a.Net,
 		nil, // TODO(hm24): put the syncing back a.Syncing,
-		nil, // TODO(hm24): put the wallet back a.Wallet,
+		a.Wallet,
 		cfg.LogLevel, opts.grpc)
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option
 	}
 
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Blobs,
-		nil, // TODO(hm24) put the wallet back
+		a.Wallet,
 		fm, opts.extraHTTPHandlers...)
 	if err != nil {
 		return nil, err

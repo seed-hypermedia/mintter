@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"path/filepath"
+	"seed/backend/core"
 	"seed/backend/daemon/storage/dbext"
 	"seed/backend/testutil"
 	"testing"
@@ -94,6 +95,22 @@ func MakeTestDB(t testing.TB) *sqlitex.Pool {
 	})
 	require.NoError(t, InitSQLiteSchema(pool))
 	return pool
+
+}
+
+// MakeTestRepo is a test helper to use our database schema in tests.
+func MakeTestRepo(t testing.TB) *Store {
+	t.Helper()
+
+	path := testutil.MakeRepoPath(t)
+
+	//u := coretest.NewTester("alice")
+
+	repo, err := Open(path, nil, core.NewMemoryKeyStore(), "debug")
+	require.NoError(t, err)
+
+	return repo
+
 }
 
 // SetKV sets a key-value pair in the database.
