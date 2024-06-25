@@ -34,7 +34,7 @@ function AddConnectionForm({
   const [peerText, setPeer] = useState('')
   const daemonInfo = useDaemonInfo()
   const account = useMyAccount()
-  const deviceId = daemonInfo.data?.deviceId
+  const deviceId = daemonInfo.data?.peerId
   const peerInfo = usePeerInfo(deviceId)
 
   const connectionString =

@@ -1,9 +1,7 @@
-import { useGRPCClient } from '@shm/desktop/src/app-context'
-import { DialogTitle } from '@shm/desktop/src/components/dialog'
-import { queryKeys } from '@shm/desktop/src/models/query-keys'
-import { eventStream } from '@shm/shared'
+import {DialogTitle} from '@shm/desktop/src/components/dialog'
+import {queryKeys} from '@shm/desktop/src/models/query-keys'
+import {eventStream} from '@shm/shared'
 import {
-  Add,
   Button,
   CheckboxField,
   Dialog,
@@ -13,10 +11,11 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
-import { useAccountKeys } from './models/daemon'
-import { trpc } from './trpc'
+import {useMutation} from '@tanstack/react-query'
+import {useEffect, useMemo, useState} from 'react'
+import {invalidateQueries} from './app-invalidation'
+import {useDeleteKey, useMnemonics, useRegisterKey} from './models/daemon'
+import {trpc} from './trpc'
 
 export type NamedKey = {
   name: string
@@ -24,67 +23,26 @@ export type NamedKey = {
   publicKey: string
 }
 
-let [dispatchWizardEvent, wizardEvents] = eventStream<boolean>()
-let [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
-
-export function CurrentAccountSidebarSection() {
-  const read = trpc.secureStorage.read.useQuery('main')
-
-  console.log(`== ~ CurrentAccountSidebarSection ~ read:`, read.data)
-  return (
-    <XStack>
-      <Button
-        icon={Add}
-        chromeless
-        borderRadius={0}
-        f={1}
-        onPress={() => {
-          dispatchWizardEvent(true)
-        }}
-      >
-        Add Account
-      </Button>
-    </XStack>
-  )
-
-  return null
-}
+export const [dispatchWizardEvent, wizardEvents] = eventStream<boolean>()
+export const [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
 
 type AccountStep = 'start' | 'create' | 'complete'
 
 export function AccountWizardDialog() {
-  const client = useGRPCClient()
   const [open, setOpen] = useState(false)
   const [newAccount, setNewAccount] = useState<null | boolean>(null)
   const [step, setStep] = useState<AccountStep>('start')
   const [existingWords, setExistingWords] = useState<string>('')
   const [isSaveWords, setSaveWords] = useState<null | boolean>(null)
+  const [isExistingWordsSave, setExistingWordsSave] = useState<boolean>(false)
 
   const saveWords = trpc.secureStorage.write.useMutation()
-  const { refetch: refetchKeys } = useAccountKeys()
 
-  const { data: genWords, refetch: refetchWords } = useQuery({
-    queryKey: [queryKeys.GENERATE_MNEMONIC],
-    enabled: step == 'create' && newAccount == true,
-    queryFn: async () => {
-      const words = await client.daemon.genMnemonic({})
-      return words.mnemonic
-    },
-  })
+  const {data: genWords, refetch: refetchWords} = useMnemonics()
 
-  const register = useMutation({
-    // queryKey: ['REGISTER_KEY'],
-    mutationFn: async () => {
-      const res = await client.daemon.registerKey({
-        mnemonic: words as Array<string>,
-        name: 'main',
-      })
-      return res
-    },
-  })
+  const register = useRegisterKey()
 
   const addExistingAccount = useMutation({
-    // queryKey: ['REGISTER_KEY'],
     mutationFn: async () => {
       let input = []
 
@@ -100,8 +58,7 @@ export function AccountWizardDialog() {
       if (input.length == 0) {
         throw Error('No mnemonics')
       }
-      console.log('--- ADD EXISTING ACCOUNT', input)
-      const res = await client.daemon.registerKey({
+      let res = await register.mutateAsync({
         mnemonic: input,
         name: 'main',
       })
@@ -109,17 +66,7 @@ export function AccountWizardDialog() {
     },
   })
 
-  const deleteKey = useMutation({
-    // queryKey: ['REGISTER_KEY'],
-    mutationFn: async () => {
-      const res = await client.daemon.deleteKey({
-        name: 'main',
-      })
-
-      console.log('== REGISTER', res)
-      return res
-    },
-  })
+  const deleteKey = useDeleteKey()
 
   const words = useMemo(() => {
     if (newAccount) {
@@ -152,8 +99,8 @@ export function AccountWizardDialog() {
           width="100vw"
           animation="fast"
           opacity={0.8}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
         />
         <Dialog.Content
           backgroundColor={'$background'}
@@ -165,8 +112,8 @@ export function AccountWizardDialog() {
               },
             },
           ]}
-          enterStyle={{ y: -10, opacity: 0 }}
-          exitStyle={{ y: -10, opacity: 0 }}
+          enterStyle={{y: -10, opacity: 0}}
+          exitStyle={{y: -10, opacity: 0}}
         >
           <DialogTitle>Account</DialogTitle>
           {step == 'start' ? (
@@ -189,13 +136,6 @@ export function AccountWizardDialog() {
                 }}
               >
                 Add existing account
-              </Button>
-              <Button
-                onPress={() => {
-                  deleteKey.mutateAsync()
-                }}
-              >
-                Remove key (dev)
               </Button>
             </YStack>
           ) : null}
@@ -237,15 +177,20 @@ export function AccountWizardDialog() {
                 <Button
                   f={1}
                   onPress={() => {
-                    register.mutateAsync().then((res) => {
-                      if (isSaveWords) {
-                        console.log('== SAVE WORDS TOO!')
-                        // TODO: @Eric here we need to store the words
-                        saveWords.mutate({ key: 'main', value: words })
-                      }
-                      refetchKeys()
-                      setStep('complete')
-                    })
+                    register
+                      .mutateAsync({
+                        mnemonic: words as Array<string>,
+                        name: 'main',
+                      })
+                      .then((res) => {
+                        if (isSaveWords) {
+                          console.log('== SAVE WORDS TOO!')
+                          // TODO: @Eric here we need to store the words
+                          saveWords.mutate({key: 'main', value: words})
+                        }
+                        invalidateQueries(queryKeys.KEYS_LIST)
+                        setStep('complete')
+                      })
                   }}
                 >
                   Create new Account
@@ -262,6 +207,13 @@ export function AccountWizardDialog() {
                 value={existingWords}
                 onChangeText={setExistingWords}
               />
+              <CheckboxField
+                value={isExistingWordsSave}
+                onValue={setExistingWordsSave}
+                id="existing-save-words"
+              >
+                I have my words save somewhere
+              </CheckboxField>
               <XStack gap="$2">
                 <Button
                   f={1}
@@ -274,9 +226,16 @@ export function AccountWizardDialog() {
                 </Button>
                 <Button
                   f={1}
+                  opacity={!isExistingWordsSave ? 0.4 : 1}
+                  hoverStyle={{
+                    cursor: isExistingWordsSave
+                      ? 'pointer'
+                      : 'not-allowed !important',
+                  }}
+                  disabled={!isExistingWordsSave}
                   onPress={() => {
                     addExistingAccount.mutateAsync().then(() => {
-                      refetchKeys()
+                      invalidateQueries(queryKeys.KEYS_LIST)
                       setStep('complete')
                     })
                   }}
@@ -289,6 +248,8 @@ export function AccountWizardDialog() {
           {step == 'complete' ? (
             <YStack gap="$2" width="100%" maxWidth="400px">
               <SizableText>Account created!</SizableText>
+              <Button>Update my profile</Button>
+              <Button>Share my account with others</Button>
               <Button onPress={() => dispatchWizardEvent(false)}>close</Button>
             </YStack>
           ) : null}

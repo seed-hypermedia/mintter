@@ -21,7 +21,7 @@ export function CheckboxField({
     <XStack {...props} gap="$3" ai="center">
       <Checkbox
         id={id}
-        value={value ? 'checked' : ''}
+        checked={typeof value == 'boolean' ? value : 'indeterminate'}
         onCheckedChange={onValue}
       >
         <Checkbox.Indicator>

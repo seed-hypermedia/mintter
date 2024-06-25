@@ -1,16 +1,22 @@
-import { CurrentAccountSidebarSection } from '@shm/desktop/src/app-account'
-import { useAccount } from '@shm/desktop/src/models/accounts'
-import { useDocumentEmbeds } from '@shm/desktop/src/models/documents'
-import { useFavorites } from '@shm/desktop/src/models/favorites'
-import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { getRouteContext, getRouteParentContext } from '@shm/desktop/src/utils/route-context'
+import {useAccount} from '@shm/desktop/src/models/accounts'
+import {useDocumentEmbeds} from '@shm/desktop/src/models/documents'
+import {useFavorites} from '@shm/desktop/src/models/favorites'
+import {
+  appRouteOfId,
+  getRouteKey,
+  useNavRoute,
+} from '@shm/desktop/src/utils/navigation'
+import {
+  getRouteContext,
+  getRouteParentContext,
+} from '@shm/desktop/src/utils/route-context'
 import {
   AccountRoute,
   BaseEntityRoute,
   DocumentRoute,
   NavRoute,
 } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import {useNavigate} from '@shm/desktop/src/utils/useNavigate'
 import {
   HMBlockNode,
   HMDocument,
@@ -18,9 +24,9 @@ import {
   getDocumentTitle,
   unpackHmId,
 } from '@shm/shared'
-import { Button, Home, SizableText, XStack, YStack } from '@shm/ui'
-import { Contact, FileText, Hash, Sparkles, Star } from '@tamagui/lucide-icons'
-import { PropsWithChildren, ReactNode, memo, useMemo } from 'react'
+import {Button, Home, SizableText, XStack, YStack} from '@shm/ui'
+import {Contact, FileText, Hash, Sparkles, Star} from '@tamagui/lucide-icons'
+import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
 import {
   GenericSidebarContainer,
   SidebarDivider,
@@ -29,7 +35,7 @@ import {
   activeDocOutline,
   getDocOutline,
 } from './sidebar-base'
-import { SidebarNeo } from './sidebar-neo'
+import {SidebarNeo} from './sidebar-neo'
 
 export const AppSidebar = memo(MainAppSidebar)
 
@@ -39,11 +45,10 @@ export function MainAppSidebar() {
 
   return (
     <GenericSidebarContainer>
-      <CurrentAccountSidebarSection />
       <SidebarItem
         active={route.key == 'home'}
         onPress={() => {
-          navigate({ key: 'home' })
+          navigate({key: 'home'})
         }}
         title="Home"
         bold
@@ -52,7 +57,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'feed'}
         onPress={() => {
-          navigate({ key: 'feed' })
+          navigate({key: 'feed'})
         }}
         title="Feed"
         bold
@@ -61,7 +66,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'explore'}
         onPress={() => {
-          navigate({ key: 'explore' })
+          navigate({key: 'explore'})
         }}
         title="Explore Content"
         bold
@@ -71,7 +76,7 @@ export function MainAppSidebar() {
       <SidebarItem
         active={route.key == 'contacts'}
         onPress={() => {
-          navigate({ key: 'contacts' })
+          navigate({key: 'contacts'})
         }}
         icon={Contact}
         title="Contacts"
@@ -116,7 +121,7 @@ function SidebarFavorites() {
     <SidebarGroupItem
       active={route.key == 'favorites'}
       onPress={() => {
-        navigate({ key: 'favorites' })
+        navigate({key: 'favorites'})
       }}
       title="Favorites"
       bold
@@ -136,7 +141,7 @@ function SidebarFavorites() {
         ]
       }
       items={favorites.map((fav) => {
-        const { key, url } = fav
+        const {key, url} = fav
         if (key === 'account') {
           return <FavoriteAccountItem key={url} url={url} />
         }
@@ -149,7 +154,7 @@ function SidebarFavorites() {
   )
 }
 
-function FavoriteAccountItem({ url }: { url: string }) {
+function FavoriteAccountItem({url}: {url: string}) {
   const id = unpackHmId(url)
   const route = useNavRoute()
   const accountId = id?.eid
@@ -161,14 +166,14 @@ function FavoriteAccountItem({ url }: { url: string }) {
       active={route.key === 'account' && route.accountId === accountId}
       indented
       onPress={() => {
-        navigate({ key: 'account', accountId })
+        navigate({key: 'account', accountId})
       }}
       title={account.data?.profile?.alias || 'Unknown Account'}
     />
   )
 }
 
-function FavoritePublicationItem({ url }: { url: string }) {
+function FavoritePublicationItem({url}: {url: string}) {
   const id = unpackHmId(url)
   const route = useNavRoute()
   const navigate = useNavigate()
@@ -306,7 +311,7 @@ function useNavigateBlock(fromRoute: NavRoute) {
       navigate(destRoute)
     }
   }
-  return { navigateBlock, focusBlock }
+  return {navigateBlock, focusBlock}
 }
 
 function useContextItems(context: BaseEntityRoute[] | undefined) {
@@ -328,7 +333,7 @@ function useContextItems(context: BaseEntityRoute[] | undefined) {
         )
       return null
     }) || null
-  return { items }
+  return {items}
 }
 
 function useIntermediateContext(
@@ -338,11 +343,11 @@ function useIntermediateContext(
 ) {
   const headings = useMemo(() => {
     if (!blockId || !document) return null
-    let blockHeadings: null | { id: string; text: string }[] = null
+    let blockHeadings: null | {id: string; text: string}[] = null
     if (!blockId) return []
     function findBlock(
       nodes: HMBlockNode[] | undefined,
-      parentHeadings: { id: string; text: string }[],
+      parentHeadings: {id: string; text: string}[],
     ) {
       return nodes?.find((blockNode) => {
         if (!blockId) return null
@@ -353,14 +358,14 @@ function useIntermediateContext(
         if (blockNode.children?.length) {
           return findBlock(blockNode.children, [
             ...parentHeadings,
-            { id: blockNode.block.id, text: blockNode.block.text },
+            {id: blockNode.block.id, text: blockNode.block.text},
           ])
         }
         return false
       })
     }
     findBlock(document.children, [])
-    return blockHeadings as null | { id: string; text: string }[]
+    return blockHeadings as null | {id: string; text: string}[]
   }, [document, blockId])
   const navigate = useNavigate()
   return headings?.map((heading) => {
@@ -369,7 +374,7 @@ function useIntermediateContext(
         icon={Hash}
         title={heading.text}
         onPress={() => {
-          navigate({ ...route, blockId: heading.id })
+          navigate({...route, blockId: heading.id})
         }}
       />
     )
@@ -391,7 +396,7 @@ function AccountContextItem({
         title={account.data?.profile?.alias || 'Unknown Account'}
         icon={Contact}
         onPress={() => {
-          navigate({ ...route, blockId: undefined, isBlockFocused: undefined })
+          navigate({...route, blockId: undefined, isBlockFocused: undefined})
         }}
       />
       {useIntermediateContext(
@@ -421,7 +426,7 @@ function PublicationContextItem({
         title={getDocumentTitle(pub.data?.publication?.document)}
         icon={FileText}
         onPress={() => {
-          navigate({ ...route, blockId: undefined })
+          navigate({...route, blockId: undefined})
         }}
       />
       {useIntermediateContext(
@@ -437,7 +442,7 @@ function isDraftActive(route: NavRoute, documentId: string | undefined) {
   return route.key === 'draft' && route.draftId === documentId
 }
 
-function AccountRouteOutline({ route }: { route: AccountRoute }) {
+function AccountRouteOutline({route}: {route: AccountRoute}) {
   const activeRoute = useNavRoute()
   const isActive =
     activeRoute.key === 'account' && activeRoute.accountId === route.accountId
@@ -456,8 +461,8 @@ function AccountRouteOutline({ route }: { route: AccountRoute }) {
   )
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const { navigateBlock, focusBlock } = useNavigateBlock(route)
-  const { outlineContent, isBlockActive, isBlockFocused } = activeDocOutline(
+  const {navigateBlock, focusBlock} = useNavigateBlock(route)
+  const {outlineContent, isBlockActive, isBlockFocused} = activeDocOutline(
     docOutline,
     route.isBlockFocused ? undefined : route.blockId,
     route.isBlockFocused ? route.blockId : undefined,
@@ -466,7 +471,7 @@ function AccountRouteOutline({ route }: { route: AccountRoute }) {
     focusBlock,
     navigate,
   )
-  const { items: parentContext } = useContextItems(route.context)
+  const {items: parentContext} = useContextItems(route.context)
   const isRootActive = isActive && !isBlockFocused
   return (
     <>
@@ -495,19 +500,19 @@ function AccountRouteOutline({ route }: { route: AccountRoute }) {
           isDraftActive(activeRoute, profilePub?.data?.document?.id)
             ? null
             : () => {
-              navigate({
-                key: 'draft',
-                draftId: profilePub.data?.drafts?.[0]?.id,
-                contextRoute: route,
-              })
-            }
+                navigate({
+                  key: 'draft',
+                  draftId: profilePub.data?.drafts?.[0]?.id,
+                  contextRoute: route,
+                })
+              }
         }
       ></DraftItems>
     </>
   )
 }
 
-function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
+function DocumentRouteOutline({route}: {route: DocumentRoute}) {
   const activeRoute = useNavRoute()
   const pub = usePublicationVariantWithDraft({
     documentId: route.documentId,
@@ -519,8 +524,8 @@ function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
   const outline = getDocOutline(pub?.data?.document?.children || [], pubEmbeds)
   const navigate = useNavigate()
   const replace = useNavigate('replace')
-  const { navigateBlock, focusBlock } = useNavigateBlock(route)
-  const { outlineContent, isBlockActive } = activeDocOutline(
+  const {navigateBlock, focusBlock} = useNavigateBlock(route)
+  const {outlineContent, isBlockActive} = activeDocOutline(
     outline,
     route.isBlockFocused ? undefined : route.blockId,
     route.isBlockFocused ? route.blockId : undefined,
@@ -529,7 +534,7 @@ function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
     focusBlock,
     navigate,
   )
-  const { items: parentContext } = useContextItems(route.context)
+  const {items: parentContext} = useContextItems(route.context)
   return (
     <>
       {parentContext}
@@ -539,7 +544,7 @@ function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
             active={!isBlockActive}
             onPress={() => {
               if (route.blockId) {
-                replace({ ...route, blockId: undefined })
+                replace({...route, blockId: undefined})
               }
             }}
             title={pub.data?.document?.title}
@@ -553,11 +558,11 @@ function DocumentRouteOutline({ route }: { route: DocumentRoute }) {
           isDraftActive(activeRoute, pub?.data?.document?.id)
             ? null
             : navigate({
-              key: 'draft',
-              draftId: pub.data?.drafts?.[0]?.id,
-              contextRoute: route,
-              variant: null,
-            })
+                key: 'draft',
+                draftId: pub.data?.drafts?.[0]?.id,
+                contextRoute: route,
+                variant: null,
+              })
         }}
       ></DraftItems>
     </>

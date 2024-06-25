@@ -1,11 +1,14 @@
-import { useGRPCClient, useIPC } from '@shm/desktop/src/app-context'
-import { AvatarForm } from '@shm/desktop/src/components/avatar-form'
-import { useEditProfileDialog } from '@shm/desktop/src/components/edit-profile-dialog'
+import {useIPC} from '@shm/desktop/src/app-context'
+import {AvatarForm} from '@shm/desktop/src/components/avatar-form'
+import {useEditProfileDialog} from '@shm/desktop/src/components/edit-profile-dialog'
 import appError from '@shm/desktop/src/errors'
-import { useMyAccount } from '@shm/desktop/src/models/accounts'
-import { useAutoUpdatePreference } from '@shm/desktop/src/models/app-settings'
-import { useDaemonInfo } from '@shm/desktop/src/models/daemon'
-import { useExperiments, useWriteExperiments } from '@shm/desktop/src/models/experiments'
+import {useMyAccount} from '@shm/desktop/src/models/accounts'
+import {useAutoUpdatePreference} from '@shm/desktop/src/models/app-settings'
+import {useDaemonInfo} from '@shm/desktop/src/models/daemon'
+import {
+  useExperiments,
+  useWriteExperiments,
+} from '@shm/desktop/src/models/experiments'
 import {
   useGatewayUrl,
   usePushOnCopy,
@@ -14,17 +17,16 @@ import {
   useSetPushOnCopy,
   useSetPushOnPublish,
 } from '@shm/desktop/src/models/gateway-settings'
-import { usePeerInfo } from '@shm/desktop/src/models/networking'
+import {usePeerInfo} from '@shm/desktop/src/models/networking'
 import {
   useExportWallet,
   useInvoicesBywallet,
   useWallets,
 } from '@shm/desktop/src/models/payments'
-import { queryKeys } from '@shm/desktop/src/models/query-keys'
-import { useWalletOptIn } from '@shm/desktop/src/models/wallet'
-import { trpc } from '@shm/desktop/src/trpc'
-import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
-import { LightningWallet, Profile, State, VERSION } from '@shm/shared'
+import {useWalletOptIn} from '@shm/desktop/src/models/wallet'
+import {trpc} from '@shm/desktop/src/trpc'
+import {getAvatarUrl} from '@shm/desktop/src/utils/account-url'
+import {LightningWallet, Profile, State, VERSION} from '@shm/shared'
 import {
   ArrowDownRight,
   Button,
@@ -61,11 +63,11 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import { Trash } from '@tamagui/lucide-icons'
-import { useQuery } from '@tanstack/react-query'
+import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import { useEffect, useMemo, useState } from 'react'
-import { useAccountKeys } from 'src/models/daemon'
+import {useEffect, useMemo, useState} from 'react'
+import {dispatchWizardEvent} from 'src/app-account'
+import {useAccountKeys} from 'src/models/daemon'
 
 export default function Settings() {
   return (
@@ -140,7 +142,7 @@ export default function Settings() {
 function SettingsSection({
   title,
   children,
-}: React.PropsWithChildren<{ title: string }>) {
+}: React.PropsWithChildren<{title: string}>) {
   return (
     <YStack gap="$3">
       <YStack
@@ -210,7 +212,7 @@ export function DeveloperSettings() {
             size="$2"
             theme={enabledDevTools ? 'red' : 'green'}
             onPress={() => {
-              writeExperiments.mutate({ developerTools: !enabledDevTools })
+              writeExperiments.mutate({developerTools: !enabledDevTools})
             }}
           >
             {enabledDevTools ? 'Disable Debug Tools' : `Enable Debug Tools`}
@@ -275,7 +277,7 @@ export function ProfileForm({
         <YStack flex={0} alignItems="center" flexGrow={0}>
           <AvatarForm
             disabled
-            onAvatarUpload={async (avatar) => { }}
+            onAvatarUpload={async (avatar) => {}}
             url={getAvatarUrl(profile?.avatar)}
           />
         </YStack>
@@ -343,35 +345,34 @@ export function ProfileInfo() {
 }
 
 function AccountKeys() {
-  const client = useGRPCClient()
-  const { data: keys } = useAccountKeys()
-
+  const {data: keys} = useAccountKeys()
   return (
     <YStack gap="$3">
       <Heading>Account Keys</Heading>
-      <table>
-        {keys?.length
-          ? keys.map((k) => (
-            <tr>
-              <td>{k.name}</td>
-              <td>{k.accountId}</td>
-            </tr>
-          ))
-          : null}
-      </table>
+      {!keys || keys.length === 0 ? (
+        <>
+          <Button onPress={() => dispatchWizardEvent(true)}>
+            Create a new account
+          </Button>
+        </>
+      ) : (
+        <table>
+          {keys?.length
+            ? keys.map((k) => (
+                <tr>
+                  <td>{k.name}</td>
+                  <td>{k.accountId}</td>
+                </tr>
+              ))
+            : null}
+        </table>
+      )}
     </YStack>
   )
 }
 
-function DevicesInfo({ }: {}) {
-  const client = useGRPCClient()
-  const { data: deviceInfo } = useQuery({
-    queryKey: [queryKeys.GET_DAEMON_INFO],
-    queryFn: async () => {
-      const q = await client.daemon.getInfo({})
-      return q
-    },
-  })
+function DevicesInfo() {
+  const {data: deviceInfo} = useDaemonInfo()
   return (
     <YStack gap="$3">
       <Heading>My Device</Heading>
@@ -479,7 +480,7 @@ const EXPERIMENTS: ExperimentType[] = [
   },
 ]
 
-function GatewaySettings({ }: {}) {
+function GatewaySettings({}: {}) {
   const gatewayUrl = useGatewayUrl()
 
   const setGatewayUrl = useSetGatewayUrl()
@@ -519,7 +520,7 @@ function GatewaySettings({ }: {}) {
   )
 }
 
-function PushOnCopySetting({ }: {}) {
+function PushOnCopySetting({}: {}) {
   const pushOnCopy = usePushOnCopy()
   const id = React.useId()
   const setPushOnCopy = useSetPushOnCopy()
@@ -536,9 +537,9 @@ function PushOnCopySetting({ }: {}) {
           }}
         >
           {[
-            { value: 'always', label: 'Always' },
-            { value: 'never', label: 'Never' },
-            { value: 'ask', label: 'Ask' },
+            {value: 'always', label: 'Always'},
+            {value: 'never', label: 'Never'},
+            {value: 'ask', label: 'Ask'},
           ].map((option) => {
             return (
               <XStack key={option.value} gap="$3" ai="center">
@@ -561,7 +562,7 @@ function PushOnCopySetting({ }: {}) {
   )
 }
 
-function PushOnPublishSetting({ }: {}) {
+function PushOnPublishSetting({}: {}) {
   const pushOnPublish = usePushOnPublish()
   const id = React.useId()
   const setPushOnPublish = useSetPushOnPublish()
@@ -578,9 +579,9 @@ function PushOnPublishSetting({ }: {}) {
           }}
         >
           {[
-            { value: 'always', label: 'Always' },
-            { value: 'never', label: 'Never' },
-            { value: 'ask', label: 'Ask' },
+            {value: 'always', label: 'Always'},
+            {value: 'never', label: 'Never'},
+            {value: 'ask', label: 'Ask'},
           ].map((option) => {
             return (
               <XStack key={option.value} gap="$3" ai="center">
@@ -603,7 +604,7 @@ function PushOnPublishSetting({ }: {}) {
   )
 }
 
-function ExperimentsSettings({ }: {}) {
+function ExperimentsSettings({}: {}) {
   const experiments = useExperiments()
   const writeExperiments = useWriteExperiments()
   return (
@@ -618,7 +619,7 @@ function ExperimentsSettings({ }: {}) {
               value={!!experiments.data?.[experiment.key]}
               experiment={experiment}
               onValue={(isEnabled) => {
-                writeExperiments.mutate({ [experiment.key]: isEnabled })
+                writeExperiments.mutate({[experiment.key]: isEnabled})
               }}
             />
           )
@@ -628,14 +629,14 @@ function ExperimentsSettings({ }: {}) {
   )
 }
 
-function DeviceItem({ id }: { id: string }) {
-  let { status, data } = usePeerInfo(id)
-  let { data: current } = useDaemonInfo()
+function DeviceItem({id}: {id: string}) {
+  let {data} = usePeerInfo(id)
+  let {data: current} = useDaemonInfo()
 
   let isCurrent = useMemo(() => {
-    if (!current?.deviceId) return false
+    if (!current?.peerId) return false
 
-    return current.deviceId == id
+    return current.peerId == id
   }, [id, current])
 
   return (
@@ -678,7 +679,7 @@ function AppSettings() {
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
   const appInfo = trpc.getAppInfo.useQuery().data
-  const { value: autoUpdate, setAutoUpdate } = useAutoUpdatePreference()
+  const {value: autoUpdate, setAutoUpdate} = useAutoUpdatePreference()
   const daemonInfo = trpc.getDaemonInfo.useQuery().data
   let goBuildInfo = ''
   if (daemonInfo?.errors.length) {
@@ -814,9 +815,9 @@ const TabsContent = (props: TabsContentProps) => {
   )
 }
 
-function ExistingWallets({ wallets }: { wallets: LightningWallet[] }) {
+function ExistingWallets({wallets}: {wallets: LightningWallet[]}) {
   const [wallet, setWallet] = useState<string | undefined>(wallets[0]?.id)
-  const { data: invoices } = useInvoicesBywallet(wallet)
+  const {data: invoices} = useInvoicesBywallet(wallet)
   return (
     <YStack gap="$5">
       <Heading>Sponsorship Wallets</Heading>
@@ -922,7 +923,7 @@ function ExistingWallets({ wallets }: { wallets: LightningWallet[] }) {
 }
 
 function NoWallets() {
-  const { optIn, walletCheck } = useWalletOptIn()
+  const {optIn, walletCheck} = useWalletOptIn()
   const isLoading = optIn.isLoading || walletCheck.isLoading
   return (
     <YStack gap="$4">
@@ -946,7 +947,7 @@ function NoWallets() {
 }
 
 function WalletsSettings() {
-  const { data: wallets, isLoading: isLoadingWallets } = useWallets()
+  const {data: wallets, isLoading: isLoadingWallets} = useWallets()
   if (isLoadingWallets) return null
   if (wallets?.length) return <ExistingWallets wallets={wallets} />
   return <NoWallets />
@@ -956,12 +957,12 @@ function WalletCard({
   wallet,
   active = false,
   ...props
-}: CardProps & { wallet: LightningWallet; active?: boolean }) {
+}: CardProps & {wallet: LightningWallet; active?: boolean}) {
   const mutation = useExportWallet()
 
   async function handleExport() {
     try {
-      let res = await mutation.mutateAsync({ id: wallet.id })
+      let res = await mutation.mutateAsync({id: wallet.id})
       if (!res) {
         appError('Error: ExportWallet error')
       } else {
@@ -971,7 +972,7 @@ function WalletCard({
         })
       }
     } catch (error) {
-      appError(`Error: ExportWallet error: ${error}`, { error })
+      appError(`Error: ExportWallet error: ${error}`, {error})
     }
   }
 
@@ -983,8 +984,8 @@ function WalletCard({
       width={260}
       // height={120}
       scale={0.975}
-      hoverStyle={{ scale: 1 }}
-      pressStyle={{ scale: 0.95 }}
+      hoverStyle={{scale: 1}}
+      pressStyle={{scale: 0.95}}
       borderRadius="$4"
       borderWidth={2}
       borderColor="$borderColor"
