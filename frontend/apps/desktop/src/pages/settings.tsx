@@ -1,11 +1,11 @@
-import { useGRPCClient, useIPC } from '@shm/app/app-context'
-import { AvatarForm } from '@shm/app/components/avatar-form'
-import { useEditProfileDialog } from '@shm/app/components/edit-profile-dialog'
-import appError from '@shm/app/errors'
-import { useMyAccount } from '@shm/app/models/accounts'
-import { useAutoUpdatePreference } from '@shm/app/models/app-settings'
-import { useDaemonInfo } from '@shm/app/models/daemon'
-import { useExperiments, useWriteExperiments } from '@shm/app/models/experiments'
+import { useGRPCClient, useIPC } from '@shm/desktop/src/app-context'
+import { AvatarForm } from '@shm/desktop/src/components/avatar-form'
+import { useEditProfileDialog } from '@shm/desktop/src/components/edit-profile-dialog'
+import appError from '@shm/desktop/src/errors'
+import { useMyAccount } from '@shm/desktop/src/models/accounts'
+import { useAutoUpdatePreference } from '@shm/desktop/src/models/app-settings'
+import { useDaemonInfo } from '@shm/desktop/src/models/daemon'
+import { useExperiments, useWriteExperiments } from '@shm/desktop/src/models/experiments'
 import {
   useGatewayUrl,
   usePushOnCopy,
@@ -13,17 +13,17 @@ import {
   useSetGatewayUrl,
   useSetPushOnCopy,
   useSetPushOnPublish,
-} from '@shm/app/models/gateway-settings'
-import { usePeerInfo } from '@shm/app/models/networking'
+} from '@shm/desktop/src/models/gateway-settings'
+import { usePeerInfo } from '@shm/desktop/src/models/networking'
 import {
   useExportWallet,
   useInvoicesBywallet,
   useWallets,
-} from '@shm/app/models/payments'
-import { queryKeys } from '@shm/app/models/query-keys'
-import { useWalletOptIn } from '@shm/app/models/wallet'
-import { getAvatarUrl } from '@shm/app/utils/account-url'
+} from '@shm/desktop/src/models/payments'
+import { queryKeys } from '@shm/desktop/src/models/query-keys'
+import { useWalletOptIn } from '@shm/desktop/src/models/wallet'
 import { trpc } from '@shm/desktop/src/trpc'
+import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
 import { LightningWallet, Profile, State, VERSION } from '@shm/shared'
 import {
   ArrowDownRight,
@@ -65,6 +65,7 @@ import { Trash } from '@tamagui/lucide-icons'
 import { useQuery } from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import { useEffect, useMemo, useState } from 'react'
+import { useAccountKeys } from 'src/models/daemon'
 
 export default function Settings() {
   return (
@@ -343,13 +344,7 @@ export function ProfileInfo() {
 
 function AccountKeys() {
   const client = useGRPCClient()
-  const { data: keys } = useQuery({
-    queryKey: [queryKeys.KEYS_LIST],
-    queryFn: async () => {
-      const q = await client.daemon.listKeys({})
-      return q?.keys
-    },
-  })
+  const { data: keys } = useAccountKeys()
 
   return (
     <YStack gap="$3">

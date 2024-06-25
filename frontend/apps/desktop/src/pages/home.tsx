@@ -1,5 +1,5 @@
-import { useGRPCClient } from '@shm/app/app-context'
-import { MainWrapper } from '@shm/app/components/main-wrapper'
+import { useGRPCClient } from '@shm/desktop/src/app-context'
+import { MainWrapper } from '@shm/desktop/src/components/main-wrapper'
 import { Button } from '@shm/ui'
 import { useMutation } from '@tanstack/react-query'
 import { useAccountKeys } from 'src/models/daemon'

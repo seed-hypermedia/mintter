@@ -1,9 +1,9 @@
 // this menu is visible on macOS only
 // the keyboard shortcuts apply to every platform
 
-import { defaultRoute } from '@shm/app/utils/routes'
-import { Menu, MenuItem } from 'electron'
-import { dispatchFocusedWindowAppEvent, openRoute, trpc } from './app-api'
+import {defaultRoute} from '@shm/desktop/src/utils/routes'
+import {Menu, MenuItem} from 'electron'
+import {dispatchFocusedWindowAppEvent, openRoute, trpc} from './app-api'
 
 export function createAppMenu() {
   const appMenu = new Menu()

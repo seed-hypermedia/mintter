@@ -1,11 +1,11 @@
-import { AccessoryContainer } from '@shm/app/components/accessory-sidebar'
-import { AccountLinkAvatar } from '@shm/app/components/account-link-avatar'
-import { useAccount } from '@shm/app/models/accounts'
-import { useComment } from '@shm/app/models/comments'
-import { useEntityMentions } from '@shm/app/models/content-graph'
-import { useDocTextContent, usePublication } from '@shm/app/models/documents'
-import { DocumentRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+import { AccessoryContainer } from '@shm/desktop/src/components/accessory-sidebar'
+import { AccountLinkAvatar } from '@shm/desktop/src/components/account-link-avatar'
+import { useAccount } from '@shm/desktop/src/models/accounts'
+import { useComment } from '@shm/desktop/src/models/comments'
+import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
+import { useDocTextContent, usePublication } from '@shm/desktop/src/models/documents'
+import { DocumentRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   BlockRange,
   BlocksContent,

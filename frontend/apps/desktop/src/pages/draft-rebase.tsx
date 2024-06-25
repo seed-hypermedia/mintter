@@ -1,4 +1,4 @@
-import { BlockNoteEditor } from '@shm/app/editor'
+import { BlockNoteEditor } from '@shm/desktop/src/editor'
 import { YStack } from '@shm/ui'
 import { useMemo, useState } from 'react'
 import { HyperMediaEditorView } from 'src/components/editor'

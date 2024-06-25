@@ -1,14 +1,14 @@
-import { useAppContext } from '@shm/app/app-context'
+import { useAppContext } from '@shm/desktop/src/app-context'
 import {
   EmbedAccount,
   EmbedComment,
   EmbedInline,
   EmbedPublication,
-} from '@shm/app/components/app-embeds'
-import { useExperiments } from '@shm/app/models/experiments'
-import { useNavRoute } from '@shm/app/utils/navigation'
+} from '@shm/desktop/src/components/app-embeds'
+import { useExperiments } from '@shm/desktop/src/models/experiments'
 import { useOpenUrl } from '@shm/desktop/src/open-url'
 import { trpc } from '@shm/desktop/src/trpc'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
 import {
   API_FILE_URL,
   BlockRange,

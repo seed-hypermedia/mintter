@@ -1,13 +1,13 @@
-import { useAppContext } from '@shm/app/app-context'
-import { Avatar } from '@shm/app/components/avatar'
-import { MenuItemType, OptionsDropdown } from '@shm/app/components/options-dropdown'
-import appError from '@shm/app/errors'
-import { EmbedsContent } from '@shm/app/models/documents'
-import { SidebarWidth, useSidebarContext } from '@shm/app/src/sidebar-context'
-import { getAvatarUrl } from '@shm/app/utils/account-url'
-import { NavRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
-import { useTriggerWindowEvent } from '@shm/app/utils/window-events'
+import { useAppContext } from '@shm/desktop/src/app-context'
+import { Avatar } from '@shm/desktop/src/components/avatar'
+import { MenuItemType, OptionsDropdown } from '@shm/desktop/src/components/options-dropdown'
+import appError from '@shm/desktop/src/errors'
+import { EmbedsContent } from '@shm/desktop/src/models/documents'
+import { SidebarWidth, useSidebarContext } from '@shm/desktop/src/sidebar-context'
+import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
+import { NavRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import { useTriggerWindowEvent } from '@shm/desktop/src/utils/window-events'
 import {
   Account,
   getBlockNode,

@@ -1,4 +1,4 @@
-import { CloseButton, WindowsLinuxWindowControls } from '@shm/app/components/window-controls'
+import { CloseButton, WindowsLinuxWindowControls } from '@shm/desktop/src/components/window-controls'
 import {
   TitleText,
   TitlebarRow,

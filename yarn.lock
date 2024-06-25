@@ -6547,15 +6547,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shm/app@*, @shm/app@workspace:frontend/packages/app":
+"@shm/desktop@workspace:frontend/apps/desktop":
   version: 0.0.0-use.local
-  resolution: "@shm/app@workspace:frontend/packages/app"
+  resolution: "@shm/desktop@workspace:frontend/apps/desktop"
   dependencies:
     "@ariakit/react": 0.3.5
     "@bufbuild/protobuf": ^1.10.0
     "@connectrpc/connect-web": 1.1.3
     "@dnd-kit/core": ^6.1.0
     "@dnd-kit/sortable": ^8.0.0
+    "@electron-forge/cli": 6.4.1
+    "@electron-forge/maker-deb": 6.4.1
+    "@electron-forge/maker-dmg": 7.1.0
+    "@electron-forge/maker-rpm": 7.1.0
+    "@electron-forge/maker-squirrel": 6.4.1
+    "@electron-forge/maker-zip": 6.4.1
+    "@electron-forge/plugin-vite": 6.4.1
+    "@electron-forge/shared-types": 6.4.2
     "@emotion/cache": 11.11.0
     "@emotion/react": 11.11.1
     "@emotion/serialize": 1.1.2
@@ -6565,9 +6573,12 @@ __metadata:
     "@mantine/core": 6.0.13
     "@mantine/hooks": 6.0.13
     "@manuscripts/prosemirror-recreate-steps": ^0.1.4
+    "@playwright/test": 1.40.1
     "@radix-ui/colors": 0.1.9
     "@radix-ui/react-dropdown-menu": 2.0.5
+    "@sentry/electron": 4.7.0
     "@sentry/tracing": 7.49.0
+    "@sentry/vite-plugin": latest
     "@shm/prettier": "*"
     "@shm/shared": "*"
     "@shm/ui": "*"
@@ -6590,14 +6601,28 @@ __metadata:
     "@tiptap/extension-underline": 2.0.3
     "@tiptap/pm": 2.0.3
     "@tiptap/react": 2.0.3
+    "@trpc/client": 10.40.0
+    "@trpc/react-query": 10.40.0
+    "@trpc/server": 10.40.0
     "@types/node": 20.6.5
     "@types/prosemirror-dev-tools": 3.0.3
     "@types/react": 18.2.21
     "@types/react-dom": 18.2.7
+    "@vitejs/plugin-react": 4.0.4
     "@xstate/react": beta
     allotment: 1.18.1
+    cheerio: 1.0.0-rc.12
+    console-log-colors: 0.4.0
     copy-text-to-clipboard: 3.1.0
+    electron: 26.0.0
+    electron-context-menu: 3.6.1
+    electron-log: beta
+    electron-playwright-helpers: 1.6.0
+    electron-squirrel-startup: 1.0.0
+    electron-store: 8.1.0
+    electron-trpc: 0.5.2
     fast-deep-equal: ^3.1.3
+    fs-extra: 11.1.1
     graphql-request: 6.0.0
     happy-dom: 7.8.1
     hast-util-from-dom: 4.2.0
@@ -6605,14 +6630,18 @@ __metadata:
     jsdom: 22.1.0
     katex: ^0.16.9
     linkifyjs: 4.1.1
+    loglevel: 1.8.1
     lowlight: 3.1.0
     lz-string: 1.5.0
+    match-sorter: 6.3.1
     nanoid: 4.0.2
     nostr-tools: 1.16.0
     prettier: 3.0.2
+    prom-client: 15.1.0
     prosemirror-dev-tools: 4.0.0
     prosemirror-state: 1.4.3
     react: 18.2.0
+    react-devtools: 4.28.0
     react-dom: 18.2.0
     react-error-boundary: 4.0.11
     react-hook-form: 7.46.1
@@ -6626,73 +6655,20 @@ __metadata:
     remark-parse: 10.0.1
     remark-rehype: 10.1.0
     remark-stringify: 10.0.2
+    tamagui: 1.95.0
     typescript: 5.5.1-rc
     unified: 10.1.2
     use-prefers-color-scheme: 1.1.3
+    vite: 4.4.9
+    vite-tsconfig-paths: 4.2.0
     vitest: 0.34.2
+    winston: 3.11.0
+    winston-daily-rotate-file: 4.7.1
     xstate: beta
+    xvfb-maybe: 0.2.1
     y-prosemirror: 1.2.1
     y-protocols: 1.0.5
     yjs: 13.6.4
-    zod: 3.22.2
-  languageName: unknown
-  linkType: soft
-
-"@shm/desktop@workspace:frontend/apps/desktop":
-  version: 0.0.0-use.local
-  resolution: "@shm/desktop@workspace:frontend/apps/desktop"
-  dependencies:
-    "@ariakit/react": 0.3.5
-    "@bufbuild/protobuf": ^1.10.0
-    "@connectrpc/connect-web": 1.1.3
-    "@electron-forge/cli": 6.4.1
-    "@electron-forge/maker-deb": 6.4.1
-    "@electron-forge/maker-dmg": 7.1.0
-    "@electron-forge/maker-rpm": 7.1.0
-    "@electron-forge/maker-squirrel": 6.4.1
-    "@electron-forge/maker-zip": 6.4.1
-    "@electron-forge/plugin-vite": 6.4.1
-    "@electron-forge/shared-types": 6.4.2
-    "@juggle/resize-observer": 3.4.0
-    "@playwright/test": 1.40.1
-    "@sentry/electron": 4.7.0
-    "@sentry/vite-plugin": latest
-    "@shm/app": "*"
-    "@shm/prettier": "*"
-    "@shm/shared": "*"
-    "@shm/ui": "*"
-    "@tamagui/vite-plugin": 1.95.0
-    "@tanstack/react-query": 4.33.0
-    "@tanstack/react-query-devtools": 4.33.0
-    "@trpc/client": 10.40.0
-    "@trpc/react-query": 10.40.0
-    "@trpc/server": 10.40.0
-    "@types/react": 18.2.21
-    "@types/react-dom": 18.2.7
-    "@vitejs/plugin-react": 4.0.4
-    cheerio: 1.0.0-rc.12
-    console-log-colors: 0.4.0
-    electron: 26.0.0
-    electron-context-menu: 3.6.1
-    electron-log: beta
-    electron-playwright-helpers: 1.6.0
-    electron-squirrel-startup: 1.0.0
-    electron-store: 8.1.0
-    electron-trpc: 0.5.2
-    fs-extra: 11.1.1
-    loglevel: 1.8.1
-    match-sorter: 6.3.1
-    prom-client: 15.1.0
-    react: 18.2.0
-    react-devtools: 4.28.0
-    react-dom: 18.2.0
-    react-error-boundary: 4.0.11
-    tamagui: 1.95.0
-    vite: 4.4.9
-    vite-tsconfig-paths: 4.2.0
-    winston: 3.11.0
-    winston-daily-rotate-file: 4.7.1
-    xvfb-maybe: 0.2.1
     zod: 3.22.2
   languageName: unknown
   linkType: soft

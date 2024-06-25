@@ -1,4 +1,4 @@
-import { useSidebarContext } from '@shm/app/src/sidebar-context'
+import { useSidebarContext } from '@shm/desktop/src/sidebar-context'
 import { Button, Heading, SizableText, XStack, YStack, useStream } from '@shm/ui'
 import { FallbackProps } from 'react-error-boundary'
 import { ErrorBar } from './error-bar'

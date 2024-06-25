@@ -3,12 +3,12 @@ import {
   CommentPageTitlebarWithDocId,
   CommentPresentation,
   CommentThread,
-} from '@shm/app/components/comments'
-import { MainWrapperStandalone } from '@shm/app/components/main-wrapper'
-import { useComment, usePublicationCommentGroups } from '@shm/app/models/comments'
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/components/comments'
+import { MainWrapperStandalone } from '@shm/desktop/src/components/main-wrapper'
+import { useComment, usePublicationCommentGroups } from '@shm/desktop/src/models/comments'
 import { trpc } from '@shm/desktop/src/trpc'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import { HMComment, createHmId, unpackHmId } from '@shm/shared'
 import {
   Button,

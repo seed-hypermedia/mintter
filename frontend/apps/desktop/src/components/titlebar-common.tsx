@@ -1,30 +1,30 @@
-import { useAppContext } from '@shm/app/app-context'
-import { ContactsPrompt } from '@shm/app/components/contacts-prompt'
-import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
-import { useDeleteDialog } from '@shm/app/components/delete-dialog'
-import { useAppDialog } from '@shm/app/components/dialog'
-import { EditDocButton } from '@shm/app/components/edit-doc-button'
-import { useEditProfileDialog } from '@shm/app/components/edit-profile-dialog'
-import { useFavoriteMenuItem } from '@shm/app/components/favoriting'
-import { MenuItemType, OptionsDropdown } from '@shm/app/components/options-dropdown'
+import { useAppContext } from '@shm/desktop/src/app-context'
+import { ContactsPrompt } from '@shm/desktop/src/components/contacts-prompt'
+import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
+import { useDeleteDialog } from '@shm/desktop/src/components/delete-dialog'
+import { useAppDialog } from '@shm/desktop/src/components/dialog'
+import { EditDocButton } from '@shm/desktop/src/components/edit-doc-button'
+import { useEditProfileDialog } from '@shm/desktop/src/components/edit-profile-dialog'
+import { useFavoriteMenuItem } from '@shm/desktop/src/components/favoriting'
+import { MenuItemType, OptionsDropdown } from '@shm/desktop/src/components/options-dropdown'
 import {
   DraftPublicationButtons,
   PublicationVariants,
   VersionContext,
-} from '@shm/app/components/variants'
-import { useAccount, useMyAccount } from '@shm/app/models/accounts'
-import { usePushPublication } from '@shm/app/models/documents'
-import { useGatewayHost, useGatewayUrl } from '@shm/app/models/gateway-settings'
-import { usePublicationVariant } from '@shm/app/models/publication'
-import { SidebarWidth, useSidebarContext } from '@shm/app/src/sidebar-context'
+} from '@shm/desktop/src/components/variants'
+import { useAccount, useMyAccount } from '@shm/desktop/src/models/accounts'
+import { usePushPublication } from '@shm/desktop/src/models/documents'
+import { useGatewayHost, useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
+import { usePublicationVariant } from '@shm/desktop/src/models/publication'
+import { SidebarWidth, useSidebarContext } from '@shm/desktop/src/sidebar-context'
 import {
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
-} from '@shm/app/utils/navigation'
-import { useOpenDraft } from '@shm/app/utils/open-draft'
-import { NavRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/utils/navigation'
+import { useOpenDraft } from '@shm/desktop/src/utils/open-draft'
+import { NavRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   BlockRange,
   ExpandedBlockRange,

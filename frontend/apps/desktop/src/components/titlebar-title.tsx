@@ -1,15 +1,15 @@
-import { useSizeObserver } from '@shm/app/components/app-embeds'
-import { useDraftTitle } from '@shm/app/models/documents'
-import { useEntitiesContent, useEntityRoutes } from '@shm/app/models/entities'
-import { usePublicationVariant } from '@shm/app/models/publication'
-import { useNavRoute } from '@shm/app/utils/navigation'
+import { useSizeObserver } from '@shm/desktop/src/components/app-embeds'
+import { useDraftTitle } from '@shm/desktop/src/models/documents'
+import { useEntitiesContent, useEntityRoutes } from '@shm/desktop/src/models/entities'
+import { usePublicationVariant } from '@shm/desktop/src/models/publication'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
 import {
   AccountRoute,
   DocumentRoute,
   DraftRoute,
   NavRoute
-} from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import { getDocumentTitle } from '@shm/shared'
 import {
   Button,

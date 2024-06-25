@@ -1,5 +1,5 @@
 import {PlainMessage} from '@bufbuild/protobuf'
-import {EditorInlineContent} from '@shm/app/editor'
+import {EditorInlineContent} from '@shm/desktop/src/editor'
 import type {
   Account,
   ChangeInfo,

@@ -1,4 +1,4 @@
-import { AppIPC } from '@shm/app/app-ipc'
+import { AppIPC } from '@shm/desktop/src/app-ipc'
 import {
   Button,
   ChevronDown,

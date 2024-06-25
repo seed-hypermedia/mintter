@@ -3,15 +3,8 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@shm/app/*": [
-        "./frontend/packages/app/src/*"
-      ],
-      "@shm/ui/*": [
-        "./frontend/packages/ui/*"
-      ],
-      "@shm/shared/*": [
-        "./frontend/packages/shared/*"
-      ]
+      "@shm/ui/*": ["./frontend/packages/ui/*"],
+      "@shm/shared/*": ["./frontend/packages/shared/*"]
     },
     "plugins": [
       {
@@ -25,6 +18,6 @@
         "pathToApp": "frontend/apps/desktop"
       }
     ]
-  },
+  }
   // "extends": "expo/tsconfig.base"
 }

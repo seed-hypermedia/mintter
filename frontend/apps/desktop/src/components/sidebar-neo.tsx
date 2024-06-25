@@ -1,17 +1,17 @@
-import { useAccount, useMyAccount } from '@shm/app/models/accounts'
+import { focusDraftBlock } from '@shm/desktop/src/draft-focusing'
+import { useAccount, useMyAccount } from '@shm/desktop/src/models/accounts'
 import {
   getEntityRoutes,
   useEntitiesContent,
   useEntityContent,
   useEntityRoutes,
-} from '@shm/app/models/entities'
-import { useFavorites } from '@shm/app/models/favorites'
-import { useDocumentDrafts, usePublicationVariant } from '@shm/app/models/publication'
-import { focusDraftBlock } from '@shm/app/src/draft-focusing'
-import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
-import { getRouteContext } from '@shm/app/utils/route-context'
-import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/models/entities'
+import { useFavorites } from '@shm/desktop/src/models/favorites'
+import { useDocumentDrafts, usePublicationVariant } from '@shm/desktop/src/models/publication'
+import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { getRouteContext } from '@shm/desktop/src/utils/route-context'
+import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   HMAccount,
   HMBlockNode,

@@ -4,7 +4,7 @@ import {
   defaultBlockSchema,
   HMBlockSchema,
   useBlockNote,
-} from '@shm/app/editor'
+} from '@shm/desktop/src/editor'
 import { YStack } from '@shm/ui'
 
 export default function BlockNoteDemo() {

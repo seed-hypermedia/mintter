@@ -1,16 +1,16 @@
-import { AccessoryContainer } from '@shm/app/components/accessory-sidebar'
-import { AccountLinkAvatar } from '@shm/app/components/account-link-avatar'
+import { AccessoryContainer } from '@shm/desktop/src/components/accessory-sidebar'
+import { AccountLinkAvatar } from '@shm/desktop/src/components/account-link-avatar'
 import {
   MenuItemType,
   OptionsDropdown,
-} from '@shm/app/components/options-dropdown'
-import { useAccount } from '@shm/app/models/accounts'
-import { TimelineChange, useDocHistory } from '@shm/app/models/changes'
-import { useGatewayUrl } from '@shm/app/models/gateway-settings'
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { NavRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/components/options-dropdown'
+import { useAccount } from '@shm/desktop/src/models/accounts'
+import { TimelineChange, useDocHistory } from '@shm/desktop/src/models/changes'
+import { useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
 import { useOpenUrl } from '@shm/desktop/src/open-url'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { NavRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   Change,
   createHmId,

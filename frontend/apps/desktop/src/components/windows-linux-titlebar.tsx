@@ -1,10 +1,10 @@
-import { useIPC, useWindowUtils } from '@shm/app/app-context'
-import { WindowsLinuxWindowControls } from '@shm/app/components/window-controls'
-import { useNavRoute, useNavigationDispatch } from '@shm/app/utils/navigation'
-import { useOpenDraft } from '@shm/app/utils/open-draft'
-import { defaultRoute } from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
-import { useTriggerWindowEvent } from '@shm/app/utils/window-events'
+import { useIPC, useWindowUtils } from '@shm/desktop/src/app-context'
+import { WindowsLinuxWindowControls } from '@shm/desktop/src/components/window-controls'
+import { useNavRoute, useNavigationDispatch } from '@shm/desktop/src/utils/navigation'
+import { useOpenDraft } from '@shm/desktop/src/utils/open-draft'
+import { defaultRoute } from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import { useTriggerWindowEvent } from '@shm/desktop/src/utils/window-events'
 import {
   AddSquare,
   Button,

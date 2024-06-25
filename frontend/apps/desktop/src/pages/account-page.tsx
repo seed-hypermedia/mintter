@@ -1,25 +1,25 @@
-import { AccessoryLayout } from '@shm/app/components/accessory-sidebar'
-import { Avatar } from '@shm/app/components/avatar'
-import { useCopyGatewayReference } from '@shm/app/components/copy-gateway-reference'
-import { useDeleteDialog } from '@shm/app/components/delete-dialog'
-import { FavoriteButton } from '@shm/app/components/favoriting'
-import Footer, { FooterButton } from '@shm/app/components/footer'
-import { OnlineIndicator } from '@shm/app/components/indicator'
-import { ListItem, copyLinkMenuItem } from '@shm/app/components/list-item'
-import { MainWrapperNoScroll } from '@shm/app/components/main-wrapper'
-import { PublicationListItem } from '@shm/app/components/publication-list-item'
-import { useAccount, useMyAccount } from '@shm/app/models/accounts'
-import { useAccountWithDevices } from '@shm/app/models/contacts'
-import { useEntityMentions } from '@shm/app/models/content-graph'
+import { AccessoryLayout } from '@shm/desktop/src/components/accessory-sidebar'
+import { Avatar } from '@shm/desktop/src/components/avatar'
+import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
+import { useDeleteDialog } from '@shm/desktop/src/components/delete-dialog'
+import { FavoriteButton } from '@shm/desktop/src/components/favoriting'
+import Footer, { FooterButton } from '@shm/desktop/src/components/footer'
+import { OnlineIndicator } from '@shm/desktop/src/components/indicator'
+import { ListItem, copyLinkMenuItem } from '@shm/desktop/src/components/list-item'
+import { MainWrapperNoScroll } from '@shm/desktop/src/components/main-wrapper'
+import { PublicationListItem } from '@shm/desktop/src/components/publication-list-item'
+import { useAccount, useMyAccount } from '@shm/desktop/src/models/accounts'
+import { useAccountWithDevices } from '@shm/desktop/src/models/contacts'
+import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
 import {
   useAccountPublicationFullList,
   useDraftList,
   usePublication,
-} from '@shm/app/models/documents'
-import { useResourceFeedWithLatest } from '@shm/app/models/feed'
-import { getAvatarUrl } from '@shm/app/utils/account-url'
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+} from '@shm/desktop/src/models/documents'
+import { useResourceFeedWithLatest } from '@shm/desktop/src/models/feed'
+import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   Event,
   HMAccount,

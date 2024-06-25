@@ -1,4 +1,4 @@
-import { StyleProvider } from '@shm/app/app-context'
+import { StyleProvider } from '@shm/desktop/src/app-context-provider'
 import { useStream } from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'

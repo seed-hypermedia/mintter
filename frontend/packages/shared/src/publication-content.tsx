@@ -1,5 +1,4 @@
 import { Timestamp } from '@bufbuild/protobuf'
-import { CitationLink } from '@shm/app/models/content-graph'
 import {
   API_HTTP_URL,
   Block,
@@ -104,7 +103,7 @@ export type PublicationContentContextValue = {
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  citations?: CitationLink['mentions']
+  citations?: any
 
   onCitationClick?: () => void
   disableEmbedClick?: boolean

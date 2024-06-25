@@ -1,6 +1,6 @@
-import Footer from '@shm/app/components/footer'
-import { MainWrapperNoScroll } from '@shm/app/components/main-wrapper'
-import { PublicationsList } from '@shm/app/components/publication-list'
+import Footer from '@shm/desktop/src/components/footer'
+import { MainWrapperNoScroll } from '@shm/desktop/src/components/main-wrapper'
+import { PublicationsList } from '@shm/desktop/src/components/publication-list'
 
 export default function ExplorePage() {
   return (

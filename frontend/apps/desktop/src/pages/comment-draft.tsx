@@ -1,6 +1,6 @@
 import {
   getBlockInfoFromPos,
-} from '@shm/app/editor'
+} from '@shm/desktop/src/editor'
 import { StateStream, unpackHmId } from '@shm/shared'
 import { Button, ChevronUp, SizableText, YStack, useStream } from '@shm/ui'
 
@@ -8,21 +8,21 @@ import {
   CommentPageTitlebarWithDocId,
   CommentPresentation,
   CommentThread,
-} from '@shm/app/components/comments'
-import { useDeleteCommentDraftDialog } from '@shm/app/components/delete-comment-draft-dialog'
-import { MainWrapperStandalone } from '@shm/app/components/main-wrapper'
-import { useComment, useCommentEditor } from '@shm/app/models/comments'
+} from '@shm/desktop/src/components/comments'
+import { useDeleteCommentDraftDialog } from '@shm/desktop/src/components/delete-comment-draft-dialog'
+import { MainWrapperStandalone } from '@shm/desktop/src/components/main-wrapper'
+import { useComment, useCommentEditor } from '@shm/desktop/src/models/comments'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
   generateBlockId,
   handleDragMedia,
-} from '@shm/app/utils/media-drag'
+} from '@shm/desktop/src/utils/media-drag'
 import { useEffect, useState } from 'react'
 import { XStack } from 'tamagui'
 
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import { HMEditorContainer, HyperMediaEditorView } from 'src/components/editor'
 import './comment-draft.css'
 import { AppPublicationContentProvider } from './publication-content-provider'

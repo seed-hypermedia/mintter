@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/electron/main'
-import { defaultRoute } from '@shm/app/utils/routes'
-import { ELECTRON_HTTP_PORT, IS_PROD_DESKTOP } from '@shm/shared'
+import {defaultRoute} from '@shm/desktop/src/utils/routes'
+import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@shm/shared'
 import {
   BrowserWindow,
   Menu,
@@ -10,6 +10,7 @@ import {
   nativeTheme,
   shell,
 } from 'electron'
+
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log/main'
 import squirrelStartup from 'electron-squirrel-startup'
@@ -20,14 +21,18 @@ import {
   openInitialWindows,
   trpc,
 } from './app-api'
-import { createAppMenu } from './app-menu'
-import { startMetricsServer } from './app-metrics'
-import { initPaths } from './app-paths'
-import { APP_AUTO_UPDATE_PREFERENCE } from './app-settings'
-import { appStore } from './app-store'
+import {createAppMenu} from './app-menu'
+import {startMetricsServer} from './app-metrics'
+import {initPaths} from './app-paths'
+
+import {APP_AUTO_UPDATE_PREFERENCE} from './app-settings'
+import {appStore} from './app-store'
 import autoUpdate from './auto-update'
-import { startMainDaemon } from './daemon'
-import { saveCidAsFile } from './save-cid-as-file'
+import {startMainDaemon} from './daemon'
+import {saveCidAsFile} from './save-cid-as-file'
+
+// @ts-ignore
+global.electronTRPC = {}
 
 const OS_REGISTER_SCHEME = 'hm'
 

@@ -1,7 +1,12 @@
-import {resolveHmIdToAppRoute} from '@shm/app/utils/navigation'
-import {NavRoute, defaultRoute, navRouteSchema} from '@shm/app/utils/routes'
-import type {AppWindowEvent} from '@shm/app/utils/window-events'
-import {API_GRPC_URL, API_HTTP_URL} from '@shm/shared'
+import {resolveHmIdToAppRoute} from '@shm/desktop/src/utils/navigation'
+import {
+  NavRoute,
+  defaultRoute,
+  navRouteSchema,
+} from '@shm/desktop/src/utils/routes'
+import type {AppWindowEvent} from '@shm/desktop/src/utils/window-events'
+import {API_GRPC_URL, API_HTTP_URL} from '@shm/shared/src/constants'
+
 import {
   BrowserWindow,
   NativeImage,

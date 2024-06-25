@@ -1,13 +1,13 @@
 import { Timestamp } from '@bufbuild/protobuf'
-import Footer from '@shm/app/components/footer'
-import { MainWrapperNoScroll } from '@shm/app/components/main-wrapper'
-import { useAccount } from '@shm/app/models/accounts'
-import { ProfileSchema, useBlobData } from '@shm/app/models/changes'
-import { useComment } from '@shm/app/models/comments'
-import { usePublication } from '@shm/app/models/documents'
-import { useFeedWithLatest, useResourceFeedWithLatest } from '@shm/app/models/feed'
-import { appRouteOfId, useNavRoute } from '@shm/app/utils/navigation'
-import { useNavigate } from '@shm/app/utils/useNavigate'
+import Footer from '@shm/desktop/src/components/footer'
+import { MainWrapperNoScroll } from '@shm/desktop/src/components/main-wrapper'
+import { useAccount } from '@shm/desktop/src/models/accounts'
+import { ProfileSchema, useBlobData } from '@shm/desktop/src/models/changes'
+import { useComment } from '@shm/desktop/src/models/comments'
+import { usePublication } from '@shm/desktop/src/models/documents'
+import { useFeedWithLatest, useResourceFeedWithLatest } from '@shm/desktop/src/models/feed'
+import { appRouteOfId, useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   API_FILE_URL,
   ActivityEvent,

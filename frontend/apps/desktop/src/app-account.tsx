@@ -1,6 +1,6 @@
-import { useGRPCClient } from '@shm/app/app-context'
-import { DialogTitle } from '@shm/app/components/dialog'
-import { queryKeys } from '@shm/app/models/query-keys'
+import { useGRPCClient } from '@shm/desktop/src/app-context'
+import { DialogTitle } from '@shm/desktop/src/components/dialog'
+import { queryKeys } from '@shm/desktop/src/models/query-keys'
 import { eventStream } from '@shm/shared'
 import {
   Add,

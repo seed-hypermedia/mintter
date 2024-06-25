@@ -1,31 +1,31 @@
-import { useGRPCClient } from '@shm/app/app-context'
-import Footer from '@shm/app/components/footer'
-import { MainWrapper } from '@shm/app/components/main-wrapper'
+import { useGRPCClient } from '@shm/desktop/src/app-context'
+import Footer from '@shm/desktop/src/components/footer'
+import { MainWrapper } from '@shm/desktop/src/components/main-wrapper'
+import { subscribeDraftFocus } from '@shm/desktop/src/draft-focusing'
 import {
   BlockNoteEditor,
   getBlockInfoFromPos,
-} from '@shm/app/editor'
-import { useMyAccount } from '@shm/app/models/accounts'
+} from '@shm/desktop/src/editor'
+import { useMyAccount } from '@shm/desktop/src/models/accounts'
 import {
   compareDraftWithMap,
   createBlocksMap,
   extractDeletes,
   useDraftEditor,
-} from '@shm/app/models/documents'
-import { DraftStatusContext, draftMachine } from '@shm/app/models/draft-machine'
-import { useHasDevTools } from '@shm/app/models/experiments'
-import { useGatewayUrl } from '@shm/app/models/gateway-settings'
-import { subscribeDraftFocus } from '@shm/app/src/draft-focusing'
+} from '@shm/desktop/src/models/documents'
+import { DraftStatusContext, draftMachine } from '@shm/desktop/src/models/draft-machine'
+import { useHasDevTools } from '@shm/desktop/src/models/experiments'
+import { useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
+import { trpc } from '@shm/desktop/src/trpc'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
   generateBlockId,
   handleDragMedia,
-} from '@shm/app/utils/media-drag'
-import { useNavRoute } from '@shm/app/utils/navigation'
-import { useOpenDraft } from '@shm/app/utils/open-draft'
-import { DraftRoute } from '@shm/app/utils/routes'
-import { trpc } from '@shm/desktop/src/trpc'
+} from '@shm/desktop/src/utils/media-drag'
+import { useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { useOpenDraft } from '@shm/desktop/src/utils/open-draft'
+import { DraftRoute } from '@shm/desktop/src/utils/routes'
 import {
   BlockRange,
   ExpandedBlockRange,

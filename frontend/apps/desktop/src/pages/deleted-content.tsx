@@ -1,4 +1,4 @@
-import { useDeletedContent, useUndeleteEntity } from '@shm/app/models/entities'
+import { useDeletedContent, useUndeleteEntity } from '@shm/desktop/src/models/entities'
 import {
   HMDeletedEntity,
   HYPERMEDIA_ENTITY_TYPES,

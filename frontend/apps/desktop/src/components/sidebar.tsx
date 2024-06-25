@@ -1,16 +1,16 @@
-import { useAccount } from '@shm/app/models/accounts'
-import { useDocumentEmbeds } from '@shm/app/models/documents'
-import { useFavorites } from '@shm/app/models/favorites'
-import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/app/utils/navigation'
-import { getRouteContext, getRouteParentContext } from '@shm/app/utils/route-context'
+import { CurrentAccountSidebarSection } from '@shm/desktop/src/app-account'
+import { useAccount } from '@shm/desktop/src/models/accounts'
+import { useDocumentEmbeds } from '@shm/desktop/src/models/documents'
+import { useFavorites } from '@shm/desktop/src/models/favorites'
+import { appRouteOfId, getRouteKey, useNavRoute } from '@shm/desktop/src/utils/navigation'
+import { getRouteContext, getRouteParentContext } from '@shm/desktop/src/utils/route-context'
 import {
   AccountRoute,
   BaseEntityRoute,
   DocumentRoute,
   NavRoute,
-} from '@shm/app/utils/routes'
-import { useNavigate } from '@shm/app/utils/useNavigate'
-import { CurrentAccountSidebarSection } from '@shm/desktop/src/app-account'
+} from '@shm/desktop/src/utils/routes'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
 import {
   HMBlockNode,
   HMDocument,
