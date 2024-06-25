@@ -1,3 +1,4 @@
+import { AppPublicationContentProvider } from '@shm/desktop/src/pages/publication-content-provider'
 import { trpc } from '@shm/desktop/src/trpc'
 import {
   API_FILE_URL,
@@ -40,7 +41,6 @@ import {
   usePublicationCommentGroups,
 } from '../models/comments'
 import { usePublication } from '../models/documents'
-import { AppPublicationContentProvider } from '../pages/publication-content-provider'
 import { useNavigate } from '../utils/useNavigate'
 import { AccessoryContainer } from './accessory-sidebar'
 import { MenuItemType, OptionsDropdown } from './options-dropdown'
