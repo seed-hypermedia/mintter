@@ -1,5 +1,5 @@
-import {useQueryInvalidator} from '@shm/desktop/src/app-context'
-import {queryKeys} from '@shm/desktop/src/models/query-keys'
+import {useQueryInvalidator} from '@/app-context'
+import {queryKeys} from '@/models/query-keys'
 import {DocumentChange, GRPCClient} from '@shm/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'

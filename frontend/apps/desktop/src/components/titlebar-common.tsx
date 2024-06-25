@@ -1,37 +1,37 @@
-import { useAppContext } from '@shm/desktop/src/app-context'
-import { ContactsPrompt } from '@shm/desktop/src/components/contacts-prompt'
-import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
-import { useDeleteDialog } from '@shm/desktop/src/components/delete-dialog'
-import { useAppDialog } from '@shm/desktop/src/components/dialog'
-import { EditDocButton } from '@shm/desktop/src/components/edit-doc-button'
-import { useEditProfileDialog } from '@shm/desktop/src/components/edit-profile-dialog'
-import { useFavoriteMenuItem } from '@shm/desktop/src/components/favoriting'
-import { MenuItemType, OptionsDropdown } from '@shm/desktop/src/components/options-dropdown'
+import {useAppContext} from '@/app-context'
+import {ContactsPrompt} from '@/components/contacts-prompt'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {useDeleteDialog} from '@/components/delete-dialog'
+import {useAppDialog} from '@/components/dialog'
+import {EditDocButton} from '@/components/edit-doc-button'
+import {useEditProfileDialog} from '@/components/edit-profile-dialog'
+import {useFavoriteMenuItem} from '@/components/favoriting'
+import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
 import {
   DraftPublicationButtons,
   PublicationVariants,
   VersionContext,
-} from '@shm/desktop/src/components/variants'
-import { useAccount, useMyAccount } from '@shm/desktop/src/models/accounts'
-import { usePushPublication } from '@shm/desktop/src/models/documents'
-import { useGatewayHost, useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
-import { usePublicationVariant } from '@shm/desktop/src/models/publication'
-import { SidebarWidth, useSidebarContext } from '@shm/desktop/src/sidebar-context'
+} from '@/components/variants'
+import {useAccount, useMyAccount} from '@/models/accounts'
+import {usePushPublication} from '@/models/documents'
+import {useGatewayHost, useGatewayUrl} from '@/models/gateway-settings'
+import {usePublicationVariant} from '@/models/publication'
+import {SidebarWidth, useSidebarContext} from '@/sidebar-context'
 import {
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
-} from '@shm/desktop/src/utils/navigation'
-import { useOpenDraft } from '@shm/desktop/src/utils/open-draft'
-import { NavRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+} from '@/utils/navigation'
+import {useOpenDraft} from '@/utils/open-draft'
+import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   BlockRange,
   ExpandedBlockRange,
   createHmId,
   createPublicWebHmUrl,
   hmId,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
 import {
   Back,
@@ -58,11 +58,11 @@ import {
   Pencil,
   Trash,
   UploadCloud,
-  X
+  X,
 } from '@tamagui/lucide-icons'
-import { ReactNode, useState } from 'react'
-import { RemoveProfileDocDialog } from '../pages/account-page'
-import { TitleBarProps } from './titlebar'
+import {ReactNode, useState} from 'react'
+import {RemoveProfileDocDialog} from '../pages/account-page'
+import {TitleBarProps} from './titlebar'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -119,7 +119,7 @@ export function DocOptionsButton() {
           title: pub.data?.publication?.document?.title,
           onSuccess: () => {
             // dispatch({type: 'backplace', route: {key: 'feed', tab: 'trusted'}})
-            dispatch({ type: 'pop' })
+            dispatch({type: 'pop'})
           },
         })
       },
@@ -128,8 +128,8 @@ export function DocOptionsButton() {
   const id = unpackHmId(docId)
   const docUrl = id
     ? createHmId('d', id.eid, {
-      version: route.versionId,
-    })
+        version: route.versionId,
+      })
     : null
   menuItems.push(useFavoriteMenuItem(docUrl))
 
@@ -157,7 +157,7 @@ export function AccountOptionsButton() {
   const myAccount = useMyAccount()
   const spawn = useNavigate('spawn')
   const editProfileDialog = useEditProfileDialog()
-  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, { isAlert: true })
+  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, {isAlert: true})
   const isMyAccount = myAccount.data?.id === route.accountId
   if (isMyAccount) {
     menuItems.push({
@@ -204,7 +204,7 @@ export function AccountOptionsButton() {
         id: createHmId('a', route.accountId),
         title: account.data?.profile?.alias,
         onSuccess: () => {
-          dispatch({ type: 'pop' })
+          dispatch({type: 'pop'})
         },
       })
     },
@@ -241,7 +241,6 @@ function EditAccountButton() {
   )
 }
 
-
 export function useFullReferenceUrl(route: NavRoute): {
   label: string
   url: string
@@ -258,8 +257,7 @@ export function useFullReferenceUrl(route: NavRoute): {
     enabled: !!pubRoute?.documentId,
   })
   const gwUrl = useGatewayUrl()
-  const [copyDialogContent, onCopyPublic] =
-    useCopyGatewayReference()
+  const [copyDialogContent, onCopyPublic] = useCopyGatewayReference()
 
   if (pubRoute) {
     const docId = unpackHmId(pubRoute.documentId)
@@ -354,7 +352,7 @@ export function CopyReferenceButton() {
   const [shouldOpen, setShouldOpen] = useState(false)
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
-  const { externalOpen } = useAppContext()
+  const {externalOpen} = useAppContext()
   if (!reference) return null
   return (
     <>
@@ -393,12 +391,15 @@ export function CopyReferenceButton() {
   )
 }
 
-function CreateDropdown({ }: {}) {
+function CreateDropdown({}: {}) {
   const openDraft = useOpenDraft('push')
   return (
-    <Button size="$2" icon={FilePlus2} onPress={() => {
-      openDraft()
-    }}
+    <Button
+      size="$2"
+      icon={FilePlus2}
+      onPress={() => {
+        openDraft()
+      }}
     >
       Create
     </Button>
@@ -445,7 +446,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({ type: 'pop' })}
+            onPress={() => dispatch({type: 'pop'})}
             chromeless
             cursor={state.routeIndex <= 0 ? 'default' : 'pointer'}
             disabled={state.routeIndex <= 0}
@@ -456,7 +457,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({ type: 'forward' })}
+            onPress={() => dispatch({type: 'forward'})}
             chromeless
             cursor={
               state.routeIndex >= state.routes.length - 1
@@ -473,7 +474,7 @@ export function NavigationButtons() {
   )
 }
 
-export function NavMenuButton({ left }: { left?: ReactNode }) {
+export function NavMenuButton({left}: {left?: ReactNode}) {
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)

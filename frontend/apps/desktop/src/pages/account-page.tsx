@@ -1,25 +1,25 @@
-import { AccessoryLayout } from '@shm/desktop/src/components/accessory-sidebar'
-import { Avatar } from '@shm/desktop/src/components/avatar'
-import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
-import { useDeleteDialog } from '@shm/desktop/src/components/delete-dialog'
-import { FavoriteButton } from '@shm/desktop/src/components/favoriting'
-import Footer, { FooterButton } from '@shm/desktop/src/components/footer'
-import { OnlineIndicator } from '@shm/desktop/src/components/indicator'
-import { ListItem, copyLinkMenuItem } from '@shm/desktop/src/components/list-item'
-import { MainWrapperNoScroll } from '@shm/desktop/src/components/main-wrapper'
-import { PublicationListItem } from '@shm/desktop/src/components/publication-list-item'
-import { useAccount, useMyAccount } from '@shm/desktop/src/models/accounts'
-import { useAccountWithDevices } from '@shm/desktop/src/models/contacts'
-import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
+import {AccessoryLayout} from '@/components/accessory-sidebar'
+import {Avatar} from '@/components/avatar'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {useDeleteDialog} from '@/components/delete-dialog'
+import {FavoriteButton} from '@/components/favoriting'
+import Footer, {FooterButton} from '@/components/footer'
+import {OnlineIndicator} from '@/components/indicator'
+import {ListItem, copyLinkMenuItem} from '@/components/list-item'
+import {MainWrapperNoScroll} from '@/components/main-wrapper'
+import {PublicationListItem} from '@/components/publication-list-item'
+import {useAccount, useMyAccount} from '@/models/accounts'
+import {useAccountWithDevices} from '@/models/contacts'
+import {useEntityMentions} from '@/models/content-graph'
 import {
   useAccountPublicationFullList,
   useDraftList,
   usePublication,
-} from '@shm/desktop/src/models/documents'
-import { useResourceFeedWithLatest } from '@shm/desktop/src/models/feed'
-import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+} from '@/models/documents'
+import {useResourceFeedWithLatest} from '@/models/feed'
+import {getAvatarUrl} from '@/utils/account-url'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   Event,
   HMAccount,
@@ -33,7 +33,7 @@ import {
   hmId,
   pluralS,
   pluralizer,
-  unpackDocId
+  unpackDocId,
 } from '@shm/shared'
 import {
   AlertDialog,
@@ -54,14 +54,14 @@ import {
   copyTextToClipboard,
   toast,
 } from '@shm/ui'
-import { PageContainer } from '@shm/ui/src/container'
-import { Trash } from '@tamagui/lucide-icons'
-import React, { ReactNode, useMemo } from 'react'
-import { VirtuosoHandle } from 'react-virtuoso'
-import { EntityCitationsAccessory } from '../components/citations'
-import { CopyReferenceButton } from '../components/titlebar-common'
-import { FeedItem, FeedPageFooter, NewUpdatesButton } from './feed'
-import { AppPublicationContentProvider } from './publication-content-provider'
+import {PageContainer} from '@shm/ui/src/container'
+import {Trash} from '@tamagui/lucide-icons'
+import React, {ReactNode, useMemo} from 'react'
+import {VirtuosoHandle} from 'react-virtuoso'
+import {EntityCitationsAccessory} from '../components/citations'
+import {CopyReferenceButton} from '../components/titlebar-common'
+import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 function DeviceRow({
   isOnline,
@@ -122,8 +122,8 @@ export default function AccountPage() {
             icon={BlockQuote}
             onPress={() => {
               if (route.accessory?.key === 'citations')
-                return replace({ ...route, accessory: null })
-              replace({ ...route, accessory: { key: 'citations' } })
+                return replace({...route, accessory: null})
+              replace({...route, accessory: {key: 'citations'}})
             }}
           />
         ) : null}
@@ -140,10 +140,10 @@ function MainAccountPage() {
   const account = useAccountWithDevices(accountId)
   const myAccount = useMyAccount()
   const isMe = myAccount.data?.id === accountId
-  const { data: documents } = useAccountPublicationFullList(
+  const {data: documents} = useAccountPublicationFullList(
     route.tab === 'documents' ? accountId : undefined,
   )
-  const { data: drafts } = useDraftList({})
+  const {data: drafts} = useDraftList({})
   const allDocs = useMemo(() => {
     if (route.tab !== 'documents') return []
     const allPubIds = new Set<string>()
@@ -151,12 +151,12 @@ function MainAccountPage() {
     const docs = documents.map((d) => {
       if (d.publication?.document?.id)
         allPubIds.add(d.publication?.document?.id)
-      return { key: 'document', ...d }
+      return {key: 'document', ...d}
     })
     if (!isMe) return docs
     const newDrafts = drafts.documents
       .filter((d) => !allPubIds.has(d.id))
-      .map((d) => ({ key: 'draft', document: d }))
+      .map((d) => ({key: 'draft', document: d}))
     return [...newDrafts, ...docs]
   }, [isMe, route.tab, drafts, documents])
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -166,15 +166,15 @@ function MainAccountPage() {
     | 'profile'
     | Event
     | {
-      key: 'document'
-      publication: HMPublication
-      author: HMAccount | undefined
-      editors: (HMAccount | undefined)[]
-    }
+        key: 'document'
+        publication: HMPublication
+        author: HMAccount | undefined
+        editors: (HMAccount | undefined)[]
+      }
     | {
-      key: 'draft'
-      document: HMDocument
-    }
+        key: 'draft'
+        document: HMDocument
+      }
   > = ['profile']
   const feed = useResourceFeedWithLatest(
     route.tab === 'activity' ? hmId('a', accountId).qid : undefined,
@@ -184,7 +184,7 @@ function MainAccountPage() {
   } else if (route.tab === 'activity') {
     items = feed.data || []
   }
-  const { content: deleteDialog, open: openDelete } = useDeleteDialog()
+  const {content: deleteDialog, open: openDelete} = useDeleteDialog()
   const navigate = useNavigate()
   return (
     <>
@@ -198,7 +198,7 @@ function MainAccountPage() {
         onEndReached={() => {
           if (route.tab === 'activity') feed.fetchNextPage()
         }}
-        renderItem={({ item }) => {
+        renderItem={({item}) => {
           if (item === 'profile') {
             return <ProfileDoc />
           }
@@ -255,7 +255,7 @@ function MainAccountPage() {
                 theme="yellow"
                 backgroundColor="$color3"
                 accessory={
-                  <Button disabled onPress={(e) => { }} size="$1">
+                  <Button disabled onPress={(e) => {}} size="$1">
                     Draft
                   </Button>
                 }
@@ -270,7 +270,7 @@ function MainAccountPage() {
       {route.tab === 'activity' && feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({ top: 0 })
+            scrollRef.current?.scrollTo({top: 0})
             feed.refetch()
           }}
         />
@@ -333,15 +333,15 @@ function AccountPageHeader() {
                     {isMe
                       ? 'My Devices'
                       : isConnected
-                        ? 'Connected'
-                        : 'Offline'}
+                      ? 'Connected'
+                      : 'Offline'}
                   </Button>
                 </Popover.Trigger>
                 <Popover.Content
                   padding={0}
                   elevation="$2"
-                  enterStyle={{ y: -10, opacity: 0 }}
-                  exitStyle={{ y: -10, opacity: 0 }}
+                  enterStyle={{y: -10, opacity: 0}}
+                  exitStyle={{y: -10, opacity: 0}}
                   elevate
                   animation={[
                     'fast',
@@ -383,12 +383,12 @@ function AccountPageHeader() {
               key={route.tab}
               value={route.tab || 'profile'}
               options={[
-                { key: 'profile', label: 'Profile' },
-                { key: 'documents', label: 'Documents' },
-                { key: 'activity', label: 'Activity' },
+                {key: 'profile', label: 'Profile'},
+                {key: 'documents', label: 'Documents'},
+                {key: 'activity', label: 'Activity'},
               ]}
               onValue={(tab) => {
-                replace({ ...route, tab })
+                replace({...route, tab})
               }}
             />
           </XStack>
@@ -398,7 +398,7 @@ function AccountPageHeader() {
   )
 }
 
-function ProfileDoc({ }: {}) {
+function ProfileDoc({}: {}) {
   const route = useNavRoute()
   const accountRoute = route.key === 'account' ? route : undefined
   if (!accountRoute) throw new Error('Invalid route, no account id')
@@ -417,28 +417,28 @@ function ProfileDoc({ }: {}) {
 
   const pubDataWithHeading =
     pub.data?.document?.title &&
-      account.data?.profile?.alias !== pub.data?.document?.title
+    account.data?.profile?.alias !== pub.data?.document?.title
       ? {
-        ...pub.data,
-        document: {
-          ...pub.data.document,
-          children: [
-            {
-              block: {
-                type: 'heading',
-                text: pub.data.document.title,
+          ...pub.data,
+          document: {
+            ...pub.data.document,
+            children: [
+              {
+                block: {
+                  type: 'heading',
+                  text: pub.data.document.title,
+                },
+                children: pub.data.document.children,
               },
-              children: pub.data.document.children,
-            },
-          ],
-        },
-      }
+            ],
+          },
+        }
       : pub.data
 
   return pub.status == 'success' && pub.data ? (
     <PageContainer>
       <AppPublicationContentProvider
-        routeParams={{ blockRef: accountRoute?.blockId }}
+        routeParams={{blockRef: accountRoute?.blockId}}
       >
         <PublicationContent
           publication={pubDataWithHeading}

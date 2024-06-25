@@ -4,11 +4,11 @@ import {
   BlockSchema,
   DefaultBlockSchema,
   SideMenuProsemirrorPlugin,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 import Tippy from '@tippyjs/react'
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
-import { DefaultSideMenu } from './DefaultSideMenu'
-import { DragHandleMenuProps } from './DragHandleMenu/DragHandleMenu'
+import {FC, useEffect, useMemo, useRef, useState} from 'react'
+import {DefaultSideMenu} from './DefaultSideMenu'
+import {DragHandleMenuProps} from './DragHandleMenu/DragHandleMenu'
 
 export type SideMenuProps<BSchema extends BlockSchema = DefaultBlockSchema> =
   Pick<

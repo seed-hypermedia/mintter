@@ -1,8 +1,8 @@
-import {useAppContext} from '@shm/desktop/src/app-context'
-import {createHypermediaDocLinkPlugin} from '@shm/desktop/src/editor'
-import {useOpenUrl} from '@shm/desktop/src/open-url'
-import {slashMenuItems} from '@shm/desktop/src/slash-menu-items'
-import {client, trpc} from '@shm/desktop/src/trpc'
+import {useAppContext} from '@/app-context'
+import {createHypermediaDocLinkPlugin} from '@/editor'
+import {useOpenUrl} from '@/open-url'
+import {slashMenuItems} from '@/slash-menu-items'
+import {client, trpc} from '@/trpc'
 import {
   HMComment,
   HMCommentDraft,

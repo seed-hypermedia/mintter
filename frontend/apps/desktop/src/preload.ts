@@ -1,5 +1,5 @@
+import {AppWindowEvent} from '@/utils/window-events'
 import '@sentry/electron/preload'
-import {AppWindowEvent} from '@shm/desktop/src/utils/window-events'
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
 // import directly from this deep path for shared/utils/stream! Bad things happen if you try to directly import from @shm/shared

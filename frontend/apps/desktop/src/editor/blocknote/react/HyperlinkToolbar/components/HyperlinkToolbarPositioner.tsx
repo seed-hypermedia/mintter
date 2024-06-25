@@ -5,12 +5,12 @@ import {
   DefaultBlockSchema,
   HyperlinkToolbarProsemirrorPlugin,
   HyperlinkToolbarState,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 import Tippy from '@tippyjs/react'
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import {FC, useEffect, useMemo, useRef, useState} from 'react'
 
-import { HMBlockSchema } from '@shm/desktop/src/editor/schema'
-import { DefaultHyperlinkToolbar } from './DefaultHyperlinkToolbar'
+import {HMBlockSchema} from '@/editor/schema'
+import {DefaultHyperlinkToolbar} from './DefaultHyperlinkToolbar'
 
 export type HyperlinkToolbarProps = Pick<
   HyperlinkToolbarProsemirrorPlugin<any>,

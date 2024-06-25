@@ -1,7 +1,7 @@
-import { BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
-import { AiOutlinePlus } from 'react-icons/ai'
-import { SideMenuButton } from '../SideMenuButton'
-import { SideMenuProps } from '../SideMenuPositioner'
+import {BlockSchema} from '@/editor/blocknote/core'
+import {AiOutlinePlus} from 'react-icons/ai'
+import {SideMenuButton} from '../SideMenuButton'
+import {SideMenuProps} from '../SideMenuPositioner'
 
 export const AddBlockButton = <BSchema extends BlockSchema>(
   props: SideMenuProps<BSchema>,

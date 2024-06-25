@@ -1,10 +1,10 @@
-import { useIPC, useWindowUtils } from '@shm/desktop/src/app-context'
-import { WindowsLinuxWindowControls } from '@shm/desktop/src/components/window-controls'
-import { useNavRoute, useNavigationDispatch } from '@shm/desktop/src/utils/navigation'
-import { useOpenDraft } from '@shm/desktop/src/utils/open-draft'
-import { defaultRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { useTriggerWindowEvent } from '@shm/desktop/src/utils/window-events'
+import {useIPC, useWindowUtils} from '@/app-context'
+import {WindowsLinuxWindowControls} from '@/components/window-controls'
+import {useNavRoute, useNavigationDispatch} from '@/utils/navigation'
+import {useOpenDraft} from '@/utils/open-draft'
+import {defaultRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
+import {useTriggerWindowEvent} from '@/utils/window-events'
 import {
   AddSquare,
   Button,
@@ -27,8 +27,8 @@ import {
   XStack,
   YGroup,
 } from '@shm/ui'
-import { Contact, FileText, Library } from '@tamagui/lucide-icons'
-import { useMemo } from 'react'
+import {Contact, FileText, Library} from '@tamagui/lucide-icons'
+import {useMemo} from 'react'
 
 export function WindowsLinuxTitleBar({
   left,
@@ -40,7 +40,7 @@ export function WindowsLinuxTitleBar({
   right?: React.ReactNode
 }) {
   return (
-    <TitlebarWrapper className="window-drag" style={{ flex: 'none' }}>
+    <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
       <TitlebarRow minHeight={28} backgroundColor="$color3">
         <TitlebarSection>
           <SystemMenu />
@@ -88,13 +88,13 @@ export function WindowsLinuxTitleBar({
 
 export function SystemMenu() {
   const createDraft = useOpenDraft('spawn')
-  const { hide, close, quit } = useWindowUtils()
+  const {hide, close, quit} = useWindowUtils()
   const spawn = useNavigate('spawn')
   const push = useNavigate('push')
   const navDispatch = useNavigationDispatch()
   const route = useNavRoute()
   const triggerFocusedWindow = useTriggerWindowEvent()
-  const { invoke } = useIPC()
+  const {invoke} = useIPC()
   const menuItems: Array<MenuItemElement> = useMemo(
     () => [
       {
@@ -105,7 +105,7 @@ export function SystemMenu() {
             id: 'preferences',
             title: 'Preferences...',
             accelerator: 'Ctrl+,',
-            onSelect: () => spawn({ key: 'settings' }),
+            onSelect: () => spawn({key: 'settings'}),
             icon: Settings,
           },
           {
@@ -199,19 +199,19 @@ export function SystemMenu() {
             id: 'back',
             title: 'Back',
             accelerator: 'Ctrl+◀︎',
-            onSelect: () => navDispatch({ type: 'pop' }),
+            onSelect: () => navDispatch({type: 'pop'}),
           },
           {
             id: 'forward',
             title: 'Forward',
             accelerator: 'Ctrl+▶︎',
-            onSelect: () => navDispatch({ type: 'forward' }),
+            onSelect: () => navDispatch({type: 'forward'}),
           },
           {
             id: 'documents',
             title: 'Documents',
             accelerator: 'Ctrl+1',
-            onSelect: () => push({ key: 'documents' }),
+            onSelect: () => push({key: 'documents'}),
             icon: FileText,
             disabled: route.key == 'documents',
           },
@@ -219,7 +219,7 @@ export function SystemMenu() {
             id: 'groups',
             title: 'Groups',
             accelerator: 'Ctrl+3',
-            onSelect: () => push({ key: 'groups' }),
+            onSelect: () => push({key: 'groups'}),
             icon: Library,
             disabled: route.key == 'groups',
           },
@@ -227,7 +227,7 @@ export function SystemMenu() {
             id: 'drafts',
             title: 'Drafts',
             accelerator: 'Ctrl+8',
-            onSelect: () => push({ key: 'documents', tab: 'drafts' }),
+            onSelect: () => push({key: 'documents', tab: 'drafts'}),
             icon: Draft,
             disabled: route.key == 'documents' && route.tab === 'drafts',
           },
@@ -235,7 +235,7 @@ export function SystemMenu() {
             id: 'contacts',
             title: 'Contacts',
             accelerator: 'Ctrl+9',
-            onSelect: () => push({ key: 'contacts' }),
+            onSelect: () => push({key: 'contacts'}),
             icon: Contact,
             disabled: route.key == 'contacts',
           },
@@ -288,8 +288,8 @@ export function SystemMenu() {
             className="no-window-drag"
             padding={0}
             elevation="$2"
-            enterStyle={{ y: -10, opacity: 0 }}
-            exitStyle={{ y: -10, opacity: 0 }}
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
             elevate
             animation={[
               'fast',

@@ -1,21 +1,21 @@
-import { EntityVersionsAccessory } from '@shm/desktop/src/changes-list'
-import { AccessoryLayout } from '@shm/desktop/src/components/accessory-sidebar'
-import { BaseAccountLinkAvatar } from '@shm/desktop/src/components/account-link-avatar'
-import { CitationsProvider } from '@shm/desktop/src/components/citations-context'
-import { EntityCommentsAccessory } from '@shm/desktop/src/components/comments'
-import { PushToGatewayDialog } from '@shm/desktop/src/components/copy-gateway-reference'
-import { useAppDialog } from '@shm/desktop/src/components/dialog'
-import { FavoriteButton } from '@shm/desktop/src/components/favoriting'
-import Footer, { FooterButton } from '@shm/desktop/src/components/footer'
-import { MainWrapper } from '@shm/desktop/src/components/main-wrapper'
-import { useAccounts } from '@shm/desktop/src/models/accounts'
-import { useDocHistory } from '@shm/desktop/src/models/changes'
-import { useAllPublicationComments, useCreateComment } from '@shm/desktop/src/models/comments'
-import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
-import { useGatewayHost } from '@shm/desktop/src/models/gateway-settings'
-import { usePublicationVariant } from '@shm/desktop/src/models/publication'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import {EntityVersionsAccessory} from '@/changes-list'
+import {AccessoryLayout} from '@/components/accessory-sidebar'
+import {BaseAccountLinkAvatar} from '@/components/account-link-avatar'
+import {CitationsProvider} from '@/components/citations-context'
+import {EntityCommentsAccessory} from '@/components/comments'
+import {PushToGatewayDialog} from '@/components/copy-gateway-reference'
+import {useAppDialog} from '@/components/dialog'
+import {FavoriteButton} from '@/components/favoriting'
+import Footer, {FooterButton} from '@/components/footer'
+import {MainWrapper} from '@/components/main-wrapper'
+import {useAccounts} from '@/models/accounts'
+import {useDocHistory} from '@/models/changes'
+import {useAllPublicationComments, useCreateComment} from '@/models/comments'
+import {useEntityMentions} from '@/models/content-graph'
+import {useGatewayHost} from '@/models/gateway-settings'
+import {usePublicationVariant} from '@/models/publication'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   Document,
   PublicationContent,
@@ -32,17 +32,17 @@ import {
   SizableText,
   Text,
   XStack,
-  YStack
+  YStack,
 } from '@shm/ui'
-import { History, MessageSquare } from '@tamagui/lucide-icons'
+import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import { ReactNode, useEffect, useRef } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { AppErrorPage } from '../components/app-error'
-import { EntityCitationsAccessory } from '../components/citations'
-import { CopyReferenceButton } from '../components/titlebar-common'
-import { getAccountName } from './account-page'
-import { AppPublicationContentProvider } from './publication-content-provider'
+import {ReactNode, useEffect, useRef} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AppErrorPage} from '../components/app-error'
+import {EntityCitationsAccessory} from '../components/citations'
+import {CopyReferenceButton} from '../components/titlebar-common'
+import {getAccountName} from './account-page'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -72,7 +72,7 @@ export default function PublicationPage() {
   const pushToGatewayDialog = useAppDialog(PushToGatewayDialog, {
     onClose: () => {
       if (route.immediatelyPromptPush) {
-        replace({ ...route, immediatelyPromptPush: false })
+        replace({...route, immediatelyPromptPush: false})
       }
     },
   })
@@ -124,7 +124,7 @@ export default function PublicationPage() {
           documentId={docId}
           onCitationsOpen={() => {
             // todo, pass active citations into route
-            replace({ ...route, accessory: { key: 'citations' } })
+            replace({...route, accessory: {key: 'citations'}})
           }}
         >
           <AccessoryLayout accessory={accessory}>
@@ -139,11 +139,11 @@ export default function PublicationPage() {
                   citations={mentions.data?.mentions}
                   onCitationClick={() => {
                     if (route.accessory?.key === 'citations')
-                      return replace({ ...route, accessory: null })
-                    replace({ ...route, accessory: { key: 'citations' } })
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'citations'}})
                   }}
                   onBlockComment={(blockId, blockRange) => {
-                    replace({ ...route, accessory: { key: 'comments' } })
+                    replace({...route, accessory: {key: 'comments'}})
                     const version = publication.data?.publication?.version
                     if (!id) throw new Error('invalid doc id')
                     if (!version)
@@ -164,14 +164,11 @@ export default function PublicationPage() {
                     right={
                       <XStack
                         gap="$2"
-                      // opacity={0}
-                      // $group-header-hover={{opacity: 1}}
+                        // opacity={0}
+                        // $group-header-hover={{opacity: 1}}
                       >
                         {id && (
-                          <FavoriteButton
-                            url={createHmId('d', id.eid, {
-                            })}
-                          />
+                          <FavoriteButton url={createHmId('d', id.eid, {})} />
                         )}
                         <CopyReferenceButton />
                       </XStack>
@@ -217,8 +214,8 @@ export default function PublicationPage() {
                 icon={BlockQuote}
                 onPress={() => {
                   if (route.accessory?.key === 'citations')
-                    return replace({ ...route, accessory: null })
-                  replace({ ...route, accessory: { key: 'citations' } })
+                    return replace({...route, accessory: null})
+                  replace({...route, accessory: {key: 'citations'}})
                 }}
               />
             ) : null}
@@ -259,8 +256,8 @@ function PublicationCommentaryButton() {
       active={accessoryKey === 'comments'}
       onPress={() => {
         if (route.accessory?.key === 'comments')
-          return replace({ ...route, accessory: null })
-        replace({ ...route, accessory: { key: 'comments' } })
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'comments'}})
       }}
     />
   )
@@ -286,14 +283,14 @@ function DocumentVersionsFooterButton({
       icon={History}
       onPress={() => {
         if (route.accessory?.key === 'versions')
-          return replace({ ...route, accessory: null })
-        replace({ ...route, accessory: { key: 'versions' } })
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'versions'}})
       }}
     />
   )
 }
 
-function DocumentPageMeta({ document }: { document: Document }) {
+function DocumentPageMeta({document}: {document: Document}) {
   const editors = useAccounts(document.document?.editors || [])
   const navigate = useNavigate()
 
@@ -342,7 +339,7 @@ function DocumentPageMeta({ document }: { document: Document }) {
                     key={account.id}
                     fontWeight={'bold'}
                     onPress={() => {
-                      navigate({ key: 'account', accountId: account.id })
+                      navigate({key: 'account', accountId: account.id})
                     }}
                     hoverStyle={{
                       textDecorationLine: 'underline',

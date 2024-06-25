@@ -2,7 +2,7 @@ import {
   BaseSlashMenuItem,
   BlockSchema,
   DefaultBlockSchema,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 
 export type ReactSlashMenuItem<
   BSchema extends BlockSchema = DefaultBlockSchema,

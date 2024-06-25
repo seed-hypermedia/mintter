@@ -1,5 +1,5 @@
-import {useGRPCClient} from '@shm/desktop/src/app-context'
-import {MainWrapper} from '@shm/desktop/src/components/main-wrapper'
+import {useGRPCClient} from '@/app-context'
+import {MainWrapper} from '@/components/main-wrapper'
 import {Add, Button, Form, Input} from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {dispatchWizardEvent} from 'src/app-account'

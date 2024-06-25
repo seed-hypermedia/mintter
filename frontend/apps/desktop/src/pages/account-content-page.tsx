@@ -1,18 +1,18 @@
-import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
-import { copyLinkMenuItem } from '@shm/desktop/src/components/list-item'
-import { PublicationListItem } from '@shm/desktop/src/components/publication-list-item'
-import { useAllAccounts } from '@shm/desktop/src/models/accounts'
-import { useAccountPublications } from '@shm/desktop/src/models/documents'
-import { Profile, unpackDocId } from '@shm/shared'
-import { List } from '@shm/ui'
-import { useMemo } from 'react'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {copyLinkMenuItem} from '@/components/list-item'
+import {PublicationListItem} from '@/components/publication-list-item'
+import {useAllAccounts} from '@/models/accounts'
+import {useAccountPublications} from '@/models/documents'
+import {Profile, unpackDocId} from '@shm/shared'
+import {List} from '@shm/ui'
+import {useMemo} from 'react'
 
 export function getAccountName(profile: Profile | undefined) {
   if (!profile) return ''
   return profile.alias || 'Untitled Account'
 }
 
-export function AccountPublications({ accountId }: { accountId: string }) {
+export function AccountPublications({accountId}: {accountId: string}) {
   const list = useAccountPublications(accountId)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
@@ -48,8 +48,8 @@ export function AccountPublications({ accountId }: { accountId: string }) {
       <List
         header={null}
         items={data || []}
-        renderItem={({ item }) => {
-          const { publication, author, editors } = item
+        renderItem={({item}) => {
+          const {publication, author, editors} = item
           const docId = publication.document?.id
           if (!docId) return null
           return (
@@ -82,4 +82,3 @@ export function AccountPublications({ accountId }: { accountId: string }) {
     </>
   )
 }
-

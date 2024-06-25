@@ -12,15 +12,15 @@ import {
   PropSchema,
   propsToAttributes,
   render,
-} from '@shm/desktop/src/editor/blocknote/core'
-import { TagParseRule } from '@tiptap/pm/model'
+} from '@/editor/blocknote/core'
+import {TagParseRule} from '@tiptap/pm/model'
 import {
   NodeViewContent,
   NodeViewProps,
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import { createContext, ElementType, FC, HTMLProps, useContext } from 'react'
+import {createContext, ElementType, FC, HTMLProps, useContext} from 'react'
 
 // extend BlockConfig but use a React render function
 export type ReactBlockConfig<
@@ -58,7 +58,7 @@ export type ReactBlockConfig<
 const BlockNoteDOMAttributesContext = createContext<BlockNoteDOMAttributes>({})
 
 export const InlineContent = <Tag extends ElementType>(
-  props: { as?: Tag } & HTMLProps<Tag>,
+  props: {as?: Tag} & HTMLProps<Tag>,
 ) => {
   const inlineContentDOMAttributes =
     useContext(BlockNoteDOMAttributesContext).inlineContent || {}
@@ -119,7 +119,7 @@ export function createReactBlockSpec<
       return parse(blockConfig)
     },
 
-    renderHTML({ HTMLAttributes }) {
+    renderHTML({HTMLAttributes}) {
       return render(blockConfig, HTMLAttributes)
     },
 
@@ -144,7 +144,7 @@ export function createReactBlockSpec<
 
         // Gets BlockNote editor instance
         const editor = this.options.editor! as BlockNoteEditor<
-          BSchema & { [k in BType]: BlockSpec<BType, PSchema> }
+          BSchema & {[k in BType]: BlockSpec<BType, PSchema>}
         >
         // Gets position of the node
         const pos =

@@ -1,4 +1,4 @@
-import { trpc } from '@shm/desktop/src/trpc'
+import {trpc} from '@/trpc'
 import {
   API_FILE_URL,
   BlockRange,
@@ -30,21 +30,21 @@ import {
   Pencil,
   Reply,
 } from '@tamagui/lucide-icons'
-import { YStack } from 'tamagui'
-import { useAppContext } from '../app-context'
-import { useAccount } from '../models/accounts'
-import type { CommentGroup } from '../models/comments'
+import {YStack} from 'tamagui'
+import {useAppContext} from '../app-context'
+import {useAccount} from '../models/accounts'
+import type {CommentGroup} from '../models/comments'
 import {
   useCommentReplies,
   useCreateComment,
   usePublicationCommentGroups,
 } from '../models/comments'
-import { usePublication } from '../models/documents'
-import { AppPublicationContentProvider } from '../pages/publication-content-provider'
-import { useNavigate } from '../utils/useNavigate'
-import { AccessoryContainer } from './accessory-sidebar'
-import { MenuItemType, OptionsDropdown } from './options-dropdown'
-import { WindowsLinuxWindowControls } from './window-controls'
+import {usePublication} from '../models/documents'
+import {AppPublicationContentProvider} from '../pages/publication-content-provider'
+import {useNavigate} from '../utils/useNavigate'
+import {AccessoryContainer} from './accessory-sidebar'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import {WindowsLinuxWindowControls} from './window-controls'
 
 export function CommentGroup({
   group,
@@ -136,8 +136,9 @@ export function CommentGroup({
             }}
             icon={MessageSquare}
           >
-            {`${group.moreCommentsCount}${group.comments.length > 1 ? ' More' : ''
-              } Replies`}
+            {`${group.moreCommentsCount}${
+              group.comments.length > 1 ? ' More' : ''
+            } Replies`}
           </Button>
         ) : (
           <Button
@@ -305,7 +306,7 @@ export function CommentPageTitlebar({
   icon?: React.ReactNode
   children?: React.ReactNode
 }) {
-  const { platform } = useAppContext()
+  const {platform} = useAppContext()
   const isWindowsLinux = platform !== 'darwin'
   return (
     <XStack
@@ -348,7 +349,7 @@ export function CommentPageTitlebarWithDocId({
 }) {
   const docId = useStream<string | null>(targetDocIdStream)
   const usableDocId = targetDocId || docId || undefined
-  const pub = usePublication({ id: usableDocId })
+  const pub = usePublication({id: usableDocId})
   const publication = pub.data
   const spawn = useNavigate('spawn')
   const author = publication?.document?.author

@@ -1,5 +1,5 @@
+import appError from '@/errors'
 import {ConnectError} from '@connectrpc/connect'
-import appError from '@shm/desktop/src/errors'
 import {ConnectionStatus, GRPCClient, PeerInfo} from '@shm/shared'
 import {
   FetchQueryOptions,

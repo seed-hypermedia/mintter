@@ -1,4 +1,4 @@
-import type {AppQueryClient} from '@shm/desktop/src/query-client'
+import type {AppQueryClient} from '@/query-client'
 import {parseFragment} from '@shm/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'

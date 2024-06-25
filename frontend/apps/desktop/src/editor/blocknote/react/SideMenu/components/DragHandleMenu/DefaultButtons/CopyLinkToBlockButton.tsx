@@ -1,14 +1,14 @@
-import { BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
+import {BlockSchema} from '@/editor/blocknote/core'
 
-import { usePublicationContentContext } from '@shm/shared'
-import { Link, XStack } from '@shm/ui'
-import { DragHandleMenuProps } from '../DragHandleMenu'
-import { DragHandleMenuItem } from '../DragHandleMenuItem'
+import {usePublicationContentContext} from '@shm/shared'
+import {Link, XStack} from '@shm/ui'
+import {DragHandleMenuProps} from '../DragHandleMenu'
+import {DragHandleMenuItem} from '../DragHandleMenuItem'
 
 export const CopyLinkToBlockButton = <BSchema extends BlockSchema>({
   block,
 }: DragHandleMenuProps<BSchema>) => {
-  const { onCopyBlock } = usePublicationContentContext()
+  const {onCopyBlock} = usePublicationContentContext()
   if (!onCopyBlock) return null
   return (
     <DragHandleMenuItem

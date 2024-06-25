@@ -1,5 +1,5 @@
+import {defaultRoute} from '@/utils/routes'
 import * as Sentry from '@sentry/electron/main'
-import {defaultRoute} from '@shm/desktop/src/utils/routes'
 import {ELECTRON_HTTP_PORT, IS_PROD_DESKTOP} from '@shm/shared'
 import {
   BrowserWindow,

@@ -1,14 +1,14 @@
-import styles from '@shm/desktop/src/editor/blocknote/core/extensions/Blocks/nodes/Block.module.css'
+import styles from '@/editor/blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import {
   NodeViewProps,
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import { FC } from 'react'
-import { mergeCSSClasses } from '..'
-import { CodeBlock, CodeBlockOptions } from './code-block'
-import { CodeBlockView } from './code-block-view'
-import { LowlightPlugin } from './lowlight-plugin.js'
+import {FC} from 'react'
+import {mergeCSSClasses} from '..'
+import {CodeBlock, CodeBlockOptions} from './code-block'
+import {CodeBlockView} from './code-block-view'
+import {LowlightPlugin} from './lowlight-plugin.js'
 
 export interface CodeBlockLowlightOptions extends CodeBlockOptions {
   lowlight: any

@@ -1,13 +1,13 @@
-import { useAppContext } from '@shm/desktop/src/app-context'
-import { SeedIcon } from '@shm/desktop/src/components/seed-icon'
-import appError from '@shm/desktop/src/errors'
-import { useSetProfile } from '@shm/desktop/src/models/accounts'
-import { useConnectPeer } from '@shm/desktop/src/models/contacts'
-import { useAccountRegistration, useMnemonics } from '@shm/desktop/src/models/daemon'
-import { useWalletOptIn } from '@shm/desktop/src/models/wallet'
-import { trpc } from '@shm/desktop/src/trpc'
-import { isHttpUrl } from '@shm/desktop/src/utils/navigation'
-import { Profile as ProfileType } from '@shm/shared'
+import {useAppContext} from '@/app-context'
+import {SeedIcon} from '@/components/seed-icon'
+import appError from '@/errors'
+import {useSetProfile} from '@/models/accounts'
+import {useConnectPeer} from '@/models/contacts'
+import {useAccountRegistration, useMnemonics} from '@/models/daemon'
+import {useWalletOptIn} from '@/models/wallet'
+import {trpc} from '@/trpc'
+import {isHttpUrl} from '@/utils/navigation'
+import {Profile as ProfileType} from '@shm/shared'
 import {
   Button,
   ButtonProps,
@@ -53,7 +53,7 @@ import {
 
 const CONTENT_MAX_WIDTH = 500
 
-export function Onboarding({ onComplete }: { onComplete: () => void }) {
+export function Onboarding({onComplete}: {onComplete: () => void}) {
   return (
     <OnboardingProvider onComplete={onComplete}>
       <OnboardingSteps />
@@ -127,7 +127,7 @@ function Mnemonics(props: OnboardingStepProps) {
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
   const [error, setError] = useState('')
   const mnemonics = useMnemonics()
-  const { ipc } = useAppContext()
+  const {ipc} = useAppContext()
   const [check1, setCheck1] = useState(false)
   const [check2, setCheck2] = useState(false)
   const [check3, setCheck3] = useState(false)
@@ -586,7 +586,7 @@ function Profile(props: OnboardingStepProps) {
     onSuccess: () => props.send('NEXT'),
   })
 
-  const submitValue = useRef({ alias: '' } as ProfileType)
+  const submitValue = useRef({alias: ''} as ProfileType)
   function onSubmit() {
     if (submitValue.current.alias == '') {
       props.send('NEXT')
@@ -670,7 +670,7 @@ function Analytics(props: OnboardingStepProps) {
 }
 
 function Wallet(props: OnboardingStepProps) {
-  const { optIn, wallets } = useWalletOptIn({
+  const {optIn, wallets} = useWalletOptIn({
     onError: (e) => {
       toast.error(e.message)
     },
@@ -727,7 +727,7 @@ function ConnectSite(props: OnboardingStepProps) {
       props.complete()
     },
     onError: (error, peer) => {
-      appError(`Failed to connect to ${peer}`, { error })
+      appError(`Failed to connect to ${peer}`, {error})
     },
   })
   const [siteDomain, setSiteDomain] = useState(SuggestedSites[0])
@@ -828,7 +828,7 @@ function ConnectSite(props: OnboardingStepProps) {
   )
 }
 
-function StepWrapper({ children, ...props }: PropsWithChildren<unknown>) {
+function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
   const theme = useTheme()
   return (
     <StyledStepWrapper
@@ -876,7 +876,7 @@ function StepWrapper({ children, ...props }: PropsWithChildren<unknown>) {
   )
 }
 
-function StepParagraph({ children, ...props }: ParagraphProps) {
+function StepParagraph({children, ...props}: ParagraphProps) {
   return (
     <SizableText size="$5" maxWidth={CONTENT_MAX_WIDTH}>
       {children}
@@ -986,7 +986,7 @@ let machine = {
 }
 
 function transition(state: OBState, event: OBAction): OBState {
-  const nextState: { target: keyof typeof machine.states } | {} =
+  const nextState: {target: keyof typeof machine.states} | {} =
     // @ts-expect-error
     machine.states[state.key].on?.[event]?.target || state
 

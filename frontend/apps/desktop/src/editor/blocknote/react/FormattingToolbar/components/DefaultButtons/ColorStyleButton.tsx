@@ -1,11 +1,11 @@
-import { Menu } from '@mantine/core'
-import { BlockNoteEditor, BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
-import { useCallback, useState } from 'react'
-import { ColorIcon } from '../../../SharedComponents/ColorPicker/components/ColorIcon'
-import { ColorPicker } from '../../../SharedComponents/ColorPicker/components/ColorPicker'
-import { ToolbarButton } from '../../../SharedComponents/Toolbar/components/ToolbarButton'
-import { useEditorContentChange } from '../../../hooks/useEditorContentChange'
-import { useEditorSelectionChange } from '../../../hooks/useEditorSelectionChange'
+import {BlockNoteEditor, BlockSchema} from '@/editor/blocknote/core'
+import {Menu} from '@mantine/core'
+import {useCallback, useState} from 'react'
+import {ColorIcon} from '../../../SharedComponents/ColorPicker/components/ColorIcon'
+import {ColorPicker} from '../../../SharedComponents/ColorPicker/components/ColorPicker'
+import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
+import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
+import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 
 export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>
@@ -35,8 +35,8 @@ export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
     (color: string) => {
       props.editor.focus()
       color === 'default'
-        ? props.editor.removeStyles({ textColor: color })
-        : props.editor.addStyles({ textColor: color })
+        ? props.editor.removeStyles({textColor: color})
+        : props.editor.addStyles({textColor: color})
     },
     [props.editor],
   )
@@ -45,8 +45,8 @@ export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
     (color: string) => {
       props.editor.focus()
       color === 'default'
-        ? props.editor.removeStyles({ backgroundColor: color })
-        : props.editor.addStyles({ backgroundColor: color })
+        ? props.editor.removeStyles({backgroundColor: color})
+        : props.editor.addStyles({backgroundColor: color})
     },
     [props.editor],
   )

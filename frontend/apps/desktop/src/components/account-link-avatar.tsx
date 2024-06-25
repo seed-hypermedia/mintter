@@ -1,11 +1,11 @@
-import { Avatar } from '@shm/desktop/src/components/avatar'
-import appError from '@shm/desktop/src/errors'
-import { useAccount } from '@shm/desktop/src/models/accounts'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { Account } from '@shm/shared'
-import { Button, FontSizeTokens, Tooltip, YStack } from '@shm/ui'
-import { AlertCircle } from '@tamagui/lucide-icons'
-import { getAvatarUrl } from '../utils/account-url'
+import {Avatar} from '@/components/avatar'
+import appError from '@/errors'
+import {useAccount} from '@/models/accounts'
+import {useNavigate} from '@/utils/useNavigate'
+import {Account} from '@shm/shared'
+import {Button, FontSizeTokens, Tooltip, YStack} from '@shm/ui'
+import {AlertCircle} from '@tamagui/lucide-icons'
+import {getAvatarUrl} from '../utils/account-url'
 
 export function ErrorDot() {
   return (
@@ -77,7 +77,7 @@ export function BaseAccountLinkAvatar({
         className="no-window-drag"
         size="$1"
         backgroundColor="transparent"
-        hoverStyle={{ backgroundColor: 'transparent' }}
+        hoverStyle={{backgroundColor: 'transparent'}}
         minWidth={20}
         minHeight={20}
         padding={0}
@@ -85,7 +85,7 @@ export function BaseAccountLinkAvatar({
           e.preventDefault()
           e.stopPropagation()
           if (!accountId) return appError('No account ready to load')
-          navigate({ key: 'account', accountId })
+          navigate({key: 'account', accountId})
         }}
         position="relative"
         height={size}

@@ -1,8 +1,8 @@
-import { trpc } from '@shm/desktop/src/trpc'
-import { HMAccount, UnpackedHypermediaId, unpackHmId } from '@shm/shared'
-import { useMemo } from 'react'
-import { useQueryInvalidator } from '../app-context'
-import { useAccounts } from './accounts'
+import {trpc} from '@/trpc'
+import {HMAccount, UnpackedHypermediaId, unpackHmId} from '@shm/shared'
+import {useMemo} from 'react'
+import {useQueryInvalidator} from '../app-context'
+import {useAccounts} from './accounts'
 
 export type FavoriteItem =
   | {

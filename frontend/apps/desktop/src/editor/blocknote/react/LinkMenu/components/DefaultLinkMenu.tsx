@@ -1,13 +1,13 @@
-import { createStyles, Menu } from '@mantine/core'
+import {createStyles, Menu} from '@mantine/core'
 
-import { BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
-import { LinkMenuItem } from './LinkMenuItem'
-import { LinkMenuProps } from './LinkMenuPositioner'
+import {BlockSchema} from '@/editor/blocknote/core'
+import {LinkMenuItem} from './LinkMenuItem'
+import {LinkMenuProps} from './LinkMenuPositioner'
 
 export function DefaultLinkMenu<BSchema extends BlockSchema>(
   props: LinkMenuProps<BSchema>,
 ) {
-  const { classes } = createStyles({ root: {} })(undefined, {
+  const {classes} = createStyles({root: {}})(undefined, {
     name: 'LinkMenu',
   })
   const renderedItems: any[] = []

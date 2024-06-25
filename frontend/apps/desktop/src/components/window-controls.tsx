@@ -1,8 +1,8 @@
-import { useWindowUtils } from '@shm/desktop/src/app-context'
-import { Button, Close, XStack, useTheme } from '@shm/ui'
+import {useWindowUtils} from '@/app-context'
+import {Button, Close, XStack, useTheme} from '@shm/ui'
 
 export function CloseButton() {
-  const { close } = useWindowUtils()
+  const {close} = useWindowUtils()
   return (
     <ButtonWrapper
       aria-label="close"
@@ -15,7 +15,7 @@ export function CloseButton() {
 }
 
 export function MaximizeOrRestoreButton() {
-  const { isMaximized, maximize, unmaximize } = useWindowUtils()
+  const {isMaximized, maximize, unmaximize} = useWindowUtils()
   const theme = useTheme()
 
   if (isMaximized === undefined) return null
@@ -64,7 +64,7 @@ export function MaximizeOrRestoreButton() {
 }
 
 export function MinimizeButton() {
-  const { minimize } = useWindowUtils()
+  const {minimize} = useWindowUtils()
   const theme = useTheme()
 
   return (

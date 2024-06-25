@@ -1,8 +1,8 @@
-import { BlockNoteEditor } from '@shm/desktop/src/editor'
-import { YStack } from '@shm/ui'
-import { useMemo, useState } from 'react'
-import { HyperMediaEditorView } from 'src/components/editor'
-import { AppPublicationContentProvider } from './publication-content-provider'
+import {BlockNoteEditor} from '@/editor'
+import {YStack} from '@shm/ui'
+import {useMemo, useState} from 'react'
+import {HyperMediaEditorView} from 'src/components/editor'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftRebase() {
   // const [state, send, actor] = useDraftRebase()

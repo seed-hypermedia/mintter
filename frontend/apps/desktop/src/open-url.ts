@@ -1,9 +1,6 @@
-import {useAppContext} from '@shm/desktop/src/app-context'
-import {
-  isHttpUrl,
-  useHmIdToAppRouteResolver,
-} from '@shm/desktop/src/utils/navigation'
-import {useNavigate} from '@shm/desktop/src/utils/useNavigate'
+import {useAppContext} from '@/app-context'
+import {isHttpUrl, useHmIdToAppRouteResolver} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {toast} from '@shm/ui'
 import {useMemo} from 'react'
 

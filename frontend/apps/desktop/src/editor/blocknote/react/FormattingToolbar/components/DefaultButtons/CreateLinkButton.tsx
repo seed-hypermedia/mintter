@@ -1,7 +1,7 @@
-import { BlockNoteEditor, BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
-import { useCallback, useState } from 'react'
-import { RiLink } from 'react-icons/ri'
-import { useEditorSelectionChange } from '../../../hooks/useEditorSelectionChange'
+import {BlockNoteEditor, BlockSchema} from '@/editor/blocknote/core'
+import {useCallback, useState} from 'react'
+import {RiLink} from 'react-icons/ri'
+import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 import LinkToolbarButton from '../LinkToolbarButton'
 
 export const CreateLinkButton = <BSchema extends BlockSchema>(props: {

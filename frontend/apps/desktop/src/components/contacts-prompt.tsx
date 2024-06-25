@@ -1,4 +1,4 @@
-import {AccessURLRow} from '@shm/desktop/src/url'
+import {AccessURLRow} from '@/url'
 import {HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@shm/shared'
 import {Button, Spinner, TextArea, XStack, toast} from '@shm/ui'
 import {UserPlus} from '@tamagui/lucide-icons'

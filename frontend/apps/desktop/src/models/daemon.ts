@@ -1,4 +1,4 @@
-import {useGRPCClient} from '@shm/desktop/src/app-context'
+import {useGRPCClient} from '@/app-context'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 

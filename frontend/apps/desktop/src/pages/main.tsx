@@ -1,20 +1,20 @@
-import { useListen } from '@shm/desktop/src/app-context'
+import {useListen} from '@/app-context'
 
-import { Launcher } from '@shm/desktop/src/components/launcher'
-import { DraftStatusContext } from '@shm/desktop/src/models/draft-machine'
-import { SidebarContextProvider } from '@shm/desktop/src/sidebar-context'
-import { getRouteKey, useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { NavRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { getWindowType } from '@shm/desktop/src/utils/window-types'
-import { YStack } from '@shm/ui'
-import { ReactElement, lazy, useMemo } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { AppErrorPage } from '../components/app-error'
-import { AppSidebar } from '../components/sidebar'
-import { TitleBar } from '../components/titlebar'
-import { BaseLoading, NotFoundPage } from './base'
-import { DocumentPlaceholder } from './document-placeholder'
+import {Launcher} from '@/components/launcher'
+import {DraftStatusContext} from '@/models/draft-machine'
+import {SidebarContextProvider} from '@/sidebar-context'
+import {getRouteKey, useNavRoute} from '@/utils/navigation'
+import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
+import {getWindowType} from '@/utils/window-types'
+import {YStack} from '@shm/ui'
+import {ReactElement, lazy, useMemo} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AppErrorPage} from '../components/app-error'
+import {AppSidebar} from '../components/sidebar'
+import {TitleBar} from '../components/titlebar'
+import {BaseLoading, NotFoundPage} from './base'
+import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
 var Feed = lazy(() => import('./feed'))
@@ -31,10 +31,10 @@ var Favorites = lazy(() => import('./favorites'))
 var DeletedContent = lazy(() => import('./deleted-content'))
 var DraftRebase = lazy(() => import('./draft-rebase'))
 
-export default function Main({ className }: { className?: string }) {
+export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
   const navigate = useNavigate()
-  const { PageComponent, Fallback } = useMemo(
+  const {PageComponent, Fallback} = useMemo(
     () => getPageComponent(navR),
     [navR],
   )

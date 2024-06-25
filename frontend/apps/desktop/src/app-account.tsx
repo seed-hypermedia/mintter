@@ -1,5 +1,5 @@
-import {DialogTitle} from '@shm/desktop/src/components/dialog'
-import {queryKeys} from '@shm/desktop/src/models/query-keys'
+import {DialogTitle} from '@/components/dialog'
+import {queryKeys} from '@/models/query-keys'
 import {eventStream} from '@shm/shared'
 import {
   Button,

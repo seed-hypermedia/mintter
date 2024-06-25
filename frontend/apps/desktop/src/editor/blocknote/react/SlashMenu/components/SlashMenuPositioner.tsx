@@ -4,19 +4,19 @@ import {
   DefaultBlockSchema,
   SlashMenuProsemirrorPlugin,
   SuggestionsMenuState,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 import Tippy from '@tippyjs/react'
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import {FC, useEffect, useMemo, useRef, useState} from 'react'
 
-import { ReactSlashMenuItem } from '../ReactSlashMenuItem'
-import { DefaultSlashMenu } from './DefaultSlashMenu'
+import {ReactSlashMenuItem} from '../ReactSlashMenuItem'
+import {DefaultSlashMenu} from './DefaultSlashMenu'
 
 export type SlashMenuProps<BSchema extends BlockSchema = DefaultBlockSchema> =
   Pick<SlashMenuProsemirrorPlugin<BSchema, any>, 'itemCallback'> &
-  Pick<
-    SuggestionsMenuState<ReactSlashMenuItem<BSchema>>,
-    'filteredItems' | 'keyboardHoveredItemIndex'
-  >
+    Pick<
+      SuggestionsMenuState<ReactSlashMenuItem<BSchema>>,
+      'filteredItems' | 'keyboardHoveredItemIndex'
+    >
 
 export const SlashMenuPositioner = <
   BSchema extends BlockSchema = DefaultBlockSchema,

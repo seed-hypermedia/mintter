@@ -1,9 +1,7 @@
-import { useMyAccount } from '@shm/desktop/src/models/accounts'
-import { usePublicationVariant } from '@shm/desktop/src/models/publication'
-import {
-  useNavRoute
-} from '@shm/desktop/src/utils/navigation'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import {useMyAccount} from '@/models/accounts'
+import {usePublicationVariant} from '@/models/publication'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   API_FILE_URL,
   AuthorVariant,
@@ -12,9 +10,9 @@ import {
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   formattedDateMedium,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
-import { AuthorVersion } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {AuthorVersion} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {
   Button,
   Check,
@@ -24,20 +22,19 @@ import {
   UIAvatar,
   View,
   XStack,
-  YStack
+  YStack,
 } from '@shm/ui'
-import { ArrowRight, Pencil } from '@tamagui/lucide-icons'
-import { ComponentProps, PropsWithChildren, useMemo } from 'react'
-import { useAccount } from '../models/accounts'
-import { useEntityTimeline } from '../models/changes'
-import { useGatewayUrl } from '../models/gateway-settings'
-import { DocumentRoute, NavRoute } from '../utils/routes'
+import {ArrowRight, Pencil} from '@tamagui/lucide-icons'
+import {ComponentProps, PropsWithChildren, useMemo} from 'react'
+import {useAccount} from '../models/accounts'
+import {useEntityTimeline} from '../models/changes'
+import {useGatewayUrl} from '../models/gateway-settings'
+import {DocumentRoute, NavRoute} from '../utils/routes'
 import CommitDraftButton from './commit-draft-button'
 import DiscardDraftButton from './discard-draft-button'
-import { EditDocButton, useEditDraft } from './edit-doc-button'
+import {EditDocButton, useEditDraft} from './edit-doc-button'
 
-
-export function ContextPopover({ ...props }) {
+export function ContextPopover({...props}) {
   return (
     <Popover
       size="$5"
@@ -78,8 +75,8 @@ export function ContextPopoverContent(props) {
       borderColor={'$borderColor'}
       backgroundColor={'$background'}
       elevation={'$2'}
-      enterStyle={{ y: -10, opacity: 0 }}
-      exitStyle={{ y: -10, opacity: 0 }}
+      enterStyle={{y: -10, opacity: 0}}
+      exitStyle={{y: -10, opacity: 0}}
       elevate
       animation={[
         'fast',
@@ -105,7 +102,7 @@ export function ContextPopoverArrow(props) {
   )
 }
 
-export function VersionContext({ route }: { route: NavRoute }) {
+export function VersionContext({route}: {route: NavRoute}) {
   let exactVersion: string | null = null
   let fullUrl: string | null = null
   const navigate = useNavigate()
@@ -119,7 +116,7 @@ export function VersionContext({ route }: { route: NavRoute }) {
     // version not specified, so we are fetching the latest
   })
   if (route.key === 'document') {
-    const { accessory, documentId, versionId, variants } = route
+    const {accessory, documentId, versionId, variants} = route
     unpackedId = unpackHmId(documentId)
     exactVersion = versionId || null
     if (
@@ -152,8 +149,9 @@ export function VersionContext({ route }: { route: NavRoute }) {
             <Tooltip
               content={`You are looking at an older version of this ${HYPERMEDIA_ENTITY_TYPES[
                 unpackedId.type
-              ].toLowerCase()}. Click to go to the latest ${unpackedId.type === 'd' ? 'in this variant' : 'version'
-                }.`}
+              ].toLowerCase()}. Click to go to the latest ${
+                unpackedId.type === 'd' ? 'in this variant' : 'version'
+              }.`}
             >
               <Button
                 size="$2"
@@ -173,20 +171,21 @@ export function VersionContext({ route }: { route: NavRoute }) {
   )
 }
 
-export function PublicationVariants({ route }: { route: DocumentRoute }) {
+export function PublicationVariants({route}: {route: DocumentRoute}) {
   const publication = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
     variants: route.variants,
   })
-  const { variants } = route
+  const {variants} = route
   const authorVariants = variants?.filter(
     (variant) => variant.key === 'author',
   ) as AuthorVariant[] | undefined
   const pubOwner = publication.data?.publication?.document?.author
-  const realAuthorVariants: AuthorVariant[] | undefined = (authorVariants && authorVariants.length) || !pubOwner
-    ? authorVariants
-    : [{ key: 'author', author: pubOwner }]
+  const realAuthorVariants: AuthorVariant[] | undefined =
+    (authorVariants && authorVariants.length) || !pubOwner
+      ? authorVariants
+      : [{key: 'author', author: pubOwner}]
 
   const myAccount = useMyAccount()
   const isAuthorVariantEditable =
@@ -199,7 +198,6 @@ export function PublicationVariants({ route }: { route: DocumentRoute }) {
   const showEditButton = isAuthorVariantEditable
   return (
     <>
-
       {showEditButton && (
         <EditDocButton
           key="editActions"
@@ -387,7 +385,7 @@ function AuthorVariants({
   const myVersion = timeline.data?.authorVersions.find(
     (authorVersion) => authorVersion.author === myAccount.data?.id,
   )
-  const { handleEdit, hasExistingDraft } = useEditDraft(route.documentId, {
+  const {handleEdit, hasExistingDraft} = useEditDraft(route.documentId, {
     version: publication?.version,
     contextRoute: route,
     variants: undefined, // this will result in author variant
@@ -453,7 +451,7 @@ function TabsView({
   value,
   onValue,
 }: {
-  tabs: { key: string; label: string; element: React.ReactNode }[]
+  tabs: {key: string; label: string; element: React.ReactNode}[]
   value: string
   onValue: (tabKey: string) => void
 }) {
@@ -487,14 +485,13 @@ function TabsView({
   )
 }
 
-export function PageContextButton({ }: {}) {
+export function PageContextButton({}: {}) {
   const route = useNavRoute()
   if (route.key === 'document') {
     return <PublicationVariants route={route} />
   }
   return null
 }
-
 
 export function DraftPublicationButtons() {
   return (

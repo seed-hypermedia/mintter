@@ -4,19 +4,19 @@ import {
   DefaultBlockSchema,
   LinkMenuProsemirrorPlugin,
   LinkMenuState,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 import Tippy from '@tippyjs/react'
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import {FC, useEffect, useMemo, useRef, useState} from 'react'
 
-import { LinkMenuItem } from '@shm/desktop/src/editor/blocknote/core/extensions/LinkMenu/LinkMenuItem'
-import { DefaultLinkMenu } from './DefaultLinkMenu'
+import {LinkMenuItem} from '@/editor/blocknote/core/extensions/LinkMenu/LinkMenuItem'
+import {DefaultLinkMenu} from './DefaultLinkMenu'
 
 export type LinkMenuProps<BSchema extends BlockSchema = DefaultBlockSchema> =
   Pick<LinkMenuProsemirrorPlugin<BSchema, any>, 'itemCallback'> &
-  Pick<
-    LinkMenuState<LinkMenuItem<BSchema>>,
-    'items' | 'keyboardHoveredItemIndex'
-  >
+    Pick<
+      LinkMenuState<LinkMenuItem<BSchema>>,
+      'items' | 'keyboardHoveredItemIndex'
+    >
 
 export const LinkMenuPositioner = <
   BSchema extends BlockSchema = DefaultBlockSchema,

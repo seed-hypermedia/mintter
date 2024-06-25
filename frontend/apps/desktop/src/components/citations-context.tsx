@@ -1,6 +1,6 @@
-import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
-import { Mention } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
-import { createContext, ReactNode, useContext, useMemo, useState } from 'react'
+import {useEntityMentions} from '@/models/content-graph'
+import {Mention} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {createContext, ReactNode, useContext, useMemo, useState} from 'react'
 
 export type CitationsContext = {
   citations: Mention[] | undefined

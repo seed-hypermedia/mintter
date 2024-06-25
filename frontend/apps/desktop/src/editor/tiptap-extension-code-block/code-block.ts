@@ -1,4 +1,4 @@
-import styles from '@shm/desktop/src/editor/blocknote/core/extensions/Blocks/nodes/Block.module.css'
+import styles from '@/editor/blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import {
   Editor,
   mergeAttributes,

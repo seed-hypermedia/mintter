@@ -1,19 +1,23 @@
-import { Avatar } from '@shm/desktop/src/components/avatar'
-import { useCopyGatewayReference } from '@shm/desktop/src/components/copy-gateway-reference'
-import { useDeleteDialog } from '@shm/desktop/src/components/delete-dialog'
-import { FavoriteButton } from '@shm/desktop/src/components/favoriting'
-import Footer from '@shm/desktop/src/components/footer'
-import { OnlineIndicator } from '@shm/desktop/src/components/indicator'
-import { ListItem, copyLinkMenuItem } from '@shm/desktop/src/components/list-item'
-import { MainWrapper, MainWrapperNoScroll } from '@shm/desktop/src/components/main-wrapper'
-import { MenuItemType } from '@shm/desktop/src/components/options-dropdown'
-import { useAccountIsConnected, useAllAccounts, useMyAccount } from '@shm/desktop/src/models/accounts'
-import { useFavorite } from '@shm/desktop/src/models/favorites'
-import { useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
-import { getAvatarUrl } from '@shm/desktop/src/utils/account-url'
-import { AccountRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { HMAccount, createHmId, hmId } from '@shm/shared'
+import {Avatar} from '@/components/avatar'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {useDeleteDialog} from '@/components/delete-dialog'
+import {FavoriteButton} from '@/components/favoriting'
+import Footer from '@/components/footer'
+import {OnlineIndicator} from '@/components/indicator'
+import {ListItem, copyLinkMenuItem} from '@/components/list-item'
+import {MainWrapper, MainWrapperNoScroll} from '@/components/main-wrapper'
+import {MenuItemType} from '@/components/options-dropdown'
+import {
+  useAccountIsConnected,
+  useAllAccounts,
+  useMyAccount,
+} from '@/models/accounts'
+import {useFavorite} from '@/models/favorites'
+import {useGatewayUrl} from '@/models/gateway-settings'
+import {getAvatarUrl} from '@/utils/account-url'
+import {AccountRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
+import {HMAccount, createHmId, hmId} from '@shm/shared'
 import {
   ArrowUpRight,
   Container,
@@ -23,7 +27,7 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import { Trash } from '@tamagui/lucide-icons'
+import {Trash} from '@tamagui/lucide-icons'
 
 export function ContactItem({
   account,
@@ -32,7 +36,7 @@ export function ContactItem({
 }: {
   account: HMAccount
   onCopy: () => void
-  onDelete?: (input: { id: string; title?: string }) => void
+  onDelete?: (input: {id: string; title?: string}) => void
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -43,7 +47,7 @@ export function ContactItem({
   const gwUrl = useGatewayUrl()
   const accountId = account.id
   if (!accountId) throw new Error('Account ID is required')
-  const openRoute: AccountRoute = { key: 'account', accountId }
+  const openRoute: AccountRoute = {key: 'account', accountId}
   const menuItems: (MenuItemType | null)[] = [
     {
       key: 'spawn',
@@ -91,7 +95,7 @@ export function ContactItem({
             <XStack
               opacity={favorite.isFavorited ? 1 : 0}
               $group-item-hover={
-                favorite.isFavorited ? undefined : { opacity: 1 }
+                favorite.isFavorited ? undefined : {opacity: 1}
               }
             >
               <FavoriteButton url={accountUrl} />
@@ -105,7 +109,7 @@ export function ContactItem({
   )
 }
 
-function ErrorPage({ }: { error: any }) {
+function ErrorPage({}: {error: any}) {
   // todo, this!
   return (
     <MainWrapper>
@@ -163,7 +167,7 @@ export default function ContactsPage() {
       <MainWrapperNoScroll>
         <List
           items={[...trustedAccounts, ...untrustedAccounts]}
-          renderItem={({ item }) => {
+          renderItem={({item}) => {
             return (
               <ContactItem
                 key={item.id}

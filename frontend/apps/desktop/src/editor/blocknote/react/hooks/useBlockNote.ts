@@ -3,8 +3,8 @@ import {
   BlockNoteEditorOptions,
   defaultBlockSchema,
   DefaultBlockSchema,
-} from '@shm/desktop/src/editor/blocknote/core'
-import {HMBlockSchema} from '@shm/desktop/src/editor/schema'
+} from '@/editor/blocknote/core'
+import {HMBlockSchema} from '@/editor/schema'
 import {DependencyList, useMemo, useRef} from 'react'
 import {getDefaultReactSlashMenuItems} from '../SlashMenu/defaultReactSlashMenuItems'
 

@@ -1,30 +1,30 @@
-import type { Interceptor } from '@connectrpc/connect'
-import { createGrpcWebTransport } from '@connectrpc/connect-web'
-import { AppContextProvider, StyleProvider } from '@shm/desktop/src/app-context-provider'
-import { AppIPC } from '@shm/desktop/src/app-ipc'
-import { WindowUtils } from '@shm/desktop/src/models/window-utils'
-import { NavigationContainer } from '@shm/desktop/src/utils/navigation-container'
-import { useListenAppEvent } from '@shm/desktop/src/utils/window-events'
-import { API_HTTP_URL, createGRPCClient } from '@shm/shared'
-import type { StateStream } from '@shm/shared/src/utils/stream'
-import { Spinner, Toaster, YStack, toast, useStream } from '@shm/ui'
+import {AppContextProvider, StyleProvider} from '@/app-context-provider'
+import {AppIPC} from '@/app-ipc'
+import {WindowUtils} from '@/models/window-utils'
+import {NavigationContainer} from '@/utils/navigation-container'
+import {useListenAppEvent} from '@/utils/window-events'
+import type {Interceptor} from '@connectrpc/connect'
+import {createGrpcWebTransport} from '@connectrpc/connect-web'
+import {API_HTTP_URL, createGRPCClient} from '@shm/shared'
+import type {StateStream} from '@shm/shared/src/utils/stream'
+import {Spinner, Toaster, YStack, toast, useStream} from '@shm/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
-import { ipcLink } from 'electron-trpc/renderer'
-import React, { Suspense, useEffect, useMemo, useState } from 'react'
+import {ipcLink} from 'electron-trpc/renderer'
+import React, {Suspense, useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
-import { ErrorBoundary } from 'react-error-boundary'
+import {ErrorBoundary} from 'react-error-boundary'
 import superjson from 'superjson'
-import { AccountWizardDialog } from './app-account'
-import { AppErrorContent, RootAppError } from './components/app-error'
-import type { GoDaemonState } from './daemon'
-import { createIPC } from './ipc'
+import {AccountWizardDialog} from './app-account'
+import {AppErrorContent, RootAppError} from './components/app-error'
+import type {GoDaemonState} from './daemon'
+import {createIPC} from './ipc'
 import Main from './pages/main'
-import type { AppInfoType } from './preload'
-import { AppQueryClient, getQueryClient } from './query-client'
+import type {AppInfoType} from './preload'
+import {AppQueryClient, getQueryClient} from './query-client'
 import './root.css'
-import { client, trpc } from './trpc'
+import {client, trpc} from './trpc'
 
 const logger = {
   log: wrapLogger(console.log),
@@ -38,7 +38,7 @@ function wrapLogger(logFn: (...args: any[]) => void) {
         if (typeof item === 'string') return item
         try {
           return JSON.stringify(item, null, 2)
-        } catch { }
+        } catch {}
         return item // on main thread this will likely be rendered as [object Object]
       }),
     )
@@ -231,7 +231,7 @@ function MainApp({
           ipc.send?.('open-external-link', url)
         }}
         saveCidAsFile={async (cid: string, name: string) => {
-          ipc.send?.('save-file', { cid, name })
+          ipc.send?.('save-file', {cid, name})
         }}
         windowUtils={windowUtils}
         darkMode={darkMode}

@@ -1,4 +1,4 @@
-import {client} from '@shm/desktop/src/trpc'
+import {client} from '@/trpc'
 import {writeableStateStream} from '@shm/shared'
 import {ReactNode, useEffect, useMemo} from 'react'
 import {useIPC} from '../app-context'

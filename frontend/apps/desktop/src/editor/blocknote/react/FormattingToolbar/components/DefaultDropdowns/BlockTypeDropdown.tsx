@@ -1,12 +1,12 @@
-import { updateGroup } from '@shm/desktop/src/editor/block-utils'
-import { BlockNoteEditor, BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
-import { useMemo, useState } from 'react'
-import { IconType } from 'react-icons'
-import { RiH2, RiListOrdered, RiListUnordered, RiText } from 'react-icons/ri'
-import { ToolbarDropdown } from '../../../SharedComponents/Toolbar/components/ToolbarDropdown'
-import { ToolbarDropdownItemProps } from '../../../SharedComponents/Toolbar/components/ToolbarDropdownItem'
-import { useEditorContentChange } from '../../../hooks/useEditorContentChange'
-import { useEditorSelectionChange } from '../../../hooks/useEditorSelectionChange'
+import {updateGroup} from '@/editor/block-utils'
+import {BlockNoteEditor, BlockSchema} from '@/editor/blocknote/core'
+import {useMemo, useState} from 'react'
+import {IconType} from 'react-icons'
+import {RiH2, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
+import {ToolbarDropdown} from '../../../SharedComponents/Toolbar/components/ToolbarDropdown'
+import {ToolbarDropdownItemProps} from '../../../SharedComponents/Toolbar/components/ToolbarDropdownItem'
+import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
+import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 
 export type BlockTypeDropdownItem = {
   name: string
@@ -24,7 +24,7 @@ export const defaultBlockTypeDropdownItems: BlockTypeDropdownItem[] = [
   {
     name: 'Heading',
     type: 'heading',
-    props: { level: '2' },
+    props: {level: '2'},
     icon: RiH2,
   },
   // {

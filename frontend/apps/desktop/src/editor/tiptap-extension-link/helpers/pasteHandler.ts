@@ -1,7 +1,7 @@
-import {getLinkMenuItems} from '@shm/desktop/src/editor/blocknote/core'
-import {linkMenuPluginKey} from '@shm/desktop/src/editor/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
-import {fetchWebLink} from '@shm/desktop/src/models/web-links'
-import type {AppQueryClient} from '@shm/desktop/src/query-client'
+import {getLinkMenuItems} from '@/editor/blocknote/core'
+import {linkMenuPluginKey} from '@/editor/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
+import {fetchWebLink} from '@/models/web-links'
+import type {AppQueryClient} from '@/query-client'
 import {
   GRPCClient,
   StateStream,

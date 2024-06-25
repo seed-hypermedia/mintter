@@ -1,4 +1,4 @@
-import { AppIPC } from '@shm/desktop/src/app-ipc'
+import {AppIPC} from '@/app-ipc'
 import {
   Button,
   ChevronDown,
@@ -8,9 +8,9 @@ import {
   XGroup,
   XStack,
 } from '@shm/ui'
-import { useEffect, useRef, useState } from 'react'
+import {useEffect, useRef, useState} from 'react'
 
-export function FindInPage({ ipc }: { ipc: AppIPC }) {
+export function FindInPage({ipc}: {ipc: AppIPC}) {
   const size = '$2'
   const [query, setQuery] = useState('')
   const queryInput = useRef<HTMLInputElement>(null)
@@ -67,7 +67,7 @@ export function FindInPage({ ipc }: { ipc: AppIPC }) {
 
   useEffect(() => {
     if (query.length > 0) {
-      ipc.send('find_in_page_query', { query, findNext: true })
+      ipc.send('find_in_page_query', {query, findNext: true})
     }
   }, [query])
 

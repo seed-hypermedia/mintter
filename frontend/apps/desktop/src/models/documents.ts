@@ -1,19 +1,11 @@
+import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
+import {createHypermediaDocLinkPlugin} from '@/editor'
+import {useAccounts, useAllAccounts, useMyAccount} from '@/models/accounts'
+import {queryKeys} from '@/models/query-keys'
+import {useOpenUrl} from '@/open-url'
+import {slashMenuItems} from '@/slash-menu-items'
+import {trpc} from '@/trpc'
 import {Timestamp, toPlainMessage} from '@bufbuild/protobuf'
-import {
-  useAppContext,
-  useGRPCClient,
-  useQueryInvalidator,
-} from '@shm/desktop/src/app-context'
-import {createHypermediaDocLinkPlugin} from '@shm/desktop/src/editor'
-import {
-  useAccounts,
-  useAllAccounts,
-  useMyAccount,
-} from '@shm/desktop/src/models/accounts'
-import {queryKeys} from '@shm/desktop/src/models/query-keys'
-import {useOpenUrl} from '@shm/desktop/src/open-url'
-import {slashMenuItems} from '@shm/desktop/src/slash-menu-items'
-import {trpc} from '@shm/desktop/src/trpc'
 import {
   Document,
   DocumentChange,

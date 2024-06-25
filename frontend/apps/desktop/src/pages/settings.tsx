@@ -1,14 +1,11 @@
-import {useIPC} from '@shm/desktop/src/app-context'
-import {AvatarForm} from '@shm/desktop/src/components/avatar-form'
-import {useEditProfileDialog} from '@shm/desktop/src/components/edit-profile-dialog'
-import appError from '@shm/desktop/src/errors'
-import {useMyAccount} from '@shm/desktop/src/models/accounts'
-import {useAutoUpdatePreference} from '@shm/desktop/src/models/app-settings'
-import {useDaemonInfo} from '@shm/desktop/src/models/daemon'
-import {
-  useExperiments,
-  useWriteExperiments,
-} from '@shm/desktop/src/models/experiments'
+import {useIPC} from '@/app-context'
+import {AvatarForm} from '@/components/avatar-form'
+import {useEditProfileDialog} from '@/components/edit-profile-dialog'
+import appError from '@/errors'
+import {useMyAccount} from '@/models/accounts'
+import {useAutoUpdatePreference} from '@/models/app-settings'
+import {useDaemonInfo} from '@/models/daemon'
+import {useExperiments, useWriteExperiments} from '@/models/experiments'
 import {
   useGatewayUrl,
   usePushOnCopy,
@@ -16,16 +13,16 @@ import {
   useSetGatewayUrl,
   useSetPushOnCopy,
   useSetPushOnPublish,
-} from '@shm/desktop/src/models/gateway-settings'
-import {usePeerInfo} from '@shm/desktop/src/models/networking'
+} from '@/models/gateway-settings'
+import {usePeerInfo} from '@/models/networking'
 import {
   useExportWallet,
   useInvoicesBywallet,
   useWallets,
-} from '@shm/desktop/src/models/payments'
-import {useWalletOptIn} from '@shm/desktop/src/models/wallet'
-import {trpc} from '@shm/desktop/src/trpc'
-import {getAvatarUrl} from '@shm/desktop/src/utils/account-url'
+} from '@/models/payments'
+import {useWalletOptIn} from '@/models/wallet'
+import {trpc} from '@/trpc'
+import {getAvatarUrl} from '@/utils/account-url'
 import {LightningWallet, Profile, State, VERSION} from '@shm/shared'
 import {
   ArrowDownRight,

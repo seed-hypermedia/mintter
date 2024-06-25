@@ -1,22 +1,22 @@
-import { useDraftList } from '@shm/desktop/src/models/documents'
-import { Delete, List, Spinner } from '@shm/ui'
+import {useDraftList} from '@/models/documents'
+import {Delete, List, Spinner} from '@shm/ui'
 
-import { Document, PublicationVariant, unpackHmId } from '@shm/shared'
-import { Trash } from '@tamagui/lucide-icons'
-import React, { ReactNode } from 'react'
-import { useAppContext } from '../app-context'
-import { useCopyGatewayReference } from '../components/copy-gateway-reference'
-import { useDeleteDraftDialog } from '../components/delete-draft-dialog'
-import { ListItem, copyLinkMenuItem } from '../components/list-item'
-import { PublicationListItem } from '../components/publication-list-item'
+import {Document, PublicationVariant, unpackHmId} from '@shm/shared'
+import {Trash} from '@tamagui/lucide-icons'
+import React, {ReactNode} from 'react'
+import {useAppContext} from '../app-context'
+import {useCopyGatewayReference} from '../components/copy-gateway-reference'
+import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
+import {ListItem, copyLinkMenuItem} from '../components/list-item'
+import {PublicationListItem} from '../components/publication-list-item'
 import {
   queryDraft,
   queryPublication,
   usePublicationFullList,
 } from '../models/documents'
-import { DraftRoute } from '../utils/routes'
-import { useClickNavigate } from '../utils/useNavigate'
-import { useDeleteDialog } from './delete-dialog'
+import {DraftRoute} from '../utils/routes'
+import {useClickNavigate} from '../utils/useNavigate'
+import {useDeleteDialog} from './delete-dialog'
 
 export function PublicationsList({
   header,
@@ -25,9 +25,9 @@ export function PublicationsList({
   header: ReactNode
   trustedOnly: boolean
 }) {
-  const publications = usePublicationFullList({ trustedOnly })
+  const publications = usePublicationFullList({trustedOnly})
   const drafts = useDraftList()
-  const { queryClient, grpcClient } = useAppContext()
+  const {queryClient, grpcClient} = useAppContext()
   const deleteDialog = useDeleteDialog()
 
   const items = publications.data
@@ -43,8 +43,8 @@ export function PublicationsList({
         onEndReached={() => {
           publications.fetchNextPage()
         }}
-        renderItem={({ item }) => {
-          const { publication, author, editors } = item
+        renderItem={({item}) => {
+          const {publication, author, editors} = item
           if (!publication.document) return null
           const docId = publication.document.id
           const id = unpackHmId(docId)
@@ -117,7 +117,7 @@ const DraftListItem = React.memo(function DraftListItem({
   let title = draft.title || 'Untitled Document'
   const deleteDialog = useDeleteDraftDialog()
   const navigate = useClickNavigate()
-  const { queryClient, grpcClient } = useAppContext()
+  const {queryClient, grpcClient} = useAppContext()
   if (!draft.id) throw new Error('DraftListItem requires an id')
   const draftRoute: DraftRoute = {
     key: 'draft',
@@ -132,7 +132,7 @@ const DraftListItem = React.memo(function DraftListItem({
         title={title}
         onPointerEnter={() => {
           queryClient.client.prefetchQuery(
-            queryDraft({ grpcClient, documentId: draft.id }),
+            queryDraft({grpcClient, documentId: draft.id}),
           )
         }}
         onPress={goToItem}
@@ -142,7 +142,7 @@ const DraftListItem = React.memo(function DraftListItem({
             key: 'delete',
             icon: Trash,
             onPress: () => {
-              deleteDialog.open({ draftId: draft.id })
+              deleteDialog.open({draftId: draft.id})
             },
           },
         ]}

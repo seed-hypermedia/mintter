@@ -1,4 +1,7 @@
-import { CloseButton, WindowsLinuxWindowControls } from '@shm/desktop/src/components/window-controls'
+import {
+  CloseButton,
+  WindowsLinuxWindowControls,
+} from '@/components/window-controls'
 import {
   TitleText,
   TitlebarRow,
@@ -6,20 +9,20 @@ import {
   TitlebarWrapper,
   XStack,
 } from '@shm/ui'
-import { TitleBarProps } from './titlebar'
+import {TitleBarProps} from './titlebar'
 import {
   NavMenuButton,
   NavigationButtons,
   PageActionButtons,
 } from './titlebar-common'
-import { Title } from './titlebar-title'
+import {Title} from './titlebar-title'
 import './titlebar-windows-linux.css'
-import { SystemMenu } from './windows-linux-titlebar'
+import {SystemMenu} from './windows-linux-titlebar'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   if (props.clean) {
     return (
-      <TitlebarWrapper style={{ flex: 'none' }} className="window-drag">
+      <TitlebarWrapper style={{flex: 'none'}} className="window-drag">
         <TitlebarRow>
           <TitlebarSection f={1} paddingHorizontal="$4">
             <TitleText>{props.cleanTitle}</TitleText>
@@ -58,7 +61,7 @@ export function WindowsLinuxTitleBar({
   right?: React.ReactNode
 }) {
   return (
-    <TitlebarWrapper className="window-drag" style={{ flex: 'none' }}>
+    <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
       <TitlebarRow minHeight={28} backgroundColor="$color3">
         <TitlebarSection>
           <SystemMenu />

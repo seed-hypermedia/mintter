@@ -1,5 +1,5 @@
-import { AppPlatform, useAppContext } from '@shm/desktop/src/app-context'
-import { lazy } from 'react'
+import {AppPlatform, useAppContext} from '@/app-context'
+import {lazy} from 'react'
 
 var ErrorBarMacos = lazy(() => import('./error-bar-macos'))
 var ErrorBarWindowsLinux = lazy(() => import('./error-bar-windows-linux'))
@@ -9,7 +9,7 @@ export type ErrorBarProps = {
 }
 
 export function ErrorBar(props: ErrorBarProps) {
-  const { platform } = useAppContext()
+  const {platform} = useAppContext()
   let Component = getErrorBar(platform)
   return <Component {...props} />
 }

@@ -1,10 +1,6 @@
-import {resolveHmIdToAppRoute} from '@shm/desktop/src/utils/navigation'
-import {
-  NavRoute,
-  defaultRoute,
-  navRouteSchema,
-} from '@shm/desktop/src/utils/routes'
-import type {AppWindowEvent} from '@shm/desktop/src/utils/window-events'
+import {resolveHmIdToAppRoute} from '@/utils/navigation'
+import {NavRoute, defaultRoute, navRouteSchema} from '@/utils/routes'
+import type {AppWindowEvent} from '@/utils/window-events'
 import {API_GRPC_URL, API_HTTP_URL} from '@shm/shared/src/constants'
 
 import {

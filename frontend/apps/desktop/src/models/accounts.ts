@@ -1,8 +1,8 @@
+import {useGRPCClient, useQueryInvalidator} from '@/app-context'
+import appError from '@/errors'
+import {useDaemonInfo} from '@/models/daemon'
+import {queryKeys} from '@/models/query-keys'
 import {ConnectError} from '@connectrpc/connect'
-import {useGRPCClient, useQueryInvalidator} from '@shm/desktop/src/app-context'
-import appError from '@shm/desktop/src/errors'
-import {useDaemonInfo} from '@shm/desktop/src/models/daemon'
-import {queryKeys} from '@shm/desktop/src/models/query-keys'
 import {GRPCClient, HMAccount, Profile, hmAccount} from '@shm/shared'
 import {
   UseMutationOptions,

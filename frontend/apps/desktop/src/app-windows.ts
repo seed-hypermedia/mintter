@@ -1,8 +1,8 @@
-import appError from '@shm/desktop/src/errors'
-import type {NavState} from '@shm/desktop/src/utils/navigation'
-import {NavRoute, defaultRoute} from '@shm/desktop/src/utils/routes'
-import type {AppWindowEvent} from '@shm/desktop/src/utils/window-events'
-import {getRouteWindowType} from '@shm/desktop/src/utils/window-types'
+import appError from '@/errors'
+import type {NavState} from '@/utils/navigation'
+import {NavRoute, defaultRoute} from '@/utils/routes'
+import type {AppWindowEvent} from '@/utils/window-events'
+import {getRouteWindowType} from '@/utils/window-types'
 import {
   BrowserView,
   BrowserWindow,

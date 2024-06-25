@@ -1,15 +1,15 @@
-import { BlockSchema } from '@shm/desktop/src/editor/blocknote/core'
+import {BlockSchema} from '@/editor/blocknote/core'
 
-import { Toolbar } from '../../SharedComponents/Toolbar/components/Toolbar'
-import { ToggledStyleButton } from './DefaultButtons/ToggledStyleButton'
+import {Toolbar} from '../../SharedComponents/Toolbar/components/Toolbar'
+import {ToggledStyleButton} from './DefaultButtons/ToggledStyleButton'
 import {
   BlockTypeDropdown,
   BlockTypeDropdownItem,
 } from './DefaultDropdowns/BlockTypeDropdown'
-import { FormattingToolbarProps } from './FormattingToolbarPositioner'
+import {FormattingToolbarProps} from './FormattingToolbarPositioner'
 // import {TextAlignButton} from './DefaultButtons/TextAlignButton'
 // import {ColorStyleButton} from './DefaultButtons/ColorStyleButton'
-import { CreateLinkButton } from './DefaultButtons/CreateLinkButton'
+import {CreateLinkButton} from './DefaultButtons/CreateLinkButton'
 import {
   NestBlockButton,
   UnnestBlockButton,

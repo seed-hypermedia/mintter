@@ -1,24 +1,21 @@
-import { AccessoryContainer } from '@shm/desktop/src/components/accessory-sidebar'
-import { AccountLinkAvatar } from '@shm/desktop/src/components/account-link-avatar'
-import {
-  MenuItemType,
-  OptionsDropdown,
-} from '@shm/desktop/src/components/options-dropdown'
-import { useAccount } from '@shm/desktop/src/models/accounts'
-import { TimelineChange, useDocHistory } from '@shm/desktop/src/models/changes'
-import { useGatewayUrl } from '@shm/desktop/src/models/gateway-settings'
-import { useOpenUrl } from '@shm/desktop/src/open-url'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { NavRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import {AccessoryContainer} from '@/components/accessory-sidebar'
+import {AccountLinkAvatar} from '@/components/account-link-avatar'
+import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
+import {useAccount} from '@/models/accounts'
+import {TimelineChange, useDocHistory} from '@/models/changes'
+import {useGatewayUrl} from '@/models/gateway-settings'
+import {useOpenUrl} from '@/open-url'
+import {useNavRoute} from '@/utils/navigation'
+import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   Change,
   createHmId,
   createPublicWebHmUrl,
   formattedDateLong,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
-import { UnpackedHypermediaId } from '@shm/shared/src/utils/entity-id-url'
+import {UnpackedHypermediaId} from '@shm/shared/src/utils/entity-id-url'
 import {
   ButtonText,
   Copy,
@@ -26,9 +23,9 @@ import {
   Theme,
   XStack,
   YStack,
-  copyUrlToClipboardWithFeedback
+  copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
-import { ArrowUpRight } from '@tamagui/lucide-icons'
+import {ArrowUpRight} from '@tamagui/lucide-icons'
 
 export function EntityVersionsAccessory({
   id,
@@ -87,7 +84,7 @@ function ChangeItem({
   const navigate = useNavigate()
   const openAccount = (e) => {
     e.stopPropagation()
-    navigate({ key: 'account', accountId: change.author })
+    navigate({key: 'account', accountId: change.author})
   }
   const navRoute = useNavRoute()
   const isActive = new Set(activeVersion?.split('.') || []).has(change.id)
@@ -98,8 +95,7 @@ function ChangeItem({
       {change.createTime ? formattedDateLong(change.createTime) : null}
     </SizableText>
   )
-  const variants =
-    navRoute.key === 'document' ? navRoute.variants : undefined
+  const variants = navRoute.key === 'document' ? navRoute.variants : undefined
   const topRow = shouldDisplayAuthorName ? (
     <XStack paddingTop="$2" gap="$2">
       <AccountLinkAvatar accountId={author?.data?.id} size={24} />
@@ -122,7 +118,7 @@ function ChangeItem({
       key: 'document',
       documentId: entityId,
       versionId: change.id,
-      accessory: { key: 'versions' },
+      accessory: {key: 'versions'},
     }
   }
   const parsedEntityId = unpackHmId(entityId)

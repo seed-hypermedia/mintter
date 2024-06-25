@@ -1,4 +1,4 @@
-import {NavRoute, getRecentsRouteEntityUrl} from '@shm/desktop/src/utils/routes'
+import {NavRoute, getRecentsRouteEntityUrl} from '@/utils/routes'
 import {getPublicationVariant} from '@shm/shared'
 import {z} from 'zod'
 import {grpcClient} from './app-grpc'

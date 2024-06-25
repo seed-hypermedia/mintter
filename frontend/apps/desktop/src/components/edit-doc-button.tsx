@@ -1,20 +1,17 @@
-import { useGRPCClient } from '@shm/desktop/src/app-context'
-import { useDraftList } from '@shm/desktop/src/models/documents'
-import { usePublicationVariant } from '@shm/desktop/src/models/publication'
-import { NavMode } from '@shm/desktop/src/utils/navigation'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { HMBlock, PublicationVariant } from '@shm/shared'
-import { Button, Tooltip, toast } from '@shm/ui'
-import { Pencil } from '@tamagui/lucide-icons'
-import { useQueryInvalidator } from '../app-context'
+import {useGRPCClient} from '@/app-context'
+import {useDraftList} from '@/models/documents'
+import {usePublicationVariant} from '@/models/publication'
+import {NavMode} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
+import {HMBlock, PublicationVariant} from '@shm/shared'
+import {Button, Tooltip, toast} from '@shm/ui'
+import {Pencil} from '@tamagui/lucide-icons'
+import {useQueryInvalidator} from '../app-context'
 import appError from '../errors'
-import { useMyAccount } from '../models/accounts'
-import { queryKeys } from '../models/query-keys'
-import { generateBlockId } from '../utils/media-drag'
-import {
-  AccountRoute,
-  DocumentRoute,
-} from '../utils/routes'
+import {useMyAccount} from '../models/accounts'
+import {queryKeys} from '../models/query-keys'
+import {generateBlockId} from '../utils/media-drag'
+import {AccountRoute, DocumentRoute} from '../utils/routes'
 
 export function useEditDraft(
   docId: string | undefined,
@@ -42,7 +39,6 @@ export function useEditDraft(
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
-
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
@@ -114,10 +110,10 @@ export function useEditDraft(
         return
       }
 
-      appError(`Draft Error: ${error?.message}`, { error })
+      appError(`Draft Error: ${error?.message}`, {error})
     }
   }
-  return { hasExistingDraft, handleEdit }
+  return {hasExistingDraft, handleEdit}
 }
 
 export function EditDocButton({
@@ -142,7 +138,7 @@ export function EditDocButton({
     enabled: !!docId,
   })
   const pubVersion = pub.data?.publication?.version
-  const { hasExistingDraft, handleEdit } = useEditDraft(docId, {
+  const {hasExistingDraft, handleEdit} = useEditDraft(docId, {
     version: baseVersion || pubVersion,
     variants,
     navMode,

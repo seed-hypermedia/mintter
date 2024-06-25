@@ -1,11 +1,11 @@
-import { AccessoryContainer } from '@shm/desktop/src/components/accessory-sidebar'
-import { AccountLinkAvatar } from '@shm/desktop/src/components/account-link-avatar'
-import { useAccount } from '@shm/desktop/src/models/accounts'
-import { useComment } from '@shm/desktop/src/models/comments'
-import { useEntityMentions } from '@shm/desktop/src/models/content-graph'
-import { useDocTextContent, usePublication } from '@shm/desktop/src/models/documents'
-import { DocumentRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import {AccessoryContainer} from '@/components/accessory-sidebar'
+import {AccountLinkAvatar} from '@/components/account-link-avatar'
+import {useAccount} from '@/models/accounts'
+import {useComment} from '@/models/comments'
+import {useEntityMentions} from '@/models/content-graph'
+import {useDocTextContent, usePublication} from '@/models/documents'
+import {DocumentRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   BlockRange,
   BlocksContent,
@@ -16,7 +16,7 @@ import {
   serializeBlockRange,
   unpackHmId,
 } from '@shm/shared'
-import { Mention } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import {Mention} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {
   ButtonText,
   PanelCard,
@@ -25,10 +25,10 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
-import { useMemo } from 'react'
-import { AppPublicationContentProvider } from '../pages/publication-content-provider'
+import {useMemo} from 'react'
+import {AppPublicationContentProvider} from '../pages/publication-content-provider'
 
-function CitationItem({ mention }: { mention: Mention }) {
+function CitationItem({mention}: {mention: Mention}) {
   if (!mention.source) throw 'Invalid citation'
 
   if (mention.source.startsWith(`${HYPERMEDIA_SCHEME}://d`)) {
@@ -42,7 +42,7 @@ function CitationItem({ mention }: { mention: Mention }) {
   return null
 }
 
-function PublicationCitationItem({ mention }: { mention: Mention }) {
+function PublicationCitationItem({mention}: {mention: Mention}) {
   const spawn = useNavigate('spawn')
   const unpackedSource = unpackHmId(mention.source)
   const pub = usePublication(
@@ -61,7 +61,7 @@ function PublicationCitationItem({ mention }: { mention: Mention }) {
   //     .filter(([changeId]) => versionChanges.has(changeId))
   //     .map(([changeId, change]) => change.author),
   // )
-  let { data: account } = useAccount(pub.data?.document?.author)
+  let {data: account} = useAccount(pub.data?.document?.author)
 
   const docTextContent = useDocTextContent(pub.data)
   const destRoute: DocumentRoute = {
@@ -89,10 +89,10 @@ function PublicationCitationItem({ mention }: { mention: Mention }) {
   )
 }
 
-function CommentCitationItem({ mention }: { mention: Mention }) {
+function CommentCitationItem({mention}: {mention: Mention}) {
   const spawn = useNavigate('spawn')
   const unpackedSource = unpackHmId(mention.source)
-  const { data: comment } = useComment(unpackedSource?.id, {
+  const {data: comment} = useComment(unpackedSource?.id, {
     enabled: !!mention.source && !!unpackedSource,
   })
 
@@ -113,7 +113,7 @@ function CommentCitationItem({ mention }: { mention: Mention }) {
     },
   )
 
-  let { data: account } = useAccount(comment?.author)
+  let {data: account} = useAccount(comment?.author)
 
   // const docTextContent = useDocTextContent(pub.data)
   // const destRoute: DocumentRoute = {
@@ -226,7 +226,7 @@ function CommentCitationItem({ mention }: { mention: Mention }) {
   )
 }
 
-export function DocCitationsAccessory({ docId }: { docId?: string }) {
+export function DocCitationsAccessory({docId}: {docId?: string}) {
   const mentions = useEntityMentions(docId)
   if (!docId) return null
   const count = mentions.data?.mentions?.length || 0
@@ -267,7 +267,7 @@ export function DocCitationsAccessory({ docId }: { docId?: string }) {
   )
 }
 
-export function EntityCitationsAccessory({ entityId }: { entityId?: string }) {
+export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
   const mentions = useEntityMentions(entityId)
   if (!entityId) return null
   const count = mentions?.data?.mentions?.length || 0

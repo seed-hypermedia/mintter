@@ -1,8 +1,8 @@
-import { useDeleteDraftDialog } from '@shm/desktop/src/components/delete-draft-dialog'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { Button, Tooltip } from '@shm/ui'
-import { Trash } from '@tamagui/lucide-icons'
-import { useNavigationDispatch } from '../utils/navigation'
+import {useDeleteDraftDialog} from '@/components/delete-draft-dialog'
+import {useNavRoute} from '@/utils/navigation'
+import {Button, Tooltip} from '@shm/ui'
+import {Trash} from '@tamagui/lucide-icons'
+import {useNavigationDispatch} from '../utils/navigation'
 
 export default function DiscardDraftButton() {
   const route = useNavRoute()
@@ -21,7 +21,7 @@ export default function DiscardDraftButton() {
             deleteDialog.open({
               draftId,
               onSuccess: () => {
-                dispatch({ type: 'closeBack' })
+                dispatch({type: 'closeBack'})
               },
             })
           }

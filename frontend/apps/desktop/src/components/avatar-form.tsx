@@ -1,8 +1,8 @@
-import { Avatar } from '@shm/desktop/src/components/avatar'
-import { useMyAccount } from '@shm/desktop/src/models/accounts'
-import { API_FILE_UPLOAD_URL } from '@shm/shared'
-import { Stack, Tooltip } from '@shm/ui'
-import { ChangeEvent } from 'react'
+import {Avatar} from '@/components/avatar'
+import {useMyAccount} from '@/models/accounts'
+import {API_FILE_UPLOAD_URL} from '@shm/shared'
+import {Stack, Tooltip} from '@shm/ui'
+import {ChangeEvent} from 'react'
 import appError from '../errors'
 
 export function AvatarForm({
@@ -20,9 +20,9 @@ export function AvatarForm({
     const file = fileList?.[0]
     if (!file) return
     handleUpload(file)
-      .then(() => { })
+      .then(() => {})
       .catch((error) => {
-        appError(`Failed to upload avatar: ${e.message}`, { error })
+        appError(`Failed to upload avatar: ${e.message}`, {error})
       })
       .finally(() => {
         event.target.value = ''
@@ -54,7 +54,7 @@ export function AvatarForm({
   if (disabled) return avatarImage
   return (
     <Tooltip content="Click or Drag to Set Avatar Image">
-      <Stack hoverStyle={{ opacity: 0.7 }}>
+      <Stack hoverStyle={{opacity: 0.7}}>
         <input
           type="file"
           onChange={handleFileChange}

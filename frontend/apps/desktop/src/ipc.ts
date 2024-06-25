@@ -1,6 +1,6 @@
-import {AppIPC} from '@shm/desktop/src/app-ipc'
+import {AppIPC} from '@/app-ipc'
 
-import {decodeRouteFromPath} from '@shm/desktop/src/utils/route-encoding'
+import {decodeRouteFromPath} from '@/utils/route-encoding'
 import {client} from './trpc'
 
 export function createIPC(): AppIPC {

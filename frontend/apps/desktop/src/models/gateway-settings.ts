@@ -1,4 +1,4 @@
-import {trpc} from '@shm/desktop/src/trpc'
+import {trpc} from '@/trpc'
 import {
   HYPERMEDIA_PUBLIC_WEB_GATEWAY,
   StateStream,

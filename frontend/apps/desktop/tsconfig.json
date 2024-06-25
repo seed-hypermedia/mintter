@@ -26,6 +26,7 @@
       }
     ],
     "paths": {
+      "@/*": ["./src/*"],
       "@shm/ui": ["frontend/packages/ui/src/index.ts"]
     }
   },

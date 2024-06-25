@@ -3,13 +3,13 @@ import {
   CommentPageTitlebarWithDocId,
   CommentPresentation,
   CommentThread,
-} from '@shm/desktop/src/components/comments'
-import { MainWrapperStandalone } from '@shm/desktop/src/components/main-wrapper'
-import { useComment, usePublicationCommentGroups } from '@shm/desktop/src/models/comments'
-import { trpc } from '@shm/desktop/src/trpc'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { HMComment, createHmId, unpackHmId } from '@shm/shared'
+} from '@/components/comments'
+import {MainWrapperStandalone} from '@/components/main-wrapper'
+import {useComment, usePublicationCommentGroups} from '@/models/comments'
+import {trpc} from '@/trpc'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
+import {HMComment, createHmId, unpackHmId} from '@shm/shared'
 import {
   Button,
   ChevronUp,
@@ -19,7 +19,7 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
-import { Reply } from '@tamagui/lucide-icons'
+import {Reply} from '@tamagui/lucide-icons'
 
 export default function CommentPage() {
   const route = useNavRoute()
@@ -79,7 +79,7 @@ export default function CommentPage() {
           <XStack jc="center" marginHorizontal="$2">
             <Button
               onPress={() => {
-                replace({ ...route, showThread: true })
+                replace({...route, showThread: true})
               }}
               icon={ChevronUp}
               chromeless

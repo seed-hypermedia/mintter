@@ -3,7 +3,7 @@ import {HMBlockSchema} from '../../schema'
 
 import {BlockNoteEditor} from './BlockNoteEditor'
 
-import {LocalMediaPastePlugin} from '@shm/desktop/src/editor/handle-local-media-paste-plugin'
+import {LocalMediaPastePlugin} from '@/editor/handle-local-media-paste-plugin'
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
 import Collaboration from '@tiptap/extension-collaboration'

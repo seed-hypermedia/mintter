@@ -4,8 +4,8 @@ import {
   defaultBlockSchema,
   HMBlockSchema,
   useBlockNote,
-} from '@shm/desktop/src/editor'
-import { YStack } from '@shm/ui'
+} from '@/editor'
+import {YStack} from '@shm/ui'
 
 export default function BlockNoteDemo() {
   // Creates a new editor instance.

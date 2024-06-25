@@ -1,16 +1,11 @@
-import { useSizeObserver } from '@shm/desktop/src/components/app-embeds'
-import { useDraftTitle } from '@shm/desktop/src/models/documents'
-import { useEntitiesContent, useEntityRoutes } from '@shm/desktop/src/models/entities'
-import { usePublicationVariant } from '@shm/desktop/src/models/publication'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import {
-  AccountRoute,
-  DocumentRoute,
-  DraftRoute,
-  NavRoute
-} from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { getDocumentTitle } from '@shm/shared'
+import {useSizeObserver} from '@/components/app-embeds'
+import {useDraftTitle} from '@/models/documents'
+import {useEntitiesContent, useEntityRoutes} from '@/models/entities'
+import {usePublicationVariant} from '@/models/publication'
+import {useNavRoute} from '@/utils/navigation'
+import {AccountRoute, DocumentRoute, DraftRoute, NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
+import {getDocumentTitle} from '@shm/shared'
 import {
   Button,
   ButtonText,
@@ -23,15 +18,15 @@ import {
   TitleText,
   XStack,
   YStack,
-  styled
+  styled,
 } from '@shm/ui'
-import { Sparkles, Star } from '@tamagui/lucide-icons'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { AiOutlineEllipsis } from 'react-icons/ai'
-import { useFixedDraftTitle } from '../pages/draft'
-import { getItemDetails } from './sidebar-neo'
+import {Sparkles, Star} from '@tamagui/lucide-icons'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {AiOutlineEllipsis} from 'react-icons/ai'
+import {useFixedDraftTitle} from '../pages/draft'
+import {getItemDetails} from './sidebar-neo'
 
-export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
+export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
 
   useEffect(() => {
@@ -71,9 +66,7 @@ export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
     return (
       <>
         <Sparkles size={12} />
-        <TitleText size={size}>
-          Explore
-        </TitleText>
+        <TitleText size={size}>Explore</TitleText>
       </>
     )
   }
@@ -86,10 +79,7 @@ export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
     )
   }
 
-  if (
-    route.key === 'account' ||
-    route.key === 'document'
-  ) {
+  if (route.key === 'account' || route.key === 'document') {
     return <BreadcrumbTitle route={route} />
   }
   if (route.key === 'draft') {
@@ -110,11 +100,7 @@ type CrumbDetails = {
   crumbKey: string
 }
 
-function BreadcrumbTitle({
-  route,
-}: {
-  route: DocumentRoute | AccountRoute
-}) {
+function BreadcrumbTitle({route}: {route: DocumentRoute | AccountRoute}) {
   const entityRoutes = useEntityRoutes(route)
   const entityContents = useEntitiesContent(entityRoutes)
   const [collapsedCount, setCollapsedCount] = useState(0)
@@ -189,9 +175,9 @@ function BreadcrumbTitle({
     let newCollapseCount = 0
     while (
       usableWidth +
-      fixedItemWidth +
-      (newCollapseCount ? spacerWidth + ellipsisWidth : 0) >
-      containerWidth &&
+        fixedItemWidth +
+        (newCollapseCount ? spacerWidth + ellipsisWidth : 0) >
+        containerWidth &&
       newCollapseCount < maxCollapseCount
     ) {
       usableWidth -= crumbWidths[1 + newCollapseCount] + spacerWidth
@@ -200,7 +186,7 @@ function BreadcrumbTitle({
     setCollapsedCount(newCollapseCount)
   }
 
-  const containerObserverRef = useSizeObserver(({ width }) => {
+  const containerObserverRef = useSizeObserver(({width}) => {
     widthInfo.current.container = width
     updateWidths()
   })
@@ -212,7 +198,7 @@ function BreadcrumbTitle({
     <BreadcrumbItem
       details={firstInactiveDetail}
       key={firstInactiveDetail.crumbKey}
-      onSize={({ width }: DOMRect) => {
+      onSize={({width}: DOMRect) => {
         if (width) {
           widthInfo.current[firstInactiveDetail.crumbKey] = width
           updateWidths()
@@ -229,7 +215,7 @@ function BreadcrumbTitle({
         <BreadcrumbItem
           key={details.crumbKey}
           details={details}
-          onSize={({ width }: DOMRect) => {
+          onSize={({width}: DOMRect) => {
             if (width) {
               widthInfo.current[details.crumbKey] = width
               updateWidths()
@@ -253,7 +239,7 @@ function BreadcrumbTitle({
       details={activeItem}
       key={activeItem.crumbKey}
       isActive
-      onSize={({ width }: DOMRect) => {
+      onSize={({width}: DOMRect) => {
         if (width) {
           widthInfo.current[activeItem.crumbKey] = width
           updateWidths()
@@ -383,7 +369,7 @@ export const TitleTextButton = styled(ButtonText, {
   },
 })
 
-export function Title({ size }: { size?: FontSizeTokens }) {
+export function Title({size}: {size?: FontSizeTokens}) {
   return (
     <XStack
       gap="$2"

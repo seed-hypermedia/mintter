@@ -1,8 +1,8 @@
-import { Box, Menu } from '@mantine/core'
-import { BlockNoteEditor, HMBlockSchema } from '@shm/desktop/src/editor'
-import { updateGroup } from '@shm/desktop/src/editor/block-utils'
-import { Forward, RefreshCcw, XStack } from '@shm/ui'
-import { useCallback, useRef, useState } from 'react'
+import {BlockNoteEditor, HMBlockSchema} from '@/editor'
+import {updateGroup} from '@/editor/block-utils'
+import {Box, Menu} from '@mantine/core'
+import {Forward, RefreshCcw, XStack} from '@shm/ui'
+import {useCallback, useRef, useState} from 'react'
 import {
   RiHeading,
   RiListOrdered,
@@ -10,10 +10,10 @@ import {
   RiMenuLine,
   RiText,
 } from 'react-icons/ri'
-import { CopyLinkToBlockButton } from './DefaultButtons/CopyLinkToBlockButton'
-import { RemoveBlockButton } from './DefaultButtons/RemoveBlockButton'
-import { DragHandleMenu, DragHandleMenuProps } from './DragHandleMenu'
-import { DragHandleMenuItem } from './DragHandleMenuItem'
+import {CopyLinkToBlockButton} from './DefaultButtons/CopyLinkToBlockButton'
+import {RemoveBlockButton} from './DefaultButtons/RemoveBlockButton'
+import {DragHandleMenu, DragHandleMenuProps} from './DragHandleMenu'
+import {DragHandleMenuItem} from './DragHandleMenuItem'
 
 export const DefaultDragHandleMenu = <BSchema extends HMBlockSchema>(
   props: DragHandleMenuProps<BSchema>,
@@ -59,8 +59,8 @@ function TurnIntoMenu(props: DragHandleMenuProps<HMBlockSchema>) {
         <Menu.Target>
           <XStack gap="$2">
             <RefreshCcw size={14} />
-            <div style={{ flex: 1 }}>Turn into</div>
-            <Box style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{flex: 1}}>Turn into</div>
+            <Box style={{display: 'flex', alignItems: 'center'}}>
               <Forward size={12} />
             </Box>
           </XStack>
@@ -68,9 +68,9 @@ function TurnIntoMenu(props: DragHandleMenuProps<HMBlockSchema>) {
         <Menu.Dropdown
           onMouseLeave={startMenuCloseTimer}
           onMouseOver={stopMenuCloseTimer}
-          style={{ marginLeft: '5px' }}
+          style={{marginLeft: '5px'}}
         >
-          {turnIntoItems.map(({ Icon, label, onClick }) => (
+          {turnIntoItems.map(({Icon, label, onClick}) => (
             <Menu.Item
               key={label}
               onClick={() => {

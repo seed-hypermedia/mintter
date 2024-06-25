@@ -1,7 +1,7 @@
 // this menu is visible on macOS only
 // the keyboard shortcuts apply to every platform
 
-import {defaultRoute} from '@shm/desktop/src/utils/routes'
+import {defaultRoute} from '@/utils/routes'
 import {Menu, MenuItem} from 'electron'
 import {dispatchFocusedWindowAppEvent, openRoute, trpc} from './app-api'
 

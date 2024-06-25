@@ -2,12 +2,12 @@ import {
   BlockNoteEditor,
   BlockSchema,
   DefaultBlockSchema,
-} from '@shm/desktop/src/editor/blocknote/core'
+} from '@/editor/blocknote/core'
 import Tippy from '@tippyjs/react'
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
-import { sticky } from 'tippy.js'
+import {FC, useEffect, useMemo, useRef, useState} from 'react'
+import {sticky} from 'tippy.js'
 
-import { DefaultFormattingToolbar } from './DefaultFormattingToolbar'
+import {DefaultFormattingToolbar} from './DefaultFormattingToolbar'
 
 export type FormattingToolbarProps<
   BSchema extends BlockSchema = DefaultBlockSchema,

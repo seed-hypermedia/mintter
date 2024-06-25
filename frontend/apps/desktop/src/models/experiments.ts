@@ -1,4 +1,4 @@
-import {trpc} from '@shm/desktop/src/trpc'
+import {trpc} from '@/trpc'
 import {toast} from '@shm/ui'
 import {useQueryInvalidator} from '../app-context'
 

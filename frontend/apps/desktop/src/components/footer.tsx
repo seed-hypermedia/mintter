@@ -1,11 +1,11 @@
-import { useConnectionSummary } from '@shm/desktop/src/models/contacts'
-import { useNavRoute } from '@shm/desktop/src/utils/navigation'
-import { VERSION } from '@shm/shared'
-import { Button, ButtonProps, FooterWrapper, SizableText, XStack } from '@shm/ui'
-import { Cable } from '@tamagui/lucide-icons'
-import { ReactNode } from 'react'
-import { OnlineIndicator } from './indicator'
-import { useNetworkDialog } from './network-dialog'
+import {useConnectionSummary} from '@/models/contacts'
+import {useNavRoute} from '@/utils/navigation'
+import {VERSION} from '@shm/shared'
+import {Button, ButtonProps, FooterWrapper, SizableText, XStack} from '@shm/ui'
+import {Cable} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
+import {OnlineIndicator} from './indicator'
+import {useNetworkDialog} from './network-dialog'
 
 export function FooterButton({
   active,
@@ -58,9 +58,9 @@ function FooterNetworkingButton() {
   )
 }
 
-export default function Footer({ children }: { children?: ReactNode }) {
+export default function Footer({children}: {children?: ReactNode}) {
   return (
-    <FooterWrapper style={{ flex: 'none' }}>
+    <FooterWrapper style={{flex: 'none'}}>
       <FooterNetworkingButton />
       <XStack alignItems="center" paddingHorizontal="$2">
         <SizableText

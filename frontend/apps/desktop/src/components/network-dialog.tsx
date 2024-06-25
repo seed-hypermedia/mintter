@@ -1,4 +1,4 @@
-import {useOpenUrl} from '@shm/desktop/src/open-url'
+import {useOpenUrl} from '@/open-url'
 import {Account, API_FILE_URL, PeerInfo} from '@shm/shared'
 import {
   ArrowUpRight,

@@ -1,4 +1,4 @@
-import { youtubeParser } from '@shm/desktop/src/editor/utils'
+import {youtubeParser} from '@/editor/utils'
 import {
   HYPERMEDIA_ENTITY_TYPES,
   StateStream,
@@ -7,11 +7,11 @@ import {
   isPublicGatewayLink,
   normalizeHmId,
 } from '@shm/shared'
-import { Globe, Link, Spinner, SquareAsterisk, TwitterXIcon } from '@shm/ui'
-import { Node } from '@tiptap/pm/model'
-import { BlockNoteEditor } from '../../BlockNoteEditor'
-import { getBlockInfoFromPos } from '../Blocks/helpers/getBlockInfoFromPos'
-import { LinkMenuItem } from './LinkMenuItem'
+import {Globe, Link, Spinner, SquareAsterisk, TwitterXIcon} from '@shm/ui'
+import {Node} from '@tiptap/pm/model'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
+import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
+import {LinkMenuItem} from './LinkMenuItem'
 
 export function getLinkMenuItems({
   isLoading,
@@ -39,8 +39,8 @@ export function getLinkMenuItems({
         disabled: false,
         icon: <Globe size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
-          const { state, schema, view } = editor._tiptapEditor
-          const { selection } = state
+          const {state, schema, view} = editor._tiptapEditor
+          const {selection} = state
           const pos = selection.from - docTitle!.length
           view.dispatch(
             view.state.tr
@@ -65,7 +65,7 @@ export function getLinkMenuItems({
       name: 'Checking link...',
       icon: <Spinner size="small" />,
       disabled: true,
-      execute: (editor, ref) => { },
+      execute: (editor, ref) => {},
     }
 
     linkMenuItems = [loadingItem, ...linkMenuItems]
@@ -76,10 +76,11 @@ export function getLinkMenuItems({
 
         linkMenuItems = [
           {
-            name: `Insert Card of ${docTitle
+            name: `Insert Card of ${
+              docTitle
                 ? '"' + docTitle + '"'
                 : HYPERMEDIA_ENTITY_TYPES[hmId.type]
-              }`,
+            }`,
             disabled: false,
             icon: <SquareAsterisk size={18} />,
             execute: (editor: BlockNoteEditor, ref: string) => {
@@ -88,8 +89,8 @@ export function getLinkMenuItems({
                 if (!hmId) return
                 ref = hmId
               }
-              const { state, schema } = editor._tiptapEditor
-              const { selection } = state
+              const {state, schema} = editor._tiptapEditor
+              const {selection} = state
               if (!selection.empty) return
               const node = schema.nodes.embed.create(
                 {
@@ -109,10 +110,11 @@ export function getLinkMenuItems({
       if (hmId.type) {
         linkMenuItems = [
           {
-            name: `Embed ${HYPERMEDIA_ENTITY_TYPES[hmId.type]} ${docTitle
+            name: `Embed ${HYPERMEDIA_ENTITY_TYPES[hmId.type]} ${
+              docTitle
                 ? '"' + docTitle + '"'
                 : HYPERMEDIA_ENTITY_TYPES[hmId.type]
-              }`,
+            }`,
             disabled: false,
             icon: <SquareAsterisk size={18} />,
             execute: (editor: BlockNoteEditor, ref: string) => {
@@ -121,8 +123,8 @@ export function getLinkMenuItems({
                 if (!hmId) return
                 ref = hmId
               }
-              const { state, schema } = editor._tiptapEditor
-              const { selection } = state
+              const {state, schema} = editor._tiptapEditor
+              const {selection} = state
               if (!selection.empty) return
               const node = schema.nodes.embed.create(
                 {
@@ -159,8 +161,8 @@ export function getLinkMenuItems({
                 if (!hmId) return
                 ref = hmId
               }
-              const { state, schema } = editor._tiptapEditor
-              const { selection } = state
+              const {state, schema} = editor._tiptapEditor
+              const {selection} = state
               if (!selection.empty) return
               const node = schema.nodes['inline-embed'].create(
                 {
@@ -177,18 +179,19 @@ export function getLinkMenuItems({
       }
     } else if (media) {
       const mediaItem = {
-        name: `Convert to ${media === 'twitter'
+        name: `Convert to ${
+          media === 'twitter'
             ? 'X Post embed'
             : media.charAt(0).toUpperCase() + media.slice(1)
-          }`,
+        }`,
         disabled: false,
         icon:
           media === 'twitter' ? (
             <TwitterXIcon width={18} height={18} />
           ) : undefined,
         execute: (editor: BlockNoteEditor, ref: string) => {
-          const { state, schema } = editor._tiptapEditor
-          const { selection } = state
+          const {state, schema} = editor._tiptapEditor
+          const {selection} = state
           if (!selection.empty) return
           let embedUrl = ''
           if (media === 'video') {
@@ -211,13 +214,13 @@ export function getLinkMenuItems({
           const node =
             media !== 'twitter'
               ? schema.nodes[media].create({
-                url: embedUrl ? embedUrl : '',
-                src: embedUrl ? '' : ref,
-                name: fileName ? fileName : '',
-              })
+                  url: embedUrl ? embedUrl : '',
+                  src: embedUrl ? '' : ref,
+                  name: fileName ? fileName : '',
+                })
               : schema.nodes['web-embed'].create({
-                url: ref,
-              })
+                  url: ref,
+                })
 
           insertNode(editor, sourceUrl ? sourceUrl : ref, node)
         },
@@ -231,9 +234,9 @@ export function getLinkMenuItems({
 }
 
 function insertNode(editor: BlockNoteEditor, ref: string, node: Node) {
-  const { state, schema, view } = editor._tiptapEditor
-  const { doc, selection } = state
-  const { $from } = selection
+  const {state, schema, view} = editor._tiptapEditor
+  const {doc, selection} = state
+  const {$from} = selection
   const block = getBlockInfoFromPos(doc, selection.$anchor.pos)
   let tr = state.tr
 
@@ -281,9 +284,9 @@ function insertMentionNode(
   title: string,
   node: Node,
 ) {
-  const { state, schema, view } = editor._tiptapEditor
-  const { doc, selection } = state
-  const { $from } = selection
+  const {state, schema, view} = editor._tiptapEditor
+  const {doc, selection} = state
+  const {$from} = selection
   const block = getBlockInfoFromPos(doc, selection.$anchor.pos)
   let tr = state.tr
 
@@ -327,8 +330,8 @@ function insertMentionNode(
 }
 
 function findClosestLinkRangeBefore(state) {
-  const { doc, selection } = state
-  const { from } = selection
+  const {doc, selection} = state
+  const {from} = selection
   let closestLinkRange = null
 
   // Iterate over the nodes in reverse order from the current selection position
@@ -344,7 +347,7 @@ function findClosestLinkRangeBefore(state) {
         !closestLinkRange ||
         Math.abs(linkStart - from) < Math.abs(closestLinkRange.from - from)
       ) {
-        closestLinkRange = { from: linkStart, to: linkEnd }
+        closestLinkRange = {from: linkStart, to: linkEnd}
       }
     }
   })

@@ -1,6 +1,6 @@
+import {AppIPC} from '@/app-ipc'
+import {labelOfQueryKey} from '@/models/query-keys'
 import {JsonValue} from '@bufbuild/protobuf'
-import {AppIPC} from '@shm/desktop/src/app-ipc'
-import {labelOfQueryKey} from '@shm/desktop/src/models/query-keys'
 import {copyTextToClipboard, toast} from '@shm/ui'
 import {
   QueryCache,

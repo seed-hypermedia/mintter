@@ -1,7 +1,7 @@
-import { isValidUrl } from '@shm/desktop/src/editor/utils'
-import { useOpenUrl } from '@shm/desktop/src/open-url'
-import { TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme } from '@shm/ui'
-import { Fragment } from '@tiptap/pm/model'
+import {isValidUrl} from '@/editor/utils'
+import {useOpenUrl} from '@/open-url'
+import {TwitterXIcon, XPostNotFound, XPostSkeleton, useTheme} from '@shm/ui'
+import {Fragment} from '@tiptap/pm/model'
 import {
   QuotedTweet,
   TweetBody,
@@ -18,9 +18,9 @@ import {
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import { MediaContainer } from './media-container'
-import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
-import { HMBlockSchema } from './schema'
+import {MediaContainer} from './media-container'
+import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
+import {HMBlockSchema} from './schema'
 
 export const WebEmbed = createReactBlockSpec({
   type: 'web-embed',
@@ -64,7 +64,7 @@ const Render = (
   const submitTwitterLink = (url: string, assign: any, setFileName: any) => {
     if (isValidUrl(url)) {
       if (url.includes('twitter') || url.includes('x.com')) {
-        assign({ props: { url: url } } as MediaType)
+        assign({props: {url: url}} as MediaType)
       } else {
         setFileName({
           name: `The provided URL is not a twitter URL`,
@@ -72,7 +72,7 @@ const Render = (
         })
         return
       }
-    } else setFileName({ name: 'The provided URL is invalid.', color: 'red' })
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
     const cursorPosition = editor.getTextCursorPosition()
     editor.focus()
     if (cursorPosition.block.id === block.id) {
@@ -80,7 +80,7 @@ const Render = (
         editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
       else {
         editor.insertBlocks(
-          [{ type: 'paragraph', content: '' }],
+          [{type: 'paragraph', content: ''}],
           block.id,
           'after',
         )
@@ -112,7 +112,7 @@ const display = ({
 }: DisplayComponentProps) => {
   const urlArray = block.props.url.split('/')
   const xPostId = urlArray[urlArray.length - 1].split('?')[0]
-  const { data, error, isLoading } = useTweet(xPostId)
+  const {data, error, isLoading} = useTweet(xPostId)
   const openUrl = useOpenUrl()
 
   let xPostContent

@@ -1,9 +1,9 @@
-import { useDeleteDraft } from '@shm/desktop/src/models/documents'
-import { AlertDialog, Button, XStack, YStack } from '@shm/ui'
-import { useAppDialog } from './dialog'
+import {useDeleteDraft} from '@/models/documents'
+import {AlertDialog, Button, XStack, YStack} from '@shm/ui'
+import {useAppDialog} from './dialog'
 
 export function useDeleteDraftDialog() {
-  return useAppDialog(DeleteDraftDialog, { isAlert: true })
+  return useAppDialog(DeleteDraftDialog, {isAlert: true})
 }
 
 function DeleteDraftDialog({
@@ -11,7 +11,7 @@ function DeleteDraftDialog({
   input,
 }: {
   onClose: () => void
-  input: { draftId: string; onSuccess?: () => void }
+  input: {draftId: string; onSuccess?: () => void}
 }) {
   const deleteDraft = useDeleteDraft({
     onSuccess: input.onSuccess,

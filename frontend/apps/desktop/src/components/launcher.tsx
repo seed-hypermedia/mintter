@@ -1,22 +1,22 @@
-import { useAppContext, useGRPCClient } from '@shm/desktop/src/app-context'
-import { dialogBoxShadow, useAppDialog } from '@shm/desktop/src/components/dialog'
-import appError from '@shm/desktop/src/errors'
-import { useConnectPeer } from '@shm/desktop/src/models/contacts'
-import { useGatewayHost } from '@shm/desktop/src/models/gateway-settings'
-import { useRecents } from '@shm/desktop/src/models/recents'
-import { useSearch } from '@shm/desktop/src/models/search'
-import { importWebCapture } from '@shm/desktop/src/models/web-importer'
-import { fetchWebLink } from '@shm/desktop/src/models/web-links'
-import { trpc } from '@shm/desktop/src/trpc'
+import {useAppContext, useGRPCClient} from '@/app-context'
+import {dialogBoxShadow, useAppDialog} from '@/components/dialog'
+import appError from '@/errors'
+import {useConnectPeer} from '@/models/contacts'
+import {useGatewayHost} from '@/models/gateway-settings'
+import {useRecents} from '@/models/recents'
+import {useSearch} from '@/models/search'
+import {importWebCapture} from '@/models/web-importer'
+import {fetchWebLink} from '@/models/web-links'
+import {trpc} from '@/trpc'
 import {
   appRouteOfId,
   isHttpUrl,
   resolveHmIdToAppRoute,
   useHmIdToAppRouteResolver,
-} from '@shm/desktop/src/utils/navigation'
-import { NavRoute } from '@shm/desktop/src/utils/routes'
-import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
-import { useListenAppEvent } from '@shm/desktop/src/utils/window-events'
+} from '@/utils/navigation'
+import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
+import {useListenAppEvent} from '@/utils/window-events'
 import {
   GRPCClient,
   HYPERMEDIA_ENTITY_TYPES,
@@ -37,8 +37,8 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { AppQueryClient } from '../query-client'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
+import {AppQueryClient} from '../query-client'
 
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
@@ -62,7 +62,7 @@ function useURLHandler() {
 
     connect.mutate(httpSearch)
     if (experiments.data?.webImporting) {
-      const webResult = await webQuery.mutateAsync({ webUrl: httpSearch })
+      const webResult = await webQuery.mutateAsync({webUrl: httpSearch})
       if (webResult.hypermedia) {
         const unpacked = await resolveHmUrl(webResult.hypermedia.url)
         if (unpacked?.navRoute) return unpacked.navRoute
@@ -110,7 +110,7 @@ type SwitcherItem = {
   subtitle?: string
   onSelect: () => void
 }
-function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
+function LauncherContent({onClose}: {input: {}; onClose: () => void}) {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const grpcClient = useGRPCClient()
@@ -153,7 +153,7 @@ function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
                 }
               })
               .catch((error) => {
-                appError(`Launcher Error: ${error}`, { error })
+                appError(`Launcher Error: ${error}`, {error})
               })
               .finally(() => {
                 setActionPromise(null)
@@ -185,7 +185,7 @@ function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
       })
       .filter(Boolean) || []
   const recentItems =
-    recents.data?.map(({ url, title, subtitle, type }) => {
+    recents.data?.map(({url, title, subtitle, type}) => {
       return {
         key: url,
         title,
@@ -196,7 +196,7 @@ function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
             toast.error('Failed to open recent: ' + url)
             return
           }
-          const openId = id.type === 'd' ? { ...id } : id
+          const openId = id.type === 'd' ? {...id} : id
           const appRoute = appRouteOfId(openId)
           if (!appRoute) {
             toast.error('Failed to open recent: ' + url)
@@ -333,12 +333,12 @@ function LauncherContent({ onClose }: { input: {}; onClose: () => void }) {
   )
 }
 
-export function LauncherItem({ item, selected = false, onFocus, onMouseEnter }) {
+export function LauncherItem({item, selected = false, onFocus, onMouseEnter}) {
   const elm = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     if (selected) {
-      elm.current?.scrollIntoView({ block: 'nearest' })
+      elm.current?.scrollIntoView({block: 'nearest'})
     }
   }, [selected])
 

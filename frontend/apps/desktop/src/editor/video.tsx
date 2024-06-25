@@ -1,17 +1,17 @@
-import { isValidUrl, youtubeParser } from '@shm/desktop/src/editor/utils'
-import { API_FILE_URL } from '@shm/shared'
-import { ResizeHandle, SizableText, XStack, useTheme } from '@shm/ui'
-import { useEffect, useState } from 'react'
-import { RiVideoAddLine } from 'react-icons/ri'
+import {isValidUrl, youtubeParser} from '@/editor/utils'
+import {API_FILE_URL} from '@shm/shared'
+import {ResizeHandle, SizableText, XStack, useTheme} from '@shm/ui'
+import {useEffect, useState} from 'react'
+import {RiVideoAddLine} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import { MediaContainer } from './media-container'
-import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
-import { HMBlockSchema } from './schema'
+import {MediaContainer} from './media-container'
+import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
+import {HMBlockSchema} from './schema'
 
 export const getSourceType = (name: string) => {
   const nameArray = name.split('.')
@@ -55,13 +55,13 @@ export const VideoBlock = createReactBlockSpec({
     {
       tag: 'video[src]',
       getAttrs: (element) => {
-        return { src: element.getAttribute('src') }
+        return {src: element.getAttribute('src')}
       },
     },
     {
       tag: 'iframe',
       getAttrs: (element) => {
-        return { src: element.getAttribute('src') }
+        return {src: element.getAttribute('src')}
       },
     },
   ],
@@ -80,19 +80,20 @@ const Render = (
         if (ytId) {
           embedUrl = embedUrl + ytId
         } else {
-          setFileName({ name: `Unsupported Youtube Url:${url}`, color: 'red' })
+          setFileName({name: `Unsupported Youtube Url:${url}`, color: 'red'})
           return
         }
       } else if (url.includes('vimeo')) {
         const urlArray = url.split('/')
-        embedUrl = `https://player.vimeo.com/video/${urlArray[urlArray.length - 1]
-          }`
+        embedUrl = `https://player.vimeo.com/video/${
+          urlArray[urlArray.length - 1]
+        }`
       } else {
-        setFileName({ name: 'Unsupported video source.', color: 'red' })
+        setFileName({name: 'Unsupported video source.', color: 'red'})
         return
       }
-      assign({ props: { url: embedUrl } } as MediaType)
-    } else setFileName({ name: 'The provided URL is invalid.', color: 'red' })
+      assign({props: {url: embedUrl}} as MediaType)
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
     const cursorPosition = editor.getTextCursorPosition()
     editor.focus()
     if (cursorPosition.block.id === block.id) {
@@ -100,7 +101,7 @@ const Render = (
         editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
       else {
         editor.insertBlocks(
-          [{ type: 'paragraph', content: '' }],
+          [{type: 'paragraph', content: ''}],
           block.id,
           'after',
         )
@@ -140,10 +141,10 @@ const display = ({
   const [showHandle, setShowHandle] = useState(false)
   let resizeParams:
     | {
-      handleUsed: 'left' | 'right'
-      initialWidth: number
-      initialClientX: number
-    }
+        handleUsed: 'left' | 'right'
+        initialWidth: number
+        initialClientX: number
+      }
     | undefined
 
   useEffect(() => {

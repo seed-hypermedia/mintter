@@ -1,17 +1,17 @@
-import { isValidUrl, timeoutPromise } from '@shm/desktop/src/editor/utils'
-import { getCIDFromIPFSUrl, usePublicationContentContext } from '@shm/shared'
-import { ResizeHandle, useTheme } from '@shm/ui'
-import { useEffect, useState } from 'react'
-import { RiImage2Line } from 'react-icons/ri'
+import {isValidUrl, timeoutPromise} from '@/editor/utils'
+import {getCIDFromIPFSUrl, usePublicationContentContext} from '@shm/shared'
+import {ResizeHandle, useTheme} from '@shm/ui'
+import {useEffect, useState} from 'react'
+import {RiImage2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
   createReactBlockSpec,
   defaultProps,
 } from './blocknote'
-import { MediaContainer } from './media-container'
-import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
-import { HMBlockSchema } from './schema'
+import {MediaContainer} from './media-container'
+import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -48,7 +48,7 @@ export const ImageBlock = createReactBlockSpec({
     {
       tag: 'img[src]',
       getAttrs: (element) => {
-        return { src: element.getAttribute('src'), width: element.style.width }
+        return {src: element.getAttribute('src'), width: element.style.width}
       },
       node: 'image',
     },
@@ -60,7 +60,7 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const theme = useTheme()
-  const { importWebFile } = usePublicationContentContext()
+  const {importWebFile} = usePublicationContentContext()
 
   const submitImage = (
     url: string,
@@ -84,7 +84,7 @@ const Render = (
               })
               return
             }
-            assign({ props: { url: `ipfs://${imageData.cid}` } } as MediaType)
+            assign({props: {url: `ipfs://${imageData.cid}`}} as MediaType)
             setLoading(false)
           } else {
             let imgTypeSplit = imageData.type.split('/')
@@ -102,7 +102,7 @@ const Render = (
           })
           setLoading(false)
         })
-    } else setFileName({ name: 'The provided URL is invalid.', color: 'red' })
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
 
     const cursorPosition = editor.getTextCursorPosition()
     editor.focus()
@@ -111,7 +111,7 @@ const Render = (
         editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
       else {
         editor.insertBlocks(
-          [{ type: 'paragraph', content: '' }],
+          [{type: 'paragraph', content: ''}],
           block.id,
           'after',
         )
@@ -141,7 +141,7 @@ const display = ({
   setSelected,
   assign,
 }: DisplayComponentProps) => {
-  const { ipfsBlobPrefix } = usePublicationContentContext()
+  const {ipfsBlobPrefix} = usePublicationContentContext()
   const imageUrl = block.props.url.includes('.')
     ? null
     : `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
@@ -154,10 +154,10 @@ const display = ({
   const [showHandle, setShowHandle] = useState(false)
   let resizeParams:
     | {
-      handleUsed: 'left' | 'right'
-      initialWidth: number
-      initialClientX: number
-    }
+        handleUsed: 'left' | 'right'
+        initialWidth: number
+        initialClientX: number
+      }
     | undefined
 
   useEffect(() => {
@@ -295,7 +295,7 @@ const display = ({
       )}
       {imageUrl && (
         <img
-          style={{ width: `100%` }}
+          style={{width: `100%`}}
           src={imageUrl}
           alt={block.props.name || 'image'}
           contentEditable={false}

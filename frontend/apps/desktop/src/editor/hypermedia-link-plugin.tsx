@@ -1,8 +1,8 @@
-import { fetchWebLink } from '@shm/desktop/src/models/web-links'
-import { AppQueryClient } from '@shm/desktop/src/query-client'
-import { extractBlockRefOfUrl, hmIdWithVersion } from '@shm/shared'
-import { EditorView } from '@tiptap/pm/view'
-import { Plugin, PluginKey } from 'prosemirror-state'
+import {fetchWebLink} from '@/models/web-links'
+import {AppQueryClient} from '@/query-client'
+import {extractBlockRefOfUrl, hmIdWithVersion} from '@shm/shared'
+import {EditorView} from '@tiptap/pm/view'
+import {Plugin, PluginKey} from 'prosemirror-state'
 
 export const hypermediaPluginKey = new PluginKey('hypermedia-link')
 
@@ -69,10 +69,10 @@ async function checkHyperLink(
   entry: [key: string, value: string],
 ): Promise<
   | {
-    documentId: string
-    versionId?: string
-    blockId?: string
-  }
+      documentId: string
+      versionId?: string
+      blockId?: string
+    }
   | undefined
 > {
   let [id, entryUrl] = entry
