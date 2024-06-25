@@ -70,6 +70,7 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	_, err = bob.InsertWallet(ctx, bobURI, "default")
 	require.NoError(t, err)
 
+	//TODO(juligasa): get bobs account by exporting wallet until sync is working
 	bobAccount, err := bob.net.AccountForDevice(ctx, bob.net.AddrInfo().ID)
 	require.NoError(t, err)
 
