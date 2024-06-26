@@ -123,7 +123,7 @@ func (srv *Server) ListKeys(ctx context.Context, req *daemon.ListKeysRequest) (*
 		out.Keys = append(out.Keys, &daemon.NamedKey{
 			Name:      key.Name,
 			PublicKey: key.PublicKey.String(),
-			AccountId: "a/" + key.PublicKey.String(), // TODO(juligasa): finalize the decision about what Account ID should look like.
+			AccountId: "hm://a/" + key.PublicKey.String(),
 		})
 	}
 	return out, nil
@@ -143,7 +143,7 @@ func (srv *Server) UpdateKey(ctx context.Context, req *daemon.UpdateKeyRequest) 
 	return &daemon.NamedKey{
 		PublicKey: kp.PublicKey.String(),
 		Name:      req.NewName,
-		AccountId: "a/" + kp.PublicKey.String(), // TODO(burdiyan): finalize the decision about what Account ID should look like.}, nil
+		AccountId: "hm://a/" + kp.PublicKey.String(),
 	}, nil
 }
 
