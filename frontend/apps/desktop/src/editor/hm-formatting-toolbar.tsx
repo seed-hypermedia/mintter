@@ -6,7 +6,7 @@ import {
   FormattingToolbarProps,
 } from './blocknote'
 
-import {ToggledStyle} from '@shm/shared'
+import { ToggledStyle } from '@shm/shared'
 import {
   Button,
   Check,
@@ -21,20 +21,20 @@ import {
   Strong,
   Theme,
   Tooltip,
-  Type,
   Underline,
   UnorderedList,
   XGroup,
   XStack,
 } from '@shm/ui'
-import {useMemo, useState} from 'react'
+import { Type } from '@tamagui/lucide-icons'
+import { useMemo, useState } from 'react'
 import {
   HMBlockSchema,
   useEditorContentChange,
   useEditorSelectionChange,
 } from '.'
-import {ToolbarDropdownItemProps} from './blocknote/react/SharedComponents/Toolbar/components/ToolbarDropdownItem'
-import {HMLinkToolbarButton} from './hm-toolbar-link-button'
+import { ToolbarDropdownItemProps } from './blocknote/react/SharedComponents/Toolbar/components/ToolbarDropdownItem'
+import { HMLinkToolbarButton } from './hm-toolbar-link-button'
 // import {TextAlignButton} from './DefaultButtons/TextAlignButton'
 // import {ColorStyleButton} from './DefaultButtons/ColorStyleButton'
 
@@ -143,7 +143,7 @@ function ToggleStyleButton({
 
   function handlePress(style: ToggledStyle) {
     editor.focus()
-    editor.toggleStyles({[toggleStyle]: true})
+    editor.toggleStyles({ [toggleStyle]: true })
   }
 
   return (

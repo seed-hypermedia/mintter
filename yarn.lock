@@ -6582,6 +6582,7 @@ __metadata:
     "@shm/prettier": "*"
     "@shm/shared": "*"
     "@shm/ui": "*"
+    "@tamagui/lucide-icons": 1.95.0
     "@tamagui/vite-plugin": 1.95.0
     "@tanstack/react-query": 4.33.0
     "@tanstack/react-query-devtools": 4.33.0

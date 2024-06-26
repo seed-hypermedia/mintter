@@ -10,6 +10,7 @@ import {
   HMBlockNode,
   HMDocument,
   HMInlineContent,
+  Mention,
   UnpackedHypermediaId,
   clipContentBlocks,
   formatBytes,
@@ -103,7 +104,7 @@ export type DocContentContextValue = {
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  citations?: any
+  citations?: Mention[]
 
   onCitationClick?: () => void
   disableEmbedClick?: boolean
@@ -171,7 +172,6 @@ export function DocContentProvider({
         <YStack
           zIndex={100}
           padding="$2"
-          // @ts-ignore
           position="fixed"
           borderColor="$color7"
           borderWidth={1}
@@ -182,14 +182,14 @@ export function DocContentProvider({
           <CheckboxWithLabel
             label="debug"
             checked={debug}
-            // @ts-ignore
+            // @ts-expect-error
             onCheckedChange={setDebug}
             size="$1"
           />
           <CheckboxWithLabel
             label="body sans-serif"
             checked={ffSerif}
-            // @ts-ignore
+            // @ts-expect-error
             onCheckedChange={toggleSerif}
             size="$1"
           />
@@ -1191,7 +1191,6 @@ function BlockContentVideo({
             position="absolute"
             width="100%"
             height="100%"
-            // @ts-expect-error
             src={block.ref}
             frameBorder="0"
             allowFullScreen
@@ -1763,6 +1762,7 @@ export function BlockContentFile({
 }: BlockContentProps) {
   const { hover, ...hoverProps } = useHover()
   const { layoutUnit, saveCidAsFile } = useDocContentContext()
+  const fileCid = block.ref ? getCIDFromIPFSUrl(block.ref) : ''
   return (
     <YStack
       // backgroundColor="$color3"
@@ -1802,27 +1802,27 @@ export function BlockContentFile({
           userSelect="text"
           flex={1}
         >
-          {block.attributes.name}
+          {block.attributes?.name || 'Untitled File'}
         </SizableText>
-        {block.attributes.size && (
+        {block.attributes?.size && (
           <SizableText paddingTop="$1" color="$color10" size="$2">
-            {formatBytes(parseInt(block.attributes.size))}
+            {formatBytes(parseInt(block.attributes?.size))}
           </SizableText>
         )}
 
-        <Tooltip content={`Download ${block.attributes.name}`}>
+        {fileCid && <Tooltip content={`Download ${block.attributes?.name || 'File'}`}>
           <Button
             position="absolute"
             right={0}
             opacity={hover ? 1 : 0}
             size="$2"
             onPress={() => {
-              saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
+              saveCidAsFile(fileCid, block.attributes?.name || 'File')
             }}
           >
             Download
           </Button>
-        </Tooltip>
+        </Tooltip>}
       </XStack>
     </YStack>
   )
@@ -1834,7 +1834,7 @@ export function BlockContentNostr({
   ...props
 }: BlockContentProps) {
   const { layoutUnit } = useDocContentContext()
-  const name = block.attributes.name ?? ''
+  const name = block.attributes?.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
 
   const [verified, setVerified] = useState<boolean>()

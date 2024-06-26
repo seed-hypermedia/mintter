@@ -24,7 +24,6 @@ export {
   MessageCircle as Comment,
   Contact,
   Copy,
-  Scissors as Cut,
   Delete,
   BookOpen as Documentation,
   // FilePen as Draft,
@@ -76,14 +75,12 @@ export {
   Superscript,
   TextCursorInput,
   Twitter,
-  Type,
   Underline,
   Undo2 as Undo,
   Undo2,
   Unlink,
   List as UnorderedList,
   User,
-  Video as VideoIcon,
   XCircle
 } from '@tamagui/lucide-icons'
 

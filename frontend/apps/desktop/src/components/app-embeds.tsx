@@ -20,14 +20,13 @@ import { blockStyles } from '@shm/shared/src/document-content'
 import {
   Button,
   ButtonText,
-  FileWarning,
   SizableText,
   Spinner,
   UIAvatar,
   XStack,
   YStack,
 } from '@shm/ui'
-import { ArrowUpRightSquare, } from '@tamagui/lucide-icons'
+import { ArrowUpRightSquare, FileWarning, } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   PropsWithChildren,

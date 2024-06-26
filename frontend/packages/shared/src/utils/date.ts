@@ -57,8 +57,8 @@ function normalizeDate(
     date = new Date(value)
   } else if (value instanceof Date) {
     date = value
-  } else if (value?.toDate) {
-    date = value.toDate()
+  } else if (value?.seconds) {
+    date = new Date(Number(value.seconds * 1000n))
   }
   return date
 }
