@@ -156,6 +156,9 @@ func (srv *Server) RegisterAccount(ctx context.Context, name string, kp core.Key
 		return err
 	}
 
+	// TODO(hm24): we don't need to do this here since now we have the keys always accessible, unless the user
+	// chooses not to store the keys... Do this at the time of creating the seed wallet (new method not insert
+	// wallet which is an external wallet)
 	if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
 		return fmt.Errorf("failed to configure wallet when registering: %w", err)
 	}
