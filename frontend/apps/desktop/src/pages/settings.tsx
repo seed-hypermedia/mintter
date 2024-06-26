@@ -4,7 +4,7 @@ import {useEditProfileDialog} from '@/components/edit-profile-dialog'
 import appError from '@/errors'
 import {useMyAccount} from '@/models/accounts'
 import {useAutoUpdatePreference} from '@/models/app-settings'
-import {useDaemonInfo, useDeleteKey} from '@/models/daemon'
+import {useDaemonInfo, useDeleteKey, useSavedMnemonics} from '@/models/daemon'
 import {useExperiments, useWriteExperiments} from '@/models/experiments'
 import {
   useGatewayUrl,
@@ -55,6 +55,7 @@ import {
   Tabs,
   TabsContentProps,
   TabsProps,
+  TextArea,
   Tooltip,
   View,
   XGroup,
@@ -67,6 +68,8 @@ import {
   Biohazard,
   Bitcoin,
   Code2,
+  Eye,
+  EyeOff,
   Info,
   Minus,
   Plus,
@@ -355,6 +358,9 @@ function AccountKeys() {
     return keys?.find((key) => key.name == selectedAccount)
   }, [selectedAccount])
 
+  const mnemonics = useSavedMnemonics(account?.name)
+  const [showWords, setShowWords] = useState<boolean>(false)
+
   return (
     <XStack style={{flex: 1, height: '100%'}} gap="$4">
       <YStack f={1} borderColor="$color7" borderWidth={1}>
@@ -433,45 +439,36 @@ function AccountKeys() {
         </XStack>
       </YStack>
       <YStack f={3} borderColor="$color7" borderWidth={1}>
+        {mnemonics ? (
+          <XStack gap="$3">
+            <TextArea
+              f={1}
+              disabled
+              value={
+                showWords
+                  ? mnemonics.join(', ')
+                  : '**** **** **** **** **** **** **** **** **** **** **** ****'
+              }
+            />
+            <Button
+              size="$2"
+              icon={showWords ? EyeOff : Eye}
+              onPress={() => setShowWords((v) => !v)}
+            />
+            <Button
+              size="$2"
+              icon={Copy}
+              onPress={() => {
+                copyTextToClipboard(mnemonics.join(', '))
+                toast.success('Copied to clipboard')
+              }}
+            />
+          </XStack>
+        ) : null}
+
         {/* <SizableText>{JSON.stringify(account, null, 4)}</SizableText> */}
       </YStack>
     </XStack>
-  )
-  return (
-    <YStack gap="$3">
-      {!keys || keys.length === 0 ? (
-        <>
-          <Button onPress={() => dispatchWizardEvent(true)}>
-            Create a new account
-          </Button>
-        </>
-      ) : (
-        <XStack>
-          <YStack as="table" minWidth={200}>
-            <tbody>
-              {keys?.length
-                ? keys.map((k) => (
-                    <tr>
-                      <XStack
-                        as="td"
-                        bg={
-                          selectedAccount == k.name ? '$blue5' : 'transparent'
-                        }
-                        onClick={() => {
-                          setSelectedAccount(k.name)
-                        }}
-                      >
-                        {k.name}
-                      </XStack>
-                    </tr>
-                  ))
-                : null}
-            </tbody>
-          </YStack>
-          <YStack f={1}>{JSON.stringify(account, null, 4)}</YStack>
-        </XStack>
-      )}
-    </YStack>
   )
 }
 

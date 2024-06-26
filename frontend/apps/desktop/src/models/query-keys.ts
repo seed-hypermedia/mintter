@@ -1,7 +1,7 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-import {abbreviateCid} from '@shm/shared'
-import {QueryKey} from '@tanstack/react-query'
+import { abbreviateCid } from '@shm/shared'
+import { QueryKey } from '@tanstack/react-query'
 
 export const queryKeys = {
   // Organized by the model file that is responsible for querying + mutating the keys
@@ -19,6 +19,7 @@ export const queryKeys = {
   KEYS_LIST: 'KEYS_LIST',
   KEYS_GET: 'KEYS_GET',
   GENERATE_MNEMONIC: 'GENERATE_MNEMONIC',
+  SAVED_MNEMONICS: 'SAVED_MNEMONICS',
 
   // networking
   GET_PEERS: 'GET_PEERS', // , filterConnected: boolean

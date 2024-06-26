@@ -2,6 +2,7 @@ import {useGRPCClient} from '@/app-context'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 
+import {trpc} from '@/trpc'
 import {
   GenMnemonicResponse,
   GRPCClient,
@@ -115,4 +116,10 @@ export function useDeleteKey(
     },
     ...opts,
   })
+}
+
+export function useSavedMnemonics(key?: string) {
+  return trpc.secureStorage.read.useQuery('main', {enabled: !!key}).data as
+    | Array<string>
+    | undefined
 }
