@@ -1,4 +1,4 @@
-import { GRPCClient, StateStream } from '@shm/shared'
+import { GRPCClient, StateStream, hmDocument } from '@shm/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
@@ -221,11 +221,11 @@ export async function resolveHmIdToAppRoute(
   const hmIds = unpackHmId(hmId)
   if (hmIds?.type === 'd') {
     const docId = createHmId('d', hmIds.eid)
-    const pub = await grpcClient.publications.getPublication({
+    const doc = hmDocument(await grpcClient.documents.getDocument({
       documentId: docId,
       // no version because we are only looking for the publication author
-    })
-    if (!pub.document) return null
+    }))
+    if (!doc) return null
     return {
       ...hmIds,
       navRoute: {

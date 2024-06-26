@@ -1,5 +1,4 @@
-import {useNavRoute} from '@/utils/navigation'
-import {AuthorVariant} from '@shm/shared'
+import { useNavRoute } from '@/utils/navigation'
 import {
   AlertCircle,
   Button,
@@ -9,14 +8,14 @@ import {
   YStackProps,
   toast,
 } from '@shm/ui'
-import {Check} from '@tamagui/lucide-icons'
-import {PropsWithChildren} from 'react'
-import {useGRPCClient} from '../app-context'
-import {useMyAccount} from '../models/accounts'
-import {usePublishDraft, usePushPublication} from '../models/documents'
-import {DraftStatusContext} from '../models/draft-machine'
-import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
-import {useMediaDialog} from './media-dialog'
+import { Check } from '@tamagui/lucide-icons'
+import { PropsWithChildren } from 'react'
+import { useGRPCClient } from '../app-context'
+import { useMyAccount } from '../models/accounts'
+import { usePublishDraft, usePushPublication } from '../models/documents'
+import { DraftStatusContext } from '../models/draft-machine'
+import { useGatewayHost, usePushOnPublish } from '../models/gateway-settings'
+import { useMediaDialog } from './media-dialog'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -26,12 +25,6 @@ export default function CommitDraftButton() {
   const draftId = route.key == 'draft' ? route.draftId : null
   const grpcClient = useGRPCClient()
   const myAccount = useMyAccount()
-  const myAuthorVariant: AuthorVariant | null = myAccount.data?.id
-    ? {
-        key: 'author',
-        author: myAccount.data.id,
-      }
-    : null
   const mediaDialog = useMediaDialog()
   const canPublish = DraftStatusContext.useSelector(
     (s) => s.matches('idle') || s.matches('saved'),
@@ -43,8 +36,8 @@ export default function CommitDraftButton() {
   const push = usePushPublication()
   const gwHost = useGatewayHost()
   const publish = usePublishDraft({
-    onSuccess: ({pub: publishedDoc}) => {
-      if (!publishedDoc || !draftId || !myAuthorVariant) return
+    onSuccess: ({ pub: publishedDoc }) => {
+      if (!publishedDoc || !draftId) return
       if (pushOnPublish.data === 'always') {
         toast.promise(push.mutateAsync(draftId), {
           loading: `Document published. Pushing to ${gwHost}...`,
@@ -81,8 +74,8 @@ export default function CommitDraftButton() {
           disabled={!canPublish || hasUpdateError}
           opacity={!canPublish ? 0.5 : 1}
           onPress={() => {
-            grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
-              const hasEmptyMedia = draft.children.find((block) => {
+            grpcClient.drafts.getDraft({ draftId }).then((draft) => {
+              const hasEmptyMedia = draft.document?.content.find((block) => {
                 return (
                   block.block &&
                   ['image', 'video', 'file'].includes(block.block.type) &&
@@ -95,7 +88,7 @@ export default function CommitDraftButton() {
                   publish,
                 })
               } else {
-                publish.mutate({draftId})
+                publish.mutate({ draftId })
               }
             })
           }}
@@ -108,7 +101,7 @@ export default function CommitDraftButton() {
   )
 }
 
-function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
+function StatusWrapper({ children, ...props }: PropsWithChildren<YStackProps>) {
   return (
     <YStack space="$2" opacity={0.6}>
       {children}

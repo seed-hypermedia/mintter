@@ -3,7 +3,7 @@ import {useClickNavigate} from '@/utils/useNavigate'
 import {
   Document,
   HMAccount,
-  HMPublication,
+  HMDocument,
   createHmId,
   getDocumentTitle,
   unpackDocId,
@@ -24,8 +24,8 @@ import {FavoriteButton} from './favoriting'
 import {ListItem, TimeAccessory} from './list-item'
 import {MenuItemType} from './options-dropdown'
 
-export const PublicationListItem = React.memo(function PublicationListItem({
-  publication,
+export const DocumentListItem = React.memo(function DocumentListItem({
+  document,
   debugId,
   hasDraft,
   menuItems = () => [],
@@ -36,7 +36,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   author,
   editors,
 }: {
-  publication: HMPublication
+  document: HMDocument
   debugId?: string
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
@@ -49,8 +49,8 @@ export const PublicationListItem = React.memo(function PublicationListItem({
   editors: (string | HMAccount | undefined)[]
 }) {
   const spawn = useNavigate('spawn')
-  const title = getDocumentTitle(publication.document)
-  const docId = publication.document?.id
+  const title = getDocumentTitle(document)
+  const docId = document.id
   const route = useNavRoute()
   const docRoute = openRoute.key === 'document' ? openRoute : null
   const docHmId = docRoute?.documentId
@@ -64,7 +64,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
       : undefined
   const favorite = useFavorite(docUrl)
 
-  if (!docId) throw new Error('PublicationListItem requires id')
+  if (!docId) throw new Error('DocumentListItem requires document id')
 
   const navigate = useClickNavigate()
 
@@ -163,7 +163,7 @@ export const PublicationListItem = React.memo(function PublicationListItem({
               : null}
           </XStack>
           <TimeAccessory
-            time={publication.document?.updateTime}
+            time={document?.updateTime}
             onPress={() => {
               navigate(openRoute, event)
             }}

@@ -21,11 +21,8 @@ export const secureStorageApi = t.router({
     }),
   read: t.procedure.input(z.string()).query(async ({input}) => {
     const encrypted = secureStore.get(input)
-    console.log(`== ~ read:t.procedure.input ~ encrypted:`, encrypted)
     if (!encrypted) return null
     const plainText = safeStorage.decryptString(Buffer.from(encrypted))
-    console.log(`== ~ read:t.procedure.input ~ decrypted:`, plainText)
-
     return JSON.parse(plainText)
   }),
 })

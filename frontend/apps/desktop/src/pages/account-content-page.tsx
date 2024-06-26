@@ -1,19 +1,14 @@
-import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
-import {copyLinkMenuItem} from '@/components/list-item'
-import {PublicationListItem} from '@/components/publication-list-item'
-import {useAllAccounts} from '@/models/accounts'
-import {useAccountPublications} from '@/models/documents'
-import {Profile, unpackDocId} from '@shm/shared'
-import {List} from '@shm/ui'
-import {useMemo} from 'react'
+import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
+import { DocumentListItem } from '@/components/document-list-item'
+import { copyLinkMenuItem } from '@/components/list-item'
+import { useAllAccounts } from '@/models/accounts'
+import { useAccountDocuments } from '@/models/documents'
+import { unpackDocId } from '@shm/shared'
+import { List } from '@shm/ui'
+import { useMemo } from 'react'
 
-export function getAccountName(profile: Profile | undefined) {
-  if (!profile) return ''
-  return profile.alias || 'Untitled Account'
-}
-
-export function AccountPublications({accountId}: {accountId: string}) {
-  const list = useAccountPublications(accountId)
+export function AccountPublications({ accountId }: { accountId: string }) {
+  const list = useAccountDocuments(accountId)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
     function lookupAccount(accountId: string | undefined) {
@@ -23,22 +18,22 @@ export function AccountPublications({accountId}: {accountId: string}) {
         accountId
       )
     }
-    return list.data?.publications
+    return list.data?.documents
       .sort((a, b) => {
-        const aTime = a?.document?.publishTime
-          ? new Date(a?.document?.publishTime).getTime()
+        const aTime = a?.publishTime
+          ? new Date(a?.publishTime).getTime()
           : undefined
-        const bTime = b?.document?.publishTime
-          ? new Date(b?.document?.publishTime).getTime()
+        const bTime = b?.publishTime
+          ? new Date(b?.publishTime).getTime()
           : undefined
         if (!aTime || !bTime) return 0
         return bTime - aTime
       })
-      .map((pub) => {
+      .map((doc) => {
         return {
-          publication: pub,
-          author: lookupAccount(pub?.document?.author),
-          editors: pub?.document?.editors?.map(lookupAccount) || [],
+          doc,
+          author: lookupAccount(doc?.author),
+          editors: doc?.authors?.map(lookupAccount) || [],
         }
       })
   }, [list.data, accounts.data])
@@ -48,14 +43,14 @@ export function AccountPublications({accountId}: {accountId: string}) {
       <List
         header={null}
         items={data || []}
-        renderItem={({item}) => {
-          const {publication, author, editors} = item
-          const docId = publication.document?.id
+        renderItem={({ item }) => {
+          const { doc, author, editors } = item
+          const docId = doc?.id
           if (!docId) return null
           return (
-            <PublicationListItem
+            <DocumentListItem
               key={docId}
-              publication={publication}
+              document={doc}
               hasDraft={undefined}
               author={author}
               editors={editors}
@@ -65,14 +60,14 @@ export function AccountPublications({accountId}: {accountId: string}) {
                   if (!id) return
                   onCopy({
                     ...id,
-                    version: publication.version || null,
+                    version: doc.version || null,
                   })
                 }, 'Document'),
               ]}
               openRoute={{
                 key: 'document',
                 documentId: docId,
-                versionId: publication.version,
+                versionId: doc.version,
               }}
             />
           )

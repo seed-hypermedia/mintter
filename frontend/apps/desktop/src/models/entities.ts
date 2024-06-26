@@ -1,16 +1,6 @@
-import {
-  HMDeletedEntity,
-  HMEntityContent,
-  UnpackedHypermediaId,
-  hmDeletedEntity,
-  unpackHmId,
-} from '@shm/shared'
-import {
-  UseMutationOptions,
-  UseQueryOptions,
-  useMutation,
-  useQuery,
-} from '@tanstack/react-query'
+import {toPlainMessage} from '@bufbuild/protobuf'
+import {HMEntityContent, UnpackedHypermediaId, unpackHmId} from '@shm/shared'
+import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {
@@ -20,9 +10,14 @@ import {
   BaseEntityRoute,
   NavRoute,
 } from '../utils/routes'
-import {useAccount, useAccounts} from './accounts'
-import {useDrafts, usePublication, usePublications} from './documents'
-import {usePublicationVariant} from './publication'
+import {useAccounts} from './accounts'
+import {
+  useDocument,
+  useDocuments,
+  useDrafts,
+  useProfile,
+  useProfiles,
+} from './documents'
 import {queryKeys} from './query-keys'
 import {useDeleteRecent} from './recents'
 
@@ -66,15 +61,14 @@ export function useDeleteEntity(
   })
 }
 
-export function useDeletedContent(
-  opts?: UseQueryOptions<unknown, unknown, HMDeletedEntity[]>,
-) {
+export function useDeletedContent() {
   const grpcClient = useGRPCClient()
   return useQuery({
-    ...opts,
     queryFn: async () => {
-      const deleted = await grpcClient.entities.listDeletedEntities({})
-      return deleted.deletedEntities.map((d) => hmDeletedEntity(d))
+      const deleted = (
+        await grpcClient.entities.listDeletedEntities({})
+      ).deletedEntities.map((d) => toPlainMessage(d))
+      return deleted
     },
     queryKey: [queryKeys.DELETED],
   })
@@ -147,44 +141,34 @@ export function useEntityRoutes(route: NavRoute): BaseEntityRoute[] {
 export function useEntityContent(
   id: UnpackedHypermediaId,
 ): HMEntityContent | null | undefined {
-  const {qid, eid, version, type, latest} = id
-  const account = useAccount(type === 'a' ? eid : undefined)
-  const publication = usePublicationVariant({
-    documentId: type === 'd' ? qid : undefined,
-    versionId: version || undefined,
-    variants: id.variants || undefined,
-    latest: latest || false,
-  })
-  const profileDoc = usePublication({
-    id: account.data?.profile?.rootDocument,
-  })
-  if (type === 'a' && account.data) {
+  const {qid, eid, version, type} = id
+  const document = useDocument(
+    type === 'd' ? qid : undefined,
+    version || undefined,
+  )
+  const profileDoc = useProfile(eid)
+  if (type === 'a' && profileDoc.data) {
     return {
       type: 'a',
-      account: account.data,
-      document: profileDoc.data?.document,
+      document: profileDoc.data,
     }
-  } else if (type === 'd' && publication.data?.publication) {
+  } else if (type === 'd' && document.data) {
     return {
       type: 'd',
-      publication: publication.data.publication,
-      document: publication.data?.publication?.document,
+      document: document.data,
     }
   }
-  if (type === 'a' && (account.isLoading || profileDoc.isLoading))
-    return undefined
-  if (type === 'd' && publication.isLoading) return undefined
   return null
 }
 
 export function useEntitiesContent(
   routes: BaseEntityRoute[],
 ): {route: BaseEntityRoute; entity?: HMEntityContent}[] {
-  const {accounts, publications, drafts} = useMemo(() => {
+  const {accounts, documents, drafts} = useMemo(() => {
     const accounts: BaseAccountRoute[] = routes.filter(
       (r) => r.key === 'account',
     ) as BaseAccountRoute[]
-    const publications: BaseDocumentRoute[] = routes.filter(
+    const documents: BaseDocumentRoute[] = routes.filter(
       (r) => r.key === 'document',
     ) as BaseDocumentRoute[]
     const drafts: BaseDraftRoute[] = routes.filter(
@@ -192,55 +176,51 @@ export function useEntitiesContent(
     ) as BaseDraftRoute[]
     return {
       accounts,
-      publications,
+      documents,
       drafts,
     }
   }, [routes])
-
-  // TODO, BUG HERE! We should be using the publication variant query but there is no plural getPublicationVariants
-  const pubQueries = usePublications(
-    publications.map((r) => ({id: r.documentId, version: r.versionId})),
+  const docQueries = useDocuments(
+    documents.map((r) => ({id: r.documentId, version: r.versionId})),
   )
   const accountQueries = useAccounts(accounts.map((r) => r.accountId))
-  const profileDocQueries = usePublications(
-    accounts.map((accountRoute, routeIndex) => {
-      const profileDocId =
-        accountQueries[routeIndex].data?.profile?.rootDocument
-      return {id: profileDocId}
+  const profileQueries = useProfiles(
+    accounts.map((accountRoute) => {
+      return accountRoute.accountId
     }),
   )
-
   const draftQueries = useDrafts(
     drafts
-      .map((draftRoute, draftIndex) => {
+      .map((draftRoute) => {
         return draftRoute.draftId
       })
       .filter(Boolean) as string[],
   )
-  return routes.map((route) => {
-    const accountRouteIndex = accounts.findIndex((r) => r === route)
-    if (accountRouteIndex >= 0) {
-      const account = accountQueries[accountRouteIndex].data
-      const document = profileDocQueries[accountRouteIndex].data?.document
-      if (account) {
-        return {route, entity: {type: 'a', account, document}}
+  return routes
+    .map((route) => {
+      const accountRouteIndex = accounts.findIndex((r) => r === route)
+      if (accountRouteIndex >= 0) {
+        const account = accountQueries[accountRouteIndex].data
+        const document = profileQueries[accountRouteIndex].data
+        if (account && document) {
+          return {route, entity: {type: 'a', account, document}} as const
+        }
       }
-    }
-    const DocumentRouteIndex = publications.findIndex((r) => r === route)
-    if (DocumentRouteIndex >= 0) {
-      const publication = pubQueries[DocumentRouteIndex].data
-      const document = publication?.document
-      if (publication) {
-        return {route, entity: {type: 'd', publication, document}}
+      const documentRouteIndex = documents.findIndex((r) => r === route)
+      if (documentRouteIndex >= 0) {
+        const document = docQueries[documentRouteIndex].data
+        if (document) {
+          return {route, entity: {type: 'd', document}} as const
+        }
       }
-    }
-    const draftRouteIndex = drafts.findIndex((r) => r === route)
-    if (draftRouteIndex >= 0) {
-      const draft = draftQueries[draftRouteIndex]?.data
-      if (draft) {
-        return {route, entity: {type: 'd-draft', document: draft}}
+      const draftRouteIndex = drafts.findIndex((r) => r === route)
+      if (draftRouteIndex >= 0) {
+        const draft = draftQueries[draftRouteIndex]?.data
+        if (draft) {
+          return {route, entity: {type: 'd-draft', document: draft}} as const
+        }
       }
-    }
-    return {route, entity: undefined}
-  })
+      return false
+    })
+    .filter((result) => !!result)
 }

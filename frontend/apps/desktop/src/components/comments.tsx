@@ -1,4 +1,7 @@
-import {trpc} from '@/trpc'
+import { useDocument } from '@/models/documents'
+import { AppDocContentProvider } from '@/pages/document-content-provider'
+import { trpc } from '@/trpc'
+import { useNavigate } from '@/utils/useNavigate'
 import {
   API_FILE_URL,
   BlockRange,
@@ -9,6 +12,7 @@ import {
   UnpackedHypermediaId,
   createHmId,
   formattedDateMedium,
+  getDocumentTitle,
   serializeBlockRange,
   unpackHmId,
 } from '@shm/shared'
@@ -30,21 +34,18 @@ import {
   Pencil,
   Reply,
 } from '@tamagui/lucide-icons'
-import {YStack} from 'tamagui'
-import {useAppContext} from '../app-context'
-import {useAccount} from '../models/accounts'
-import type {CommentGroup} from '../models/comments'
+import { YStack } from 'tamagui'
+import { useAppContext } from '../app-context'
+import { useAccount } from '../models/accounts'
+import type { CommentGroup } from '../models/comments'
 import {
   useCommentReplies,
   useCreateComment,
-  usePublicationCommentGroups,
+  useDocumentCommentGroups,
 } from '../models/comments'
-import {usePublication} from '../models/documents'
-import {AppPublicationContentProvider} from '../pages/publication-content-provider'
-import {useNavigate} from '../utils/useNavigate'
-import {AccessoryContainer} from './accessory-sidebar'
-import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {WindowsLinuxWindowControls} from './window-controls'
+import { AccessoryContainer } from './accessory-sidebar'
+import { MenuItemType, OptionsDropdown } from './options-dropdown'
+import { WindowsLinuxWindowControls } from './window-controls'
 
 export function CommentGroup({
   group,
@@ -136,9 +137,8 @@ export function CommentGroup({
             }}
             icon={MessageSquare}
           >
-            {`${group.moreCommentsCount}${
-              group.comments.length > 1 ? ' More' : ''
-            } Replies`}
+            {`${group.moreCommentsCount}${group.comments.length > 1 ? ' More' : ''
+              } Replies`}
           </Button>
         ) : (
           <Button
@@ -197,7 +197,7 @@ export function EntityCommentsAccessory({
   activeVersion: string
 }) {
   const navigate = useNavigate()
-  const commentGroups = usePublicationCommentGroups(id.eid)
+  const commentGroups = useDocumentCommentGroups(id.eid)
   const createComment = trpc.comments.createCommentDraft.useMutation()
   return (
     <AccessoryContainer
@@ -279,7 +279,7 @@ export function CommentPresentation({
         </XStack>
       ) : null}
       <YStack paddingHorizontal="$2" paddingLeft={28}>
-        <AppPublicationContentProvider
+        <AppDocContentProvider
           comment
           onReplyBlock={onReplyBlock}
           onCopyBlock={(
@@ -293,7 +293,7 @@ export function CommentPresentation({
           }}
         >
           <BlocksContent blocks={comment.content} parentBlockId={null} />
-        </AppPublicationContentProvider>
+        </AppDocContentProvider>
       </YStack>
     </YStack>
   )
@@ -306,7 +306,7 @@ export function CommentPageTitlebar({
   icon?: React.ReactNode
   children?: React.ReactNode
 }) {
-  const {platform} = useAppContext()
+  const { platform } = useAppContext()
   const isWindowsLinux = platform !== 'darwin'
   return (
     <XStack
@@ -349,12 +349,11 @@ export function CommentPageTitlebarWithDocId({
 }) {
   const docId = useStream<string | null>(targetDocIdStream)
   const usableDocId = targetDocId || docId || undefined
-  const pub = usePublication({id: usableDocId})
-  const publication = pub.data
+  const doc = useDocument(usableDocId)
   const spawn = useNavigate('spawn')
-  const author = publication?.document?.author
-  const title = publication?.document?.title
-  if (!publication || !author || !title || !usableDocId)
+  const author = doc.data?.author
+  const title = getDocumentTitle(doc.data)
+  if (!doc || !author || !title || !usableDocId)
     return (
       <CommentPageTitlebar>
         <Text fontSize="$4">Comment</Text>
@@ -377,7 +376,7 @@ export function CommentPageTitlebarWithDocId({
             spawn({
               key: 'document',
               documentId: usableDocId,
-              versionId: pub.data?.version,
+              versionId: doc.data?.version,
             })
           }}
         >

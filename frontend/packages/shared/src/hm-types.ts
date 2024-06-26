@@ -3,10 +3,10 @@ import {EditorInlineContent} from '@shm/desktop/src/editor'
 import type {
   Account,
   ChangeInfo,
-  Device,
+  Comment,
+  DeletedEntity,
   Document,
-  MttLink,
-  Profile,
+  Link,
 } from '@shm/shared'
 import {HMTimestamp} from './utils'
 
@@ -19,46 +19,9 @@ export type HMChangeInfo = {
   deps?: string[]
 }
 
-export type ServerPublication = Document
-export type HMPublication = {
-  document?: HMDocument
-  version?: string
-}
+export type HMAccount = PlainMessage<Account>
 
-export type ServerDevice = Device
-export type HMDevice = {
-  deviceId?: string
-}
-
-export type ServerProfile = Profile
-export type HMProfile = {
-  alias?: string
-  bio?: string
-  avatar?: string
-  rootDocument?: string
-}
-
-export type ServerAccount = Account
-export type HMAccount = {
-  id?: string
-  profile?: HMProfile
-  devices?: {[key: string]: HMDevice}
-}
-
-export type ServerLink = MttLink
-export type HMLink = {
-  target?: {
-    documentId?: string
-    version?: string
-    blockId?: string
-  }
-  source?: {
-    documentId?: string
-    version?: string
-    blockId?: string
-  }
-  isLatest?: boolean
-}
+export type HMLink = PlainMessage<Link>
 
 export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'div' | 'blockquote'
 export type HMEmbedDisplay = 'content' | 'card'
@@ -213,12 +176,7 @@ export type HMBlockNode = {
 
 export type HMDocument = PlainMessage<Document>
 
-export type HMDeletedEntity = {
-  id?: string
-  deleteTime?: HMTimestamp
-  deletedReason?: string
-  metadata?: string
-}
+export type HMDeletedEntity = PlainMessage<DeletedEntity>
 
 export type HMEntity =
   | {
@@ -227,18 +185,16 @@ export type HMEntity =
     }
   | {
       type: 'd'
-      publication: HMPublication
+      document: HMDocument
     }
 
 export type HMEntityContent =
   | {
       type: 'a'
-      account: HMAccount
       document?: HMDocument
     }
   | {
       type: 'd'
-      publication: HMPublication
       document?: HMDocument
     }
   | {
@@ -246,14 +202,7 @@ export type HMEntityContent =
       document: HMDocument
     }
 
-export type HMComment = {
-  id: string
-  target?: string
-  repliedComment?: string
-  author?: string
-  content?: Array<HMBlockNode>
-  createTime?: HMTimestamp
-}
+export type HMComment = PlainMessage<Comment>
 
 export type InlineEmbedAnnotation = BaseAnnotation & {
   type: 'inline-embed'

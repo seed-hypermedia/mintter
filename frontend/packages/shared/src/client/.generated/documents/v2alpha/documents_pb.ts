@@ -246,11 +246,11 @@ export class CreateProfileDraftRequest extends Message<CreateProfileDraftRequest
  */
 export class DeleteDraftRequest extends Message<DeleteDraftRequest> {
   /**
-   * Required. ID of the branch to delete.
+   * Required. ID of the draft to delete.
    *
-   * @generated from field: string branch_id = 1;
+   * @generated from field: string draft_id = 1;
    */
-  branchId = "";
+  draftId = "";
 
   constructor(data?: PartialMessage<DeleteDraftRequest>) {
     super();
@@ -260,7 +260,7 @@ export class DeleteDraftRequest extends Message<DeleteDraftRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.seed.documents.v2alpha.DeleteDraftRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "branch_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "draft_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteDraftRequest {

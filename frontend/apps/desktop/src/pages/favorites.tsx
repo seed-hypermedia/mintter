@@ -1,14 +1,14 @@
-import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
+import { DocumentListItem } from '@/components/document-list-item'
 import Footer from '@/components/footer'
-import {copyLinkMenuItem} from '@/components/list-item'
-import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {PublicationListItem} from '@/components/publication-list-item'
-import {useAllAccounts} from '@/models/accounts'
-import {usePublication} from '@/models/documents'
-import {FavoriteItem, useFavorites} from '@/models/favorites'
-import {HMAccount, UnpackedHypermediaId} from '@shm/shared'
-import {List} from '@shm/ui'
-import {ContactItem} from './contacts-page'
+import { copyLinkMenuItem } from '@/components/list-item'
+import { MainWrapperNoScroll } from '@/components/main-wrapper'
+import { useAllAccounts } from '@/models/accounts'
+import { FavoriteItem, useFavorites } from '@/models/favorites'
+import { HMAccount, UnpackedHypermediaId } from '@shm/shared'
+import { List } from '@shm/ui'
+import { useDocument } from 'src/models/documents'
+import { ContactItem } from './contacts-page'
 
 export default function FavoritesPage() {
   const favorites = useFavorites()
@@ -25,7 +25,7 @@ export default function FavoritesPage() {
           onEndReached={() => {
             // publications.fetchNextPage()
           }}
-          renderItem={({item}) => {
+          renderItem={({ item }) => {
             return (
               <FavoriteListItem
                 key={item.url}
@@ -57,22 +57,22 @@ function DocumentFavoriteItem({
   allAccounts?: HMAccount[]
 }) {
   if (id.type !== 'd') throw new Error('Not a document')
-  const doc = usePublication({
-    id: id.qid,
-    version: id.version || undefined,
-  })
-  if (!doc.data?.publication) return null
+  const doc = useDocument(
+    id.qid,
+    id.version || undefined,
+  )
+  if (!doc.data) return null
   function findAccount(id?: string) {
     return allAccounts?.find((a) => a.id === id)
   }
   return (
-    <PublicationListItem
+    <DocumentListItem
       key={id.qid}
-      publication={doc.data?.publication}
+      document={doc.data}
       hasDraft={undefined}
-      author={findAccount(doc.data.publication?.document?.author)}
+      author={findAccount(doc.data?.author)}
       editors={
-        doc.data.publication?.document?.editors?.map((accountId) =>
+        doc.data?.authors?.map((accountId) =>
           findAccount(accountId),
         ) || []
       }

@@ -1,93 +1,60 @@
-import {AccessoryLayout} from '@/components/accessory-sidebar'
-import {Avatar} from '@/components/avatar'
-import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
-import {useDeleteDialog} from '@/components/delete-dialog'
-import {FavoriteButton} from '@/components/favoriting'
-import Footer, {FooterButton} from '@/components/footer'
-import {OnlineIndicator} from '@/components/indicator'
-import {ListItem, copyLinkMenuItem} from '@/components/list-item'
-import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {PublicationListItem} from '@/components/publication-list-item'
-import {useAccount, useMyAccount} from '@/models/accounts'
-import {useAccountWithDevices} from '@/models/contacts'
-import {useEntityMentions} from '@/models/content-graph'
+import { AccessoryLayout } from '@/components/accessory-sidebar'
+import { Avatar } from '@/components/avatar'
+import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
+import { useDeleteDialog } from '@/components/delete-dialog'
+import { DocumentListItem } from '@/components/document-list-item'
+import { FavoriteButton } from '@/components/favoriting'
+import Footer, { FooterButton } from '@/components/footer'
+import { ListItem, copyLinkMenuItem } from '@/components/list-item'
+import { MainWrapperNoScroll } from '@/components/main-wrapper'
+import { useMyAccount, useSetProfile } from '@/models/accounts'
+import { useEntityMentions } from '@/models/content-graph'
 import {
-  useAccountPublicationFullList,
+  useAccountDocuments,
   useDraftList,
-  usePublication,
+  useProfile
 } from '@/models/documents'
-import {useResourceFeedWithLatest} from '@/models/feed'
-import {getAvatarUrl} from '@/utils/account-url'
-import {useNavRoute} from '@/utils/navigation'
-import {useNavigate} from '@/utils/useNavigate'
+import { useResourceFeedWithLatest } from '@/models/feed'
+import { getAvatarUrl } from '@/utils/account-url'
+import { useNavRoute } from '@/utils/navigation'
+import { useNavigate } from '@/utils/useNavigate'
 import {
+  DocContent,
   Event,
   HMAccount,
   HMDocument,
-  HMPublication,
-  Profile,
-  PublicationContent,
-  abbreviateCid,
   createHmId,
   getDocumentTitle,
   hmId,
   pluralS,
-  pluralizer,
-  unpackDocId,
+  unpackDocId
 } from '@shm/shared'
 import {
   AlertDialog,
   BlockQuote,
   Button,
-  ChevronDown,
   List,
-  MenuItem,
-  Popover,
   RadioButtons,
   Section,
   SizableText,
   Spinner,
   View,
   XStack,
-  YGroup,
-  YStack,
-  copyTextToClipboard,
-  toast,
+  YStack
 } from '@shm/ui'
-import {PageContainer} from '@shm/ui/src/container'
-import {Trash} from '@tamagui/lucide-icons'
-import React, {ReactNode, useMemo} from 'react'
-import {VirtuosoHandle} from 'react-virtuoso'
-import {EntityCitationsAccessory} from '../components/citations'
-import {CopyReferenceButton} from '../components/titlebar-common'
-import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { PageContainer } from '@shm/ui/src/container'
+import { Trash } from '@tamagui/lucide-icons'
+import React, { ReactNode, useMemo } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
+import { EntityCitationsAccessory } from '../components/citations'
+import { CopyReferenceButton } from '../components/titlebar-common'
+import { AppDocContentProvider } from './document-content-provider'
+import { FeedItem, FeedPageFooter, NewUpdatesButton } from './feed'
 
-function DeviceRow({
-  isOnline,
-  deviceId,
-}: {
-  isOnline: boolean
-  deviceId: string
-}) {
-  return (
-    <YGroup.Item>
-      <ListItem
-        onPress={() => {
-          copyTextToClipboard(deviceId)
-          toast.success('Copied Device ID to clipboard')
-        }}
-      >
-        <OnlineIndicator online={isOnline} />
-        {abbreviateCid(deviceId)}
-      </ListItem>
-    </YGroup.Item>
-  )
-}
 
-export function getAccountName(profile: Profile | undefined) {
+export function getProfileName(profile: HMDocument | null | undefined) {
   if (!profile) return ''
-  return profile.alias || 'Untitled Account'
+  return profile.metadata?.name || 'Untitled Account'
 }
 
 export default function AccountPage() {
@@ -122,8 +89,8 @@ export default function AccountPage() {
             icon={BlockQuote}
             onPress={() => {
               if (route.accessory?.key === 'citations')
-                return replace({...route, accessory: null})
-              replace({...route, accessory: {key: 'citations'}})
+                return replace({ ...route, accessory: null })
+              replace({ ...route, accessory: { key: 'citations' } })
             }}
           />
         ) : null}
@@ -137,26 +104,25 @@ function MainAccountPage() {
 
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const account = useAccountWithDevices(accountId)
   const myAccount = useMyAccount()
   const isMe = myAccount.data?.id === accountId
-  const {data: documents} = useAccountPublicationFullList(
+  const { data: documents } = useAccountDocuments(
     route.tab === 'documents' ? accountId : undefined,
   )
-  const {data: drafts} = useDraftList({})
+  const { data: drafts } = useDraftList({})
   const allDocs = useMemo(() => {
     if (route.tab !== 'documents') return []
     const allPubIds = new Set<string>()
     if (!documents) return []
-    const docs = documents.map((d) => {
-      if (d.publication?.document?.id)
-        allPubIds.add(d.publication?.document?.id)
-      return {key: 'document', ...d}
+    const docs = documents.documents.map((d) => {
+      if (d?.id)
+        allPubIds.add(d?.id)
+      return { key: 'document', ...d }
     })
     if (!isMe) return docs
     const newDrafts = drafts.documents
       .filter((d) => !allPubIds.has(d.id))
-      .map((d) => ({key: 'draft', document: d}))
+      .map((d) => ({ key: 'draft', document: d }))
     return [...newDrafts, ...docs]
   }, [isMe, route.tab, drafts, documents])
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
@@ -164,17 +130,17 @@ function MainAccountPage() {
 
   let items: Array<
     | 'profile'
-    | Event
+    | { key: 'event', event: Event }
     | {
-        key: 'document'
-        publication: HMPublication
-        author: HMAccount | undefined
-        editors: (HMAccount | undefined)[]
-      }
+      key: 'document'
+      document: HMDocument
+      author: HMAccount | undefined
+      editors: (HMAccount | undefined)[]
+    }
     | {
-        key: 'draft'
-        document: HMDocument
-      }
+      key: 'draft'
+      document: HMDocument
+    }
   > = ['profile']
   const feed = useResourceFeedWithLatest(
     route.tab === 'activity' ? hmId('a', accountId).qid : undefined,
@@ -182,9 +148,9 @@ function MainAccountPage() {
   if (route.tab === 'documents') {
     items = allDocs || []
   } else if (route.tab === 'activity') {
-    items = feed.data || []
+    items = feed.data ? feed.data.map(event => ({ key: 'event', event })) : []
   }
-  const {content: deleteDialog, open: openDelete} = useDeleteDialog()
+  const { content: deleteDialog, open: openDelete } = useDeleteDialog()
   const navigate = useNavigate()
   return (
     <>
@@ -198,16 +164,16 @@ function MainAccountPage() {
         onEndReached={() => {
           if (route.tab === 'activity') feed.fetchNextPage()
         }}
-        renderItem={({item}) => {
+        renderItem={({ item }) => {
           if (item === 'profile') {
             return <ProfileDoc />
           }
-          if (item.publication && item.publication?.document?.id) {
-            const docId = item.publication.document?.id
+          if (item.key === 'document' && item.document) {
+            const docId = item.document?.id
             return (
-              <PublicationListItem
+              <DocumentListItem
                 key={docId}
-                publication={item.publication}
+                document={item.document}
                 author={item.author}
                 editors={item.editors}
                 hasDraft={drafts.documents.find((d) => d.id === docId)}
@@ -217,17 +183,17 @@ function MainAccountPage() {
                     if (!id) return
                     onCopyId({
                       ...id,
-                      version: item.publication.version || null,
+                      version: item.document.version || null,
                     })
                   }, 'Document'),
                   {
-                    label: 'Delete Publication',
+                    label: 'Delete Document',
                     key: 'delete',
                     icon: Trash,
                     onPress: () => {
                       openDelete({
                         id: docId,
-                        title: item.publication.document?.title,
+                        title: getDocumentTitle(item.document),
                       })
                     },
                   },
@@ -235,12 +201,12 @@ function MainAccountPage() {
                 openRoute={{
                   key: 'document',
                   documentId: docId,
-                  versionId: item.publication.version,
+                  versionId: item.document.version,
                 }}
               />
             )
-          } else if (item instanceof Event) {
-            return <FeedItem event={item} />
+          } else if (item.key === 'event') {
+            return <FeedItem event={item.event} />
           } else if (item.key === 'draft') {
             return (
               <ListItem
@@ -249,28 +215,27 @@ function MainAccountPage() {
                   navigate({
                     key: 'draft',
                     draftId: item.document.id,
-                    variant: null,
                   })
                 }}
                 theme="yellow"
                 backgroundColor="$color3"
                 accessory={
-                  <Button disabled onPress={(e) => {}} size="$1">
+                  <Button disabled onPress={(e) => { }} size="$1">
                     Draft
                   </Button>
                 }
               />
             )
-            return <SizableText>{item.document.title}</SizableText>
           }
           console.log('unrecognized item', item)
         }}
       />
       {deleteDialog}
+      {copyDialogContent}
       {route.tab === 'activity' && feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />
@@ -284,13 +249,11 @@ function AccountPageHeader() {
   const replace = useNavigate('replace')
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const account = useAccountWithDevices(accountId)
   const myAccount = useMyAccount()
-  const connectedCount = account.devices?.filter((device) => device.isConnected)
-    .length
-  const isConnected = !!connectedCount
+  const profile = useProfile(accountId)
   const isMe = myAccount.data?.id === accountId
   const accountEntityUrl = createHmId('a', accountId)
+  const accountName = getProfileName(profile.data)
   return (
     <>
       <PageContainer marginTop="$6">
@@ -304,8 +267,8 @@ function AccountPageHeader() {
               <Avatar
                 id={accountId}
                 size={60}
-                label={account.profile?.alias}
-                url={getAvatarUrl(account.profile?.avatar)}
+                label={accountName}
+                url={getAvatarUrl(profile.data)}
               />
               <SizableText
                 whiteSpace="nowrap"
@@ -314,68 +277,13 @@ function AccountPageHeader() {
                 size="$5"
                 fontWeight="700"
               >
-                {getAccountName(account.profile)}
+                {accountName}
               </SizableText>
             </XStack>
 
             <XStack space="$2">
               {isMe ? null : <FavoriteButton url={accountEntityUrl} />}
               <CopyReferenceButton />
-              <Popover placement="bottom-end">
-                <Popover.Trigger asChild>
-                  <Button
-                    icon={
-                      isMe ? null : <OnlineIndicator online={isConnected} />
-                    }
-                    iconAfter={ChevronDown}
-                    size="$2"
-                  >
-                    {isMe
-                      ? 'My Devices'
-                      : isConnected
-                      ? 'Connected'
-                      : 'Offline'}
-                  </Button>
-                </Popover.Trigger>
-                <Popover.Content
-                  padding={0}
-                  elevation="$2"
-                  enterStyle={{y: -10, opacity: 0}}
-                  exitStyle={{y: -10, opacity: 0}}
-                  elevate
-                  animation={[
-                    'fast',
-                    {
-                      opacity: {
-                        overshootClamping: true,
-                      },
-                    },
-                  ]}
-                >
-                  <YGroup>
-                    <YGroup.Item>
-                      <XStack paddingHorizontal="$4">
-                        <MenuItem
-                          disabled
-                          title={pluralizer(account.devices.length, 'Device')}
-                          size="$1"
-                          fontWeight="700"
-                        />
-                      </XStack>
-                    </YGroup.Item>
-                    {account.devices.map((device) => {
-                      if (!device) return null
-                      return (
-                        <DeviceRow
-                          key={device.deviceId}
-                          isOnline={device.isConnected}
-                          deviceId={device.deviceId}
-                        />
-                      )
-                    })}
-                  </YGroup>
-                </Popover.Content>
-              </Popover>
             </XStack>
           </XStack>
           <XStack>
@@ -383,12 +291,12 @@ function AccountPageHeader() {
               key={route.tab}
               value={route.tab || 'profile'}
               options={[
-                {key: 'profile', label: 'Profile'},
-                {key: 'documents', label: 'Documents'},
-                {key: 'activity', label: 'Activity'},
+                { key: 'profile', label: 'Profile' },
+                { key: 'documents', label: 'Documents' },
+                { key: 'activity', label: 'Activity' },
               ]}
               onValue={(tab) => {
-                replace({...route, tab})
+                replace({ ...route, tab })
               }}
             />
           </XStack>
@@ -398,55 +306,23 @@ function AccountPageHeader() {
   )
 }
 
-function ProfileDoc({}: {}) {
+function ProfileDoc({ }: {}) {
   const route = useNavRoute()
   const accountRoute = route.key === 'account' ? route : undefined
   if (!accountRoute) throw new Error('Invalid route, no account id')
-  const account = useAccount(accountRoute.accountId)
-  const pub = usePublication({
-    id: account.data?.profile?.rootDocument,
-  })
-  if (!account.data?.profile?.rootDocument)
-    return (
-      <PageContainer marginTop="$6">
-        <SizableText size="$4" fontFamily="$editorBody" marginTop="$5">
-          {account.data?.profile?.bio}
-        </SizableText>
-      </PageContainer>
-    )
-
-  const pubDataWithHeading =
-    pub.data?.document?.title &&
-    account.data?.profile?.alias !== pub.data?.document?.title
-      ? {
-          ...pub.data,
-          document: {
-            ...pub.data.document,
-            children: [
-              {
-                block: {
-                  type: 'heading',
-                  text: pub.data.document.title,
-                },
-                children: pub.data.document.children,
-              },
-            ],
-          },
-        }
-      : pub.data
-
-  return pub.status == 'success' && pub.data ? (
+  const profile = useProfile(accountRoute.accountId)
+  return profile.status == 'success' && profile.data ? (
     <PageContainer>
-      <AppPublicationContentProvider
-        routeParams={{blockRef: accountRoute?.blockId}}
+      <AppDocContentProvider
+        routeParams={{ blockRef: accountRoute?.blockId }}
       >
-        <PublicationContent
-          publication={pubDataWithHeading}
+        <DocContent
+          document={profile.data}
           focusBlockId={
             accountRoute?.isBlockFocused ? accountRoute.blockId : undefined
           }
         />
-      </AppPublicationContentProvider>
+      </AppDocContentProvider>
     </PageContainer>
   ) : (
     <View height={1} />

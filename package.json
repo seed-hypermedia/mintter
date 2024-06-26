@@ -58,7 +58,7 @@
     "superjson": "1.13.3",
     "tamagui": "1.95.0",
     "turbo": "1.11.2",
-    "typescript": "5.5.1-rc"
+    "typescript": "5.5.2"
   },
   "devDependencies": {
     "@storybook/nextjs": "7.0.26",

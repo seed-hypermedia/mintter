@@ -1,8 +1,8 @@
-import {BlockNoteEditor} from '@/editor'
-import {YStack} from '@shm/ui'
-import {useMemo, useState} from 'react'
-import {HyperMediaEditorView} from 'src/components/editor'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { BlockNoteEditor } from '@/editor'
+import { YStack } from '@shm/ui'
+import { useMemo, useState } from 'react'
+import { HyperMediaEditorView } from 'src/components/editor'
+import { AppDocContentProvider } from './document-content-provider'
 
 export default function DraftRebase() {
   // const [state, send, actor] = useDraftRebase()
@@ -60,7 +60,7 @@ export default function DraftRebase() {
 
   return (
     <YStack>
-      <AppPublicationContentProvider disableEmbedClick>
+      <AppDocContentProvider disableEmbedClick>
         <YStack id="editor-title" onPress={(e) => e.stopPropagation()}>
           <YStack className="editor" paddingLeft={32}>
             {editor && timer && editor.topLevelBlocks.length ? (
@@ -68,7 +68,7 @@ export default function DraftRebase() {
             ) : null}
           </YStack>
         </YStack>
-      </AppPublicationContentProvider>
+      </AppDocContentProvider>
       <pre>
         <code>{JSON.stringify(editor.topLevelBlocks)}</code>
       </pre>

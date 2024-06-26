@@ -1,6 +1,6 @@
 import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {createHypermediaDocLinkPlugin} from '@/editor'
-import {useAccounts, useAllAccounts, useMyAccount} from '@/models/accounts'
+import {useAccounts, useMyAccount} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
@@ -14,12 +14,9 @@ import {
   HMBlock,
   HMBlockNode,
   HMDocument,
-  HMPublication,
-  ListPublicationsResponse,
   UnpackedHypermediaId,
   fromHMBlock,
   hmDocument,
-  hmPublication,
   toHMBlock,
   unpackDocId,
   unpackHmId,
@@ -27,7 +24,6 @@ import {
 } from '@shm/shared'
 import {UpdateDraftResponse} from '@shm/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
-  FetchQueryOptions,
   UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
@@ -57,28 +53,27 @@ import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useInlineMentions} from './search'
 
-export function usePublicationList(
-  opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
-    trustedOnly: boolean
-  },
+export function useDocumentList(
+  opts?: UseInfiniteQueryOptions<{
+    nextPageToken: string
+    documents: HMDocument
+  }> & {},
 ) {
-  const {trustedOnly, ...queryOpts} = opts || {}
+  const {...queryOpts} = opts || {}
   const grpcClient = useGRPCClient()
   const pubListQuery = useInfiniteQuery({
     ...queryOpts,
-    queryKey: [queryKeys.DOCUMENT_LIST, trustedOnly ? 'trusted' : 'global'],
+    queryKey: [queryKeys.DOCUMENT_LIST],
     refetchOnMount: true,
     queryFn: async (context) => {
-      const result = await grpcClient.publications.listPublications({
-        trustedOnly: trustedOnly,
+      const result = await grpcClient.documents.listDocuments({
         pageSize: 50,
         pageToken: context.pageParam,
       })
-      const publications = result.publications || []
-
+      const documents = result.documents.map(toPlainMessage) || []
       return {
-        ...result,
-        publications,
+        nextPageToken: result.nextPageToken,
+        documents,
       }
     },
     getNextPageParam: (lastPage) => {
@@ -86,38 +81,15 @@ export function usePublicationList(
     },
   })
 
-  const allPublications =
-    pubListQuery.data?.pages.flatMap((page) => page.publications) || []
+  const allDocuments =
+    pubListQuery.data?.pages.flatMap((page) => page.documents) || []
   return {
     ...pubListQuery,
     data: {
       ...pubListQuery.data,
-      publications: allPublications,
+      documents: allDocuments,
     },
   }
-}
-
-export function usePublicationFullList(
-  opts?: UseInfiniteQueryOptions<ListPublicationsResponse> & {
-    trustedOnly: boolean
-  },
-) {
-  const pubList = usePublicationList(opts)
-  const accounts = useAllAccounts()
-  const data = useMemo(() => {
-    function lookupAccount(accountId: string | undefined) {
-      if (!accountId) return undefined
-      return accounts.data?.accounts.find((acc) => acc.id === accountId)
-    }
-    return pubList.data?.publications.map((pub) => {
-      return {
-        publication: pub,
-        author: lookupAccount(pub?.document?.author),
-        editors: pub?.document?.editors?.map(lookupAccount) || [],
-      }
-    })
-  }, [pubList.data, accounts.data])
-  return {...pubList, data}
 }
 
 export function useDraftList(
@@ -168,8 +140,8 @@ export function useDeleteDraft(
   const invalidate = useQueryInvalidator()
   return useMutation({
     ...opts,
-    mutationFn: async (documentId) => {
-      await grpcClient.drafts.deleteDraft({documentId})
+    mutationFn: async (draftId) => {
+      await grpcClient.drafts.deleteDraft({draftId})
     },
     onSuccess: (response, documentId, context) => {
       setTimeout(() => {
@@ -182,63 +154,6 @@ export function useDeleteDraft(
       opts?.onSuccess?.(response, documentId, context)
     },
   })
-}
-
-export function usePublication(
-  {
-    id,
-    version,
-  }: {
-    id?: string
-    version?: string
-  },
-  options?: UseQueryOptions<HMPublication>,
-) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
-    ...queryPublication(grpcClient, id, version),
-    ...(options || {}),
-  })
-}
-
-export function usePublications(
-  pubs: {
-    id?: string
-    version?: string | null
-  }[],
-  options?: UseQueryOptions<HMPublication>,
-) {
-  const grpcClient = useGRPCClient()
-  return useQueries({
-    queries: pubs.map((pub) =>
-      queryPublication(grpcClient, pub.id, pub.version || undefined),
-    ),
-    ...(options || {}),
-  })
-}
-
-export function queryPublication(
-  grpcClient: GRPCClient,
-  documentId?: string,
-  versionId?: string,
-): UseQueryOptions<HMPublication> | FetchQueryOptions<HMPublication> {
-  return {
-    queryKey: [queryKeys.DOCUMENT, documentId, versionId],
-    enabled: !!documentId,
-    // retry: false, // to test error handling faster
-    // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
-    retry: 10,
-    // about 15 seconds total right now
-    queryFn: async () => {
-      const pub = await grpcClient.publications.getPublication({
-        documentId,
-        version: versionId,
-      })
-      const hmPub = hmPublication(pub)
-      if (!hmPub) throw new Error('Failed to produce HMPublication')
-      return hmPub
-    },
-  }
 }
 
 type ListedEmbed = {
@@ -276,7 +191,7 @@ export type EmbedsContent = Record<
   string,
   | {
       type: 'd'
-      data: HMPublication
+      data: HMDocument
       query: {refId: UnpackedHypermediaId; blockId: string}
     }
   | {
@@ -287,46 +202,66 @@ export type EmbedsContent = Record<
   | undefined
 >
 
+export function useDocumentDrafts(docId: string | undefined) {
+  const grpcClient = useGRPCClient()
+  const drafts = useQuery({
+    queryKey: [queryKeys.DOCUMENT_DRAFTS, docId],
+    enabled: !!docId,
+    queryFn: async () => {
+      const result = await grpcClient.drafts.listDocumentDrafts({
+        documentId: docId,
+      })
+      const drafts = (
+        await Promise.all(
+          result.drafts.map((draft) =>
+            grpcClient.drafts.getDraft({draftId: draft.id}),
+          ),
+        )
+      ).map(toPlainMessage)
+      return drafts
+    },
+  })
+  return drafts
+}
+
 export function useDocumentEmbeds(
-  doc: HMDocument | undefined,
+  doc: HMDocument | undefined | null,
   enabled?: boolean,
   opts?: {skipCards: boolean},
 ): EmbedsContent {
-  const {queryPublications, queryGroups, queryAccounts} = useMemo(() => {
-    if (!enabled)
-      return {queryPublications: [], queryGroups: [], queryAccounts: []}
-    const queryPublications: {
+  // todo: query for comments here as well
+  const {queryDocuments, queryAccounts} = useMemo(() => {
+    if (!enabled) return {queryDocuments: [], queryAccounts: []}
+    const queryDocuments: {
       blockId: string
       refId: UnpackedHypermediaId
     }[] = []
     const queryAccounts: {blockId: string; refId: UnpackedHypermediaId}[] = []
-    const queryGroups: {
-      blockId: string
-      refId: UnpackedHypermediaId
-    }[] = []
-    extractRefs(doc?.children || [], opts?.skipCards).forEach(
+    extractRefs(doc?.content || [], opts?.skipCards).forEach(
       ({refId, blockId}) => {
         if (refId.type === 'a') {
           queryAccounts.push({blockId, refId})
         } else if (refId.type === 'd') {
-          queryPublications.push({blockId, refId})
+          queryDocuments.push({blockId, refId})
         }
       },
     )
     return {
-      queryPublications,
-      queryGroups,
+      queryDocuments,
       queryAccounts,
     }
   }, [doc, enabled])
-  const pubs = usePublications(
-    queryPublications.map((q) => ({id: q.refId.qid, version: q.refId.version})),
+  const docs = useDocuments(
+    queryDocuments.map((q) => ({
+      docId: q.refId.qid,
+      version: q.refId.version || undefined,
+    })),
   )
   const accounts = useAccounts(queryAccounts.map((q) => q.refId.eid))
   const embeds = Object.fromEntries([
-    ...pubs.map((pub, idx) => [
-      queryPublications[idx].blockId,
-      {type: 'd', query: queryPublications[idx], data: pub.data},
+    ...docs.map((doc, idx) => [
+      queryDocuments[idx].blockId,
+      {type: 'd', query: queryDocuments[idx], data: doc.data},
     ]),
     ...accounts.map((account, idx) => [
       queryAccounts[idx].blockId,
@@ -336,17 +271,6 @@ export function useDocumentEmbeds(
   return embeds
 }
 
-export function useDocumentVersions(
-  documentId: string | undefined,
-  versions: string[],
-) {
-  const grpcClient = useGRPCClient()
-  return useQueries({
-    queries: versions.map((version) =>
-      queryPublication(grpcClient, documentId, version),
-    ),
-  })
-}
 // TODO: Duplicate (apps/site/server/routers/_app.ts#~187)
 export function sortDocuments(a?: Timestamp, b?: Timestamp) {
   let dateA = a ? a.toDate() : 0
@@ -425,13 +349,15 @@ export function usePublishDraft(
       isFirstPublish: boolean
       isProfileDocument: boolean
     }> => {
-      const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
+      const branch = toPlainMessage(
+        await grpcClient.drafts.publishDraft({draftId}),
+      )
       await diagnosis.complete(draftId, {
         key: 'did.publishDraft',
-        value: hmPublication(pub),
+        value: branch,
       })
       const isFirstPublish = await markDocPublish.mutateAsync(draftId)
-      const publishedId = pub.document?.id
+      const publishedId = branch.documentId
       if (!publishedId)
         throw new Error('Could not get ID of published document')
       if (isProfileDocument) {
@@ -1024,7 +950,7 @@ export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
 
-export function useDocTextContent(pub?: HMPublication) {
+export function useDocTextContent(doc?: HMDocument | null) {
   return useMemo(() => {
     let res = ''
     function extractContent(blocks: Array<HMBlockNode>) {
@@ -1050,12 +976,12 @@ export function useDocTextContent(pub?: HMPublication) {
       return content
     }
 
-    if (pub?.document?.children?.length) {
-      res = extractContent(pub.document.children)
+    if (doc?.content?.length) {
+      res = extractContent(doc.content)
     }
 
     return res
-  }, [pub])
+  }, [doc])
 }
 
 export type BlocksMap = Record<string, BlocksMapItem>
@@ -1100,7 +1026,7 @@ export function usePushPublication() {
   return useMutation({
     mutationFn: async (docId: string) => {
       if (!gatewayUrl.data) throw new Error('Cannot determine Gateway URL')
-      await grpcClient.publications.pushPublication({
+      await grpcClient.documents.pushDocument({
         documentId: docId,
         url: gatewayUrl.data,
       })
@@ -1400,52 +1326,27 @@ function observeBlocks(
   })
 }
 
-export function useAccountPublicationFullList(
-  accountId: string | undefined,
-  opts?: UseQueryOptions<ListPublicationsResponse>,
-) {
-  const pubList = useAccountPublications(accountId)
-  const accounts = useAllAccounts()
-  const data = useMemo(() => {
-    function lookupAccount(accountId: string | undefined) {
-      if (!accountId) return undefined
-      return accounts.data?.accounts.find((acc) => acc.id === accountId)
-    }
-    return pubList.data?.publications.map((pub) => {
-      return {
-        publication: pub,
-        author: lookupAccount(pub?.document?.author),
-        editors: pub?.document?.editors?.map(lookupAccount) || [],
-      }
-    })
-  }, [pubList.data, accounts.data])
-  return {...pubList, data}
-}
-
-export function useAccountPublications(accountId?: string | undefined) {
+export function useAccountDocuments(accountId?: string | undefined) {
   const grpcClient = useGRPCClient()
   return useQuery({
     queryKey: [queryKeys.ACCOUNT_DOCUMENTS, accountId],
     enabled: !!accountId,
     queryFn: async () => {
-      const result = await grpcClient.publications.listAccountPublications({
+      const result = await grpcClient.documents.listAccountDocuments({
         accountId,
       })
-      const publications: HMPublication[] = (result.publications
-        .map((pub) => hmPublication(pub))
-        .filter(Boolean)
-        .sort((a, b) => {
-          const aTime = a?.document?.updateTime
-            ? new Date(a.document.updateTime)
-            : 0
-          const bTime = b?.document?.updateTime
-            ? new Date(b.document.updateTime)
-            : 0
-          if (!aTime || !bTime) return 0
-          return bTime.getTime() - aTime.getTime()
-        }) || []) as HMPublication[]
+      const documents =
+        result.documents
+          .map((doc) => hmDocument(doc))
+          .filter((d) => !!d)
+          .sort((a, b) => {
+            const aTime = a?.updateTime ? new Date(a.updateTime) : 0
+            const bTime = b?.updateTime ? new Date(b.updateTime) : 0
+            if (!aTime || !bTime) return 0
+            return bTime.getTime() - aTime.getTime()
+          }) || []
       return {
-        publications,
+        documents,
       }
     },
   })
@@ -1509,8 +1410,8 @@ export function useDraftRebase({
 
 export function useDocument(
   docId: string | undefined,
-  version: string | undefined,
-  options: UseQueryOptions<HMDocument | null> & {
+  version?: string | undefined,
+  options?: UseQueryOptions<HMDocument | null> & {
     draftId?: string
   },
 ) {
@@ -1519,12 +1420,12 @@ export function useDocument(
 }
 
 export function useDocuments(
-  ids: string[],
+  docs: {docId?: string | undefined; version?: string | undefined}[],
   options?: UseQueryOptions<HMDocument | null>,
 ) {
   const grpcClient = useGRPCClient()
   return useQueries({
-    queries: ids.map((docId) => queryDocument({docId, grpcClient})),
+    queries: docs.map((docQ) => queryDocument({...docQ, grpcClient})),
     ...(options || {}),
   })
 }
@@ -1546,6 +1447,53 @@ export function queryDocument({
     queryFn: async () => {
       const doc = await grpcClient.documents.getDocument({
         documentId: docId,
+        version: version || '',
+      })
+      return toPlainMessage(doc)
+    },
+    ...options,
+  }
+}
+
+export function useProfile(
+  docId: string | undefined,
+  version?: string | undefined,
+  options?: UseQueryOptions<HMDocument | null> & {
+    draftId?: string
+  },
+) {
+  const grpcClient = useGRPCClient()
+  return useQuery(queryProfile({docId, version, grpcClient, ...options}))
+}
+
+export function useProfiles(
+  ids: string[],
+  options?: UseQueryOptions<HMDocument | null>,
+) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: ids.map((docId) => queryProfile({docId, grpcClient})),
+    ...(options || {}),
+  })
+}
+
+export function queryProfile({
+  docId,
+  version,
+  grpcClient,
+  ...options
+}: {
+  docId?: string
+  version?: string
+  grpcClient: GRPCClient
+} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
+  return {
+    enabled: !!docId,
+    queryKey: [queryKeys.EDITOR_DRAFT, docId],
+    useErrorBoundary: false,
+    queryFn: async () => {
+      const doc = await grpcClient.documents.getProfileDocument({
+        accountId: docId,
         version: version || '',
       })
       return toPlainMessage(doc)

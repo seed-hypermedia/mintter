@@ -1,31 +1,31 @@
-import {useAppContext} from '@/app-context'
+import { useAppContext } from '@/app-context'
 import {
   EmbedAccount,
   EmbedComment,
+  EmbedDocument,
   EmbedInline,
-  EmbedPublication,
 } from '@/components/app-embeds'
-import {useExperiments} from '@/models/experiments'
-import {useOpenUrl} from '@/open-url'
-import {trpc} from '@/trpc'
-import {useNavRoute} from '@/utils/navigation'
+import { useExperiments } from '@/models/experiments'
+import { useOpenUrl } from '@/open-url'
+import { trpc } from '@/trpc'
+import { useNavRoute } from '@/utils/navigation'
 import {
   API_FILE_URL,
   BlockRange,
+  DocContentContextValue,
+  DocContentProvider,
   ExpandedBlockRange,
-  PublicationContentContextValue,
-  PublicationContentProvider,
   contentLayoutUnit,
   contentTextUnit,
 } from '@shm/shared'
 import 'allotment/dist/style.css'
-import {useFullReferenceUrl} from '../components/titlebar-common'
+import { useFullReferenceUrl } from '../components/titlebar-common'
 
-export function AppPublicationContentProvider({
+export function AppDocContentProvider({
   children,
   ...overrides
-}: React.PropsWithChildren<Partial<PublicationContentContextValue>>) {
-  const {saveCidAsFile} = useAppContext()
+}: React.PropsWithChildren<Partial<DocContentContextValue>>) {
+  const { saveCidAsFile } = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
@@ -33,7 +33,7 @@ export function AppPublicationContentProvider({
   const importWebFile = trpc.webImporting.importWebFile.useMutation()
   return (
     <>
-      <PublicationContentProvider
+      <DocContentProvider
         showDevMenu={experiments.data?.pubContentDevMenu}
         layoutUnit={contentLayoutUnit}
         importWebFile={importWebFile}
@@ -41,7 +41,7 @@ export function AppPublicationContentProvider({
         debug={false}
         entityComponents={{
           Account: EmbedAccount,
-          Publication: EmbedPublication,
+          Document: EmbedDocument,
           Comment: EmbedComment,
           Inline: EmbedInline,
         }}
@@ -54,13 +54,13 @@ export function AppPublicationContentProvider({
         onCopyBlock={
           reference
             ? (
-                blockId: string,
-                blockRange: BlockRange | ExpandedBlockRange | undefined,
-              ) => {
-                if (blockId && reference) {
-                  reference.onCopy(blockId, blockRange || {expanded: true})
-                }
+              blockId: string,
+              blockRange: BlockRange | ExpandedBlockRange | undefined,
+            ) => {
+              if (blockId && reference) {
+                reference.onCopy(blockId, blockRange || { expanded: true })
               }
+            }
             : null
         }
         ipfsBlobPrefix={`${API_FILE_URL}/`}
@@ -68,16 +68,16 @@ export function AppPublicationContentProvider({
         routeParams={
           route.key == 'document'
             ? {
-                documentId: route.documentId,
-                version: route.versionId,
-                blockRef: route.blockId,
-              }
+              documentId: route.documentId,
+              version: route.versionId,
+              blockRef: route.blockId,
+            }
             : {}
         }
         {...overrides}
       >
         {children}
-      </PublicationContentProvider>
+      </DocContentProvider>
       {reference?.content}
     </>
   )

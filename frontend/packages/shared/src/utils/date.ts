@@ -1,4 +1,4 @@
-import {Timestamp} from '@bufbuild/protobuf'
+import {PlainMessage, Timestamp} from '@bufbuild/protobuf'
 import {format, intlFormat} from 'date-fns'
 import type {Document} from '../client'
 
@@ -26,7 +26,7 @@ var months = [
   'Dec',
 ]
 
-export type HMTimestamp = string
+export type HMTimestamp = PlainMessage<Timestamp>
 
 const hasRelativeDate =
   typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat !== 'undefined'

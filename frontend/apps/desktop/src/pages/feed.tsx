@@ -1,24 +1,24 @@
 import Footer from '@/components/footer'
-import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {useAccount} from '@/models/accounts'
-import {ProfileSchema, useBlobData} from '@/models/changes'
-import {useComment} from '@/models/comments'
-import {usePublication} from '@/models/documents'
-import {useFeedWithLatest, useResourceFeedWithLatest} from '@/models/feed'
-import {appRouteOfId, useNavRoute} from '@/utils/navigation'
-import {useNavigate} from '@/utils/useNavigate'
-import {Timestamp} from '@bufbuild/protobuf'
+import { MainWrapperNoScroll } from '@/components/main-wrapper'
+import { useAccount } from '@/models/accounts'
+import { ProfileSchema, useBlobData } from '@/models/changes'
+import { useComment } from '@/models/comments'
+import { useDocument } from '@/models/documents'
+import { useFeedWithLatest, useResourceFeedWithLatest } from '@/models/feed'
+import { appRouteOfId, useNavRoute } from '@/utils/navigation'
+import { useNavigate } from '@/utils/useNavigate'
+import { Timestamp } from '@bufbuild/protobuf'
 import {
   API_FILE_URL,
   ActivityEvent,
   BlocksContent,
+  DocContent,
   HMComment,
-  HMPublication,
-  PublicationContent,
-  PublicationVariant,
+  HMDocument,
   UnpackedHypermediaId,
   clipContentBlocks,
   formattedDateLong,
+  getDocumentTitle,
   hmId,
   unpackHmId,
 } from '@shm/shared'
@@ -37,10 +37,10 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import {ArrowRight, ChevronUp} from '@tamagui/lucide-icons'
-import React, {PropsWithChildren, ReactNode} from 'react'
-import {VirtuosoHandle} from 'react-virtuoso'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { ArrowRight, ChevronUp } from '@tamagui/lucide-icons'
+import React, { PropsWithChildren, ReactNode } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
+import { AppDocContentProvider } from './document-content-provider'
 
 export default function FeedPage() {
   const route = useNavRoute()
@@ -80,8 +80,8 @@ function FeedItemFooter(props) {
         p="$2"
         jc="center"
         gap="$2"
-        // opacity={0}
-        // $group-item-hover={{opacity: 1}}
+      // opacity={0}
+      // $group-item-hover={{opacity: 1}}
       >
         {props.children}
       </XStack>
@@ -110,13 +110,13 @@ function FeedItemContainer({
         onPress={
           linkId
             ? () => {
-                const route = appRouteOfId(linkId)
-                if (route) {
-                  navigate(route)
-                } else {
-                  toast.error('Failed to resolve a route for this')
-                }
+              const route = appRouteOfId(linkId)
+              if (route) {
+                navigate(route)
+              } else {
+                toast.error('Failed to resolve a route for this')
               }
+            }
             : undefined
         }
       >
@@ -155,14 +155,14 @@ function EntityLink({
   id,
   children,
   ...props
-}: TextProps & {
+}: Omit<TextProps, "id"> & {
   id: UnpackedHypermediaId
   children: ReactNode
 }) {
   const navigate = useNavigate('push')
   return (
     <ButtonText
-      style={{whiteSpace: 'break-spaces'}}
+      style={{ whiteSpace: 'break-spaces' }}
       fontWeight={'bold'}
       onPress={(e) => {
         e.stopPropagation()
@@ -211,7 +211,7 @@ function FeedItemHeader({
         }
         label={account.data?.profile?.alias || account.data?.id}
         onPress={() => {
-          navigate({key: 'account', accountId: author})
+          navigate({ key: 'account', accountId: author })
         }}
       />
       <YStack f={1}>
@@ -231,28 +231,28 @@ function FeedItemHeader({
 
 const FEED_MAX_BLOCK_COUNT = 10
 
-function FeedItemPublicationContent({
-  publication,
+function FeedItemDocContent({
+  document,
 }: {
-  publication: HMPublication
+  document: HMDocument
 }) {
   return (
-    <AppPublicationContentProvider renderOnly>
-      <PublicationContent
+    <AppDocContentProvider renderOnly>
+      <DocContent
         marginVertical={0}
-        publication={publication}
+        document={document}
         maxBlockCount={FEED_MAX_BLOCK_COUNT}
       />
-    </AppPublicationContentProvider>
+    </AppDocContentProvider>
   )
 }
 
-function FeedItemCommentContent({comment}: {comment: HMComment}) {
+function FeedItemCommentContent({ comment }: { comment: HMComment }) {
   return (
-    <AppPublicationContentProvider renderOnly>
+    <AppDocContentProvider renderOnly>
       <YStack
         paddingHorizontal={12}
-        $gtMd={{paddingHorizontal: 24}}
+        $gtMd={{ paddingHorizontal: 24 }}
         marginVertical={0}
       >
         <BlocksContent
@@ -260,14 +260,14 @@ function FeedItemCommentContent({comment}: {comment: HMComment}) {
           parentBlockId={null}
         />
       </YStack>
-    </AppPublicationContentProvider>
+    </AppDocContentProvider>
   )
 }
 
 function HMLinkButton({
   to,
   children,
-}: PropsWithChildren<{to: UnpackedHypermediaId}>) {
+}: PropsWithChildren<{ to: UnpackedHypermediaId }>) {
   const navigate = useNavigate('push')
   return (
     <Button
@@ -289,11 +289,10 @@ function HMLinkButton({
   )
 }
 
-function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
-  const pub = usePublication({id: id.qid, version: cid})
+function DocChangeFeedItem({ id, eventTime, cid, author }: ChangeFeedItemProps) {
+  const doc = useDocument(id.qid, cid)
   const linkId = hmId('d', id.eid, {
     version: cid,
-    variants: [{key: 'author', author}],
   })
   const account = useAccount(author)
   const isProfileUpdate = account.data?.profile?.rootDocument === id.qid
@@ -310,7 +309,7 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
             <>
               {message}{' '}
               <EntityLink id={linkId}>
-                {pub.data?.document?.title || 'Untitled Document'}
+                {getDocumentTitle(doc.data)}
               </EntityLink>
             </>
           }
@@ -322,7 +321,7 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
         </FeedItemFooter>
       }
     >
-      {pub.data && <FeedItemPublicationContent publication={pub.data} />}
+      {doc.data && <FeedItemDocContent document={doc.data} />}
     </FeedItemContainer>
   )
 }
@@ -330,7 +329,7 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
 function UpdatesList({
   updates,
 }: {
-  updates: {labelKey: string; content: ReactNode}[]
+  updates: { labelKey: string; content: ReactNode }[]
 }) {
   return (
     <YStack marginVertical="$4" gap="$2">
@@ -353,8 +352,8 @@ function UpdatesList({
 
 function getPatchedAccountEntries(
   patch: Partial<ProfileSchema>,
-): {labelKey: string; content: ReactNode}[] {
-  const entries: {labelKey: string; content: ReactNode}[] = []
+): { labelKey: string; content: ReactNode }[] {
+  const entries: { labelKey: string; content: ReactNode }[] = []
   if (patch.alias) {
     entries.push({
       labelKey: 'Alias',
@@ -378,29 +377,6 @@ function getPatchedAccountEntries(
   return entries
 }
 
-function AccountEntityLink({id}: {id: string}) {
-  const account = useAccount(id)
-  return (
-    <EntityLink id={hmId('a', id)}>{account.data?.profile?.alias}</EntityLink>
-  )
-}
-
-function PublicationLink({
-  id,
-  variants,
-}: {
-  id: UnpackedHypermediaId
-  variants: PublicationVariant[] | undefined
-}) {
-  const pub = usePublication({
-    id: id?.qid,
-    version: id?.version || undefined,
-  })
-  return (
-    <EntityLink id={{...id, variants}}>{pub.data?.document?.title}</EntityLink>
-  )
-}
-
 function AccountChangeFeedItem({
   id,
   eventTime,
@@ -409,7 +385,6 @@ function AccountChangeFeedItem({
 }: ChangeFeedItemProps) {
   const accountChange = useBlobData(cid)
   if (accountChange.isInitialLoading) return <Spinner />
-  // @ts-expect-error
   const updates = getPatchedAccountEntries(accountChange.data?.patch || {})
   if (updates.length === 0) return <HiddenFeedItem />
   return (
@@ -428,14 +403,14 @@ function AccountChangeFeedItem({
   )
 }
 
-function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
+function CommentFeedItem({ id, eventTime, cid, author }: CommentFeedItemProps) {
   const comment = useComment(id.qid)
   const targetDocId =
     comment.data?.target == null ? null : unpackHmId(comment.data?.target)
-  const targetDoc = usePublication({
-    id: targetDocId?.qid,
-    version: targetDocId?.version || undefined,
-  })
+  const targetDoc = useDocument(
+    targetDocId?.qid,
+    targetDocId?.version || undefined,
+  )
   return (
     <FeedItemContainer
       linkId={id}
@@ -447,9 +422,9 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
           message={
             <>
               commented on{' '}
-              {targetDocId ? (
+              {targetDoc.data && targetDocId ? (
                 <EntityLink id={targetDocId}>
-                  {targetDoc.data?.document?.title}
+                  {getDocumentTitle(targetDoc.data)}
                 </EntityLink>
               ) : (
                 'a document'
@@ -469,7 +444,7 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
   )
 }
 
-function ErrorFeedItem({message}: {message: string}) {
+function ErrorFeedItem({ message }: { message: string }) {
   return (
     <FeedItemContainer>
       <SizableText color="$red10" fontWeight="bold">
@@ -485,14 +460,14 @@ export const FeedItem = React.memo(function FeedItem({
 }: {
   event: ActivityEvent
 }) {
-  const {data, eventTime} = event
+  const { data, eventTime } = event
   if (data.case === 'newBlob') {
-    const {cid, author, resource, blobType} = data.value
+    const { cid, author, resource, blobType } = data.value
     let hmId: UnpackedHypermediaId | null = null
     if (resource) {
       hmId = unpackHmId(resource)
     }
-    const genericEvent = {id: hmId, eventTime, cid, author}
+    const genericEvent = { id: hmId, eventTime, cid, author }
     if (hmId?.type === 'd' && blobType === 'Change') {
       return <DocChangeFeedItem {...genericEvent} id={hmId} />
     }
@@ -510,7 +485,7 @@ export const FeedItem = React.memo(function FeedItem({
   return <ErrorFeedItem message={`Unknown event type: ${event.data.case}`} />
 })
 
-export function NewUpdatesButton({onPress}: {onPress: () => void}) {
+export function NewUpdatesButton({ onPress }: { onPress: () => void }) {
   return (
     <XStack
       position="absolute"
@@ -530,7 +505,7 @@ export function NewUpdatesButton({onPress}: {onPress: () => void}) {
   )
 }
 
-const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
+const Feed = React.memo(function Feed({ tab }: { tab: 'trusted' | 'all' }) {
   const feed = useFeedWithLatest(tab === 'trusted')
   const route = useNavRoute()
   const replace = useNavigate('replace')
@@ -549,7 +524,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
         }
         footer={<FeedPageFooter feedQuery={feed} />}
         items={feed.data || []}
-        renderItem={({item}) => <FeedItem event={item} />}
+        renderItem={({ item }) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
         }}
@@ -557,7 +532,7 @@ const Feed = React.memo(function Feed({tab}: {tab: 'trusted' | 'all'}) {
       {feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />
@@ -570,8 +545,8 @@ export function FeedPageFooter({
   feedQuery,
 }: {
   feedQuery:
-    | ReturnType<typeof useFeedWithLatest>
-    | ReturnType<typeof useResourceFeedWithLatest>
+  | ReturnType<typeof useFeedWithLatest>
+  | ReturnType<typeof useResourceFeedWithLatest>
 }) {
   return feedQuery.data?.length ? (
     <XStack jc="center" gap="$3" paddingVertical="$6">
@@ -602,7 +577,7 @@ export const ResourceFeed = React.memo(function ResourceFeed({
         header={<View height="$2" />}
         footer={<FeedPageFooter feedQuery={feed} />}
         items={feed.data || []}
-        renderItem={({item}) => <FeedItem event={item} />}
+        renderItem={({ item }) => <FeedItem event={item} />}
         onEndReached={() => {
           feed.fetchNextPage()
         }}
@@ -610,7 +585,7 @@ export const ResourceFeed = React.memo(function ResourceFeed({
       {feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
+            scrollRef.current?.scrollTo({ top: 0 })
             feed.refetch()
           }}
         />

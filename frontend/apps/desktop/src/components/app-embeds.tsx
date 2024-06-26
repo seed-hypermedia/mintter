@@ -4,18 +4,19 @@ import {
   BlockNodeContent,
   BlockNodeList,
   ContentEmbed,
+  DocumentCardView,
   EmbedAccountContent,
   EntityComponentProps,
   InlineEmbedComponentProps,
-  PublicationCardView,
   UnpackedHypermediaId,
   createHmId,
   formattedDateMedium,
   getBlockNodeById,
+  getDocumentTitle,
   unpackHmId,
-  usePublicationContentContext,
+  useDocContentContext,
 } from '@shm/shared'
-import { blockStyles } from '@shm/shared/src/publication-content'
+import { blockStyles } from '@shm/shared/src/document-content'
 import {
   Button,
   ButtonText,
@@ -26,7 +27,7 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import { ArrowUpRightSquare } from '@tamagui/lucide-icons'
+import { ArrowUpRightSquare, } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   PropsWithChildren,
@@ -39,8 +40,7 @@ import {
 import { YStackProps } from 'tamagui'
 import { useAccount, useAccounts } from '../models/accounts'
 import { useComment } from '../models/comments'
-import { usePublication } from '../models/documents'
-import { usePublicationVariant } from '../models/publication'
+import { useDocument, useProfile } from '../models/documents'
 import { getAvatarUrl } from '../utils/account-url'
 import { useNavRoute } from '../utils/navigation'
 import { getRouteContext, useOpenInContext } from '../utils/route-context'
@@ -67,7 +67,7 @@ function EmbedWrapper({
     disableEmbedClick = false,
     comment,
     routeParams,
-  } = usePublicationContentContext()
+  } = useDocContentContext()
   const route = useNavRoute()
   const open = useOpenInContext()
   const navigate = useNavigate('replace')
@@ -232,7 +232,6 @@ const EmbedSideAnnotation = forwardRef<
 >(function EmbedSideAnnotation({ hmId, sidePos }, ref) {
   const unpacked = unpackHmId(hmId)
 
-  // @ts-expect-error
   const sideStyles: YStackProps =
     sidePos == 'right'
       ? {
@@ -252,11 +251,11 @@ const EmbedSideAnnotation = forwardRef<
       />
     )
   if (unpacked && unpacked.type != 'd') return null
-  const pub = usePublication({
-    id: unpacked?.qid,
-    version: unpacked?.version || undefined,
-  })
-  const editors = useAccounts(pub.data?.document?.editors || [])
+  const doc = useDocument(
+    unpacked?.qid,
+    unpacked?.version || undefined,
+  )
+  const editors = useAccounts(doc.data?.authors || [])
 
   return (
     <YStack
@@ -271,14 +270,14 @@ const EmbedSideAnnotation = forwardRef<
     >
       {/* <XStack ai="center" gap="$2" bg="green"> */}
       <SizableText size="$1" fontWeight="600">
-        {pub?.data?.document?.title}
+        {doc?.data?.metadata?.name}
       </SizableText>
       {/* <SizableText fontSize={12} color="$color9">
           {formattedDateMedium(pub.data?.document?.publishTime)}
         </SizableText> */}
       {/* </XStack> */}
       <SizableText size="$1" color="$color9">
-        {formattedDateMedium(pub.data?.document?.updateTime)}
+        {formattedDateMedium(doc.data?.updateTime)}
       </SizableText>
       <XStack
         marginHorizontal="$2"
@@ -338,10 +337,10 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
     }
   }, [comment])
 
-  const pubTarget = usePublicationVariant({
-    documentId: unpackedTarget?.qid,
-    versionId: unpackedTarget?.version || undefined,
-  })
+  const pubTarget = useDocument(
+    unpackedTarget?.qid,
+    unpackedTarget?.version || undefined,
+  )
 
   const editors = useAccounts(
     pubTarget.data?.publication?.document?.editors || [],
@@ -422,36 +421,36 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
   return null
 })
 
-export function EmbedPublication(props: EntityComponentProps) {
+export function EmbedDocument(props: EntityComponentProps) {
   if (props.block.attributes?.view == 'card') {
-    return <EmbedPublicationCard {...props} />
+    return <EmbedDocumentCard {...props} />
   } else {
-    return <EmbedPublicationContent {...props} />
+    return <EmbedDocContent {...props} />
   }
 }
 
-export function EmbedPublicationContent(props: EntityComponentProps) {
+export function EmbedDocContent(props: EntityComponentProps) {
   const documentId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
-  const pub = usePublicationVariant({
+  const doc = useDocument(
     documentId,
-    versionId:
-      showReferenced && props.version
-        ? props.version
-        : props.latest
-          ? undefined
-          : props.version || undefined,
-    enabled: !!documentId,
-  })
+    showReferenced && props.version
+      ? props.version
+      : props.latest
+        ? undefined
+        : props.version || undefined,
+    {
+      enabled: !!documentId,
+    })
   const route = useNavRoute()
   const navigate = useNavigate()
   return (
     <ContentEmbed
       props={props}
-      isLoading={pub.isInitialLoading}
+      isLoading={doc.isInitialLoading}
       showReferenced={showReferenced}
       onShowReferenced={setShowReferenced}
-      pub={pub.data?.publication}
+      pub={doc.data}
       EmbedWrapper={EmbedWrapper}
       parentBlockId={props.parentBlockId}
       renderOpenButton={() =>
@@ -480,23 +479,23 @@ export function EmbedPublicationContent(props: EntityComponentProps) {
   )
 }
 
-export function EmbedPublicationCard(props: EntityComponentProps) {
-  // we can't pass anything else to `createHmId` because this is creating the string we need to pass to getPublication
+export function EmbedDocumentCard(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = usePublicationVariant({
-    documentId: docId,
-    versionId: props.latest ? undefined : props.version || undefined,
-    enabled: !!docId,
-  })
+  const doc = useDocument(
+    docId,
+    props.latest ? undefined : props.version || undefined,
+    {
+      enabled: !!docId,
+    })
   let textContent = useMemo(() => {
-    if (pub.data?.publication?.document?.children) {
+    if (doc.data?.content) {
       let content = ''
-      pub.data?.publication?.document?.children.forEach((bn) => {
+      doc.data?.content.forEach((bn) => {
         content += bn.block?.text + ' '
       })
       return content
     }
-  }, [pub.data])
+  }, [doc.data])
 
   return (
     <EmbedWrapper
@@ -504,12 +503,12 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
       parentBlockId={props.parentBlockId}
       viewType={props.block.attributes?.view == 'card' ? 'card' : 'content'}
     >
-      <PublicationCardView
-        title={pub.data?.publication?.document?.title}
+      <DocumentCardView
+        title={doc.data?.metadata?.name}
         textContent={textContent}
-        editors={pub.data?.publication?.document?.editors || []}
+        editors={doc.data?.authors || []}
         AvatarComponent={AvatarComponent}
-        date={pub.data?.publication?.document?.updateTime}
+        date={doc.data?.updateTime}
       />
     </EmbedWrapper>
   )
@@ -521,15 +520,14 @@ export function EmbedAccount(
 ) {
   console.log(`== ~ props EmbedAccount:`, props)
   const accountId = props.type == 'a' ? props.eid : undefined
-  const accountQuery = useAccount(accountId)
+  const profile = useProfile(accountId)
 
-  if (accountQuery.status == 'success') {
+  if (profile.status == 'success') {
     if (
       props.block?.attributes?.view == 'content' &&
-      accountQuery.data?.profile?.rootDocument
+      profile.data
     ) {
-      const unpackedRef = unpackHmId(accountQuery.data?.profile?.rootDocument)
-      return <EmbedPublicationContent {...props} {...unpackedRef} />
+      return <EmbedDocContent {...props} {...unpackedRef} />
     } else if (props.block?.attributes?.view == 'card') {
       return (
         <EmbedWrapper
@@ -537,7 +535,7 @@ export function EmbedAccount(
           parentBlockId={parentBlockId}
           viewType="card"
         >
-          <EmbedAccountContent account={accountQuery.data!} />
+          <EmbedAccountContent account={profile.data!} />
         </EmbedWrapper>
       )
     }
@@ -665,10 +663,10 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
 function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
   const pubId = props?.type == 'd' ? props.qid : undefined
   if (!pubId) throw new Error('Invalid props at PublicationInlineEmbed (pubId)')
-  const pubQuery = usePublication({
-    id: pubId,
-    version: props?.version || undefined,
-  })
+  const doc = useDocument(
+    pubId,
+    props?.version || undefined,
+  )
   const navigate = useNavigate()
   return (
     <InlineEmbedButton
@@ -681,10 +679,7 @@ function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
         })
       }
     >
-      {(pubQuery &&
-        pubQuery.status == 'success' &&
-        pubQuery.data?.document?.title) ||
-        `${pubId?.slice(0, 5) + '...' + pubId?.slice(-5)}`}
+      {getDocumentTitle(doc.data)}
     </InlineEmbedButton>
   )
 }

@@ -1,12 +1,12 @@
+import { DocumentsFullList } from '@/components/document-list'
 import Footer from '@/components/footer'
-import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {PublicationsList} from '@/components/publication-list'
+import { MainWrapperNoScroll } from '@/components/main-wrapper'
 
 export default function ExplorePage() {
   return (
     <>
       <MainWrapperNoScroll>
-        <PublicationsList header={null} trustedOnly={false} />
+        <DocumentsFullList header={null} />
       </MainWrapperNoScroll>
       <Footer />
     </>

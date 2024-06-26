@@ -1,4 +1,4 @@
-import {API_FILE_UPLOAD_URL, usePublicationContentContext} from '@shm/shared'
+import { API_FILE_UPLOAD_URL, useDocContentContext } from '@shm/shared'
 import {
   Button,
   Form,
@@ -9,11 +9,11 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {ChangeEvent, FunctionComponent, useEffect, useState} from 'react'
-import {RiUpload2Fill} from 'react-icons/ri'
-import {Block, BlockNoteEditor, getBlockInfoFromPos} from './blocknote'
-import {MaxFileSizeB, MaxFileSizeMB} from './file'
-import {HMBlockSchema} from './schema'
+import { ChangeEvent, FunctionComponent, useEffect, useState } from 'react'
+import { RiUpload2Fill } from 'react-icons/ri'
+import { Block, BlockNoteEditor, getBlockInfoFromPos } from './blocknote'
+import { MaxFileSizeB, MaxFileSizeMB } from './file'
+import { HMBlockSchema } from './schema'
 
 export type MediaType = {
   id: string
@@ -49,7 +49,7 @@ interface RenderProps {
     setFileName,
     setLoading,
   ) => Promise<void> | void | undefined
-  icon: JSX.Element | FunctionComponent<{color?: string; size?: number}>
+  icon: JSX.Element | FunctionComponent<{ color?: string; size?: number }>
   DisplayComponent: React.ComponentType<DisplayComponentProps>
 }
 
@@ -66,7 +66,7 @@ export const MediaRender: React.FC<RenderProps> = ({
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
   const hasSrc = !!block.props.src
-  const {importWebFile} = usePublicationContentContext()
+  const { importWebFile } = useDocContentContext()
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
@@ -89,7 +89,7 @@ export const MediaRender: React.FC<RenderProps> = ({
     if (!uploading && hasSrc) {
       setUploading(true)
 
-      importWebFile.mutateAsync(block.props.src).then(({cid, size}) => {
+      importWebFile.mutateAsync(block.props.src).then(({ cid, size }) => {
         setUploading(false)
         editor.updateBlock(block, {
           props: {
@@ -104,7 +104,7 @@ export const MediaRender: React.FC<RenderProps> = ({
 
   const assignMedia = (newFile: MediaType) => {
     editor.updateBlock(block.id, {
-      props: {...block.props, ...newFile.props},
+      props: { ...block.props, ...newFile.props },
     })
   }
 
@@ -203,7 +203,7 @@ function MediaForm({
     setFileName,
     setLoading,
   ) => Promise<void> | void | undefined
-  icon: JSX.Element | FunctionComponent<{color?: string; size?: number}> | null
+  icon: JSX.Element | FunctionComponent<{ color?: string; size?: number }> | null
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -232,11 +232,10 @@ function MediaForm({
         files.forEach((file) => {
           if (!file.type.includes(`${mediaType}/`)) {
             setFileName({
-              name: `File ${
-                file.name.length < 36
+              name: `File ${file.name.length < 36
                   ? file.name
                   : file.name.slice(0, 32) + '...'
-              } is not ${mediaType === 'image' ? 'an' : 'a'} ${mediaType}.`,
+                } is not ${mediaType === 'image' ? 'an' : 'a'} ${mediaType}.`,
               color: 'red',
             })
             isMedia = false
@@ -276,18 +275,17 @@ function MediaForm({
       setFileName({
         name:
           largeFileIndex > 0
-            ? `The size of ${
-                largeFile.name.length < 36
-                  ? largeFile.name
-                  : largeFile.name.slice(0, 32) + '...'
-              } exceeds ${MaxFileSizeMB} MB.`
+            ? `The size of ${largeFile.name.length < 36
+              ? largeFile.name
+              : largeFile.name.slice(0, 32) + '...'
+            } exceeds ${MaxFileSizeMB} MB.`
             : `The file size exceeds ${MaxFileSizeMB} MB.`,
         color: 'red',
       })
       return
     }
 
-    const {name} = files[0]
+    const { name } = files[0]
     const formData = new FormData()
     formData.append('file', files[0])
 
@@ -308,7 +306,7 @@ function MediaForm({
       console.error(`Editor: ${mediaType} upload error (MediaForm): ${error}`)
     }
     for (let i = files.length - 1; i > 0; i--) {
-      const {name} = files[i]
+      const { name } = files[i]
       const formData = new FormData()
       formData.append('file', files[i])
 
@@ -338,7 +336,7 @@ function MediaForm({
         editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
       else {
         editor.insertBlocks(
-          [{type: 'paragraph', content: ''}],
+          [{ type: 'paragraph', content: '' }],
           block.id,
           'after',
         )
@@ -403,9 +401,8 @@ function MediaForm({
                 paddingLeft="$3"
                 height="$3"
                 width="100%"
-                placeholder={`Input ${
-                  mediaType === 'web-embed' ? 'X.com' : mediaType
-                } URL here...`}
+                placeholder={`Input ${mediaType === 'web-embed' ? 'X.com' : mediaType
+                  } URL here...`}
                 hoverStyle={{
                   borderColor: '$color11',
                 }}
@@ -442,10 +439,10 @@ function MediaForm({
                   hoverStyle={
                     fileName.color !== 'red'
                       ? {
-                          backgroundColor: '$color11',
-                          cursor: 'pointer',
-                        }
-                      : {cursor: 'auto'}
+                        backgroundColor: '$color11',
+                        cursor: 'pointer',
+                      }
+                      : { cursor: 'auto' }
                   }
                 >
                   {loading ? (

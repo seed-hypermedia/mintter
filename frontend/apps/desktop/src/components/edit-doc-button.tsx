@@ -1,17 +1,16 @@
-import {useGRPCClient} from '@/app-context'
-import {useDraftList} from '@/models/documents'
-import {usePublicationVariant} from '@/models/publication'
-import {NavMode} from '@/utils/navigation'
-import {useNavigate} from '@/utils/useNavigate'
-import {HMBlock, PublicationVariant} from '@shm/shared'
-import {Button, Tooltip, toast} from '@shm/ui'
-import {Pencil} from '@tamagui/lucide-icons'
-import {useQueryInvalidator} from '../app-context'
+import { useGRPCClient } from '@shm/desktop/src/app-context'
+import { useDocument, useDraftList } from '@shm/desktop/src/models/documents'
+import { NavMode } from '@shm/desktop/src/utils/navigation'
+import { useNavigate } from '@shm/desktop/src/utils/useNavigate'
+import { HMBlock } from '@shm/shared'
+import { Button, Tooltip, toast } from '@shm/ui'
+import { Pencil } from '@tamagui/lucide-icons'
+import { useQueryInvalidator } from '../app-context'
 import appError from '../errors'
-import {useMyAccount} from '../models/accounts'
-import {queryKeys} from '../models/query-keys'
-import {generateBlockId} from '../utils/media-drag'
-import {AccountRoute, DocumentRoute} from '../utils/routes'
+import { useMyAccount } from '../models/accounts'
+import { queryKeys } from '../models/query-keys'
+import { generateBlockId } from '../utils/media-drag'
+import { AccountRoute, DocumentRoute } from '../utils/routes'
 
 export function useEditDraft(
   docId: string | undefined,
@@ -19,13 +18,11 @@ export function useEditDraft(
     version,
     navMode,
     contextRoute,
-    variants,
     isProfileDocument,
   }: {
     version: string | undefined
     navMode?: NavMode
     contextRoute: DocumentRoute | AccountRoute
-    variants?: PublicationVariant[]
     isProfileDocument?: boolean
   },
 ) {
@@ -110,37 +107,34 @@ export function useEditDraft(
         return
       }
 
-      appError(`Draft Error: ${error?.message}`, {error})
+      appError(`Draft Error: ${error?.message}`, { error })
     }
   }
-  return {hasExistingDraft, handleEdit}
+  return { hasExistingDraft, handleEdit }
 }
 
 export function EditDocButton({
   docId,
   contextRoute,
   navMode = 'push',
-  variants,
   baseVersion,
   isProfileDocument,
 }: {
   docId: string | undefined
   navMode?: NavMode
   contextRoute: DocumentRoute | AccountRoute
-  variants?: PublicationVariant[]
   baseVersion?: string
   isProfileDocument?: boolean
 }) {
-  const pub = usePublicationVariant({
-    documentId: docId,
-    versionId: baseVersion,
-    variants,
-    enabled: !!docId,
-  })
-  const pubVersion = pub.data?.publication?.version
-  const {hasExistingDraft, handleEdit} = useEditDraft(docId, {
+  const doc = useDocument(
+    docId,
+    baseVersion,
+    {
+      enabled: !!docId,
+    })
+  const pubVersion = doc.data?.version
+  const { hasExistingDraft, handleEdit } = useEditDraft(docId, {
     version: baseVersion || pubVersion,
-    variants,
     navMode,
     contextRoute,
     isProfileDocument,

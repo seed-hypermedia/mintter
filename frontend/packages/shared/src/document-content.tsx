@@ -8,8 +8,8 @@ import {
   HMBlock,
   HMBlockChildrenType,
   HMBlockNode,
+  HMDocument,
   HMInlineContent,
-  HMPublication,
   UnpackedHypermediaId,
   clipContentBlocks,
   formatBytes,
@@ -21,7 +21,7 @@ import {
   toHMInlineContent,
   unpackHmId,
   useHover,
-  useLowlight,
+  useLowlight
 } from '@shm/shared'
 import {
   BlockQuote,
@@ -57,7 +57,7 @@ import {
   YStack,
   YStackProps,
 } from '@shm/ui'
-import { AlertCircle, Book, MessageSquare, Reply } from '@tamagui/lucide-icons'
+import { AlertCircle, MessageSquare, Reply } from '@tamagui/lucide-icons'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import { common } from 'lowlight'
@@ -83,22 +83,22 @@ import {
   enrichTweet,
   useTweet,
 } from 'react-tweet'
-import { HMAccount, HMGroup } from './hm-types'
 import {
   contentLayoutUnit,
   contentTextUnit,
-} from './publication-content-constants'
-import './publication-content.css'
+} from './document-content-constants'
+import './document-content.css'
+import { HMAccount } from './hm-types'
 import { useRangeSelection } from './range-selection'
 
 export type EntityComponentsRecord = {
   Account: React.FC<EntityComponentProps>
-  Publication: React.FC<EntityComponentProps>
+  Document: React.FC<EntityComponentProps>
   Comment: React.FC<EntityComponentProps>
   Inline: React.FC<InlineEmbedComponentProps>
 }
 
-export type PublicationContentContextValue = {
+export type DocContentContextValue = {
   entityComponents: EntityComponentsRecord
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
@@ -128,14 +128,14 @@ export type PublicationContentContextValue = {
   importWebFile?: any
 }
 
-export const publicationContentContext =
-  createContext<PublicationContentContextValue | null>(null)
+export const docContentContext =
+  createContext<DocContentContextValue | null>(null)
 
 export type EntityComponentProps = BlockContentProps & UnpackedHypermediaId
 
 export type InlineEmbedComponentProps = ReturnType<typeof unpackHmId>
 
-export function PublicationContentProvider({
+export function DocContentProvider({
   children,
   debugTop = 0,
   showDevMenu = false,
@@ -144,7 +144,7 @@ export function PublicationContentProvider({
   routeParams = {},
   ...PubContentContext
 }: PropsWithChildren<
-  PublicationContentContextValue & {
+  DocContentContextValue & {
     debugTop?: number
     showDevMenu?: boolean
     ffSerif?: boolean
@@ -155,7 +155,7 @@ export function PublicationContentProvider({
   const [debug, setDebug] = useState(false)
   const [ffSerif, toggleSerif] = useState(true)
   return (
-    <publicationContentContext.Provider
+    <docContentContext.Provider
       value={{
         ...PubContentContext,
         layoutUnit: lUnit,
@@ -226,16 +226,16 @@ export function PublicationContentProvider({
         </YStack>
       ) : null}
       {children}
-    </publicationContentContext.Provider>
+    </docContentContext.Provider>
   )
 }
 
-export function usePublicationContentContext() {
-  let context = useContext(publicationContentContext)
+export function useDocContentContext() {
+  let context = useContext(docContentContext)
 
   if (!context) {
     throw new Error(
-      `Please wrap <PublicationContent /> with <PublicationContentProvider />`,
+      `Please wrap <DocContent /> with <DocContentProvider />`,
     )
   }
 
@@ -258,31 +258,24 @@ function getFocusedBlocks(blocks: HMBlockNode[], blockId?: string) {
   return null
 }
 
-export function PublicationContent({
-  publication,
+export function DocContent({
+  document,
   focusBlockId,
   maxBlockCount,
   marginVertical = '$5',
   ...props
 }: XStackProps & {
+  document: HMDocument
   focusBlockId?: string | undefined
   maxBlockCount?: number
-  publication: HMPublication
   marginVertical?: any
 }) {
   const { wrapper, bubble, coords, state, send } = useRangeSelection()
 
   const { layoutUnit, onCopyBlock, onBlockComment } =
-    usePublicationContentContext()
-  const allBlocks = publication.document?.children || []
-  const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
-    !!publication.document?.title &&
-    allBlocks[0]?.block?.type == 'heading' &&
-    (!allBlocks[0]?.children || allBlocks[0]?.children?.length == 0) &&
-    allBlocks[0]?.block?.text &&
-    allBlocks[0]?.block?.text === publication.document?.title
-  const displayableBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
-  const focusedBlocks = getFocusedBlocks(displayableBlocks, focusBlockId)
+    useDocContentContext()
+  const allBlocks = document?.content || []
+  const focusedBlocks = getFocusedBlocks(allBlocks, focusBlockId)
   const displayBlocks = maxBlockCount
     ? clipContentBlocks(focusedBlocks || [], maxBlockCount)
     : focusedBlocks
@@ -436,7 +429,7 @@ export function BlockNodeList({
 //   index?: number
 //   headingTextStyles: TextProps
 // }) {
-//   const {layoutUnit, textUnit, debug} = usePublicationContentContext()
+//   const {layoutUnit, textUnit, debug} = useDocContentContext()
 //   let styles = useMemo(
 //     () =>
 //       childrenType == 'ol'
@@ -511,7 +504,7 @@ export function BlockNodeContent({
     onReplyBlock,
     debug,
     comment,
-  } = usePublicationContentContext()
+  } = useDocContentContext()
   const headingMarginStyles = useHeadingMarginStyles(
     depth,
     layoutUnit,
@@ -912,7 +905,7 @@ function BlockContentParagraph({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { debug, textUnit, comment } = usePublicationContentContext()
+  const { debug, textUnit, comment } = useDocContentContext()
 
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   return (
@@ -938,7 +931,7 @@ export function BlockContentHeading({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { textUnit, debug, ffSerif } = usePublicationContentContext()
+  const { textUnit, debug, ffSerif } = useDocContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
   let tag = `h${depth}`
@@ -968,14 +961,14 @@ export function BlockContentHeading({
   )
 }
 
-export function PublicationHeading({
+export function DocHeading({
   children,
   right,
 }: {
   children?: string
   right?: React.ReactNode
 }) {
-  const { textUnit, debug, layoutUnit } = usePublicationContentContext()
+  const { textUnit, debug, layoutUnit } = useDocContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
 
@@ -1110,7 +1103,7 @@ function BlockContentImage({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
-  const { ipfsBlobPrefix, textUnit } = usePublicationContentContext()
+  const { ipfsBlobPrefix, textUnit } = useDocContentContext()
   if (!cid) return null
 
   return (
@@ -1154,7 +1147,7 @@ function BlockContentVideo({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
-  const { ipfsBlobPrefix, textUnit } = usePublicationContentContext()
+  const { ipfsBlobPrefix, textUnit } = useDocContentContext()
 
   return (
     <YStack
@@ -1179,7 +1172,6 @@ function BlockContentVideo({
             position="absolute"
             width="100%"
             height="100%"
-            // @ts-expect-error
             contentEditable={false}
             playsInline
             controls
@@ -1248,7 +1240,7 @@ function InlineContentView({
   isRange?: boolean
 }) {
   const { onLinkClick, textUnit, entityComponents } =
-    usePublicationContentContext()
+    useDocContentContext()
 
   const InlineEmbed = entityComponents.Inline
 
@@ -1436,7 +1428,7 @@ function InlineContentView({
 }
 
 export function BlockContentEmbed(props: BlockContentProps) {
-  const EmbedTypes = usePublicationContentContext().entityComponents
+  const EmbedTypes = useDocContentContext().entityComponents
   if (props.block.type !== 'embed')
     throw new Error('BlockContentEmbed requires an embed block type')
   const id = unpackHmId(props.block.ref)
@@ -1444,7 +1436,7 @@ export function BlockContentEmbed(props: BlockContentProps) {
     return <EmbedTypes.Account {...props} {...id} />
   }
   if (id?.type == 'd') {
-    return <EmbedTypes.Publication {...props} {...id} />
+    return <EmbedTypes.Document {...props} {...id} />
   }
   if (id?.type == 'c') {
     return <EmbedTypes.Comment {...props} {...id} />
@@ -1452,29 +1444,9 @@ export function BlockContentEmbed(props: BlockContentProps) {
   return <BlockContentUnknown {...props} />
 }
 
-export function EmbedGroupCardContent({ group }: { group: HMGroup }) {
-  return (
-    <XStack gap="$3" padding="$2" alignItems="flex-start">
-      <XStack paddingVertical="$3">
-        <Book size={36} />
-      </XStack>
-      <YStack justifyContent="center" flex={1}>
-        <Text fontSize="$1" opacity={0.5} flex={0}>
-          Group
-        </Text>
-        <YStack gap="$2">
-          <Text fontSize="$6" fontWeight="bold">
-            {group?.title}
-          </Text>
-          <Text fontSize="$2">{group?.description}</Text>
-        </YStack>
-      </YStack>
-    </XStack>
-  )
-}
 
 export function EmbedAccountContent({ account }: { account: HMAccount }) {
-  const { ipfsBlobPrefix } = usePublicationContentContext()
+  const { ipfsBlobPrefix } = useDocContentContext()
   return (
     <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -1545,7 +1517,7 @@ export function ErrorBlock({
 
 export function ContentEmbed({
   props,
-  pub,
+  document,
   isLoading,
   showReferenced,
   onShowReferenced,
@@ -1555,7 +1527,7 @@ export function ContentEmbed({
 }: {
   isLoading: boolean
   props: EntityComponentProps
-  pub: HMPublication | null | undefined
+  document: HMDocument | null | undefined
   showReferenced: boolean
   onShowReferenced: (showReference: boolean) => void
   renderOpenButton: () => React.ReactNode
@@ -1566,8 +1538,8 @@ export function ContentEmbed({
 }) {
   const embedData = useMemo(() => {
     const selectedBlock =
-      props.blockRef && pub?.document?.children
-        ? getBlockNodeById(pub?.document.children, props.blockRef)
+      props.blockRef && document?.content
+        ? getBlockNodeById(document.content, props.blockRef)
         : null
     const currentAnnotations = selectedBlock?.block?.annotations || []
     const embedBlocks = props.blockRef
@@ -1598,12 +1570,12 @@ export function ContentEmbed({
           },
         ]
         : null
-      : pub?.document?.children
+      : document?.content
 
     return {
-      ...pub,
+      ...document,
       data: {
-        publication: pub,
+        document,
         embedBlocks,
         blockRange:
           props.blockRange && 'start' in props.blockRange && selectedBlock
@@ -1615,7 +1587,7 @@ export function ContentEmbed({
             : null,
       },
     }
-  }, [props.blockRef, props.blockRange, pub])
+  }, [props.blockRef, props.blockRange, document])
 
   let content = <BlockContentUnknown {...props} />
   if (isLoading) {
@@ -1637,7 +1609,7 @@ export function ContentEmbed({
       <>
         {/* ADD SIDENOTE HERE */}
         <BlockNodeList childrenType="group">
-          {!props.blockRef && pub?.document?.title ? (
+          {!props.blockRef && document?.metadata?.name ? (
             <BlockNodeContent
               key={`title-${pub.document.id}`}
               isFirstChild
@@ -1664,7 +1636,7 @@ export function ContentEmbed({
               <BlockNodeContent
                 key={bn.block?.id}
                 isFirstChild={
-                  !props.blockRef && pub?.document?.title ? true : idx == 0
+                  !props.blockRef && document?.metadata?.name ? true : idx == 0
                 }
                 depth={1}
                 expanded={!!props.blockRange?.expanded || false}
@@ -1790,7 +1762,7 @@ export function BlockContentFile({
   ...props
 }: BlockContentProps) {
   const { hover, ...hoverProps } = useHover()
-  const { layoutUnit, saveCidAsFile } = usePublicationContentContext()
+  const { layoutUnit, saveCidAsFile } = useDocContentContext()
   return (
     <YStack
       // backgroundColor="$color3"
@@ -1861,7 +1833,7 @@ export function BlockContentNostr({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit } = usePublicationContentContext()
+  const { layoutUnit } = useDocContentContext()
   const name = block.attributes.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
 
@@ -1961,7 +1933,7 @@ export function BlockContentXPost({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit, onLinkClick } = usePublicationContentContext()
+  const { layoutUnit, onLinkClick } = useDocContentContext()
   const urlArray = block.ref?.split('/')
   const xPostId = urlArray?.[urlArray.length - 1].split('?')[0]
   const { data, error, isLoading } = useTweet(xPostId)
@@ -2018,7 +1990,7 @@ export function BlockContentCode({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit, debug, textUnit } = usePublicationContentContext()
+  const { layoutUnit, debug, textUnit } = useDocContentContext()
   function getHighlightNodes(result: any) {
     return result.value || result.children || []
   }
@@ -2096,7 +2068,7 @@ export function BlockContentMath({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit } = usePublicationContentContext()
+  const { layoutUnit } = useDocContentContext()
 
   const tex = katex.renderToString(block.text ? block.text : '', {
     throwOnError: true,
@@ -2138,7 +2110,7 @@ function getSourceType(name?: string) {
 }
 
 export function useBlockCitations(blockId?: string) {
-  const context = usePublicationContentContext()
+  const context = useDocContentContext()
 
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
@@ -2188,7 +2160,7 @@ function RadioGroupItemWithLabel(props: { value: string; label: string }) {
   )
 }
 
-export function PublicationCardView({
+export function DocumentCardView({
   title,
   textContent,
   editors,

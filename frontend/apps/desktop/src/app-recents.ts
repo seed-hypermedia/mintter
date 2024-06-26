@@ -1,5 +1,4 @@
 import {NavRoute, getRecentsRouteEntityUrl} from '@/utils/routes'
-import {getPublicationVariant} from '@shm/shared'
 import {z} from 'zod'
 import {grpcClient} from './app-grpc'
 import {invalidateQueries} from './app-invalidation'
@@ -48,13 +47,12 @@ async function getRouteTitles(route: NavRoute) {
     title = account.profile?.alias || account.id
     subtitle = 'Account'
   } else if (route.key === 'document') {
-    const {publication} = await getPublicationVariant(
-      grpcClient,
-      route.documentId,
-      route.versionId,
-    )
-    if (publication?.document?.title) {
-      title = publication.document.title
+    const document = await grpcClient.documents.getDocument({
+      documentId: route.documentId,
+      version: route.versionId,
+    })
+    if (document?.metadata?.name) {
+      title = document?.metadata.name
     }
     subtitle = 'Document'
   }

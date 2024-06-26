@@ -1,4 +1,3 @@
-// @ts-nocheck
 export {
   Medal as Acknowledgements,
   Plus as Add,
@@ -85,7 +84,7 @@ export {
   List as UnorderedList,
   User,
   Video as VideoIcon,
-  XCircle,
+  XCircle
 } from '@tamagui/lucide-icons'
 
 export function AppleIcon(props) {

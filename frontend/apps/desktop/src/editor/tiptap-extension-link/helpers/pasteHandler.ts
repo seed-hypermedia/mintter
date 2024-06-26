@@ -507,31 +507,19 @@ async function fetchEntityTitle(
   grpcClient: GRPCClient,
 ) {
   if (hmId.type == 'd') {
-    const pub = await grpcClient.publications.getPublication({
+    const doc = await grpcClient.documents.getDocument({
       documentId: hmId.qid,
       version: hmId.version ? hmId.version : undefined,
     })
     return {
-      title: pub?.document?.title || null,
+      title: doc.metadata?.name || null,
     }
   } else if (hmId.type == 'a') {
-    const account = await grpcClient.accounts.getAccount({
-      id: hmId.eid,
+    const profile = await grpcClient.documents.getProfileDocument({
+      accountId: hmId.eid,
     })
     return {
-      title: account?.profile?.alias || null,
-    }
-  } else if (hmId.type == 'g') {
-    const group = await grpcClient.groups.getGroup({
-      id: hmId.qid,
-      version: hmId.version ? hmId.version : undefined,
-    })
-    const content = await grpcClient.groups.listContent({
-      id: hmId.qid,
-    })
-    return {
-      title: group?.title || null,
-      frontPage: content.content ? content.content['/'] : null,
+      title: profile.metadata?.name || null,
     }
   } else if (hmId.type == 'c') {
     try {
@@ -540,14 +528,14 @@ async function fetchEntityTitle(
       })
 
       if (comment) {
-        const account = await grpcClient.accounts.getAccount({
-          id: comment.author,
+        const profile = await grpcClient.documents.getProfileDocument({
+          accountId: comment.author,
         })
 
         return {
           title: `Comment from ${
-            account?.profile?.alias ||
-            `${account.id.slice(0, 5)}...${account.id.slice(-5)}`
+            profile.metadata?.alias ||
+            `${profile.id.slice(0, 5)}...${profile.id.slice(-5)}`
           }`,
         }
       } else {

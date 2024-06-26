@@ -26,8 +26,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@shm/ui": ["frontend/packages/ui/src/index.ts"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

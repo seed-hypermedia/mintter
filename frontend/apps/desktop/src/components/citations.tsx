@@ -1,22 +1,23 @@
-import {AccessoryContainer} from '@/components/accessory-sidebar'
-import {AccountLinkAvatar} from '@/components/account-link-avatar'
-import {useAccount} from '@/models/accounts'
-import {useComment} from '@/models/comments'
-import {useEntityMentions} from '@/models/content-graph'
-import {useDocTextContent, usePublication} from '@/models/documents'
-import {DocumentRoute} from '@/utils/routes'
-import {useNavigate} from '@/utils/useNavigate'
+import { AccessoryContainer } from '@/components/accessory-sidebar'
+import { AccountLinkAvatar } from '@/components/account-link-avatar'
+import { useAccount } from '@/models/accounts'
+import { useComment } from '@/models/comments'
+import { useEntityMentions } from '@/models/content-graph'
+import { useDocTextContent, useDocument } from '@/models/documents'
+import { DocumentRoute } from '@/utils/routes'
+import { useNavigate } from '@/utils/useNavigate'
 import {
   BlockRange,
   BlocksContent,
   ExpandedBlockRange,
   HYPERMEDIA_SCHEME,
   formattedDateMedium,
+  getDocumentTitle,
   pluralS,
   serializeBlockRange,
   unpackHmId,
 } from '@shm/shared'
-import {Mention} from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
+import { Mention } from '@shm/shared/src/client/.generated/entities/v1alpha/entities_pb'
 import {
   ButtonText,
   PanelCard,
@@ -25,10 +26,10 @@ import {
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@shm/ui'
-import {useMemo} from 'react'
-import {AppPublicationContentProvider} from '../pages/publication-content-provider'
+import { useMemo } from 'react'
+import { AppDocContentProvider } from '../pages/document-content-provider'
 
-function CitationItem({mention}: {mention: Mention}) {
+function CitationItem({ mention }: { mention: Mention }) {
   if (!mention.source) throw 'Invalid citation'
 
   if (mention.source.startsWith(`${HYPERMEDIA_SCHEME}://d`)) {
@@ -42,57 +43,47 @@ function CitationItem({mention}: {mention: Mention}) {
   return null
 }
 
-function PublicationCitationItem({mention}: {mention: Mention}) {
+function PublicationCitationItem({ mention }: { mention: Mention }) {
   const spawn = useNavigate('spawn')
   const unpackedSource = unpackHmId(mention.source)
-  const pub = usePublication(
-    {
-      id: mention.source,
-      version: mention.sourceBlob?.cid,
-    },
+  const doc = useDocument(
+    mention.source,
+    mention.sourceBlob?.cid,
     {
       enabled: !!mention.source,
     },
   )
-  const versionChanges = new Set(unpackedSource?.version?.split('.'))
-  // const timeline = useEntityTimeline(mention.source)
-  // const authors = new Set(
-  //   timeline.data?.timelineEntries
-  //     .filter(([changeId]) => versionChanges.has(changeId))
-  //     .map(([changeId, change]) => change.author),
-  // )
-  let {data: account} = useAccount(pub.data?.document?.author)
+  let { data: account } = useAccount(doc.data?.author)
 
-  const docTextContent = useDocTextContent(pub.data)
+  const docTextContent = useDocTextContent(doc.data)
   const destRoute: DocumentRoute = {
     key: 'document',
     documentId: unpackedSource!.qid,
     versionId: mention.sourceBlob?.cid,
     blockId: mention.sourceContext,
-    // variants: [...authors].map((author) => ({key: 'author', author})),
   }
   return (
     <PanelCard
-      title={pub.data?.document?.title}
+      title={getDocumentTitle(doc.data)}
       content={docTextContent}
       author={account}
-      date={formattedDateMedium(pub.data?.document?.createTime)}
+      date={formattedDateMedium(doc.data?.createTime)}
       onPress={() => {
         if (unpackedSource) {
           spawn(destRoute)
         }
       }}
       avatar={
-        <AccountLinkAvatar accountId={pub.data?.document?.author} size={24} />
+        <AccountLinkAvatar accountId={doc.data?.author} size={24} />
       }
     />
   )
 }
 
-function CommentCitationItem({mention}: {mention: Mention}) {
+function CommentCitationItem({ mention }: { mention: Mention }) {
   const spawn = useNavigate('spawn')
   const unpackedSource = unpackHmId(mention.source)
-  const {data: comment} = useComment(unpackedSource?.id, {
+  const { data: comment } = useComment(unpackedSource?.id, {
     enabled: !!mention.source && !!unpackedSource,
   })
 
@@ -103,26 +94,15 @@ function CommentCitationItem({mention}: {mention: Mention}) {
     return null
   }, [comment])
 
-  const pub = usePublication(
-    {
-      id: commentTarget?.qid,
-      version: commentTarget?.version || undefined,
-    },
+  const doc = useDocument(
+    commentTarget?.qid,
+    commentTarget?.version || undefined,
     {
       enabled: !!commentTarget,
     },
   )
 
-  let {data: account} = useAccount(comment?.author)
-
-  // const docTextContent = useDocTextContent(pub.data)
-  // const destRoute: DocumentRoute = {
-  //   key: 'document',
-  //   documentId: unpackedSource!.qid,
-  //   versionId: mention.sourceBlob?.cid,
-  //   blockId: mention.sourceContext,
-  //   variants: [...authors].map((author) => ({key: 'author', author})),
-  // }
+  let { data: account } = useAccount(comment?.author)
 
   return (
     <YStack
@@ -152,7 +132,7 @@ function CommentCitationItem({mention}: {mention: Mention}) {
         <SizableText size="$2" fontWeight="600">
           {account?.profile?.alias || '...'}
         </SizableText>
-        {pub?.data?.document?.title ? (
+        {doc.data ? (
           <>
             <SizableText flexShrink="0" size="$2">
               comment on{' '}
@@ -171,12 +151,11 @@ function CommentCitationItem({mention}: {mention: Mention}) {
                     key: 'document',
                     documentId: commentTarget.qid,
                     versionId: commentTarget.version || undefined,
-                    variants: commentTarget.variants || [],
                   })
                 }
               }}
             >
-              {pub.data.document.title}
+              {getDocumentTitle(doc.data)}
             </ButtonText>
           </>
         ) : null}
@@ -192,7 +171,7 @@ function CommentCitationItem({mention}: {mention: Mention}) {
         </SizableText>
       </XStack>
       <YStack gap="$2" flex={1} marginHorizontal="$-2">
-        <AppPublicationContentProvider
+        <AppDocContentProvider
           comment
           // onReplyBlock={onReplyBlock}
           onCopyBlock={(
@@ -206,7 +185,7 @@ function CommentCitationItem({mention}: {mention: Mention}) {
           }}
         >
           <BlocksContent blocks={comment?.content} parentBlockId={null} />
-        </AppPublicationContentProvider>
+        </AppDocContentProvider>
       </YStack>
     </YStack>
     // <PanelCard
@@ -226,7 +205,7 @@ function CommentCitationItem({mention}: {mention: Mention}) {
   )
 }
 
-export function DocCitationsAccessory({docId}: {docId?: string}) {
+export function DocCitationsAccessory({ docId }: { docId?: string }) {
   const mentions = useEntityMentions(docId)
   if (!docId) return null
   const count = mentions.data?.mentions?.length || 0
@@ -267,7 +246,7 @@ export function DocCitationsAccessory({docId}: {docId?: string}) {
   )
 }
 
-export function EntityCitationsAccessory({entityId}: {entityId?: string}) {
+export function EntityCitationsAccessory({ entityId }: { entityId?: string }) {
   const mentions = useEntityMentions(entityId)
   if (!entityId) return null
   const count = mentions?.data?.mentions?.length || 0

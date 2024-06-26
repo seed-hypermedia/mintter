@@ -80,8 +80,8 @@ message CreateProfileDraftRequest {
 
 // Request to delete an existing draft.
 message DeleteDraftRequest {
-  // Required. ID of the branch to delete.
-  string branch_id = 1;
+  // Required. ID of the draft to delete.
+  string draft_id = 1;
 }
 
 // Request to get a single draft.

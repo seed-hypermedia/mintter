@@ -1,8 +1,8 @@
-import {useAppContext} from '@/app-context'
-import {useGatewayUrlStream} from '@/models/gateway-settings'
-import {fetchWebLink} from '@/models/web-links'
-import {useOpenUrl} from '@/open-url'
-import {usePopoverState} from '@/use-popover-state'
+import { useAppContext } from '@/app-context'
+import { useGatewayUrlStream } from '@/models/gateway-settings'
+import { fetchWebLink } from '@/models/web-links'
+import { useOpenUrl } from '@/open-url'
+import { usePopoverState } from '@/use-popover-state'
 import {
   BlockContentEmbed,
   createHmDocLink,
@@ -13,7 +13,7 @@ import {
   unpackHmId,
   useHover,
 } from '@shm/shared'
-import {ErrorBlock} from '@shm/shared/src/publication-content'
+import { ErrorBlock } from '@shm/shared/src/document-content'
 import {
   Button,
   Check,
@@ -29,13 +29,13 @@ import {
   XStack,
   YGroup,
 } from '@shm/ui'
-import {Fragment} from '@tiptap/pm/model'
-import {forwardRef, useCallback, useMemo} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {Block, BlockNoteEditor, HMBlockSchema} from '.'
-import {createReactBlockSpec} from './blocknote/react'
-import {MediaContainer} from './media-container'
-import {DisplayComponentProps, MediaRender, MediaType} from './media-render'
+import { Fragment } from '@tiptap/pm/model'
+import { useCallback, useMemo } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { Block, BlockNoteEditor, HMBlockSchema } from '.'
+import { createReactBlockSpec } from './blocknote/react'
+import { MediaContainer } from './media-container'
+import { DisplayComponentProps, MediaRender, MediaType } from './media-render'
 
 function EmbedError() {
   return <ErrorBlock message="Failed to load this Embedded document" />
@@ -81,7 +81,7 @@ const Render = (
   block: Block<HMBlockSchema>,
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
-  const {queryClient} = useAppContext()
+  const { queryClient } = useAppContext()
   const gwUrl = useGatewayUrlStream()
   const submitEmbed = async (
     url: string,
@@ -92,7 +92,7 @@ const Render = (
     if (isPublicGatewayLink(url, gwUrl) || isHypermediaScheme(url)) {
       const hmLink = normalizeHmId(url, gwUrl)
       const newUrl = hmLink ? hmLink : url
-      assign({props: {url: newUrl}} as MediaType)
+      assign({ props: { url: newUrl } } as MediaType)
       const cursorPosition = editor.getTextCursorPosition()
       editor.focus()
       if (cursorPosition.block.id === block.id) {
@@ -100,7 +100,7 @@ const Render = (
           editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
         else {
           editor.insertBlocks(
-            [{type: 'paragraph', content: ''}],
+            [{ type: 'paragraph', content: '' }],
             block.id,
             'after',
           )
@@ -120,7 +120,7 @@ const Render = (
             res?.blockRef,
           )
           if (fullHmId) {
-            assign({props: {url: fullHmId}} as MediaType)
+            assign({ props: { url: fullHmId } } as MediaType)
             const cursorPosition = editor.getTextCursorPosition()
             editor.focus()
             if (cursorPosition.block.id === block.id) {
@@ -128,7 +128,7 @@ const Render = (
                 editor.setTextCursorPosition(cursorPosition.nextBlock, 'start')
               else {
                 editor.insertBlocks(
-                  [{type: 'paragraph', content: ''}],
+                  [{ type: 'paragraph', content: '' }],
                   block.id,
                   'after',
                 )
@@ -190,8 +190,8 @@ const display = ({
           <BlockContentEmbed
             expanded={
               unpackedId &&
-              unpackedId.blockRange &&
-              'expanded' in unpackedId.blockRange
+                unpackedId.blockRange &&
+                'expanded' in unpackedId.blockRange
                 ? true
                 : false
             }
@@ -244,7 +244,7 @@ function EmbedControl({
 
   const handleViewSelect = useCallback((view: 'content' | 'card') => {
     return () => {
-      assign({props: {view}})
+      assign({ props: { view } })
       popoverViewState.onOpenChange(false)
     }
   }, [])
@@ -271,7 +271,6 @@ function EmbedControl({
                 documentId: unpackedRef?.qid,
                 version: unpackedRef?.version,
                 blockRef: unpackedRef?.blockRef,
-                variants: unpackedRef?.variants,
                 latest: versionMode === 'latest',
               }),
             },
@@ -292,7 +291,6 @@ function EmbedControl({
             documentId: unpackedRef?.qid,
             version: unpackedRef?.version,
             blockRef: unpackedRef?.blockRef,
-            variants: unpackedRef?.variants,
             latest: unpackedRef?.latest || undefined,
           }),
           view: 'content',
@@ -313,7 +311,7 @@ function EmbedControl({
       opacity={popoverState.open ? 1 : 0}
       padding="$2"
       gap="$2"
-      $group-item-hover={{opacity: 1}}
+      $group-item-hover={{ opacity: 1 }}
     >
       <Tooltip content="Open in a new window">
         <Button
@@ -342,8 +340,8 @@ function EmbedControl({
                   ? ChevronRight
                   : ChevronDown
                 : expandButtonHover.hover
-                ? ChevronDown
-                : ChevronRight
+                  ? ChevronDown
+                  : ChevronRight
             }
             backgroundColor="$backgroundStrong"
             onPress={(e) => {
@@ -351,7 +349,6 @@ function EmbedControl({
               let url = createHmDocLink({
                 documentId: hmId?.qid,
                 version: hmId?.version,
-                variants: hmId?.variants,
                 latest: !!hmId?.latest,
                 blockRef: hmId?.blockRef,
                 blockRange: {
@@ -372,8 +369,8 @@ function EmbedControl({
                 ? 'Collapse'
                 : 'Expand'
               : expandButtonHover.hover
-              ? 'Expand'
-              : 'Collapse'}
+                ? 'Expand'
+                : 'Collapse'}
           </Button>
         </Tooltip>
       ) : null}
@@ -493,8 +490,8 @@ function EmbedControl({
                 },
               },
             ]}
-            enterStyle={{y: -10, opacity: 0}}
-            exitStyle={{y: -10, opacity: 0}}
+            enterStyle={{ y: -10, opacity: 0 }}
+            exitStyle={{ y: -10, opacity: 0 }}
             elevate={true}
           >
             <YGroup>
@@ -506,7 +503,7 @@ function EmbedControl({
                       handleBlockToDocument()
                     }}
                     title="Convert to Document Embed"
-                    // icon={item.icon}
+                  // icon={item.icon}
                   />
                 ) : null}
               </YGroup.Item>
@@ -517,83 +514,3 @@ function EmbedControl({
     </XStack>
   )
 }
-
-const EmbedSideAnnotation = forwardRef<
-  HTMLDivElement,
-  {hmId: string; sidePos: 'bottom' | 'right'}
->(function EmbedSideAnnotation({hmId, sidePos}, ref) {
-  const unpacked = unpackHmId(hmId)
-  if (unpacked && unpacked.type != 'd') return null
-  const pub = usePublication({
-    id: unpacked?.qid,
-    version: unpacked?.version || undefined,
-  })
-  const editors = useAccounts(pub.data?.document?.editors || [])
-
-  // @ts-expect-error
-  const sideStyles: YStackProps =
-    sidePos == 'right'
-      ? {
-          position: 'absolute',
-          top: 32,
-          right: -16,
-          transform: 'translateX(100%)',
-        }
-      : {}
-
-  return (
-    <YStack
-      ref={ref}
-      p="$2"
-      flex="none"
-      className="embed-side-annotation"
-      width="max-content"
-      maxWidth={300}
-      {...sideStyles}
-    >
-      {/* <XStack ai="center" gap="$2" bg="green"> */}
-      <SizableText size="$1" fontWeight="600">
-        {pub?.data?.document?.title}
-      </SizableText>
-      {/* <SizableText fontSize={12} color="$color9">
-          {formattedDateMedium(pub.data?.document?.publishTime)}
-        </SizableText> */}
-      {/* </XStack> */}
-      <SizableText size="$1" color="$color9">
-        {formattedDateMedium(pub.data?.document?.updateTime)}
-      </SizableText>
-      <XStack
-        marginHorizontal="$2"
-        gap="$2"
-        ai="center"
-        paddingVertical="$1"
-        alignSelf="flex-start"
-      >
-        <XStack ai="center">
-          {editors
-            .map((editor) => editor.data)
-            .filter(Boolean)
-            .map(
-              (editorAccount, idx) =>
-                editorAccount?.id && (
-                  <XStack
-                    zIndex={idx + 1}
-                    key={editorAccount?.id}
-                    borderColor="$background"
-                    backgroundColor="$background"
-                    borderWidth={2}
-                    borderRadius={100}
-                    marginLeft={-8}
-                  >
-                    <BaseAccountLinkAvatar
-                      account={editorAccount}
-                      accountId={editorAccount?.id}
-                    />
-                  </XStack>
-                ),
-            )}
-        </XStack>
-      </XStack>
-    </YStack>
-  )
-})

@@ -173,7 +173,7 @@ export function useAllPublicationComments(docEid: string | undefined) {
   })
 }
 
-export function usePublicationCommentGroups(
+export function useDocumentCommentGroups(
   docEid: string | undefined,
   commentId: string | null = null,
 ) {
