@@ -8,6 +8,10 @@ export type WindowTypeInfo = {
   maxHeight: number | undefined
   initWidth?: number | undefined
   initHeight?: number | undefined
+  trafficLightPosition?: {
+    x: number
+    y: number
+  }
 }
 
 export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
@@ -18,6 +22,10 @@ export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
       minHeight: 720,
       maxWidth: undefined,
       maxHeight: undefined,
+      trafficLightPosition: {
+        x: 12,
+        y: 12,
+      },
     } as const
   if (route.key === 'settings')
     return {
@@ -34,6 +42,10 @@ export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
       minHeight: 600,
       maxWidth: 600,
       maxHeight: undefined,
+      trafficLightPosition: {
+        x: 12,
+        y: 12,
+      },
     } as const
   return {
     key: 'main',
@@ -43,6 +55,10 @@ export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
     minHeight: 400,
     maxWidth: undefined,
     maxHeight: undefined,
+    trafficLightPosition: {
+      x: 12,
+      y: 12,
+    },
   } as const
 }
 

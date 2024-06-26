@@ -204,10 +204,7 @@ export function createAppWindow(input: {
       ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
       : path.resolve(__dirname, '../assets/icons/icon.png'),
     titleBarStyle: 'hidden',
-    trafficLightPosition: {
-      x: 12,
-      y: 12,
-    },
+    trafficLightPosition: windowType.trafficLightPosition || undefined,
   })
 
   createFindView(browserWindow)

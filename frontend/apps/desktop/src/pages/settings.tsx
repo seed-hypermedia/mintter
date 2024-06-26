@@ -4,7 +4,7 @@ import {useEditProfileDialog} from '@/components/edit-profile-dialog'
 import appError from '@/errors'
 import {useMyAccount} from '@/models/accounts'
 import {useAutoUpdatePreference} from '@/models/app-settings'
-import {useDaemonInfo} from '@/models/daemon'
+import {useDaemonInfo, useDeleteKey} from '@/models/daemon'
 import {useExperiments, useWriteExperiments} from '@/models/experiments'
 import {
   useGatewayUrl,
@@ -25,6 +25,7 @@ import {trpc} from '@/trpc'
 import {getAvatarUrl} from '@/utils/account-url'
 import {LightningWallet, Profile, State, VERSION} from '@shm/shared'
 import {
+  AlertDialog,
   ArrowDownRight,
   Button,
   Card,
@@ -37,11 +38,11 @@ import {
   ExternalLink,
   H3,
   Heading,
-  Info,
   InfoListHeader,
   InfoListItem,
   Input,
   Label,
+  ListItem,
   Pencil,
   RadioGroup,
   ScrollView,
@@ -53,6 +54,7 @@ import {
   TableList,
   Tabs,
   TabsContentProps,
+  TabsProps,
   Tooltip,
   View,
   XGroup,
@@ -60,9 +62,19 @@ import {
   YStack,
   toast,
 } from '@shm/ui'
-import {Trash} from '@tamagui/lucide-icons'
+import {
+  AtSign,
+  Biohazard,
+  Bitcoin,
+  Code2,
+  Info,
+  Minus,
+  Plus,
+  RadioTower,
+  Trash,
+} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useEffect, useMemo, useState} from 'react'
+import React, {useEffect, useId, useMemo, useState} from 'react'
 import {dispatchWizardEvent} from 'src/app-account'
 import {useAccountKeys} from 'src/models/daemon'
 
@@ -70,64 +82,45 @@ export default function Settings() {
   return (
     <Tabs
       flex={1}
-      defaultValue="account"
-      flexDirection="row"
-      orientation="vertical"
+      defaultValue="accounts"
+      flexDirection="column"
       borderWidth="$0.25"
       overflow="hidden"
       borderColor="$backgroundStrong"
     >
       <Tabs.List
         aria-label="Manage your account"
-        separator={<Separator />}
-        minWidth={200}
+        separator={<Separator vertical />}
+        alignItems="center"
+        justifyContent="center"
+        flexShrink={0}
+        flex="none"
+        style={{
+          flexShrink: 0,
+        }}
       >
-        <Tabs.Tab value="account" data-testid="tab-account" borderRadius={0}>
-          <SizableText flex={1} textAlign="left">
-            Accounts
-          </SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab value="gateway" data-testid="tab-gateway" borderRadius={0}>
-          <SizableText flex={1} textAlign="left">
-            Gateway
-          </SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab value="settings" data-testid="tab-settings" borderRadius={0}>
-          <SizableText flex={1} textAlign="left">
-            App Info
-          </SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab value="wallets" data-testid="tab-wallets" borderRadius={0}>
-          <SizableText flex={1} textAlign="left">
-            Sponsorship
-          </SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab value="experimental" data-testid="tab-experimental">
-          <SizableText flex={1} textAlign="left">
-            Experiments
-          </SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab value="developer" data-testid="tab-developer">
-          <SizableText flex={1} textAlign="left">
-            Developers
-          </SizableText>
-        </Tabs.Tab>
+        <Tab value="accounts" icon={AtSign} label="Accounts" />
+        <Tab value="gateway" icon={RadioTower} label="Gateway" />
+        <Tab value="app-info" icon={Info} label="App Info" />
+        <Tab value="wallets" icon={Bitcoin} label="Sponsorship" />
+        <Tab value="experiments" icon={Biohazard} label="Experiments" />
+        <Tab value="developer" icon={Code2} label="Developers" />
       </Tabs.List>
-      <Separator vertical />
-      <TabsContent value="account">
+      <Separator />
+      <TabsContent value="accounts">
         <AccountKeys />
-        <DevicesInfo />
       </TabsContent>
       <TabsContent value="gateway">
         <GatewaySettings />
       </TabsContent>
-      <TabsContent value="settings">
+      <TabsContent value="app-info">
         <AppSettings />
+        <DevicesInfo />
       </TabsContent>
       <TabsContent value="wallets">
         <WalletsSettings />
       </TabsContent>
-      <TabsContent value="experimental">
+      <TabsContent value="experiments">
         <ExperimentsSettings />
       </TabsContent>
       <TabsContent value="developer">
@@ -342,10 +335,110 @@ export function ProfileInfo() {
 }
 
 function AccountKeys() {
+  const deleteKey = useDeleteKey()
   const {data: keys} = useAccountKeys()
+  const [selectedAccount, setSelectedAccount] = useState<undefined | string>(
+    () => {
+      if (keys && keys.length == 1) {
+        return keys[0].name
+      }
+      return undefined
+    },
+  )
+
+  function handleDeleteCurrentAccount() {
+    if (!account) return
+    deleteKey.mutateAsync({name: account.name}).then(() => {})
+  }
+
+  const account = useMemo(() => {
+    return keys?.find((key) => key.name == selectedAccount)
+  }, [selectedAccount])
+
+  return (
+    <XStack style={{flex: 1, height: '100%'}} gap="$4">
+      <YStack f={1} borderColor="$color7" borderWidth={1}>
+        <YStack f={1}>
+          {keys?.map((key) => (
+            <ListItem
+              title={key.name}
+              hoverTheme
+              pressTheme
+              bg={selectedAccount == key.name ? '$color5' : undefined}
+              onPress={() => setSelectedAccount(key.name)}
+            />
+          ))}
+        </YStack>
+        <Separator />
+        <XStack p="$1">
+          <Button
+            icon={Plus}
+            onPress={() => dispatchWizardEvent(true)}
+            chromeless
+            size="$2"
+          />
+          <AlertDialog native>
+            <AlertDialog.Trigger asChild>
+              <Button
+                disabled={!selectedAccount}
+                icon={Minus}
+                chromeless
+                size="$2"
+              />
+            </AlertDialog.Trigger>
+            <AlertDialog.Portal>
+              <AlertDialog.Overlay
+                key="overlay"
+                animation="quick"
+                opacity={0.5}
+                enterStyle={{opacity: 0}}
+                exitStyle={{opacity: 0}}
+              />
+              <AlertDialog.Content
+                bordered
+                elevate
+                key="content"
+                animation={[
+                  'quick',
+                  {
+                    opacity: {
+                      overshootClamping: true,
+                    },
+                  },
+                ]}
+                enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                x={0}
+                scale={1}
+                opacity={1}
+                y={0}
+              >
+                <AlertDialog.Title>Delete Account</AlertDialog.Title>
+                <AlertDialog.Description>
+                  {`Are you really sure youc ant to delete ${account?.name} account?`}
+                </AlertDialog.Description>
+                <XStack space="$3" justifyContent="flex-end">
+                  <AlertDialog.Cancel asChild>
+                    <Button>Cancel</Button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action asChild>
+                    <Button theme="active" onPress={handleDeleteCurrentAccount}>
+                      Accept
+                    </Button>
+                  </AlertDialog.Action>
+                </XStack>
+              </AlertDialog.Content>
+            </AlertDialog.Portal>
+          </AlertDialog>
+        </XStack>
+      </YStack>
+      <YStack f={3} borderColor="$color7" borderWidth={1}>
+        {/* <SizableText>{JSON.stringify(account, null, 4)}</SizableText> */}
+      </YStack>
+    </XStack>
+  )
   return (
     <YStack gap="$3">
-      <Heading>Account Keys</Heading>
       {!keys || keys.length === 0 ? (
         <>
           <Button onPress={() => dispatchWizardEvent(true)}>
@@ -353,16 +446,30 @@ function AccountKeys() {
           </Button>
         </>
       ) : (
-        <table>
-          {keys?.length
-            ? keys.map((k) => (
-                <tr>
-                  <td>{k.name}</td>
-                  <td>{k.accountId}</td>
-                </tr>
-              ))
-            : null}
-        </table>
+        <XStack>
+          <YStack as="table" minWidth={200}>
+            <tbody>
+              {keys?.length
+                ? keys.map((k) => (
+                    <tr>
+                      <XStack
+                        as="td"
+                        bg={
+                          selectedAccount == k.name ? '$blue5' : 'transparent'
+                        }
+                        onClick={() => {
+                          setSelectedAccount(k.name)
+                        }}
+                      >
+                        {k.name}
+                      </XStack>
+                    </tr>
+                  ))
+                : null}
+            </tbody>
+          </YStack>
+          <YStack f={1}>{JSON.stringify(account, null, 4)}</YStack>
+        </XStack>
       )}
     </YStack>
   )
@@ -376,18 +483,20 @@ function DevicesInfo() {
 
       {deviceInfo ? (
         <table>
-          <tr>
-            <td>peerId</td>
-            <td>{deviceInfo.peerId}</td>
-          </tr>
-          <tr>
-            <td>state</td>
-            <td>{State[deviceInfo.state]}</td>
-          </tr>
-          <tr>
-            <td>startTime</td>
-            <td>{JSON.stringify(deviceInfo.startTime)}</td>
-          </tr>
+          <tbody>
+            <tr>
+              <td>peerId</td>
+              <td>{deviceInfo.peerId}</td>
+            </tr>
+            <tr>
+              <td>state</td>
+              <td>{State[deviceInfo.state]}</td>
+            </tr>
+            <tr>
+              <td>startTime</td>
+              <td>{JSON.stringify(deviceInfo.startTime)}</td>
+            </tr>
+          </tbody>
         </table>
       ) : null}
     </YStack>
@@ -519,7 +628,7 @@ function GatewaySettings({}: {}) {
 
 function PushOnCopySetting({}: {}) {
   const pushOnCopy = usePushOnCopy()
-  const id = React.useId()
+  const id = useId()
   const setPushOnCopy = useSetPushOnCopy()
   if (!pushOnCopy.data) return null
   return (
@@ -797,14 +906,13 @@ function AppSettings() {
 const TabsContent = (props: TabsContentProps) => {
   return (
     <Tabs.Content
-      backgroundColor="$background"
-      key="tab3"
+      // backgroundColor="$background"
       gap="$3"
       flex={1}
       {...props}
     >
-      <ScrollView>
-        <YStack gap="$4" padding="$4" paddingBottom="$7">
+      <ScrollView contentContainerStyle={{flex: 1}}>
+        <YStack gap="$4" padding="$4" paddingBottom="$5" f={1}>
           {props.children}
         </YStack>
       </ScrollView>
@@ -1020,5 +1128,26 @@ function WalletCard({
         </Button>
       </Card.Footer>
     </Card>
+  )
+}
+
+function Tab(props: TabsProps & {icon: any; label: string}) {
+  const {icon: Icon, label, ...rest} = props
+  return (
+    <Tabs.Tab
+      data-testid={`tab-${props.value}`}
+      borderRadius={0}
+      flexDirection="column"
+      {...props}
+      p="$4"
+      paddingBottom="$3"
+      height="auto"
+      gap="$2"
+    >
+      <Icon size={20} />
+      <SizableText flex={1} size="$1" textAlign="left">
+        {label}
+      </SizableText>
+    </Tabs.Tab>
   )
 }

@@ -7,7 +7,7 @@ import {getRouteKey, useNavRoute} from '@/utils/navigation'
 import {NavRoute} from '@/utils/routes'
 import {useNavigate} from '@/utils/useNavigate'
 import {getWindowType} from '@/utils/window-types'
-import {YStack} from '@shm/ui'
+import {SizableText, XStack, YStack} from '@shm/ui'
 import {ReactElement, lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AppErrorPage} from '../components/app-error'
@@ -55,7 +55,19 @@ export default function Main({className}: {className?: string}) {
     titlebar = <TitleBar />
     sidebar = <AppSidebar />
   } else if (windowType === 'settings') {
-    titlebar = <TitleBar clean />
+    titlebar = (
+      <XStack
+        bg="$transparent"
+        h={26}
+        ai="center"
+        jc="center"
+        className="window-drag"
+      >
+        <SizableText size="$1.5" fontWeight="bold">
+          Settings
+        </SizableText>
+      </XStack>
+    )
   } else if (windowType === 'deleted-content') {
     titlebar = <TitleBar clean cleanTitle="Review Deleted Content" />
   }
