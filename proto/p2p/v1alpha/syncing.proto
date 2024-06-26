@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package com.seed.p2p.v1alpha;
+
+option go_package = "seed/backend/genproto/p2p/v1alpha;p2p";
+
+service Syncing {
+  rpc ReconcileBlobs(ReconcileBlobsRequest) returns (ReconcileBlobsResponse);
+}
+
+message ReconcileBlobsRequest {
+  // Filter describes which blobs to select for reconciliation.
+  message Filter {
+    // Selects only blobs related to the given resource.
+    string resource = 1;
+  }
+
+  // Optional. Filter to narrow down the blobs to reconcile.
+  // If not set, all public blobs are reconciled.
+  Filter filter = 1;
+
+  // Optional. The ranges for the sender's part of the set.
+  repeated SetReconciliationRange ranges = 2;
+}
+
+message ReconcileBlobsResponse {
+  repeated SetReconciliationRange ranges = 1;
+}
+
+message SetReconciliationRange {
+  enum Mode {
+    SKIP = 0;
+
+    FINGERPRINT = 1;
+
+    LIST = 2;
+  }
+
+  // Mode for the range.
+  Mode mode = 1;
+
+  // Timestamp of the upper bound of the range.
+  int64 bound_timestamp = 2;
+
+  // Value of the upper bound of the range.
+  bytes bound_value = 3;
+
+  // Only for LIST mode. List of values in the range.
+  repeated bytes values = 4;
+
+  // Only for the FINGERPRINT mode. Fingerprint of the range.
+  bytes fingerprint = 5;
+}
