@@ -107,7 +107,7 @@ func (srv *Server) RegisterKey(ctx context.Context, req *daemon.RegisterKeyReque
 
 // DeleteKey implement the corresponding gRPC method.
 func (srv *Server) DeleteKey(ctx context.Context, req *daemon.DeleteKeyRequest) (*emptypb.Empty, error) {
-	return nil, srv.store.KeyStore().DeleteKey(ctx, req.Name)
+	return &emptypb.Empty{}, srv.store.KeyStore().DeleteKey(ctx, req.Name)
 }
 
 // ListKeys implement the corresponding gRPC method.
@@ -199,7 +199,7 @@ func (srv *Server) ForceSync(context.Context, *daemon.ForceSyncRequest) (*emptyp
 	}
 
 	if err := srv.forceSyncFunc(); err != nil {
-		return nil, err
+		return &emptypb.Empty{}, err
 	}
 
 	return &emptypb.Empty{}, nil
