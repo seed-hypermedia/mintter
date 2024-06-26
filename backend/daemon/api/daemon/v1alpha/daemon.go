@@ -101,7 +101,7 @@ func (srv *Server) RegisterKey(ctx context.Context, req *daemon.RegisterKeyReque
 	return &daemon.NamedKey{
 		PublicKey: acc.Principal().String(),
 		Name:      req.Name,
-		AccountId: "a/" + acc.Principal().String(), // TODO(burdiyan): finalize the decision about what Account ID should look like.
+		AccountId: "hm://a/" + acc.Principal().String(),
 	}, nil
 }
 
@@ -186,6 +186,7 @@ func (srv *Server) GetInfo(context.Context, *daemon.GetInfoRequest) (*daemon.Inf
 	resp := &daemon.Info{
 		PeerId:    srv.store.Device().PeerID().String(),
 		StartTime: timestamppb.New(srv.startTime),
+		State:     daemon.State_ACTIVE, // TODO(hm24): handle the state correctly, providing feedback for database migrations.
 	}
 
 	return resp, nil
