@@ -1,5 +1,5 @@
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Profile} from '@shm/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Profile } from '@shm/shared'
 import {
   Button,
   DialogTitle,
@@ -9,14 +9,14 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import {useEffect} from 'react'
-import {Control, useController, useForm} from 'react-hook-form'
-import {z} from 'zod'
-import {useMyAccount, useSetProfile} from '../models/accounts'
-import {getAvatarUrl} from '../utils/account-url'
-import {AvatarForm} from './avatar-form'
-import {useAppDialog} from './dialog'
-import {FormError, FormInput} from './form-input'
+import { useEffect } from 'react'
+import { Control, useController, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { useMyAccount_deprecated, useSetProfile } from '../models/accounts'
+import { getAvatarUrl } from '../utils/account-url'
+import { AvatarForm } from './avatar-form'
+import { useAppDialog } from './dialog'
+import { FormError, FormInput } from './form-input'
 
 export function useEditProfileDialog() {
   // for some reason the dialog doesn't work if the input is falsy
@@ -24,8 +24,8 @@ export function useEditProfileDialog() {
   return useAppDialog<true>(EditProfileDialog)
 }
 
-function EditProfileDialog({onClose}: {onClose: () => void}) {
-  const myAccount = useMyAccount()
+function EditProfileDialog({ onClose }: { onClose: () => void }) {
+  const myAccount = useMyAccount_deprecated()
   const profile = myAccount.data?.profile
   return (
     <>
@@ -40,13 +40,13 @@ function EditProfileDialog({onClose}: {onClose: () => void}) {
 }
 
 const profileSchema = z.object({
-  alias: z.string().min(1, {message: 'Profile alias is required'}),
+  alias: z.string().min(1, { message: 'Profile alias is required' }),
   avatar: z.string().optional(),
 })
 type ProfileFields = z.infer<typeof profileSchema>
 
-function AvatarInput({control}: {control: Control<ProfileFields>}) {
-  const c = useController({control, name: 'avatar'})
+function AvatarInput({ control }: { control: Control<ProfileFields> }) {
+  const c = useController({ control, name: 'avatar' })
   return (
     <AvatarForm
       onAvatarUpload={c.field.onChange}
@@ -69,11 +69,11 @@ function ProfileForm({
     control,
     handleSubmit,
     setFocus,
-    formState: {errors},
+    formState: { errors },
   } = useForm<ProfileFields>({
     resolver: zodResolver(profileSchema),
     // OMG wow, this object gets mutated! bad things will happen if we don't spread the profile into a new object:
-    defaultValues: {...profile},
+    defaultValues: { ...profile },
   })
 
   useEffect(() => {

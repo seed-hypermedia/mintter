@@ -11,7 +11,7 @@ import {
   DraftPublicationButtons,
   VersionContext
 } from '@/components/variants'
-import { useAccount, useMyAccount } from '@/models/accounts'
+import { useAccount, useMyAccount_deprecated } from '@/models/accounts'
 import { useDocument, usePushPublication } from '@/models/documents'
 import { useGatewayHost, useGatewayUrl } from '@/models/gateway-settings'
 import { SidebarWidth, useSidebarContext } from '@/sidebar-context'
@@ -151,7 +151,7 @@ export function AccountOptionsButton() {
   const account = useAccount(route.accountId)
   const dispatch = useNavigationDispatch()
   const deleteEntity = useDeleteDialog()
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const spawn = useNavigate('spawn')
   const editProfileDialog = useEditProfileDialog()
   const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, { isAlert: true })
@@ -222,7 +222,7 @@ function EditAccountButton() {
     throw new Error(
       'AccountOptionsButton can only be rendered on account route',
     )
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   if (myAccount.data?.id !== route.accountId) {
     return null
   }

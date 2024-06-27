@@ -1,6 +1,6 @@
 import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {createHypermediaDocLinkPlugin} from '@/editor'
-import {useAccounts, useMyAccount} from '@/models/accounts'
+import {useAccounts, useMyAccount_deprecated} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
@@ -92,44 +92,9 @@ export function useDocumentList(
   }
 }
 
-export function useDraftList(
-  opts: UseQueryOptions<unknown, unknown, HMDocument[]> = {},
-) {
-  const grpcClient = useGRPCClient()
-  const draftListQuery = useInfiniteQuery({
-    queryKey: [queryKeys.GET_DRAFT_LIST],
-    refetchOnMount: true,
-    queryFn: async (context) => {
-      const result = await grpcClient.drafts.listDrafts({
-        pageToken: context.pageParam,
-        pageSize: 2000000, // temp large page size because we do not paginate drafts from the frontend
-      })
-
-      const documents =
-        result.documents.sort((a, b) =>
-          sortDocuments(a.updateTime, b.updateTime),
-        ) || []
-      return {
-        ...result,
-        documents: documents.map(hmDocument),
-      }
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.nextPageToken || undefined
-    },
-    ...opts,
-  })
-
-  const allDrafts =
-    draftListQuery.data?.pages.flatMap((page) => page.documents) || []
-
-  return {
-    ...draftListQuery,
-    data: {
-      ...draftListQuery.data,
-      documents: allDrafts,
-    },
-  }
+export function useDraftList() {
+  // opts: UseQueryOptions<unknown, unknown, HMDocument[]> = {},
+  return trpc.drafts.list.useQuery(undefined, {})
 }
 
 export function useDeleteDraft(
@@ -332,7 +297,7 @@ export function usePublishDraft(
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const isProfileDocument =
     draftRoute?.isProfileDocument ||
     myAccount.data?.profile?.rootDocument === draftRoute?.draftId

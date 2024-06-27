@@ -3,7 +3,7 @@ import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import request, {gql} from 'graphql-request'
 import {useEffect} from 'react'
 import {useQueryInvalidator} from '../app-context'
-import {useMyAccount} from './accounts'
+import {useMyAccount_deprecated} from './accounts'
 import {useWallets} from './payments'
 import {queryKeys} from './query-keys'
 
@@ -50,7 +50,7 @@ export function useAccountCheck(accountId?: string) {
 }
 
 export function useMyAccountCheck() {
-  const account = useMyAccount()
+  const account = useMyAccount_deprecated()
   const check = useAccountCheck(account?.data?.id)
   return check
 }

@@ -1,4 +1,4 @@
-import { useDocumentList, useDraftList } from '@/models/documents'
+import { useDocumentList } from '@/models/documents'
 import { Delete, List, Spinner } from '@shm/ui'
 
 import { useAppContext } from '@/app-context'
@@ -18,7 +18,6 @@ export function DocumentsFullList({
   header: ReactNode
 }) {
   const documents = useDocumentList({})
-  const drafts = useDraftList()
   const { queryClient, grpcClient } = useAppContext()
   const deleteDialog = useDeleteDialog()
 

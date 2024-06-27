@@ -1,11 +1,11 @@
-import {useIPC} from '@/app-context'
-import {AvatarForm} from '@/components/avatar-form'
-import {useEditProfileDialog} from '@/components/edit-profile-dialog'
+import { useIPC } from '@/app-context'
+import { AvatarForm } from '@/components/avatar-form'
+import { useEditProfileDialog } from '@/components/edit-profile-dialog'
 import appError from '@/errors'
-import {useMyAccount} from '@/models/accounts'
-import {useAutoUpdatePreference} from '@/models/app-settings'
-import {useDaemonInfo, useDeleteKey, useSavedMnemonics} from '@/models/daemon'
-import {useExperiments, useWriteExperiments} from '@/models/experiments'
+import { useMyAccount_deprecated } from '@/models/accounts'
+import { useAutoUpdatePreference } from '@/models/app-settings'
+import { useDaemonInfo, useDeleteKey, useSavedMnemonics } from '@/models/daemon'
+import { useExperiments, useWriteExperiments } from '@/models/experiments'
 import {
   useGatewayUrl,
   usePushOnCopy,
@@ -14,16 +14,16 @@ import {
   useSetPushOnCopy,
   useSetPushOnPublish,
 } from '@/models/gateway-settings'
-import {usePeerInfo} from '@/models/networking'
+import { usePeerInfo } from '@/models/networking'
 import {
   useExportWallet,
   useInvoicesBywallet,
   useWallets,
 } from '@/models/payments'
-import {useWalletOptIn} from '@/models/wallet'
-import {trpc} from '@/trpc'
-import {getAvatarUrl} from '@/utils/account-url'
-import {LightningWallet, Profile, State, VERSION} from '@shm/shared'
+import { useWalletOptIn } from '@/models/wallet'
+import { trpc } from '@/trpc'
+import { getAvatarUrl } from '@/utils/account-url'
+import { LightningWallet, State, VERSION } from '@shm/shared'
 import {
   AlertDialog,
   ArrowDownRight,
@@ -77,9 +77,9 @@ import {
   Trash,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import React, {useEffect, useId, useMemo, useState} from 'react'
-import {dispatchWizardEvent} from 'src/app-account'
-import {useAccountKeys} from 'src/models/daemon'
+import React, { useEffect, useId, useMemo, useState } from 'react'
+import { dispatchWizardEvent } from 'src/app-account'
+import { useAccountKeys } from 'src/models/daemon'
 
 export default function Settings() {
   return (
@@ -135,7 +135,7 @@ export default function Settings() {
 function SettingsSection({
   title,
   children,
-}: React.PropsWithChildren<{title: string}>) {
+}: React.PropsWithChildren<{ title: string }>) {
   return (
     <YStack gap="$3">
       <YStack
@@ -205,7 +205,7 @@ export function DeveloperSettings() {
             size="$2"
             theme={enabledDevTools ? 'red' : 'green'}
             onPress={() => {
-              writeExperiments.mutate({developerTools: !enabledDevTools})
+              writeExperiments.mutate({ developerTools: !enabledDevTools })
             }}
           >
             {enabledDevTools ? 'Disable Debug Tools' : `Enable Debug Tools`}
@@ -270,7 +270,7 @@ export function ProfileForm({
         <YStack flex={0} alignItems="center" flexGrow={0}>
           <AvatarForm
             disabled
-            onAvatarUpload={async (avatar) => {}}
+            onAvatarUpload={async (avatar) => { }}
             url={getAvatarUrl(profile?.avatar)}
           />
         </YStack>
@@ -319,7 +319,7 @@ export function ProfileForm({
 }
 
 export function ProfileInfo() {
-  const account = useMyAccount()
+  const account = useMyAccount_deprecated()
   const profile = account.data?.profile
   const accountId = account.data?.id
 
@@ -339,7 +339,7 @@ export function ProfileInfo() {
 
 function AccountKeys() {
   const deleteKey = useDeleteKey()
-  const {data: keys} = useAccountKeys()
+  const { data: keys } = useAccountKeys()
   const [selectedAccount, setSelectedAccount] = useState<undefined | string>(
     () => {
       if (keys && keys.length == 1) {
@@ -351,7 +351,7 @@ function AccountKeys() {
 
   function handleDeleteCurrentAccount() {
     if (!account) return
-    deleteKey.mutateAsync({name: account.name}).then(() => {})
+    deleteKey.mutateAsync({ name: account.name }).then(() => { })
   }
 
   const account = useMemo(() => {
@@ -362,7 +362,7 @@ function AccountKeys() {
   const [showWords, setShowWords] = useState<boolean>(false)
 
   return (
-    <XStack style={{flex: 1, height: '100%'}} gap="$4">
+    <XStack style={{ flex: 1, height: '100%' }} gap="$4">
       <YStack f={1} borderColor="$color7" borderWidth={1}>
         <YStack f={1}>
           {keys?.map((key) => (
@@ -397,8 +397,8 @@ function AccountKeys() {
                 key="overlay"
                 animation="quick"
                 opacity={0.5}
-                enterStyle={{opacity: 0}}
-                exitStyle={{opacity: 0}}
+                enterStyle={{ opacity: 0 }}
+                exitStyle={{ opacity: 0 }}
               />
               <AlertDialog.Content
                 bordered
@@ -412,8 +412,8 @@ function AccountKeys() {
                     },
                   },
                 ]}
-                enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-                exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+                exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
                 x={0}
                 scale={1}
                 opacity={1}
@@ -473,7 +473,7 @@ function AccountKeys() {
 }
 
 function DevicesInfo() {
-  const {data: deviceInfo} = useDaemonInfo()
+  const { data: deviceInfo } = useDaemonInfo()
   return (
     <YStack gap="$3">
       <Heading>My Device</Heading>
@@ -583,7 +583,7 @@ const EXPERIMENTS: ExperimentType[] = [
   },
 ]
 
-function GatewaySettings({}: {}) {
+function GatewaySettings({ }: {}) {
   const gatewayUrl = useGatewayUrl()
 
   const setGatewayUrl = useSetGatewayUrl()
@@ -623,7 +623,7 @@ function GatewaySettings({}: {}) {
   )
 }
 
-function PushOnCopySetting({}: {}) {
+function PushOnCopySetting({ }: {}) {
   const pushOnCopy = usePushOnCopy()
   const id = useId()
   const setPushOnCopy = useSetPushOnCopy()
@@ -640,9 +640,9 @@ function PushOnCopySetting({}: {}) {
           }}
         >
           {[
-            {value: 'always', label: 'Always'},
-            {value: 'never', label: 'Never'},
-            {value: 'ask', label: 'Ask'},
+            { value: 'always', label: 'Always' },
+            { value: 'never', label: 'Never' },
+            { value: 'ask', label: 'Ask' },
           ].map((option) => {
             return (
               <XStack key={option.value} gap="$3" ai="center">
@@ -665,7 +665,7 @@ function PushOnCopySetting({}: {}) {
   )
 }
 
-function PushOnPublishSetting({}: {}) {
+function PushOnPublishSetting({ }: {}) {
   const pushOnPublish = usePushOnPublish()
   const id = React.useId()
   const setPushOnPublish = useSetPushOnPublish()
@@ -682,9 +682,9 @@ function PushOnPublishSetting({}: {}) {
           }}
         >
           {[
-            {value: 'always', label: 'Always'},
-            {value: 'never', label: 'Never'},
-            {value: 'ask', label: 'Ask'},
+            { value: 'always', label: 'Always' },
+            { value: 'never', label: 'Never' },
+            { value: 'ask', label: 'Ask' },
           ].map((option) => {
             return (
               <XStack key={option.value} gap="$3" ai="center">
@@ -707,7 +707,7 @@ function PushOnPublishSetting({}: {}) {
   )
 }
 
-function ExperimentsSettings({}: {}) {
+function ExperimentsSettings({ }: {}) {
   const experiments = useExperiments()
   const writeExperiments = useWriteExperiments()
   return (
@@ -722,7 +722,7 @@ function ExperimentsSettings({}: {}) {
               value={!!experiments.data?.[experiment.key]}
               experiment={experiment}
               onValue={(isEnabled) => {
-                writeExperiments.mutate({[experiment.key]: isEnabled})
+                writeExperiments.mutate({ [experiment.key]: isEnabled })
               }}
             />
           )
@@ -732,9 +732,9 @@ function ExperimentsSettings({}: {}) {
   )
 }
 
-function DeviceItem({id}: {id: string}) {
-  let {data} = usePeerInfo(id)
-  let {data: current} = useDaemonInfo()
+function DeviceItem({ id }: { id: string }) {
+  let { data } = usePeerInfo(id)
+  let { data: current } = useDaemonInfo()
 
   let isCurrent = useMemo(() => {
     if (!current?.peerId) return false
@@ -782,7 +782,7 @@ function AppSettings() {
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
   const appInfo = trpc.getAppInfo.useQuery().data
-  const {value: autoUpdate, setAutoUpdate} = useAutoUpdatePreference()
+  const { value: autoUpdate, setAutoUpdate } = useAutoUpdatePreference()
   const daemonInfo = trpc.getDaemonInfo.useQuery().data
   let goBuildInfo = ''
   if (daemonInfo?.errors.length) {
@@ -908,7 +908,7 @@ const TabsContent = (props: TabsContentProps) => {
       flex={1}
       {...props}
     >
-      <ScrollView contentContainerStyle={{flex: 1}}>
+      <ScrollView contentContainerStyle={{ flex: 1 }}>
         <YStack gap="$4" padding="$4" paddingBottom="$5" f={1}>
           {props.children}
         </YStack>
@@ -917,9 +917,9 @@ const TabsContent = (props: TabsContentProps) => {
   )
 }
 
-function ExistingWallets({wallets}: {wallets: LightningWallet[]}) {
+function ExistingWallets({ wallets }: { wallets: LightningWallet[] }) {
   const [wallet, setWallet] = useState<string | undefined>(wallets[0]?.id)
-  const {data: invoices} = useInvoicesBywallet(wallet)
+  const { data: invoices } = useInvoicesBywallet(wallet)
   return (
     <YStack gap="$5">
       <Heading>Sponsorship Wallets</Heading>
@@ -1025,7 +1025,7 @@ function ExistingWallets({wallets}: {wallets: LightningWallet[]}) {
 }
 
 function NoWallets() {
-  const {optIn, walletCheck} = useWalletOptIn()
+  const { optIn, walletCheck } = useWalletOptIn()
   const isLoading = optIn.isLoading || walletCheck.isLoading
   return (
     <YStack gap="$4">
@@ -1049,7 +1049,7 @@ function NoWallets() {
 }
 
 function WalletsSettings() {
-  const {data: wallets, isLoading: isLoadingWallets} = useWallets()
+  const { data: wallets, isLoading: isLoadingWallets } = useWallets()
   if (isLoadingWallets) return null
   if (wallets?.length) return <ExistingWallets wallets={wallets} />
   return <NoWallets />
@@ -1059,12 +1059,12 @@ function WalletCard({
   wallet,
   active = false,
   ...props
-}: CardProps & {wallet: LightningWallet; active?: boolean}) {
+}: CardProps & { wallet: LightningWallet; active?: boolean }) {
   const mutation = useExportWallet()
 
   async function handleExport() {
     try {
-      let res = await mutation.mutateAsync({id: wallet.id})
+      let res = await mutation.mutateAsync({ id: wallet.id })
       if (!res) {
         appError('Error: ExportWallet error')
       } else {
@@ -1074,7 +1074,7 @@ function WalletCard({
         })
       }
     } catch (error) {
-      appError(`Error: ExportWallet error: ${error}`, {error})
+      appError(`Error: ExportWallet error: ${error}`, { error })
     }
   }
 
@@ -1086,8 +1086,8 @@ function WalletCard({
       width={260}
       // height={120}
       scale={0.975}
-      hoverStyle={{scale: 1}}
-      pressStyle={{scale: 0.95}}
+      hoverStyle={{ scale: 1 }}
+      pressStyle={{ scale: 0.95 }}
       borderRadius="$4"
       borderWidth={2}
       borderColor="$borderColor"
@@ -1128,8 +1128,8 @@ function WalletCard({
   )
 }
 
-function Tab(props: TabsProps & {icon: any; label: string}) {
-  const {icon: Icon, label, ...rest} = props
+function Tab(props: TabsProps & { icon: any; label: string }) {
+  const { icon: Icon, label, ...rest } = props
   return (
     <Tabs.Tab
       data-testid={`tab-${props.value}`}

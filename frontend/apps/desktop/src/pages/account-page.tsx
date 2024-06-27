@@ -7,7 +7,7 @@ import { FavoriteButton } from '@/components/favoriting'
 import Footer, { FooterButton } from '@/components/footer'
 import { ListItem, copyLinkMenuItem } from '@/components/list-item'
 import { MainWrapperNoScroll } from '@/components/main-wrapper'
-import { useMyAccount, useSetProfile } from '@/models/accounts'
+import { useMyAccount_deprecated, useSetProfile } from '@/models/accounts'
 import { useEntityMentions } from '@/models/content-graph'
 import {
   useAccountDocuments,
@@ -104,7 +104,7 @@ function MainAccountPage() {
 
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const isMe = myAccount.data?.id === accountId
   const { data: documents } = useAccountDocuments(
     route.tab === 'documents' ? accountId : undefined,
@@ -249,7 +249,7 @@ function AccountPageHeader() {
   const replace = useNavigate('replace')
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const profile = useProfile(accountId)
   const isMe = myAccount.data?.id === accountId
   const accountEntityUrl = createHmId('a', accountId)

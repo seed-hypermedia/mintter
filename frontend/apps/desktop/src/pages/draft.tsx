@@ -6,7 +6,7 @@ import {
   BlockNoteEditor,
   getBlockInfoFromPos,
 } from '@/editor'
-import { useMyAccount } from '@/models/accounts'
+import { useMyAccount_deprecated } from '@/models/accounts'
 import {
   compareDraftWithMap,
   createBlocksMap,
@@ -567,7 +567,7 @@ function applyTitleResize(target: HTMLTextAreaElement) {
 }
 
 export function useFixedDraftTitle(route: DraftRoute) {
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
 
   let fixedTitle: string | undefined = undefined
   if (route.isProfileDocument) {

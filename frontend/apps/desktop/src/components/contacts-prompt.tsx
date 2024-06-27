@@ -1,14 +1,14 @@
-import {AccessURLRow} from '@/url'
-import {HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@shm/shared'
-import {Button, Spinner, TextArea, XStack, toast} from '@shm/ui'
-import {UserPlus} from '@tamagui/lucide-icons'
-import {compressToEncodedURIComponent} from 'lz-string'
-import {ComponentProps, useMemo, useState} from 'react'
+import { AccessURLRow } from '@/url'
+import { HYPERMEDIA_PUBLIC_WEB_GATEWAY } from '@shm/shared'
+import { Button, Spinner, TextArea, XStack, toast } from '@shm/ui'
+import { UserPlus } from '@tamagui/lucide-icons'
+import { compressToEncodedURIComponent } from 'lz-string'
+import { ComponentProps, useMemo, useState } from 'react'
 import appError from '../errors'
-import {useMyAccount} from '../models/accounts'
-import {useConnectPeer} from '../models/contacts'
-import {useDaemonInfo} from '../models/daemon'
-import {usePeerInfo} from '../models/networking'
+import { useMyAccount_deprecated } from '../models/accounts'
+import { useConnectPeer } from '../models/contacts'
+import { useDaemonInfo } from '../models/daemon'
+import { usePeerInfo } from '../models/networking'
 import {
   AppDialog,
   DialogCloseButton,
@@ -29,11 +29,11 @@ function AddConnectionForm({
   onClose,
 }: {
   onClose: () => void
-  input: true | {connectionString?: string; name?: string | undefined}
+  input: true | { connectionString?: string; name?: string | undefined }
 }) {
   const [peerText, setPeer] = useState('')
   const daemonInfo = useDaemonInfo()
-  const account = useMyAccount()
+  const account = useMyAccount_deprecated()
   const deviceId = daemonInfo.data?.peerId
   const peerInfo = usePeerInfo(deviceId)
 
@@ -47,7 +47,7 @@ function AddConnectionForm({
       toast.success('Connection Added')
     },
     onError: (error) => {
-      appError(`Connect to peer error: ${error?.rawMessage}`, {error})
+      appError(`Connect to peer error: ${error?.rawMessage}`, { error })
     },
   })
 

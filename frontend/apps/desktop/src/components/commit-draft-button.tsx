@@ -11,7 +11,7 @@ import {
 import { Check } from '@tamagui/lucide-icons'
 import { PropsWithChildren } from 'react'
 import { useGRPCClient } from '../app-context'
-import { useMyAccount } from '../models/accounts'
+import { useMyAccount_deprecated } from '../models/accounts'
 import { usePublishDraft, usePushPublication } from '../models/documents'
 import { DraftStatusContext } from '../models/draft-machine'
 import { useGatewayHost, usePushOnPublish } from '../models/gateway-settings'
@@ -24,7 +24,7 @@ export default function CommitDraftButton() {
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.key == 'draft' ? route.draftId : null
   const grpcClient = useGRPCClient()
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const mediaDialog = useMediaDialog()
   const canPublish = DraftStatusContext.useSelector(
     (s) => s.matches('idle') || s.matches('saved'),

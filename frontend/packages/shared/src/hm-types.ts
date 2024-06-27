@@ -191,7 +191,8 @@ export type HMEntity =
 export type HMEntityContent =
   | {
       type: 'a'
-      document?: HMDocument
+      document?: HMDocument | null
+      account?: HMAccount | null
     }
   | {
       type: 'd'

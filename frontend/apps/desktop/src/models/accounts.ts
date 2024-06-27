@@ -1,6 +1,6 @@
 import {useGRPCClient, useQueryInvalidator} from '@/app-context'
 import appError from '@/errors'
-import {useDaemonInfo} from '@/models/daemon'
+import {useAccountKeys} from '@/models/daemon'
 import {queryKeys} from '@/models/query-keys'
 import {ConnectError} from '@connectrpc/connect'
 import {GRPCClient, HMAccount, Profile, hmAccount} from '@shm/shared'
@@ -99,9 +99,19 @@ export function useAccountIsConnected(account: HMAccount) {
   return !!peers.data?.find((peer) => peer.accountId == account.id)
 }
 
-export function useMyAccount() {
-  const daemonInfo = useDaemonInfo()
-  return useAccount(daemonInfo.data?.accountId)
+export function useMyAccount_deprecated() {
+  const accountKeys = useAccountKeys()
+  console.log(accountKeys.data)
+  if (!accountKeys.data) return null
+  if (!accountKeys.data.length) return null
+  if (accountKeys.data.length > 1)
+    throw new Error('Not supporting multiple accounts yet.')
+  return accountKeys.data[0].accountId
+}
+
+export function useMyAccountIds() {
+  const accountKeys = useAccountKeys()
+  return accountKeys.data?.map((key) => key.accountId) || []
 }
 
 export function useSetProfile(

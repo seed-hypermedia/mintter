@@ -7,7 +7,7 @@ import { Button, Tooltip, toast } from '@shm/ui'
 import { Pencil } from '@tamagui/lucide-icons'
 import { useQueryInvalidator } from '../app-context'
 import appError from '../errors'
-import { useMyAccount } from '../models/accounts'
+import { useMyAccount_deprecated } from '../models/accounts'
 import { queryKeys } from '../models/query-keys'
 import { generateBlockId } from '../utils/media-drag'
 import { AccountRoute, DocumentRoute } from '../utils/routes'
@@ -27,7 +27,7 @@ export function useEditDraft(
   },
 ) {
   const draftList = useDraftList()
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const navigate = useNavigate(navMode)
   const invalidate = useQueryInvalidator()
 

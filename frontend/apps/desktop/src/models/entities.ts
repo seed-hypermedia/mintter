@@ -196,15 +196,13 @@ export function useEntitiesContent(
       })
       .filter(Boolean) as string[],
   )
-  return routes
+  const output = routes
     .map((route) => {
       const accountRouteIndex = accounts.findIndex((r) => r === route)
       if (accountRouteIndex >= 0) {
         const account = accountQueries[accountRouteIndex].data
         const document = profileQueries[accountRouteIndex].data
-        if (account && document) {
-          return {route, entity: {type: 'a', account, document}} as const
-        }
+        return {route, entity: {type: 'a', account, document}} as const
       }
       const documentRouteIndex = documents.findIndex((r) => r === route)
       if (documentRouteIndex >= 0) {
@@ -223,4 +221,7 @@ export function useEntitiesContent(
       return false
     })
     .filter((result) => !!result)
+  console.log('useEntitiesContent', routes, output)
+
+  return output
 }

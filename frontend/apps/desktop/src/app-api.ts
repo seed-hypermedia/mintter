@@ -17,6 +17,7 @@ import path from 'path'
 import z from 'zod'
 import {commentsApi} from './app-comments'
 import {diagnosisApi} from './app-diagnosis'
+import {draftsApi} from './app-drafts'
 import {experimentsApi} from './app-experiments'
 import {favoritesApi} from './app-favorites'
 import {gatewaySettingsApi} from './app-gateway-settings'
@@ -148,6 +149,7 @@ function getRouteRefocusKey(route: NavRoute): string | null {
 }
 
 export const router = t.router({
+  drafts: draftsApi,
   experiments: experimentsApi,
   diagnosis: diagnosisApi,
   welcoming: welcomingApi,

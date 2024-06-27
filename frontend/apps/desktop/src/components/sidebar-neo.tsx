@@ -1,6 +1,6 @@
 import { focusDraftBlock } from '@/draft-focusing'
-import { useAccount, useMyAccount } from '@/models/accounts'
-import { useDocument, useDocumentDrafts } from '@/models/documents'
+import { useMyAccount_deprecated } from '@/models/accounts'
+import { useDocument, useDocumentDrafts, useProfile } from '@/models/documents'
 import {
   getEntityRoutes,
   useEntitiesContent,
@@ -8,18 +8,18 @@ import {
   useEntityRoutes,
 } from '@/models/entities'
 import { useFavorites } from '@/models/favorites'
+import { getProfileName } from '@/pages/account-page'
 import { appRouteOfId, getRouteKey, useNavRoute } from '@/utils/navigation'
 import { getRouteContext } from '@/utils/route-context'
 import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '@/utils/routes'
 import { useNavigate } from '@/utils/useNavigate'
 import {
-  HMAccount,
   HMBlockNode,
   HMEntityContent,
   UnpackedHypermediaId,
   getBlockNodeById,
   getDocumentTitle,
-  unpackHmId,
+  unpackHmId
 } from '@shm/shared'
 import { Tooltip } from '@shm/ui'
 import {
@@ -46,26 +46,25 @@ function _SidebarNeo() {
   const route = useNavRoute()
   const [collapseFavorites, setCollapseFavorites] = useState(true)
   const [collapseStandalone, setCollapseStandalone] = useState(false)
-  const myAccount = useMyAccount()
+  const myAccount = useMyAccount_deprecated()
   const myAccountRoute = useMemo(() => {
-    return myAccount.data?.id
-      ? ({ key: 'account', accountId: myAccount.data.id } as BaseAccountRoute)
+    return myAccount
+      ? ({ key: 'account', accountId: myAccount } as BaseAccountRoute)
       : null
-  }, [myAccount.data])
+  }, [myAccount])
+  console.log({ myAccountRoute })
   const navigate = useNavigate()
   const replace = useNavigate('replace')
   let myAccountSection: ReactNode = null
   let standaloneSection: ReactNode = null
   const entityRoutes = useEntityRoutes(route)
   const firstEntityRoute = entityRoutes[0]
-  const isMyAccountHomeDraftActive =
-    route.key === 'draft' &&
-    route.draftId === myAccount.data?.profile?.rootDocument
+  const isMyAccountHomeDraftActive = false
   const isMyAccountActive =
     isMyAccountHomeDraftActive ||
     (firstEntityRoute &&
       firstEntityRoute.key === 'account' &&
-      firstEntityRoute.accountId === myAccount.data?.id)
+      firstEntityRoute.accountId === myAccount)
   const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
   const entityContents = useEntitiesContent(
     myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
@@ -79,12 +78,12 @@ function _SidebarNeo() {
       const isMyAccountActive =
         firstEntityRoute &&
         firstEntityRoute.key === 'account' &&
-        firstEntityRoute.accountId === myAccount.data?.id
+        firstEntityRoute.accountId === myAccount
       setCollapseFavorites(true)
       setCollapseMe(isMyAccountActive ? false : true)
       setCollapseStandalone(isMyAccountActive ? true : false)
     },
-    [myAccount.data?.id],
+    [myAccount],
   )
   useEffect(() => {
     if (isMyAccountActive) {
@@ -196,14 +195,13 @@ function getBlockHeadings(
 export function getItemDetails(
   entity: HMEntityContent | undefined,
   blockId?: string,
-  myAccount?: HMAccount,
 ) {
   let title: string | undefined = undefined
   let icon: IconDefinition | undefined = undefined
   let isDraft = false
   if (!entity) return null
   if (entity.type === 'a') {
-    title = entity.account?.profile?.alias
+    title = getProfileName(entity.document)
     icon = Contact
   }
   if (entity.type === 'd') {
@@ -211,15 +209,13 @@ export function getItemDetails(
     icon = FileText
   }
   if (entity.type === 'd-draft') {
-    if (myAccount?.profile?.rootDocument === entity.document?.id) {
-      const myAlias = myAccount?.profile?.alias
-      title = myAlias ? `${myAlias} Home` : 'My Account Home'
-    } else {
-      title = getDocumentTitle(entity.document)
-    }
-    icon = FilePen
-    isDraft = true
+    title = 'My Account Home'
+  } else {
+    title = getDocumentTitle(entity.document)
   }
+  icon = FilePen
+  isDraft = true
+
 
   const headings = getBlockHeadings(entity.document?.children, blockId)
   return {
@@ -230,14 +226,15 @@ export function getItemDetails(
     isDraft,
   }
 }
+
 type ItemDetails = ReturnType<typeof getItemDetails>
 
 function ResumeDraftButton({ info }: { info: ItemDetails }) {
   if (!info) throw new Error('ItemDetails required for ResumeDraftButton')
   const { docId } = info
   const navigate = useNavigate()
-  const myAccount = useMyAccount()
-  const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
+  const myAccount = useMyAccount_deprecated()
+  // const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
   const drafts = useDocumentDrafts(docId)
 
   const draft = drafts.data?.[0]
@@ -249,8 +246,8 @@ function ResumeDraftButton({ info }: { info: ItemDetails }) {
             e.stopPropagation()
             navigate({
               key: 'draft',
-              draftId: draft.id,
-              isProfileDocument: isMyHomeDoc,
+              draftId: draft.draftId,
+              // isProfileDocument: isMyHomeDoc,
             })
           }}
           size="$2"
@@ -358,25 +355,22 @@ function RouteSection({
       : thisRoute?.isBlockFocused
         ? thisRoute?.blockId
         : undefined
-  const myAccount = useMyAccount()
   const thisRouteDetails = getItemDetails(
     thisRouteEntity?.entity,
-    thisRouteFocusBlockId,
-    myAccount.data || undefined,
   )
   const focusedNodes =
-    thisRouteFocusBlockId && thisRouteEntity?.entity?.document?.children
+    thisRouteFocusBlockId && thisRouteEntity?.entity?.document?.content
       ? getBlockNodeById(
-        thisRouteEntity?.entity?.document?.children,
+        thisRouteEntity?.entity?.document?.content,
         thisRouteFocusBlockId,
       )?.children
-      : thisRouteEntity?.entity?.document?.children
+      : thisRouteEntity?.entity?.document?.content
   const outlineNodes = focusedNodes?.filter(
     (node) => node.block.type === 'heading' || node.block.type === 'embed',
   )
   const canCollapse = !!outlineNodes?.length
   const onActivateBlock = useCallback(
-    (blockId) => {
+    (blockId: string) => {
       if (!thisRoute) return
       const thisRouteKey = getRouteKey(thisRoute)
       const activeRouteKey = getRouteKey(activeRoute)
@@ -395,7 +389,7 @@ function RouteSection({
     if (thisRoute.key === 'draft') {
       return null
     }
-    return (blockId) => {
+    return (blockId: string) => {
       onNavigate({ ...thisRoute, blockId, isBlockFocused: true })
     }
   }, [onNavigate, thisRoute])
@@ -405,7 +399,6 @@ function RouteSection({
         if (contextRoute.key === 'draft') return null // draft should not appear in context
         const info: ItemDetails = getItemDetails(
           entityContents?.find((c) => c.route === contextRoute)?.entity,
-          contextRoute.blockId,
         )
         return (
           <ContextItems
@@ -743,7 +736,7 @@ function FavoriteAccountItem({
   const id = unpackHmId(url)
   const route = useNavRoute()
   const accountId = id?.eid
-  const account = useAccount(accountId)
+  const profile = useProfile(accountId)
   if (!accountId) return null
   return (
     <SidebarItem
@@ -752,7 +745,7 @@ function FavoriteAccountItem({
       onPress={() => {
         onNavigate({ key: 'account', accountId })
       }}
-      title={account.data?.profile?.alias || 'Unknown Account'}
+      title={getProfileName(profile.data)}
     />
   )
 }
