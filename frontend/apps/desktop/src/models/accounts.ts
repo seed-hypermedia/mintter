@@ -101,7 +101,6 @@ export function useAccountIsConnected(account: HMAccount) {
 
 export function useMyAccount_deprecated() {
   const accountKeys = useAccountKeys()
-  console.log(accountKeys.data)
   if (!accountKeys.data) return null
   if (!accountKeys.data.length) return null
   if (accountKeys.data.length > 1)

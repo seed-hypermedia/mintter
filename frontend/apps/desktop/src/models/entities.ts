@@ -221,7 +221,6 @@ export function useEntitiesContent(
       return false
     })
     .filter((result) => !!result)
-  console.log('useEntitiesContent', routes, output)
 
   return output
 }

@@ -12,9 +12,7 @@ async function initDrafts() {
   await fs.mkdir(draftsDir, {recursive: true})
   await fs.readdir(draftsDir)
   const allDraftFiles = await fs.readdir(draftsDir)
-  const allDraftIds = allDraftFiles.map((filename) => {
-    return filename.replace(/\.json$/, '')
-  })
+  const allDraftIds = allDraftFiles.map(draftFileNameToId)
   draftIdList = allDraftIds
 }
 
@@ -26,12 +24,23 @@ initDrafts()
     console.error('[MAIN]: error preparing drafts', e)
   })
 
+function inputIdToDraftFile(id: string) {
+  const encodedId = Buffer.from(id).toString('base64')
+  return `${encodedId}.json`
+}
+
+function draftFileNameToId(filename: string) {
+  const baseName = filename.replace(/\.json$/, '')
+  const id = Buffer.from(baseName, 'base64').toString('utf-8')
+  return id
+}
+
 export const draftsApi = t.router({
   list: t.procedure.query(async () => {
     return draftIdList
   }),
-  get: t.procedure.input(z.string().optional()).query(async ({input}) => {
-    const draftPath = join(draftsDir, `${input}.json`)
+  get: t.procedure.input(z.string()).query(async ({input}) => {
+    const draftPath = join(draftsDir, inputIdToDraftFile(input))
     try {
       const fileContent = await fs.readFile(draftPath, 'utf-8')
       const draft = JSON.parse(fileContent)
@@ -51,7 +60,7 @@ export const draftsApi = t.router({
       }),
     )
     .mutation(async ({input}) => {
-      const draftPath = join(draftsDir, `${input.id}.json`)
+      const draftPath = join(draftsDir, inputIdToDraftFile(input.id))
       if (!draftIdList?.includes(input.id)) {
         draftIdList?.push(input.id)
       }

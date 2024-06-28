@@ -52,7 +52,6 @@ function _SidebarNeo() {
       ? ({ key: 'account', accountId: myAccount } as BaseAccountRoute)
       : null
   }, [myAccount])
-  console.log({ myAccountRoute })
   const navigate = useNavigate()
   const replace = useNavigate('replace')
   let myAccountSection: ReactNode = null
