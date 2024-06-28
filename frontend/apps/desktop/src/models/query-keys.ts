@@ -1,7 +1,7 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-import { abbreviateCid } from '@shm/shared'
-import { QueryKey } from '@tanstack/react-query'
+import {abbreviateCid} from '@shm/shared'
+import {QueryKey} from '@tanstack/react-query'
 
 export const queryKeys = {
   // Organized by the model file that is responsible for querying + mutating the keys
@@ -26,8 +26,8 @@ export const queryKeys = {
   GET_PEER_INFO: 'GET_PEER_INFO', // , deviceId: string
 
   // accounts
-  GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS', // , filterSites: boolean
-  GET_ACCOUNT: 'GET_ACCOUNT', // , accountId: string
+  ALL_ACCOUNTS: 'ALL_ACCOUNTS', //
+  ACCOUNT: 'ACCOUNT', // , accountId: string
 
   // entities
   ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string, includeDrafts: boolean
@@ -87,9 +87,9 @@ export function labelOfQueryKey(key: QueryKey) {
       return `Peer ${abbreviateCid(arg1)}`
 
     // accounts
-    case queryKeys.GET_ALL_ACCOUNTS:
+    case queryKeys.ALL_ACCOUNTS:
       return 'All Accounts'
-    case queryKeys.GET_ACCOUNT:
+    case queryKeys.ACCOUNT:
       return `Account ${abbreviateCid(arg1)}`
 
     // entities

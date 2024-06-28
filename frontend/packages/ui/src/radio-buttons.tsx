@@ -1,11 +1,11 @@
-import {ComponentProps} from 'react'
-import {Button, XGroup} from 'tamagui'
+import { ComponentProps } from 'react'
+import { Button, XGroup } from 'tamagui'
 
 export function RadioButtons<
   Options extends ReadonlyArray<{
     key: string
     label: string
-    icon: ComponentProps<typeof Button>['icon'] | undefined
+    icon?: ComponentProps<typeof Button>['icon'] | undefined
   }>,
 >({
   options,

@@ -2,8 +2,6 @@ import { useAppContext } from '@/app-context'
 import { ContactsPrompt } from '@/components/contacts-prompt'
 import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
 import { useDeleteDialog } from '@/components/delete-dialog'
-import { useAppDialog } from '@/components/dialog'
-import { EditDocButton } from '@/components/edit-doc-button'
 import { useEditProfileDialog } from '@/components/edit-profile-dialog'
 import { useFavoriteMenuItem } from '@/components/favoriting'
 import { MenuItemType, OptionsDropdown } from '@/components/options-dropdown'
@@ -11,8 +9,8 @@ import {
   DraftPublicationButtons,
   VersionContext
 } from '@/components/variants'
-import { useAccount, useMyAccount_deprecated } from '@/models/accounts'
-import { useDocument, usePushPublication } from '@/models/documents'
+import { useAccount, useMyAccountIds } from '@/models/accounts'
+import { useDocument, useProfile, usePushPublication } from '@/models/documents'
 import { useGatewayHost, useGatewayUrl } from '@/models/gateway-settings'
 import { SidebarWidth, useSidebarContext } from '@/sidebar-context'
 import {
@@ -22,12 +20,12 @@ import {
 } from '@/utils/navigation'
 import { useOpenDraft } from '@/utils/open-draft'
 import { NavRoute } from '@/utils/routes'
-import { useNavigate } from '@/utils/useNavigate'
 import {
   BlockRange,
   ExpandedBlockRange,
   createHmId,
   createPublicWebHmUrl,
+  getDocumentTitle,
   hmId,
   unpackHmId,
 } from '@shm/shared'
@@ -49,17 +47,15 @@ import {
 import {
   ArrowLeftFromLine,
   ArrowRightFromLine,
-  ArrowUpRight,
   ExternalLink,
   FilePlus2,
   Link,
   Pencil,
   Trash,
-  UploadCloud,
-  X,
+  UploadCloud
 } from '@tamagui/lucide-icons'
 import { ReactNode, useState } from 'react'
-import { RemoveProfileDocDialog } from '../pages/account-page'
+import { getProfileName } from '../pages/account-page'
 import { TitleBarProps } from './titlebar'
 
 export function DocOptionsButton() {
@@ -74,7 +70,7 @@ export function DocOptionsButton() {
   const push = usePushPublication()
   const deleteEntity = useDeleteDialog()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
-  const pub = useDocument(
+  const doc = useDocument(
     route.documentId,
     route.versionId,
   )
@@ -113,9 +109,8 @@ export function DocOptionsButton() {
       onPress: () => {
         deleteEntity.open({
           id: route.documentId,
-          title: pub.data?.publication?.document?.title,
+          title: getDocumentTitle(doc.data),
           onSuccess: () => {
-            // dispatch({type: 'backplace', route: {key: 'feed', tab: 'trusted'}})
             dispatch({ type: 'pop' })
           },
         })
@@ -151,43 +146,17 @@ export function AccountOptionsButton() {
   const account = useAccount(route.accountId)
   const dispatch = useNavigationDispatch()
   const deleteEntity = useDeleteDialog()
-  const myAccount = useMyAccount_deprecated()
-  const spawn = useNavigate('spawn')
   const editProfileDialog = useEditProfileDialog()
-  const removeProfileDoc = useAppDialog(RemoveProfileDocDialog, { isAlert: true })
-  const isMyAccount = myAccount.data?.id === route.accountId
+  const myAccountIds = useMyAccountIds()
+  const profile = useProfile(route.accountId)
+  const isMyAccount = myAccountIds.includes(route.accountId)
   if (isMyAccount) {
     menuItems.push({
       key: 'edit-account',
       label: 'Edit Account Info',
       icon: Pencil,
       onPress: () => {
-        editProfileDialog.open(true)
-      },
-    })
-  }
-  const accountId = account.data?.id
-  const rootDocument = account.data?.profile?.rootDocument
-  if (isMyAccount && rootDocument) {
-    menuItems.push({
-      key: 'rm-profile',
-      label: 'Remove Profile Document',
-      icon: X,
-      onPress: () => {
-        removeProfileDoc.open({})
-      },
-    })
-  }
-  if (accountId && rootDocument) {
-    menuItems.push({
-      key: 'profile-new-window',
-      label: 'Open Profile in New Window',
-      icon: ArrowUpRight,
-      onPress: () => {
-        spawn({
-          key: 'document',
-          documentId: rootDocument,
-        })
+        editProfileDialog.open(route.accountId)
       },
     })
   }
@@ -199,7 +168,7 @@ export function AccountOptionsButton() {
     onPress: () => {
       deleteEntity.open({
         id: createHmId('a', route.accountId),
-        title: account.data?.profile?.alias,
+        title: getProfileName(profile.data),
         onSuccess: () => {
           dispatch({ type: 'pop' })
         },
@@ -211,7 +180,6 @@ export function AccountOptionsButton() {
       <OptionsDropdown menuItems={menuItems} />
       {deleteEntity.content}
       {editProfileDialog.content}
-      {removeProfileDoc.content}
     </>
   )
 }
@@ -222,20 +190,21 @@ function EditAccountButton() {
     throw new Error(
       'AccountOptionsButton can only be rendered on account route',
     )
-  const myAccount = useMyAccount_deprecated()
-  if (myAccount.data?.id !== route.accountId) {
+  const myAccountIds = useMyAccountIds()
+  if (!myAccountIds.includes(route.accountId)) {
     return null
   }
   if (route.tab !== 'profile' && route.tab) return null
-  return (
-    <EditDocButton
-      docId={myAccount.data?.profile?.rootDocument || undefined}
-      isProfileDocument
-      baseVersion={undefined}
-      navMode="push"
-      contextRoute={route}
-    />
-  )
+  throw new Error('EditAccountButton is not implemented')
+  // TODO create button to go to draft route with the route.accountId
+  // return ( // old thing:
+  //   <EditDocButton
+  //     isProfileDocument
+  //     baseVersion={undefined}
+  //     navMode="push"
+  //     contextRoute={route}
+  //   />
+  // )
 }
 
 export function useFullReferenceUrl(route: NavRoute): {
@@ -413,8 +382,6 @@ export function PageActionButtons(props: TitleBarProps) {
       <ContactsPrompt key="addContact" />,
       <CreateDropdown key="create" />,
     ]
-  } else if (route.key == 'account' && route.tab === 'groups') {
-    buttonGroup = [<CreateDropdown key="create" />]
   } else if (route.key === 'document') {
     buttonGroup = [
       <VersionContext key="versionContext" route={route} />,

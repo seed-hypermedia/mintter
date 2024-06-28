@@ -7,11 +7,10 @@ import { FavoriteButton } from '@/components/favoriting'
 import Footer, { FooterButton } from '@/components/footer'
 import { ListItem, copyLinkMenuItem } from '@/components/list-item'
 import { MainWrapperNoScroll } from '@/components/main-wrapper'
-import { useMyAccount_deprecated, useSetProfile } from '@/models/accounts'
+import { useMyAccountIds } from '@/models/accounts'
 import { useEntityMentions } from '@/models/content-graph'
 import {
   useAccountDocuments,
-  useDraftList,
   useProfile
 } from '@/models/documents'
 import { useResourceFeedWithLatest } from '@/models/feed'
@@ -21,7 +20,6 @@ import { useNavigate } from '@/utils/useNavigate'
 import {
   DocContent,
   Event,
-  HMAccount,
   HMDocument,
   createHmId,
   getDocumentTitle,
@@ -30,19 +28,16 @@ import {
   unpackDocId
 } from '@shm/shared'
 import {
-  AlertDialog,
   BlockQuote,
   Button,
   List,
-  RadioButtons,
   Section,
   SizableText,
-  Spinner,
   View,
-  XStack,
-  YStack
+  XStack
 } from '@shm/ui'
 import { PageContainer } from '@shm/ui/src/container'
+import { RadioButtons } from '@shm/ui/src/radio-buttons'
 import { Trash } from '@tamagui/lucide-icons'
 import React, { ReactNode, useMemo } from 'react'
 import { VirtuosoHandle } from 'react-virtuoso'
@@ -104,12 +99,11 @@ function MainAccountPage() {
 
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const myAccount = useMyAccount_deprecated()
-  const isMe = myAccount.data?.id === accountId
+  const myAccountIds = useMyAccountIds()
+  const isMyAccount = myAccountIds.includes(accountId)
   const { data: documents } = useAccountDocuments(
     route.tab === 'documents' ? accountId : undefined,
   )
-  const { data: drafts } = useDraftList({})
   const allDocs = useMemo(() => {
     if (route.tab !== 'documents') return []
     const allPubIds = new Set<string>()
@@ -117,14 +111,10 @@ function MainAccountPage() {
     const docs = documents.documents.map((d) => {
       if (d?.id)
         allPubIds.add(d?.id)
-      return { key: 'document', ...d }
+      return { key: 'document', document: d } as const
     })
-    if (!isMe) return docs
-    const newDrafts = drafts.documents
-      .filter((d) => !allPubIds.has(d.id))
-      .map((d) => ({ key: 'draft', document: d }))
-    return [...newDrafts, ...docs]
-  }, [isMe, route.tab, drafts, documents])
+    return [...docs]
+  }, [isMyAccount, route.tab, documents])
   const [copyDialogContent, onCopyId] = useCopyGatewayReference()
   const scrollRef = React.useRef<VirtuosoHandle>(null)
 
@@ -134,8 +124,6 @@ function MainAccountPage() {
     | {
       key: 'document'
       document: HMDocument
-      author: HMAccount | undefined
-      editors: (HMAccount | undefined)[]
     }
     | {
       key: 'draft'
@@ -176,7 +164,7 @@ function MainAccountPage() {
                 document={item.document}
                 author={item.author}
                 editors={item.editors}
-                hasDraft={drafts.documents.find((d) => d.id === docId)}
+                hasDraft={undefined}
                 menuItems={() => [
                   copyLinkMenuItem(() => {
                     const id = unpackDocId(docId)
@@ -220,7 +208,7 @@ function MainAccountPage() {
                 theme="yellow"
                 backgroundColor="$color3"
                 accessory={
-                  <Button disabled onPress={(e) => { }} size="$1">
+                  <Button disabled onPress={() => { }} size="$1">
                     Draft
                   </Button>
                 }
@@ -249,9 +237,9 @@ function AccountPageHeader() {
   const replace = useNavigate('replace')
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
-  const myAccount = useMyAccount_deprecated()
+  const myAccountIds = useMyAccountIds()
   const profile = useProfile(accountId)
-  const isMe = myAccount.data?.id === accountId
+  const isMyAccount = myAccountIds.includes(accountId)
   const accountEntityUrl = createHmId('a', accountId)
   const accountName = getProfileName(profile.data)
   return (
@@ -282,7 +270,7 @@ function AccountPageHeader() {
             </XStack>
 
             <XStack space="$2">
-              {isMe ? null : <FavoriteButton url={accountEntityUrl} />}
+              {isMyAccount ? null : <FavoriteButton url={accountEntityUrl} />}
               <CopyReferenceButton />
             </XStack>
           </XStack>
@@ -294,7 +282,7 @@ function AccountPageHeader() {
                 { key: 'profile', label: 'Profile' },
                 { key: 'documents', label: 'Documents' },
                 { key: 'activity', label: 'Activity' },
-              ]}
+              ] as const}
               onValue={(tab) => {
                 replace({ ...route, tab })
               }}
@@ -326,52 +314,5 @@ function ProfileDoc({ }: {}) {
     </PageContainer>
   ) : (
     <View height={1} />
-  )
-}
-
-export function RemoveProfileDocDialog({
-  onClose,
-  input,
-}: {
-  onClose: () => void
-  input: {}
-}) {
-  const setProfile = useSetProfile({
-    onSuccess: onClose,
-  })
-  return (
-    <YStack space backgroundColor="$background" padding="$4" borderRadius="$3">
-      <AlertDialog.Title>Remove Profile Document</AlertDialog.Title>
-      <AlertDialog.Description>
-        Unlink this document from your profile? This will remove all your
-        profile's organization.
-      </AlertDialog.Description>
-      <Spinner opacity={setProfile.isLoading ? 1 : 0} />
-      <XStack space="$3" justifyContent="flex-end">
-        <AlertDialog.Cancel asChild>
-          <Button
-            onPress={() => {
-              onClose()
-            }}
-            chromeless
-          >
-            Cancel
-          </Button>
-        </AlertDialog.Cancel>
-        <AlertDialog.Action asChild>
-          <Button
-            theme="red"
-            onPress={() => {
-              setProfile.mutate({
-                rootDocument: '',
-              })
-              onClose()
-            }}
-          >
-            Remove
-          </Button>
-        </AlertDialog.Action>
-      </XStack>
-    </YStack>
   )
 }

@@ -345,8 +345,8 @@ export function usePublishDraft(
       invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
       invalidate([queryKeys.DOCUMENT, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-      invalidate([queryKeys.GET_ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
-      invalidate([queryKeys.GET_ACCOUNT, myAccount.data?.id])
+      invalidate([queryKeys.ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
+      invalidate([queryKeys.ACCOUNT, myAccount.data?.id])
       invalidate([queryKeys.ENTITY_CITATIONS])
       setTimeout(() => {
         client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])

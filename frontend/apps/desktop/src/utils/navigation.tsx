@@ -152,7 +152,7 @@ export function useNavRoute() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavRoute must be used within a NavigationProvider')
-  return useStreamSelector(
+  return useStreamSelector<NavState, NavRoute>(
     nav.state,
     (state) => state.routes[state.routeIndex] || defaultRoute,
   )
@@ -162,7 +162,7 @@ export function useNavigationState() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavigation must be used within a NavigationProvider')
-  return useStream(nav.state)
+  return useStream<NavState>(nav.state)
 }
 
 export function useNavigationDispatch() {

@@ -1,15 +1,11 @@
-import {useGRPCClient, useQueryInvalidator} from '@/app-context'
+import {useGRPCClient} from '@/app-context'
 import appError from '@/errors'
 import {useAccountKeys} from '@/models/daemon'
 import {queryKeys} from '@/models/query-keys'
 import {ConnectError} from '@connectrpc/connect'
-import {GRPCClient, HMAccount, Profile, hmAccount} from '@shm/shared'
-import {
-  UseMutationOptions,
-  useMutation,
-  useQueries,
-  useQuery,
-} from '@tanstack/react-query'
+import {GRPCClient, HMAccount, hmAccount} from '@shm/shared'
+import {useQueries, useQuery} from '@tanstack/react-query'
+import {useProfiles} from './documents'
 import {useConnectedPeers} from './networking'
 
 export function useAccount(accountId?: string) {
@@ -29,7 +25,7 @@ export function useAccounts(accountIds: string[]) {
 function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
   return {
     enabled: !!accountId,
-    queryKey: [queryKeys.GET_ACCOUNT, accountId],
+    queryKey: [queryKeys.ACCOUNT, accountId],
     queryFn: async () => {
       const acct = await grpcClient.accounts.getAccount({id: accountId})
       return hmAccount(acct)
@@ -38,21 +34,13 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
   }
 }
 
-export function useAllAccounts(filterSites?: boolean) {
+export function useAllAccounts() {
   const grpcClient = useGRPCClient()
   const contacts = useQuery<{accounts: Array<HMAccount>}, ConnectError>({
     // enabled: !!isDaemonReady,
-    queryKey: [queryKeys.GET_ALL_ACCOUNTS, filterSites],
+    queryKey: [queryKeys.ALL_ACCOUNTS],
     queryFn: async () => {
       const listed = await grpcClient.accounts.listAccounts({})
-      if (filterSites) {
-        return {
-          accounts: listed.accounts.filter(
-            (account) =>
-              account.profile?.bio !== 'Hypermedia Site. Powered by Mintter.',
-          ),
-        }
-      }
       return listed
     },
     onError: (err) => {
@@ -62,35 +50,14 @@ export function useAllAccounts(filterSites?: boolean) {
   return contacts
 }
 
-export function useSetTrusted(
-  opts?: UseMutationOptions<
-    void,
-    unknown,
-    {accountId: string; isTrusted: boolean}
-  >,
-) {
-  const grpcClient = useGRPCClient()
-  const invalidate = useQueryInvalidator()
-  return useMutation({
-    mutationFn: async ({
-      accountId,
-      isTrusted,
-    }: {
-      accountId: string
-      isTrusted: boolean
-    }) => {
-      await grpcClient.accounts.setAccountTrust({id: accountId, isTrusted})
-      return undefined
-    },
-    onSuccess: (result, input, ctx) => {
-      invalidate([queryKeys.FEED_LATEST_EVENT, true])
-      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
-      invalidate([queryKeys.GET_ACCOUNT, input.accountId])
-      invalidate([queryKeys.GET_ALL_ACCOUNTS])
-      invalidate([queryKeys.DOCUMENT_LIST, 'trusted'])
-      opts?.onSuccess?.(result, input, ctx)
-    },
-    ...opts,
+export function useAllAccountProfiles() {
+  const allAccounts = useAllAccounts()
+  const allProfiles = useProfiles(
+    allAccounts.data?.accounts.map((a) => a.id) || [],
+    {enabled: !!allAccounts.data},
+  )
+  return allProfiles.map((query) => {
+    return query.data
   })
 }
 
@@ -113,26 +80,6 @@ export function useMyAccountIds() {
   return accountKeys.data?.map((key) => key.accountId) || []
 }
 
-export function useSetProfile(
-  opts?: UseMutationOptions<string, unknown, Partial<Profile>>,
-) {
-  const invalidate = useQueryInvalidator()
-  const grpcClient = useGRPCClient()
-  return useMutation({
-    mutationFn: async (profile: Partial<Profile>) => {
-      const daemonInfo = await grpcClient.daemon.getInfo({})
-      const accountId = daemonInfo?.accountId
-      await grpcClient.accounts.updateProfile(profile)
-      return accountId || '' // empty string here is nonsense but we need to pass the account id to the invalidation fn if we have it
-      // but accountId is empty during onboarding, so the invalidate will be nonsense but who cares
-    },
-    ...opts, // careful to put this above onSuccess so that it overrides opts.onSuccess
-    onSuccess: (accountId, ...rest) => {
-      invalidate([queryKeys.FEED_LATEST_EVENT])
-      invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
-      invalidate([queryKeys.GET_ACCOUNT, accountId])
-      invalidate([queryKeys.GET_ALL_ACCOUNTS])
-      opts?.onSuccess?.(accountId, ...rest)
-    },
-  })
+export function useSetProfile_deprecated() {
+  throw new Error('useSetProfile_deprecated not supported anymore')
 }

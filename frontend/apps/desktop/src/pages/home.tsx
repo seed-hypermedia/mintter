@@ -1,16 +1,16 @@
-import {useGRPCClient} from '@/app-context'
-import {MainWrapper} from '@/components/main-wrapper'
-import {trpc} from '@/trpc'
-import {Add, Button, Form, Input} from '@shm/ui'
-import {useMutation} from '@tanstack/react-query'
-import {dispatchWizardEvent} from 'src/app-account'
-import {useAccountKeys} from 'src/models/daemon'
-import {Label, XStack, YStack} from 'tamagui'
+import { useGRPCClient } from '@/app-context'
+import { MainWrapper } from '@/components/main-wrapper'
+import { trpc } from '@/trpc'
+import { Add, Button, Form, Input } from '@shm/ui'
+import { useMutation } from '@tanstack/react-query'
+import { dispatchWizardEvent } from 'src/app-account'
+import { useAccountKeys } from 'src/models/daemon'
+import { Label, XStack, YStack } from 'tamagui'
 
 export default function HomePage() {
   const client = useGRPCClient()
   const createProfileDraft = trpc.drafts.write.useMutation()
-  const {data: keys, refetch: refetchKeys} = useAccountKeys()
+  const { data: keys, refetch: refetchKeys } = useAccountKeys()
   const deleteKey = useMutation({
     mutationFn: async (name: string) => {
       await client.daemon.deleteKey({
@@ -28,10 +28,10 @@ export default function HomePage() {
               <li key={key.accountId}>
                 <XStack>
                   <YStack>
-                    <p style={{display: 'block'}}>
+                    <p style={{ display: 'block' }}>
                       public key: {key.publicKey}
                     </p>
-                    <p style={{display: 'block'}}>name: {key.name}</p>
+                    <p style={{ display: 'block' }}>name: {key.name}</p>
                   </YStack>
                   <Button
                     onPress={() => {
@@ -46,7 +46,7 @@ export default function HomePage() {
                   onPress={() =>
                     createProfileDraft.mutateAsync({
                       id: key.accountId,
-                      draft: {title: 'demo'},
+                      draft: { title: 'demo' },
                     })
                   }
                 >

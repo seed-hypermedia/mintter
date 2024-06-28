@@ -44,8 +44,8 @@ export function useDeleteEntity(
         invalidate([queryKeys.ACCOUNT_DOCUMENTS])
         invalidate([queryKeys.DOCUMENT_LIST])
       } else if (hmId?.type === 'a') {
-        invalidate([queryKeys.GET_ALL_ACCOUNTS])
-        invalidate([queryKeys.GET_ACCOUNT, hmId.eid])
+        invalidate([queryKeys.ALL_ACCOUNTS])
+        invalidate([queryKeys.ACCOUNT, hmId.eid])
       } else if (hmId?.type === 'c') {
         invalidate([queryKeys.COMMENT, variables.id])
         invalidate([queryKeys.PUBLICATION_COMMENTS])
@@ -93,8 +93,8 @@ export function useUndeleteEntity(
         invalidate([queryKeys.ACCOUNT_DOCUMENTS])
         invalidate([queryKeys.DOCUMENT_LIST])
       } else if (hmId?.type === 'a') {
-        invalidate([queryKeys.GET_ALL_ACCOUNTS])
-        invalidate([queryKeys.GET_ACCOUNT, hmId.eid])
+        invalidate([queryKeys.ALL_ACCOUNTS])
+        invalidate([queryKeys.ACCOUNT, hmId.eid])
       } else if (hmId?.type === 'c') {
         invalidate([queryKeys.COMMENT, variables.id])
         invalidate([queryKeys.PUBLICATION_COMMENTS])

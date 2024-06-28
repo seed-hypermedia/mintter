@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Profile } from '@shm/shared'
 import {
   Button,
   DialogTitle,
@@ -12,7 +11,7 @@ import {
 import { useEffect } from 'react'
 import { Control, useController, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { useMyAccount_deprecated, useSetProfile } from '../models/accounts'
+import { useSetProfile_deprecated } from '../models/accounts'
 import { getAvatarUrl } from '../utils/account-url'
 import { AvatarForm } from './avatar-form'
 import { useAppDialog } from './dialog'
@@ -25,8 +24,7 @@ export function useEditProfileDialog() {
 }
 
 function EditProfileDialog({ onClose }: { onClose: () => void }) {
-  const myAccount = useMyAccount_deprecated()
-  const profile = myAccount.data?.profile
+  const profile = useProfile()
   return (
     <>
       <DialogTitle>Edit Profile</DialogTitle>
@@ -62,7 +60,7 @@ function ProfileForm({
   profile: Profile
   onDone: () => void
 }) {
-  const setProfile = useSetProfile({
+  const setProfile = useSetProfile_deprecated({
     onSuccess: onDone,
   })
   const {
