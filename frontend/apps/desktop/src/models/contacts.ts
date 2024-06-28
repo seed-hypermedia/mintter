@@ -1,9 +1,9 @@
+import {useAccount_deprecated} from '@/models/accounts'
 import {Device} from '@shm/shared'
 import {UseMutationOptions, useMutation} from '@tanstack/react-query'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
-import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
 import {fullInvalidate, queryKeys} from './query-keys'
 
@@ -19,7 +19,7 @@ export function useConnectionSummary() {
 }
 
 export function useAccountWithDevices(accountId: string) {
-  const account = useAccount(accountId)
+  const account = useAccount_deprecated(accountId)
   const peers = useConnectedPeers()
   return {
     ...account.data,

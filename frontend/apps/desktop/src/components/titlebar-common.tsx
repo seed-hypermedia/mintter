@@ -1,25 +1,22 @@
-import { useAppContext } from '@/app-context'
-import { ContactsPrompt } from '@/components/contacts-prompt'
-import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
-import { useDeleteDialog } from '@/components/delete-dialog'
-import { useEditProfileDialog } from '@/components/edit-profile-dialog'
-import { useFavoriteMenuItem } from '@/components/favoriting'
-import { MenuItemType, OptionsDropdown } from '@/components/options-dropdown'
-import {
-  DraftPublicationButtons,
-  VersionContext
-} from '@/components/variants'
-import { useAccount, useMyAccountIds } from '@/models/accounts'
-import { useDocument, useProfile, usePushPublication } from '@/models/documents'
-import { useGatewayHost, useGatewayUrl } from '@/models/gateway-settings'
-import { SidebarWidth, useSidebarContext } from '@/sidebar-context'
+import {useAppContext} from '@/app-context'
+import {ContactsPrompt} from '@/components/contacts-prompt'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {useDeleteDialog} from '@/components/delete-dialog'
+import {useEditProfileDialog} from '@/components/edit-profile-dialog'
+import {useFavoriteMenuItem} from '@/components/favoriting'
+import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
+import {DraftPublicationButtons, VersionContext} from '@/components/variants'
+import {useAccount_deprecated, useMyAccountIds} from '@/models/accounts'
+import {useDocument, useProfile, usePushPublication} from '@/models/documents'
+import {useGatewayHost, useGatewayUrl} from '@/models/gateway-settings'
+import {SidebarWidth, useSidebarContext} from '@/sidebar-context'
 import {
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
 } from '@/utils/navigation'
-import { useOpenDraft } from '@/utils/open-draft'
-import { NavRoute } from '@/utils/routes'
+import {useOpenDraft} from '@/utils/open-draft'
+import {NavRoute} from '@/utils/routes'
 import {
   BlockRange,
   ExpandedBlockRange,
@@ -52,11 +49,11 @@ import {
   Link,
   Pencil,
   Trash,
-  UploadCloud
+  UploadCloud,
 } from '@tamagui/lucide-icons'
-import { ReactNode, useState } from 'react'
-import { getProfileName } from '../pages/account-page'
-import { TitleBarProps } from './titlebar'
+import {ReactNode, useState} from 'react'
+import {getProfileName} from '../pages/account-page'
+import {TitleBarProps} from './titlebar'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -70,10 +67,7 @@ export function DocOptionsButton() {
   const push = usePushPublication()
   const deleteEntity = useDeleteDialog()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
-  const doc = useDocument(
-    route.documentId,
-    route.versionId,
-  )
+  const doc = useDocument(route.documentId, route.versionId)
   const menuItems: MenuItemType[] = [
     {
       key: 'link',
@@ -111,7 +105,7 @@ export function DocOptionsButton() {
           id: route.documentId,
           title: getDocumentTitle(doc.data),
           onSuccess: () => {
-            dispatch({ type: 'pop' })
+            dispatch({type: 'pop'})
           },
         })
       },
@@ -120,8 +114,8 @@ export function DocOptionsButton() {
   const id = unpackHmId(docId)
   const docUrl = id
     ? createHmId('d', id.eid, {
-      version: route.versionId,
-    })
+        version: route.versionId,
+      })
     : null
   menuItems.push(useFavoriteMenuItem(docUrl))
 
@@ -143,7 +137,7 @@ export function AccountOptionsButton() {
   const menuItems: MenuItemType[] = []
   const accountUrl = createHmId('a', route.accountId)
   menuItems.push(useFavoriteMenuItem(accountUrl))
-  const account = useAccount(route.accountId)
+  const account = useAccount_deprecated(route.accountId)
   const dispatch = useNavigationDispatch()
   const deleteEntity = useDeleteDialog()
   const editProfileDialog = useEditProfileDialog()
@@ -170,7 +164,7 @@ export function AccountOptionsButton() {
         id: createHmId('a', route.accountId),
         title: getProfileName(profile.data),
         onSuccess: () => {
-          dispatch({ type: 'pop' })
+          dispatch({type: 'pop'})
         },
       })
     },
@@ -217,10 +211,7 @@ export function useFullReferenceUrl(route: NavRoute): {
   content: ReactNode
 } | null {
   const pubRoute = route.key === 'document' ? route : null
-  const pub = useDocument(
-    pubRoute?.documentId,
-    pubRoute?.versionId,
-  )
+  const pub = useDocument(pubRoute?.documentId, pubRoute?.versionId)
   const gwUrl = useGatewayUrl()
   const [copyDialogContent, onCopyPublic] = useCopyGatewayReference()
 
@@ -317,7 +308,7 @@ export function CopyReferenceButton() {
   const [shouldOpen, setShouldOpen] = useState(false)
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
-  const { externalOpen } = useAppContext()
+  const {externalOpen} = useAppContext()
   if (!reference) return null
   return (
     <>
@@ -356,7 +347,7 @@ export function CopyReferenceButton() {
   )
 }
 
-function CreateDropdown({ }: {}) {
+function CreateDropdown({}: {}) {
   const openDraft = useOpenDraft('push')
   return (
     <Button
@@ -408,7 +399,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({ type: 'pop' })}
+            onPress={() => dispatch({type: 'pop'})}
             chromeless
             cursor={state.routeIndex <= 0 ? 'default' : 'pointer'}
             disabled={state.routeIndex <= 0}
@@ -419,7 +410,7 @@ export function NavigationButtons() {
         <XGroup.Item>
           <Button
             size="$2"
-            onPress={() => dispatch({ type: 'forward' })}
+            onPress={() => dispatch({type: 'forward'})}
             chromeless
             cursor={
               state.routeIndex >= state.routes.length - 1
@@ -436,7 +427,7 @@ export function NavigationButtons() {
   )
 }
 
-export function NavMenuButton({ left }: { left?: ReactNode }) {
+export function NavMenuButton({left}: {left?: ReactNode}) {
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)

@@ -1,6 +1,6 @@
 import {Avatar} from '@/components/avatar'
 import appError from '@/errors'
-import {useAccount} from '@/models/accounts'
+import {useAccount_deprecated} from '@/models/accounts'
 import {useNavigate} from '@/utils/useNavigate'
 import {Account} from '@shm/shared'
 import {Button, FontSizeTokens, Tooltip, YStack} from '@shm/ui'
@@ -33,7 +33,7 @@ export function AccountLinkAvatar({
   accountId?: string
   size?: FontSizeTokens | number
 }) {
-  const account = useAccount(accountId)
+  const account = useAccount_deprecated(accountId)
   if (!accountId) return null
   return (
     <BaseAccountLinkAvatar

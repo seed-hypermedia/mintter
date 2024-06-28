@@ -1,7 +1,8 @@
-import { useDocument } from '@/models/documents'
-import { AppDocContentProvider } from '@/pages/document-content-provider'
-import { trpc } from '@/trpc'
-import { useNavigate } from '@/utils/useNavigate'
+import {useAccount_deprecated} from '@/models/accounts'
+import {useDocument} from '@/models/documents'
+import {AppDocContentProvider} from '@/pages/document-content-provider'
+import {trpc} from '@/trpc'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   API_FILE_URL,
   BlockRange,
@@ -34,18 +35,17 @@ import {
   Pencil,
   Reply,
 } from '@tamagui/lucide-icons'
-import { YStack } from 'tamagui'
-import { useAppContext } from '../app-context'
-import { useAccount } from '../models/accounts'
-import type { CommentGroup } from '../models/comments'
+import {YStack} from 'tamagui'
+import {useAppContext} from '../app-context'
+import type {CommentGroup} from '../models/comments'
 import {
   useCommentReplies,
   useCreateComment,
   useDocumentCommentGroups,
 } from '../models/comments'
-import { AccessoryContainer } from './accessory-sidebar'
-import { MenuItemType, OptionsDropdown } from './options-dropdown'
-import { WindowsLinuxWindowControls } from './window-controls'
+import {AccessoryContainer} from './accessory-sidebar'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import {WindowsLinuxWindowControls} from './window-controls'
 
 export function CommentGroup({
   group,
@@ -137,8 +137,9 @@ export function CommentGroup({
             }}
             icon={MessageSquare}
           >
-            {`${group.moreCommentsCount}${group.comments.length > 1 ? ' More' : ''
-              } Replies`}
+            {`${group.moreCommentsCount}${
+              group.comments.length > 1 ? ' More' : ''
+            } Replies`}
           </Button>
         ) : (
           <Button
@@ -250,7 +251,7 @@ export function CommentPresentation({
   menuItems?: (MenuItemType | null)[]
   onReplyBlock?: (blockId: string) => void
 }) {
-  const account = useAccount(comment.author)
+  const account = useAccount_deprecated(comment.author)
 
   return (
     <YStack group="item" marginVertical="$3" paddingHorizontal="$3">
@@ -306,7 +307,7 @@ export function CommentPageTitlebar({
   icon?: React.ReactNode
   children?: React.ReactNode
 }) {
-  const { platform } = useAppContext()
+  const {platform} = useAppContext()
   const isWindowsLinux = platform !== 'darwin'
   return (
     <XStack

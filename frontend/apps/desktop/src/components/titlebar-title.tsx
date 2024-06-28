@@ -1,14 +1,9 @@
-import { useSizeObserver } from '@/components/app-embeds'
-import { useDraftTitle } from '@/models/documents'
-import { useEntitiesContent, useEntityRoutes } from '@/models/entities'
-import { useNavRoute } from '@/utils/navigation'
-import {
-  AccountRoute,
-  DocumentRoute,
-  DraftRoute,
-  NavRoute
-} from '@/utils/routes'
-import { useNavigate } from '@/utils/useNavigate'
+import {useSizeObserver} from '@/components/app-embeds'
+import {useDraftTitle} from '@/models/documents'
+import {useEntitiesContent, useEntityRoutes} from '@/models/entities'
+import {useNavRoute} from '@/utils/navigation'
+import {AccountRoute, DocumentRoute, DraftRoute, NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   Button,
   ButtonText,
@@ -21,13 +16,12 @@ import {
   YStack,
   styled,
 } from '@shm/ui'
-import { Sparkles, Star } from '@tamagui/lucide-icons'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { AiOutlineEllipsis } from 'react-icons/ai'
-import { useFixedDraftTitle } from '../pages/draft'
-import { getItemDetails } from './sidebar-neo'
+import {Sparkles, Star} from '@tamagui/lucide-icons'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {AiOutlineEllipsis} from 'react-icons/ai'
+import {getItemDetails} from './sidebar-neo'
 
-export function TitleContent({ size = '$4' }: { size?: FontSizeTokens }) {
+export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
 
   useEffect(() => {
@@ -99,7 +93,7 @@ type CrumbDetails = {
   crumbKey: string
 }
 
-function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
+function BreadcrumbTitle({route}: {route: DocumentRoute | AccountRoute}) {
   const entityRoutes = useEntityRoutes(route)
   const entityContents = useEntitiesContent(entityRoutes)
   const [collapsedCount, setCollapsedCount] = useState(0)
@@ -174,9 +168,9 @@ function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
     let newCollapseCount = 0
     while (
       usableWidth +
-      fixedItemWidth +
-      (newCollapseCount ? spacerWidth + ellipsisWidth : 0) >
-      containerWidth &&
+        fixedItemWidth +
+        (newCollapseCount ? spacerWidth + ellipsisWidth : 0) >
+        containerWidth &&
       newCollapseCount < maxCollapseCount
     ) {
       usableWidth -= crumbWidths[1 + newCollapseCount] + spacerWidth
@@ -185,7 +179,7 @@ function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
     setCollapsedCount(newCollapseCount)
   }
 
-  const containerObserverRef = useSizeObserver(({ width }) => {
+  const containerObserverRef = useSizeObserver(({width}) => {
     widthInfo.current.container = width
     updateWidths()
   })
@@ -197,7 +191,7 @@ function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
     <BreadcrumbItem
       details={firstInactiveDetail}
       key={firstInactiveDetail.crumbKey}
-      onSize={({ width }: DOMRect) => {
+      onSize={({width}: DOMRect) => {
         if (width) {
           widthInfo.current[firstInactiveDetail.crumbKey] = width
           updateWidths()
@@ -214,7 +208,7 @@ function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
         <BreadcrumbItem
           key={details.crumbKey}
           details={details}
-          onSize={({ width }: DOMRect) => {
+          onSize={({width}: DOMRect) => {
             if (width) {
               widthInfo.current[details.crumbKey] = width
               updateWidths()
@@ -238,7 +232,7 @@ function BreadcrumbTitle({ route }: { route: DocumentRoute | AccountRoute }) {
       details={activeItem}
       key={activeItem.crumbKey}
       isActive
-      onSize={({ width }: DOMRect) => {
+      onSize={({width}: DOMRect) => {
         if (width) {
           widthInfo.current[activeItem.crumbKey] = width
           updateWidths()
@@ -368,7 +362,7 @@ export const TitleTextButton = styled(ButtonText, {
   },
 })
 
-export function Title({ size }: { size?: FontSizeTokens }) {
+export function Title({size}: {size?: FontSizeTokens}) {
   return (
     <XStack
       gap="$2"
@@ -394,8 +388,11 @@ function DraftTitle({
   const title = useDraftTitle({
     documentId: route.draftId,
   })
+
   const realTitle = title ?? 'Untitled Document'
-  const fixedTitle = useFixedDraftTitle(route)
+  // const fixedTitle = useFixedDraftTitle(route)
+  // TODO: check wtf is this
+  const fixedTitle = undefined
   const displayTitle = fixedTitle || realTitle
   useWindowTitle(displayTitle ? `Draft: ${displayTitle}` : undefined)
   return (

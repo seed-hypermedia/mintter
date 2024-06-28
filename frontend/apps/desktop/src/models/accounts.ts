@@ -3,12 +3,12 @@ import appError from '@/errors'
 import {useAccountKeys} from '@/models/daemon'
 import {queryKeys} from '@/models/query-keys'
 import {ConnectError} from '@connectrpc/connect'
-import {GRPCClient, HMAccount, hmAccount} from '@shm/shared'
+import {GRPCClient, HMAccount} from '@shm/shared'
 import {useQueries, useQuery} from '@tanstack/react-query'
 import {useProfiles} from './documents'
 import {useConnectedPeers} from './networking'
 
-export function useAccount(accountId?: string) {
+export function useAccount_deprecated(accountId?: string) {
   const grpcClient = useGRPCClient()
   return useQuery<HMAccount | null, ConnectError>(
     getAccountQuery(grpcClient, accountId),
@@ -27,8 +27,7 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
     enabled: !!accountId,
     queryKey: [queryKeys.ACCOUNT, accountId],
     queryFn: async () => {
-      const acct = await grpcClient.accounts.getAccount({id: accountId})
-      return hmAccount(acct)
+      return null
     },
     useErrorBoundary: () => false,
   }

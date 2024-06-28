@@ -1,5 +1,9 @@
 import {PlainMessage} from '@bufbuild/protobuf'
-import {EditorInlineContent} from '@shm/desktop/src/editor'
+import {
+  Block,
+  EditorInlineContent,
+  hmBlockSchema,
+} from '@shm/desktop/src/editor'
 import type {
   Account,
   ChangeInfo,
@@ -271,4 +275,14 @@ export type HMCommentDraft = {
   targetCommentId: string | null
   publishTime: number | null
   commentId: string
+}
+
+export type HMDraft = {
+  title: string
+  content: Array<Block<typeof hmBlockSchema>>
+  metadata: HMDocument['metadata']
+  members: any //HMDocument['members']
+  index: HMDocument['index']
+  deps: Array<string>
+  signingAccount: string
 }

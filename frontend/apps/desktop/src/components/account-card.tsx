@@ -1,8 +1,8 @@
 // tamagui-ignore
+import {useAccount_deprecated} from '@/models/accounts'
 import * as Ariakit from '@ariakit/react'
-import { UIAvatar, XStack, YStack } from '@shm/ui'
-import { SizableText } from 'tamagui'
-import { useAccount } from '../models/accounts'
+import {UIAvatar, XStack, YStack} from '@shm/ui'
+import {SizableText} from 'tamagui'
 
 export function AccountCard({
   accountId,
@@ -13,7 +13,7 @@ export function AccountCard({
   children: React.ReactNode
   hideActions?: boolean
 }) {
-  let account = useAccount(accountId)
+  let account = useAccount_deprecated(accountId)
   return accountId && account.status == 'success' ? (
     <Ariakit.HovercardProvider
       animated
@@ -47,7 +47,6 @@ export function AccountCard({
                 url={account.data.profile?.avatar}
                 label={account.data.profile?.alias || accountId}
               />
-
             </XStack>
             <YStack>
               <SizableText size="$5" fontWeight="bold">

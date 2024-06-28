@@ -1,7 +1,7 @@
-import { createHmId } from '@shm/shared'
-import { z } from 'zod'
+import {createHmId} from '@shm/shared'
+import {z} from 'zod'
 
-export const defaultRoute: NavRoute = { key: 'home' }
+export const defaultRoute: NavRoute = {key: 'home'}
 
 export const homeRouteSchema = z.object({
   key: z.literal('home'),
@@ -19,7 +19,7 @@ export const exploreRouteSchema = z.object({
 })
 export type ExploreRoute = z.infer<typeof exploreRouteSchema>
 
-export const contactsRouteSchema = z.object({ key: z.literal('contacts') })
+export const contactsRouteSchema = z.object({key: z.literal('contacts')})
 export type ContactsRoute = z.infer<typeof contactsRouteSchema>
 
 export const entityVersionsAccessorySchema = z.object({
@@ -82,8 +82,7 @@ export type BaseAccountRoute = z.infer<typeof baseAccountRouteSchema>
 
 export const baseDraftRouteSchema = z.object({
   key: z.literal('draft'),
-  draftId: z.string().optional(),
-  isProfileDocument: z.boolean().optional(),
+  id: z.string().optional(),
 })
 export type BaseDraftRoute = z.infer<typeof baseDraftRouteSchema>
 
@@ -124,7 +123,7 @@ export const commentDraftRouteSchema = z.object({
 })
 export type CommentDraftRoute = z.infer<typeof commentDraftRouteSchema>
 
-export const settingsRouteSchema = z.object({ key: z.literal('settings') })
+export const settingsRouteSchema = z.object({key: z.literal('settings')})
 export type SettingsRoute = z.infer<typeof settingsRouteSchema>
 
 export const deletedContentRouteSchema = z.object({

@@ -14,15 +14,14 @@ import {
   HMBlock,
   HMBlockNode,
   HMDocument,
+  HMDraft,
   UnpackedHypermediaId,
   fromHMBlock,
   hmDocument,
-  toHMBlock,
   unpackDocId,
   unpackHmId,
   writeableStateStream,
 } from '@shm/shared'
-import {UpdateDraftResponse} from '@shm/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   UseInfiniteQueryOptions,
   UseMutationOptions,
@@ -298,9 +297,8 @@ export function usePublishDraft(
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
   const myAccount = useMyAccount_deprecated()
-  const isProfileDocument =
-    draftRoute?.isProfileDocument ||
-    myAccount.data?.profile?.rootDocument === draftRoute?.draftId
+  const isProfileDocument = false
+
   const {client, invalidate} = queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
@@ -368,7 +366,7 @@ export type EditorDraftState = {
 export function useDraftTitle(
   input: UseQueryOptions<EditorDraftState> & {documentId?: string | undefined},
 ) {
-  const draft = useDraft({documentId: input.documentId})
+  const draft = useDraft({draftId: input.documentId})
   return draft.data?.title || undefined
 }
 
@@ -386,35 +384,36 @@ type MoveBlockAction = {
 }
 
 export function useDraft({
-  draftId,
+  draftId = '',
   ...options
-}: UseQueryOptions<HMDocument | null> & {
+}: UseQueryOptions<any | null> & {
   draftId?: string
 }) {
-  const grpcClient = useGRPCClient()
-  const diagnosis = useDraftDiagnosis()
-  return useQuery(queryDraft({draftId, grpcClient, diagnosis, ...options}))
+  return trpc.drafts.get.useQuery(draftId, {
+    enabled: !!draftId,
+  })
 }
 
 export function useDrafts(
   ids: string[],
   options?: UseQueryOptions<HMDocument | null>,
 ) {
-  const grpcClient = useGRPCClient()
-  return useQueries({
-    queries: ids.map((draftId) => queryDraft({draftId: draftId, grpcClient})),
-    ...(options || {}),
-  })
+  // return useQueries({
+  //   queries: ids.map((draftId) => trpc.drafts.get.useQuery(draftId, {
+  //     enabled: !!draftId,
+  //     queryKey: [queryKeys.EDITOR_DRAFT, draftId],
+  //   }),
+  //   ...(options || {}),
+  // })
+  // TODO: IMPLEMENT ME
 }
 
 export function queryDraft({
   draftId,
-  grpcClient,
   diagnosis,
   ...options
 }: {
   draftId?: string
-  grpcClient: GRPCClient
   diagnosis?: ReturnType<typeof useDraftDiagnosis>
 } & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
@@ -423,10 +422,7 @@ export function queryDraft({
     useErrorBoundary: false,
     queryFn: async () => {
       try {
-        let serverDraft = await grpcClient.drafts.getDraft({
-          draftId,
-        })
-
+        let serverDraft = null
         // const doc = serverDraft
         const doc = serverDraft ? hmDocument(serverDraft) : null
 
@@ -448,24 +444,214 @@ export function queryDraft({
   }
 }
 
-/**
- *
- * Draft Machine logic
- *
- * - initialize machine with all the context data:
- *    - draft: Document
- *    -
- * - fetch draft
- *    - Error: show draft error (maybe retry or do extra checks before showing the error)
- *    - OK:
- */
+export function useDraftEditor({id}: {id: string}) {
+  const {queryClient, grpcClient} = useAppContext()
+  const openUrl = useOpenUrl()
+  const gwUrl = useGatewayUrlStream()
+  const checkWebUrl = trpc.webImporting.checkWebUrl.useMutation()
+  const gotEdited = useRef(false)
+  const showNostr = trpc.experiments.get.useQuery().data?.nostr
+  const [writeEditorStream, editorStream] = useRef(
+    writeableStateStream<any>(null),
+  ).current
+  const saveDraft = trpc.drafts.write.useMutation()
 
-export function useDraftEditor({
-  documentId,
+  const editor = useBlockNote<typeof hmBlockSchema>({
+    onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
+      if (!gotEdited.current) {
+        gotEdited.current = true
+      }
+
+      writeEditorStream(editor.topLevelBlocks)
+      observeBlocks(
+        editor,
+        editor.topLevelBlocks,
+        () => {},
+        // send({type: 'CHANGE'}),
+      )
+      send({type: 'CHANGE'})
+    },
+    onTextCursorPositionChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
+      const {view} = editor._tiptapEditor
+      const {selection} = view.state
+      if (
+        selection.from !== selection.to &&
+        !(selection instanceof NodeSelection)
+      )
+        return
+      const domAtPos = view.domAtPos(selection.from)
+      try {
+        const rect: DOMRect = domAtPos.node.getBoundingClientRect()
+        // Check if the cursor is off screen
+        if ((rect && rect.top < 0) || rect.bottom > window.innerHeight) {
+          // Scroll the cursor into view
+          domAtPos.node.scrollIntoView({block: 'center'})
+        }
+      } catch {}
+      return
+    },
+
+    linkExtensionOptions: {
+      openOnClick: false,
+      queryClient,
+      grpcClient,
+      gwUrl,
+      openUrl,
+      checkWebUrl: checkWebUrl.mutate,
+    },
+    onMentionsQuery: (query: string) => {
+      // inlineMentionsQuery(query)
+    },
+    blockSchema: hmBlockSchema,
+    slashMenuItems: !showNostr
+      ? slashMenuItems.filter((item) => item.name != 'Nostr')
+      : slashMenuItems,
+    _tiptapOptions: {
+      extensions: [
+        Extension.create({
+          name: 'hypermedia-link',
+          addProseMirrorPlugins() {
+            return [
+              createHypermediaDocLinkPlugin({
+                queryClient,
+              }).plugin,
+            ]
+          },
+        }),
+      ],
+    },
+  })
+
+  const [state, send, actor] = useMachine(
+    draftMachine.provide({
+      actions: {
+        populateEditor: function ({context, event}) {
+          if (context.draft != null && context.draft.content.length != 0) {
+            editor.replaceBlocks(editor.topLevelBlocks, context.draft.content)
+            const tiptap = editor?._tiptapEditor
+            // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
+            setGroupTypes(tiptap, context.draft.content)
+          }
+        },
+        focusEditor: () => {
+          const tiptap = editor?._tiptapEditor
+          if (tiptap && !tiptap.isFocused) {
+            editor._tiptapEditor.commands.focus()
+          }
+        },
+      },
+      actors: {
+        createOrUpdateDraft: fromPromise<
+          HMDraft,
+          ContextFrom<typeof draftMachine>
+        >(({input}) => {
+          console.log('--- createOrUpdateDraft', input, editor)
+          const blocks = editor.topLevelBlocks
+          let inputData: Partial<HMDraft> = {}
+
+          if (!input.currentDraft) {
+            inputData = {
+              content: blocks,
+              deps: [],
+              metadata: {
+                title: input.title,
+              },
+              members: {},
+              index: {},
+            }
+          } else {
+            inputData = {
+              ...input.currentDraft,
+              content: blocks,
+              metadata: {
+                ...input.currentDraft.metadata,
+                title: input.title,
+              },
+            }
+          }
+
+          return saveDraft.mutateAsync({id, draft: inputData})
+        }),
+      },
+    }),
+  )
+
+  console.log(`== ~ useDraftEditor ~ state:`, state)
+
+  const backendDraft = useDraft({draftId: id})
+
+  useEffect(() => {
+    if (state.matches('idle')) {
+      if (backendDraft.status == 'success') {
+        send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+      }
+      if (backendDraft.status == 'error') {
+        send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
+      }
+    }
+  }, [backendDraft])
+
+  useEffect(() => {
+    function handleSelectAll(event: KeyboardEvent) {
+      if (event.key == 'a' && event.metaKey) {
+        if (editor) {
+          event.preventDefault()
+          editor._tiptapEditor.commands.focus()
+          editor._tiptapEditor.commands.selectAll()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleSelectAll)
+
+    return () => {
+      window.removeEventListener('keydown', handleSelectAll)
+    }
+  }, [])
+
+  return {editor, handleFocusAtMousePos, state, send, actor}
+
+  // ==============
+
+  function handleFocusAtMousePos(event: MouseEvent) {
+    let ttEditor = (editor as BlockNoteEditor)._tiptapEditor
+    let editorView = ttEditor.view
+    let editorRect = editorView.dom.getBoundingClientRect()
+    let centerEditor = editorRect.left + editorRect.width / 2
+
+    const pos = editorView.posAtCoords({
+      left: editorRect.left + 1,
+      top: event.clientY + editorView.dom.offsetTop,
+    })
+
+    if (pos) {
+      let node = editorView.state.doc.nodeAt(pos.pos)
+
+      let sel = Selection.near(
+        editorView.state.doc.resolve(
+          event.clientX < centerEditor ? pos.pos : pos.pos + node.nodeSize - 1,
+        ),
+      )
+
+      ttEditor.commands.focus()
+      ttEditor.commands.setTextSelection(sel)
+    } else {
+      if (event.clientY > editorRect.top) {
+        // this is needed because if the user clicks on one of the sides of the title we don't want to jump to the bottom of the document to focus the document.
+        // if the window is scrolled and the title is not visible this will not matter because a block will be at its place so the normal focus should work.
+        ttEditor.commands.focus()
+        ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
+      }
+    }
+  }
+}
+
+export function _useDraftEditor({
+  draftId,
   route,
   checkWebUrl,
 }: {
-  documentId?: string
+  draftId?: string
   route: NavRoute
   checkWebUrl: any
 }) {
@@ -476,6 +662,7 @@ export function useDraftEditor({
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
   const gotEdited = useRef(false)
+  const create = trpc.drafts.write.useMutation()
   const {inlineMentionsData, inlineMentionsQuery} = useInlineMentions()
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
@@ -484,197 +671,114 @@ export function useDraftEditor({
 
   // fetch draft
   const backendDraft = useDraft({
-    documentId,
+    enabled: !!draftId,
+    draftId: draftId,
     onError: (error) => {
       send({type: 'GET.DRAFT.ERROR', error})
     },
   })
 
+  console.log(`== ~ backendDraft:`, backendDraft, route)
+
   const draftStatusActor = DraftStatusContext.useActorRef()
 
-  const [state, send, actor] = useMachine(
-    draftMachine.provide({
-      actions: {
-        populateEditor: ({event}) => {
-          if (
-            event.type == 'GET.DRAFT.SUCCESS' &&
-            event.draft.children?.length
-          ) {
-            let editorBlocks = toHMBlock(event.draft.children)
-            const tiptap = editor?._tiptapEditor
-            // editor.removeBlocks(editor.topLevelBlocks)
-            editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-            // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
-            setGroupTypes(tiptap, editorBlocks)
-          }
-        },
-        focusEditor: () => {
-          const tiptap = editor?._tiptapEditor
-          if (tiptap && !tiptap.isFocused) {
-            editor._tiptapEditor.commands.focus()
-          }
-        },
-        onSaveSuccess: ({event}) => {
-          // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
-          // @ts-expect-error
-          if (event.output) {
-            invalidate([queryKeys.GET_DRAFT_LIST])
-            invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-            invalidate([queryKeys.EDITOR_DRAFT, documentId])
-          }
-        },
-        indicatorChange: () =>
-          draftStatusActor.send({type: 'INDICATOR.CHANGE'}),
-        indicatorSaving: () =>
-          draftStatusActor.send({type: 'INDICATOR.SAVING'}),
-        indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
-        indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
-        indicatorIdle: () => draftStatusActor.send({type: 'INDICATOR.IDLE'}),
-        resetDraftAndRedirectToDraftList: () => {
-          try {
-            grpcClient.drafts
-              .deleteDraft({documentId})
-              .catch((error) => {
-                diagnosis?.append(documentId!, {
-                  key: 'deleteDraft',
-                  value: `Error deleting draft ${documentId}: ${error.message}`,
-                })
-              })
-              .then(() => {
-                diagnosis?.append(documentId!, {
-                  key: 'deleteDraft',
-                  value: `Delete draft ${documentId} success`,
-                })
-                invalidate([queryKeys.GET_DRAFT_LIST])
-                invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-              })
-          } catch (error) {
-            diagnosis?.append(documentId!, {
-              key: 'deleteDraft',
-              value: `Error deleting draft ${documentId}: ${error.message}`,
-            })
-          }
+  // const [state, send, actor] = useMachine(
+  //   draftMachine.provide({
+  //     actions: {
+  //       populateEditor: function ({context, event}, params) {
+  //         console.log('=== POPULATE EDITOR')
+  //         if (
+  //           event.type == 'GET.DRAFT.SUCCESS' &&
+  //           event.draft.content?.length
+  //         ) {
+  //           let editorBlocks = toHMBlock(
+  //             event.draft.content as Array<HMBlockNode>,
+  //           )
 
-          replace({key: 'feed', tab: 'trusted'})
-        },
-      },
-      actors: {
-        updateDraft: fromPromise<
-          UpdateDraftResponse | string,
-          ContextFrom<typeof draftMachine>
-        >(async ({input}) => {
-          // delay the time we save to the backend to force editor changes.
-          // await delay(0)
-          return updateDraft({
-            editor,
-            blocksMap: input.blocksMap,
-            title: input.title,
-            draft: input.draft,
-          })
-        }),
-        restoreDraft: fromPromise<
-          UpdateDraftResponse | string,
-          ContextFrom<typeof draftMachine>
-        >(async ({input}) => {
-          const prevDraft = input.draft ? hmDocument(input.draft) : null
-          if (!prevDraft) throw new Error('Expecting previous draft to restore')
-          if (!prevDraft.children)
-            throw new Error('Expecting previous draft with children to restore')
-          const prevBlocksMap = input.blocksMap
-          try {
-            // delete draft
-            await grpcClient.drafts.deleteDraft({documentId})
-            // create new draft
-            const newDraftRaw = await grpcClient.drafts.createDraft({
-              existingDocumentId: documentId,
-            })
-            const newDraft = newDraftRaw ? hmDocument(newDraftRaw) : null
+  //           // editor.removeBlocks(editor.topLevelBlocks)
+  //           editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+  //           const tiptap = editor?._tiptapEditor
+  //           // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
+  //           setGroupTypes(tiptap, editorBlocks)
+  //         } else {
+  //           console.log('== the draft is empty!')
+  //         }
+  //       },
+  //       focusEditor: () => {
+  //         const tiptap = editor?._tiptapEditor
+  //         if (tiptap && !tiptap.isFocused) {
+  //           editor._tiptapEditor.commands.focus()
+  //         }
+  //       },
+  //       onSaveSuccess: ({event}) => {
+  //         // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
+  //         // @ts-expect-error
+  //         if (event.output) {
+  //           invalidate([queryKeys.GET_DRAFT_LIST])
+  //           invalidate([queryKeys.DOCUMENT_DRAFTS, draftId])
+  //           invalidate([queryKeys.EDITOR_DRAFT, draftId])
+  //         }
+  //       },
+  //       indicatorChange: () =>
+  //         draftStatusActor.send({type: 'INDICATOR.CHANGE'}),
+  //       indicatorSaving: () =>
+  //         draftStatusActor.send({type: 'INDICATOR.SAVING'}),
+  //       indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
+  //       indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
+  //       indicatorIdle: () => draftStatusActor.send({type: 'INDICATOR.IDLE'}),
+  //       resetDraftAndRedirectToDraftList: () => {
+  //         // TODO: IMPLEMENT ME
+  //         replace({key: 'home'})
+  //       },
+  //     },
+  //     actors: {
+  //       updateOrCreateDraft: fromPromise<
+  //         HMDocument,
+  //         ContextFrom<typeof draftMachine>
+  //       >(async ({input}) => {
+  //         // delay the time we save to the backend to force editor changes.
+  //         // await delay(0)
 
-            const newBlocksMap = newDraft?.children
-              ? createBlocksMap(newDraft.children, '')
-              : {}
-            // prevDraft is the final result I want
+  //         if (input.draft) {
+  //           console.log('=== UPDATEDRAFT', input)
+  //           return updateDraft({editor, draft: input.draft})
+  //         } else {
+  //           console.log('=== CREATE DRAFT', input)
+  //           const newDraft = await createDraft({
+  //             create,
+  //             editor,
+  //             title: 'Hello Hello',
+  //           })
 
-            let {changes, touchedBlocks} = compareDraftWithMap(
-              newBlocksMap,
-              prevDraft?.children,
-              '',
-            )
-
-            let deletedBlocks = extractDeletes(newBlocksMap, touchedBlocks)
-
-            // TODO: update title too
-
-            let capturedChanges = [...changes, ...deletedBlocks]
-
-            if (capturedChanges.length) {
-              // capturedChanges = capturedChanges.map((i) => i.toJson())
-              diagnosis.append(documentId, {
-                key: 'will.restoreDraft',
-                // note: 'regular updateDraft',
-                value: {
-                  changes: changesToJSON(capturedChanges),
-                  newBlocksMap,
-                  // prevDraft,
-                },
-              })
-
-              return await grpcClient.drafts
-                .updateDraft({
-                  documentId,
-                  changes: capturedChanges,
-                })
-                .then((res) => {
-                  if (res.updatedDocument) {
-                    client.setQueryData(
-                      [queryKeys.EDITOR_DRAFT, documentId],
-                      res.updatedDocument,
-                    )
-                  }
-
-                  diagnosis.append(documentId, {
-                    key: 'did.restoredDraft',
-                    // note: 'regular updateDraft',
-                    value: JSON.stringify(res),
-                  })
-
-                  invalidate([queryKeys.GET_DRAFT_LIST])
-                  invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-
-                  return res
-                })
-            }
-          } catch (error) {
-            return Promise.reject(`Error restoring: ${JSON.stringify(error)}`)
-          }
-        }),
-        resetDraft: fromPromise<
-          UpdateDraftResponse | string,
-          ContextFrom<typeof draftMachine>
-        >(async () => {
-          try {
-            // delete draft
-            await grpcClient.drafts.deleteDraft({documentId})
-            // create new draft
-            const newDraft = await grpcClient.drafts.createDraft({
-              existingDocumentId: documentId,
-            })
-
-            invalidate([queryKeys.GET_DRAFT_LIST])
-            invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-
-            return newDraft
-          } catch (error) {
-            throw new Error(`Error resetting: ${JSON.stringify(error)}`)
-          }
-        }),
-      },
-      delays: {
-        // This is the time the machine waits after the last keystroke event before starting to save.
-        autosaveTimeout: 500,
-      },
-    }),
-  )
+  //           //   const newDraft = await createNewDraft({editor: val})
+  //           replace({...route, draftId: newDraft.id} as DraftRoute)
+  //           return newDraft
+  //         }
+  //       }),
+  //       restoreDraft: fromPromise<HMDocument, ContextFrom<typeof draftMachine>>(
+  //         async ({input}) => {
+  //           // TODO: IMPLEMENT ME
+  //           return input.draft
+  //         },
+  //       ),
+  //       resetDraft: fromPromise<HMDocument, ContextFrom<typeof draftMachine>>(
+  //         async ({input}) => {
+  //           // TODO: IMPLEMENT ME
+  //           return input.draft
+  //         },
+  //       ),
+  //     },
+  //     delays: {
+  //       // This is the time the machine waits after the last keystroke event before starting to save.
+  //       autosaveTimeout: 500,
+  //     },
+  //     guards: {
+  //       routeHasId: function () {
+  //         return !!draftId || typeof backendDraft != 'string'
+  //       },
+  //     },
+  //   }),
+  // )
 
   const gwUrl = useGatewayUrlStream()
 
@@ -750,36 +854,34 @@ export function useDraftEditor({
     },
   })
 
-  useEffect(() => {
-    if (state.matches('fetching')) {
-      if (backendDraft.status == 'success' && backendDraft.data) {
-        send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
-      } else if (backendDraft.status == 'error') {
-        send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
-      }
-    }
+  // useEffect(() => {
+  //   if (state.matches('fetching')) {
+  //     if (backendDraft.status == 'success' && backendDraft.data) {
+  //       send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+  //     } else if (backendDraft.status == 'error') {
+  //       send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
+  //     }
+  //   }
 
-    return () => {
-      if (state.matches({ready: 'changed'})) {
-        updateDraft({
-          editor,
-          draft: state.context.draft,
-          blocksMap: state.context.blocksMap,
-          title: state.context.title,
-        }).then(() => {
-          invalidate([queryKeys.GET_DRAFT_LIST])
-          invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-          invalidate([queryKeys.EDITOR_DRAFT, documentId])
-        })
-      }
-    }
-  }, [backendDraft.status])
+  //   return () => {
+  //     if (state.matches({ready: 'changed'})) {
+  //       updateDraft({
+  //         editor,
+  //         draft: state.context.draft,
+  //       }).then(() => {
+  //         invalidate([queryKeys.GET_DRAFT_LIST])
+  //         invalidate([queryKeys.DOCUMENT_DRAFTS, draftId])
+  //         invalidate([queryKeys.EDITOR_DRAFT, draftId])
+  //       })
+  //     }
+  //   }
+  // }, [backendDraft.status])
 
-  useEffect(() => {
-    if (inlineMentionsData) {
-      editor?.setInlineEmbedOptions(inlineMentionsData)
-    }
-  }, [inlineMentionsData])
+  // useEffect(() => {
+  //   if (inlineMentionsData) {
+  //     editor?.setInlineEmbedOptions(inlineMentionsData)
+  //   }
+  // }, [inlineMentionsData])
 
   useEffect(() => {
     function handleSelectAll(event: KeyboardEvent) {
@@ -829,69 +931,6 @@ export function useDraftEditor({
         ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
       }
     }
-  }
-
-  async function updateDraft({editor, blocksMap, draft, title}) {
-    let currentEditorBlocks = [...editor.topLevelBlocks]
-    let {changes, touchedBlocks} = compareBlocksWithMap(
-      editor,
-      blocksMap,
-      currentEditorBlocks,
-      '',
-    )
-
-    let deletedBlocks = extractDeletes(blocksMap, touchedBlocks)
-
-    if (draft?.title != title) {
-      changes = [
-        new DocumentChange({
-          op: {
-            case: 'setTitle',
-            value: title,
-          },
-        }),
-        ...changes,
-      ]
-    }
-
-    let capturedChanges = [...changes, ...deletedBlocks]
-
-    if (capturedChanges.length) {
-      // capturedChanges = capturedChanges.map((i) => i.toJson())
-      diagnosis.append(documentId, {
-        key: 'will.updateDraft',
-        // note: 'regular updateDraft',
-        value: {
-          changes: changesToJSON(capturedChanges),
-          blocksMap,
-          editorState: currentEditorBlocks,
-        },
-      })
-      try {
-        let mutation = await grpcClient.drafts.updateDraft({
-          documentId,
-          changes: [...capturedChanges],
-        })
-        if (mutation.updatedDocument) {
-          client.setQueryData(
-            [queryKeys.EDITOR_DRAFT, documentId],
-            mutation.updatedDocument,
-          )
-        }
-
-        diagnosis.append(documentId, {
-          key: 'did.updateDraft',
-          // note: 'regular updateDraft',
-          value: JSON.stringify(mutation),
-        })
-
-        return mutation
-      } catch (error) {
-        return Promise.reject(JSON.stringify(error))
-      }
-    }
-
-    return Promise.resolve('No changes applied.')
   }
 
   return {
@@ -1427,8 +1466,8 @@ export function useProfile(
     draftId?: string
   },
 ) {
-  const grpcClient = useGRPCClient()
-  return useQuery(queryProfile({docId, version, grpcClient, ...options}))
+  // TODO: implement me!
+  return {data: null}
 }
 
 export function useProfiles(
@@ -1457,11 +1496,7 @@ export function queryProfile({
     queryKey: [queryKeys.EDITOR_DRAFT, docId],
     useErrorBoundary: false,
     queryFn: async () => {
-      const doc = await grpcClient.documents.getProfileDocument({
-        accountId: docId,
-        version: version || '',
-      })
-      return toPlainMessage(doc)
+      return toPlainMessage({})
     },
     ...options,
   }

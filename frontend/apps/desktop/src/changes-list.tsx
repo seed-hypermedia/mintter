@@ -1,7 +1,7 @@
 import {AccessoryContainer} from '@/components/accessory-sidebar'
 import {AccountLinkAvatar} from '@/components/account-link-avatar'
 import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
-import {useAccount} from '@/models/accounts'
+import {useAccount_deprecated} from '@/models/accounts'
 import {TimelineChange, useDocHistory} from '@/models/changes'
 import {useGatewayUrl} from '@/models/gateway-settings'
 import {useOpenUrl} from '@/open-url'
@@ -80,7 +80,7 @@ function ChangeItem({
   entityId: string
   activeVersion?: string
 }) {
-  const author = useAccount(change.author)
+  const author = useAccount_deprecated(change.author)
   const navigate = useNavigate()
   const openAccount = (e) => {
     e.stopPropagation()

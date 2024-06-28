@@ -26,6 +26,7 @@ initDrafts()
 
 function inputIdToDraftFile(id: string) {
   const encodedId = Buffer.from(id).toString('base64')
+  console.log('=== encodedId', encodedId)
   return `${encodedId}.json`
 }
 
@@ -47,9 +48,10 @@ export const draftsApi = t.router({
 
       return draft
     } catch (e) {
-      throw Error(
+      console.log(
         `[DRAFT]: Error when getting draft ${input}: ${JSON.stringify(e)}`,
       )
+      return null
     }
   }),
   write: t.procedure

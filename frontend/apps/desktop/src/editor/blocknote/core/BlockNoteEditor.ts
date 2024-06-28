@@ -131,6 +131,9 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
 
   // isEditable
   isEditable: boolean
+  // TODO: check types
+  linkExtensionOptions?: any
+  onMentionsQuery?: any
 }
 
 const blockNoteTipTapOptions = {

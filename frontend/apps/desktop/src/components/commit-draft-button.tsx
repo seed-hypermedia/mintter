@@ -1,4 +1,4 @@
-import { useNavRoute } from '@/utils/navigation'
+import {useNavRoute} from '@/utils/navigation'
 import {
   AlertCircle,
   Button,
@@ -8,14 +8,14 @@ import {
   YStackProps,
   toast,
 } from '@shm/ui'
-import { Check } from '@tamagui/lucide-icons'
-import { PropsWithChildren } from 'react'
-import { useGRPCClient } from '../app-context'
-import { useMyAccount_deprecated } from '../models/accounts'
-import { usePublishDraft, usePushPublication } from '../models/documents'
-import { DraftStatusContext } from '../models/draft-machine'
-import { useGatewayHost, usePushOnPublish } from '../models/gateway-settings'
-import { useMediaDialog } from './media-dialog'
+import {Check} from '@tamagui/lucide-icons'
+import {PropsWithChildren} from 'react'
+import {useGRPCClient} from '../app-context'
+import {useMyAccount_deprecated} from '../models/accounts'
+import {usePublishDraft, usePushPublication} from '../models/documents'
+import {DraftStatusContext} from '../models/draft-machine'
+import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
+import {useMediaDialog} from './media-dialog'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -36,7 +36,7 @@ export default function CommitDraftButton() {
   const push = usePushPublication()
   const gwHost = useGatewayHost()
   const publish = usePublishDraft({
-    onSuccess: ({ pub: publishedDoc }) => {
+    onSuccess: ({pub: publishedDoc}) => {
       if (!publishedDoc || !draftId) return
       if (pushOnPublish.data === 'always') {
         toast.promise(push.mutateAsync(draftId), {
@@ -56,10 +56,8 @@ export default function CommitDraftButton() {
       toast.error('Failed to publish: ' + e.message)
     },
   })
-  if (route.key != 'draft' || !draftId) return null
-  const isProfileDoc =
-    draftRoute?.isProfileDocument ||
-    draftId === myAccount?.data?.profile?.rootDocument
+  if (route.key != 'draft') return null
+  const isProfileDoc = !!draftRoute?.isProfileDocument
   let publishMessage = 'Publish'
   if (isProfileDoc) {
     publishMessage = 'Publish to Profile'
@@ -74,7 +72,7 @@ export default function CommitDraftButton() {
           disabled={!canPublish || hasUpdateError}
           opacity={!canPublish ? 0.5 : 1}
           onPress={() => {
-            grpcClient.drafts.getDraft({ draftId }).then((draft) => {
+            grpcClient.drafts.getDraft({draftId}).then((draft) => {
               const hasEmptyMedia = draft.document?.content.find((block) => {
                 return (
                   block.block &&
@@ -88,7 +86,7 @@ export default function CommitDraftButton() {
                   publish,
                 })
               } else {
-                publish.mutate({ draftId })
+                publish.mutate({draftId})
               }
             })
           }}
@@ -101,7 +99,7 @@ export default function CommitDraftButton() {
   )
 }
 
-function StatusWrapper({ children, ...props }: PropsWithChildren<YStackProps>) {
+function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
   return (
     <YStack space="$2" opacity={0.6}>
       {children}

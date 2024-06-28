@@ -1,113 +1,306 @@
-import {Document, HMDocument} from '@shm/shared'
+import {HMDocument, HMDraft} from '@shm/shared'
 import {createActorContext} from '@xstate/react'
-import {StateFrom, assign, createMachine} from 'xstate'
-import {BlocksMap, createBlocksMap} from './documents'
+import {StateFrom, assign, createMachine, setup} from 'xstate'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
 
-export const draftMachine = createMachine(
+export const draftMachine = setup({
+  types: {
+    context: {} as {
+      title: string
+      draft: null | HMDraft
+      errorMessage: string
+      restoreTries: number
+      changed: boolean
+      hasChangedWhileSaving: boolean
+    },
+    events: {} as
+      | {type: 'CHANGE'; title?: string}
+      | {type: 'RESET.DRAFT'}
+      | {type: 'RESTORE.DRAFT'}
+      | {type: 'RESET.CORRUPT.DRAFT'}
+      | {type: 'GET.DRAFT.ERROR'; error: any}
+      | {type: 'GET.DRAFT.RETRY'}
+      | {type: 'GET.DRAFT.SUCCESS'; draft: HMDraft}
+      | {type: 'SAVE.ON.EXIT'},
+  },
+
+  actions: {
+    setDraft: assign({
+      draft: ({event}) => {
+        if (event.type == 'GET.DRAFT.SUCCESS') {
+          return event.draft
+        }
+        return null
+      },
+    }),
+    setTitle: assign({
+      title: ({context, event}) => {
+        if (event.type == 'CHANGE' && event.title) {
+          return event.title
+        }
+        return context.title
+      },
+    }),
+    setErrorMessage: assign({
+      errorMessage: ({event}) => event.error || '',
+    }),
+    setChanged: assign({
+      changed: ({context}) => {
+        if (!context.changed) {
+          return true
+        }
+        return false
+      },
+    }),
+    setHasChangedWhileSaving: assign({
+      hasChangedWhileSaving: true,
+    }),
+    resetChangeWhileSaving: assign({
+      hasChangedWhileSaving: false,
+    }),
+    populateEditor: function () {},
+    focusEditor: function () {},
+  },
+  guards: {
+    didChangeWhileSaving: ({context}) => context.hasChangedWhileSaving,
+  },
+  actors: {},
+  delays: {
+    autosaveTimeout: 500,
+  },
+}).createMachine({
+  id: 'Draft',
+  context: {
+    title: '',
+    draft: null,
+    errorMessage: '',
+    restoreTries: 0,
+    changed: false,
+    hasChangedWhileSaving: false,
+  },
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        'GET.DRAFT.SUCCESS': [
+          {
+            target: 'setupData',
+            actions: [{type: 'setDraft'}],
+          },
+        ],
+        'GET.DRAFT.ERROR': {
+          target: 'error',
+          actions: [{type: 'setErrorMessage'}],
+        },
+      },
+    },
+    setupData: {
+      after: {
+        100: {
+          target: 'ready',
+          actions: [{type: 'populateEditor'}],
+        },
+      },
+    },
+    error: {},
+    ready: {
+      initial: 'idle',
+      entry: [
+        {
+          type: 'focusEditor',
+        },
+      ],
+      states: {
+        idle: {
+          on: {
+            CHANGE: {
+              target: 'changed',
+              actions: {
+                type: 'setTitle',
+              },
+            },
+          },
+        },
+        changed: {
+          on: {
+            CHANGE: {
+              target: 'changed',
+              actions: {
+                type: 'setTitle',
+              },
+              reenter: true,
+            },
+          },
+          after: {
+            autosaveTimeout: {
+              target: 'saving',
+            },
+          },
+          entry: [{type: 'setChanged'}],
+        },
+        saving: {
+          on: {
+            CHANGE: {
+              target: 'saving',
+              actions: [
+                {
+                  type: 'setHasChangedWhileSaving',
+                },
+                {
+                  type: 'setTitle',
+                },
+              ],
+              reenter: false,
+            },
+          },
+          entry: [
+            {
+              type: 'resetChangeWhileSaving',
+            },
+          ],
+          invoke: {
+            input: ({context}) => ({
+              title: context.title,
+              currentDraft: context.draft,
+            }),
+            id: 'createOrUpdateDraft',
+            src: 'createOrUpdateDraft',
+            onDone: [
+              {
+                target: 'saving',
+                actions: [
+                  {
+                    type: 'replaceRouteifNeeded',
+                  },
+                ],
+                guard: {
+                  type: 'didChangeWhileSaving',
+                },
+                reenter: true,
+              },
+              {
+                target: 'idle',
+                actions: [
+                  {
+                    type: 'indicatorIdle',
+                  },
+                  {
+                    type: 'replaceRouteifNeeded',
+                  },
+                ],
+                guard: ({event}) => typeof event.output == 'string',
+              },
+              {
+                target: 'idle',
+                actions: [
+                  {
+                    type: 'onSaveSuccess',
+                  },
+                  {
+                    type: 'setDraft',
+                  },
+                  {
+                    type: 'replaceRouteifNeeded',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+})
+
+export const _draftMachine = createMachine(
   {
     context: {
-      blocksMap: {},
       hasChangedWhileSaving: false,
       draft: null,
-      title: '',
       errorMessage: '',
       restoreTries: 0,
       changed: false,
     },
     id: 'Draft',
-    initial: 'fetching',
+    initial: 'init',
     on: {
-      // 'GET.DRAFT.SUCCESS': {
-      //   target: '.error',
-      //   actions: [
-      //     {
-      //       type: 'setError',
-      //     },
-      //   ],
-      // },
       'GET.DRAFT.SUCCESS': {
-        target: '.mountingEditor',
-        actions: [
-          {
-            type: 'setCurrentDraft',
-          },
-        ],
+        target: '#Draft.mountingEditor',
+        actions: {
+          type: 'setCurrentDraft',
+        },
       },
       'GET.DRAFT.ERROR': {
-        target: '.error',
-        actions: [
-          {
-            type: 'setError',
-          },
-        ],
+        target: '#Draft.error',
+        actions: {
+          type: 'setError',
+        },
       },
       'SAVE.ON.EXIT': {
-        target: '.ready.saving',
+        target: '#Draft.ready.saving',
       },
     },
     states: {
-      fetching: {},
-      mountingEditor: {
-        entry: [
+      init: {
+        always: [
           {
-            type: 'populateEditor',
+            target: 'fetching',
+            guard: {
+              type: 'routeHasId',
+            },
           },
           {
-            type: 'setCurrentBlocksmap',
-          },
-        ],
-        after: {
-          // we need this to avoid saving right after loading the editor. fucking annoying
-          10: {
             target: 'ready',
           },
-        },
+        ],
       },
-      error: {
-        entry: [{type: 'indicatorError'}],
-        on: {
-          'GET.DRAFT.RETRY': {
-            target: 'fetching',
-            actions: assign({
-              blocksMap: {},
-              hasChangedWhileSaving: false,
-              draft: null,
-            }),
-          },
-          'RESET.CORRUPT.DRAFT': {
+      fetching: {},
+      mountingEditor: {
+        after: {
+          10: {
+            target: 'ready',
             actions: [
               {
-                type: 'resetDraftAndRedirectToDraftList',
+                type: 'populateEditor',
               },
             ],
           },
         },
       },
       ready: {
+        initial: 'idle',
         entry: [
           {
             type: 'focusEditor',
           },
         ],
-        initial: 'idle',
         states: {
           idle: {
             on: {
-              CHANGE: [
-                {
-                  target: 'changed',
-                  actions: [
-                    {
-                      type: 'setTitle',
-                    },
-                  ],
+              CHANGE: {
+                target: 'changed',
+                actions: {
+                  type: 'setTitle',
                 },
-              ],
+              },
             },
           },
           changed: {
+            on: {
+              CHANGE: {
+                target: 'changed',
+                actions: {
+                  type: 'setTitle',
+                },
+                reenter: true,
+              },
+            },
+            after: {
+              autosaveTimeout: {
+                target: 'saving',
+              },
+            },
             entry: [
               {
                 type: 'indicatorChange',
@@ -116,24 +309,22 @@ export const draftMachine = createMachine(
                 type: 'setchanged',
               },
             ],
-            after: {
-              autosaveTimeout: {
-                target: '#Draft.ready.saving',
-              },
-            },
+          },
+          saving: {
             on: {
               CHANGE: {
-                target: 'changed',
-                reenter: true,
+                target: 'saving',
                 actions: [
+                  {
+                    type: 'setHasChangedWhileSaving',
+                  },
                   {
                     type: 'setTitle',
                   },
                 ],
+                reenter: false,
               },
             },
-          },
-          saving: {
             entry: [
               {
                 type: 'resetChangeWhileSaving',
@@ -143,62 +334,61 @@ export const draftMachine = createMachine(
               },
             ],
             invoke: {
-              src: 'updateDraft',
+              id: 'update-or-create-draft-actor',
               input: ({context}) => context,
-              id: 'update-draft-actor',
               onDone: [
                 {
                   target: 'saving',
-                  guard: 'didChangeWhileSaving',
-                  reenter: true,
                   actions: [
-                    // {type: 'onSaveSuccess'},
-                    // {type: 'indicatorSaved'},
                     {
                       type: 'updateContextAfterSave',
                     },
+                    {
+                      type: 'replaceRouteifNeeded',
+                    },
                   ],
+                  guard: {
+                    type: 'didChangeWhileSaving',
+                  },
+                  reenter: true,
                 },
                 {
                   target: 'idle',
-                  guard: ({event}) => typeof event.output == 'string',
                   actions: [
                     {
                       type: 'indicatorIdle',
                     },
+                    {
+                      type: 'replaceRouteifNeeded',
+                    },
                   ],
+                  guard: ({event}) => typeof event.output == 'string',
                 },
                 {
                   target: 'idle',
                   actions: [
-                    {type: 'onSaveSuccess'},
-                    {type: 'indicatorSaved'},
+                    {
+                      type: 'onSaveSuccess',
+                    },
+                    {
+                      type: 'indicatorSaved',
+                    },
                     {
                       type: 'updateContextAfterSave',
+                    },
+                    {
+                      type: 'replaceRouteifNeeded',
                     },
                   ],
                 },
               ],
-              onError: [
-                {
-                  target: 'saveError',
-                  actions: [{type: 'indicatorError'}],
+              onError: {
+                target: 'saveError',
+                actions: {
+                  type: 'indicatorError',
                 },
-              ],
-            },
-            on: {
-              CHANGE: {
-                target: 'saving',
-                reenter: false,
-                actions: [
-                  {
-                    type: 'setHasChangedWhileSaving',
-                  },
-                  {
-                    type: 'setTitle',
-                  },
-                ],
               },
+              src: 'updateOrCreateDraft',
             },
           },
           saveError: {
@@ -208,48 +398,58 @@ export const draftMachine = createMachine(
               },
               'RESTORE.DRAFT': {
                 target: 'restoring',
-                actions: [
-                  {
-                    type: 'incrementRestoreTries',
-                  },
-                ],
-              },
-            },
-          },
-          restoring: {
-            invoke: {
-              src: 'restoreDraft',
-              id: 'restore-draft',
-              input: ({context}) => context,
-              onDone: {
-                actions: [
-                  {
-                    type: 'reload',
-                  },
-                ],
-              },
-              onError: {
-                target: 'saveError',
+                actions: {
+                  type: 'incrementRestoreTries',
+                },
               },
             },
           },
           resetting: {
             invoke: {
-              src: 'resetDraft',
               id: 'reset-draft',
-              input: (context) => context,
+              input: {},
               onDone: {
-                actions: [
-                  {
-                    type: 'reload',
-                  },
-                ],
+                actions: {
+                  type: 'reload',
+                },
               },
               onError: {
                 target: 'saveError',
               },
+              src: 'resetDraft',
             },
           },
+          restoring: {
+            invoke: {
+              id: 'restore-draft',
+              input: {},
+              onDone: {
+                actions: {
+                  type: 'reload',
+                },
+              },
+              onError: {
+                target: 'saveError',
+              },
+              src: 'restoreDraft',
+            },
+          },
+        },
+      },
+      error: {
+        on: {
+          'GET.DRAFT.RETRY': {
+            target: 'fetching',
+            actions: assign({hasChangedWhileSaving: false, draft: null}),
+          },
+          'RESET.CORRUPT.DRAFT': {
+            actions: {
+              type: 'resetDraftAndRedirectToDraftList',
+            },
+          },
+        },
+        entry: {
+          type: 'indicatorError',
         },
       },
     },
@@ -264,10 +464,8 @@ export const draftMachine = createMachine(
         | {type: 'GET.DRAFT.SUCCESS'; draft: HMDocument}
         | {type: 'SAVE.ON.EXIT'},
       context: {} as {
-        blocksMap: BlocksMap
         hasChangedWhileSaving: boolean
-        draft: Document | null
-        title: string
+        draft: HMDocument | null
         errorMessage: string
         restoreTries: number
         changed: boolean
@@ -289,25 +487,16 @@ export const draftMachine = createMachine(
           }
         },
       }),
-      setCurrentBlocksmap: assign({
-        // @ts-expect-error
-        blocksMap: ({context, event}) => {
-          if (event.type == 'GET.DRAFT.SUCCESS') {
-            let newBm = createBlocksMap(event.draft.children, '')
-            return newBm
-          }
-        },
-        title: ({event}) =>
-          event.type == 'GET.DRAFT.SUCCESS' && event.draft.title
-            ? event.draft.title
-            : '',
-      }),
+
       setTitle: assign({
-        title: ({event, context}) => {
+        draft: ({event, context}) => {
           if (event.type == 'CHANGE' && event.title) {
-            return event.title
+            return {
+              ...context.draft,
+              title: event.title,
+            }
           } else {
-            return context.title
+            return context.draft
           }
         },
       }),
@@ -315,18 +504,12 @@ export const draftMachine = createMachine(
         window.location.reload()
       },
       updateContextAfterSave: assign(({context, event}) => {
-        //TODO: check types
-        let output = (event as any).output
+        //TODO: IMPLEMENT ME
+        const output = (event as any).output
         if (output && typeof output != 'string') {
-          return {
-            blocksMap: createBlocksMap(output.updatedDocument.children, ''),
-            draft: output.updatedDocument,
-            hasChangedWhileSaving: false,
-            title: output.updatedDocument.title,
-          }
-        } else {
-          return context
+          console.log('=== OUTPUT!', output)
         }
+        return context
       }),
       setCurrentDraft: assign({
         draft: ({event, context}) => {
