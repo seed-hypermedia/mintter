@@ -1,5 +1,6 @@
 import {useGRPCClient} from '@/app-context'
 import {MainWrapper} from '@/components/main-wrapper'
+import {trpc} from '@/trpc'
 import {Add, Button, Form, Input} from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {dispatchWizardEvent} from 'src/app-account'
@@ -8,6 +9,7 @@ import {Label, XStack, YStack} from 'tamagui'
 
 export default function HomePage() {
   const client = useGRPCClient()
+  const createProfileDraft = trpc.drafts.write.useMutation()
   const {data: keys, refetch: refetchKeys} = useAccountKeys()
   const deleteKey = useMutation({
     mutationFn: async (name: string) => {
@@ -40,6 +42,16 @@ export default function HomePage() {
                     delete
                   </Button>
                 </XStack>
+                <Button
+                  onPress={() =>
+                    createProfileDraft.mutateAsync({
+                      id: key.accountId,
+                      draft: {title: 'demo'},
+                    })
+                  }
+                >
+                  Create Profile document
+                </Button>
               </li>
             ))}
           </ul>

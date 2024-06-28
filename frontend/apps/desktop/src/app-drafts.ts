@@ -4,7 +4,7 @@ import z from 'zod'
 import {userDataPath} from './app-paths'
 import {t} from './app-trpc'
 
-const draftsDir = join(userDataPath, 'drafts')
+const draftsDir = join(userDataPath, 'data', 'drafts')
 
 let draftIdList: string[] | undefined = undefined
 
@@ -20,29 +20,33 @@ async function initDrafts() {
 
 initDrafts()
   .then(() => {
-    console.log('drafs ready')
+    console.log('[MAIN]: drafts ready')
   })
   .catch((e) => {
-    console.error('error preparing drafts', e)
+    console.error('[MAIN]: error preparing drafts', e)
   })
 
 export const draftsApi = t.router({
   list: t.procedure.query(async () => {
     return draftIdList
   }),
-  get: t.procedure.input(z.string()).query(async ({input}) => {
+  get: t.procedure.input(z.string().optional()).query(async ({input}) => {
     const draftPath = join(draftsDir, `${input}.json`)
     try {
-      const draft = JSON.parse(await fs.readFile(draftPath, 'utf-8'))
+      const fileContent = await fs.readFile(draftPath, 'utf-8')
+      const draft = JSON.parse(fileContent)
+
       return draft
     } catch (e) {
-      return null
+      throw Error(
+        `[DRAFT]: Error when getting draft ${input}: ${JSON.stringify(e)}`,
+      )
     }
   }),
   write: t.procedure
     .input(
       z.object({
-        draft: z.any(),
+        draft: z.any(), // TODO: zod for draft object?
         id: z.string(),
       }),
     )
@@ -51,7 +55,14 @@ export const draftsApi = t.router({
       if (!draftIdList?.includes(input.id)) {
         draftIdList?.push(input.id)
       }
-      await fs.writeFile(draftPath, JSON.stringify(input.draft, null, 2))
+      try {
+        await fs.writeFile(draftPath, JSON.stringify(input.draft, null, 2))
+        return input
+      } catch (error) {
+        throw Error(
+          `[DRAFT]: Error writinf draft: ${JSON.stringify(error, null)}`,
+        )
+      }
     }),
   delete: t.procedure.input(z.string()).mutation(async ({input}) => {
     const draftPath = join(draftsDir, `${input}.json`)
