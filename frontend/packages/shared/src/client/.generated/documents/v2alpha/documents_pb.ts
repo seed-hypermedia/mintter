@@ -1829,23 +1829,23 @@ export class Document extends Message<Document> {
   id = "";
 
   /**
-   * Output only. Author ID of the document.
+   * Output only. Owner's Account ID.
    *
-   * @generated from field: string author = 4;
+   * @generated from field: string owner = 2;
    */
-  author = "";
+  owner = "";
 
   /**
    * Metadata values for a document.
    *
-   * @generated from field: map<string, string> metadata = 15;
+   * @generated from field: map<string, string> metadata = 3;
    */
   metadata: { [key: string]: string } = {};
 
   /**
    * Output only. Set to account ID if this is a profile document.
    *
-   * @generated from field: string profile_account_id = 14;
+   * @generated from field: string profile_account_id = 4;
    */
   profileAccountId = "";
 
@@ -1853,14 +1853,14 @@ export class Document extends Message<Document> {
    * Output only. Every account ID who has modified the document.
    * Includes the original author as well.
    *
-   * @generated from field: repeated string authors = 11;
+   * @generated from field: repeated string authors = 5;
    */
   authors: string[] = [];
 
   /**
    * Blocks content of the document.
    *
-   * @generated from field: repeated com.seed.documents.v2alpha.BlockNode content = 9;
+   * @generated from field: repeated com.seed.documents.v2alpha.BlockNode content = 6;
    */
   content: BlockNode[] = [];
 
@@ -1870,35 +1870,35 @@ export class Document extends Message<Document> {
    * Values will refer to other documents as exact versions such as "hm://DOC_ID?v=1"
    * Values may refer to "latest" versions with "hm://DOC_ID"
    *
-   * @generated from field: map<string, string> index = 16;
+   * @generated from field: map<string, string> index = 7;
    */
   index: { [key: string]: string } = {};
 
   /**
    * Output only. Time when document was created.
    *
-   * @generated from field: google.protobuf.Timestamp create_time = 6;
+   * @generated from field: google.protobuf.Timestamp create_time = 8;
    */
   createTime?: Timestamp;
 
   /**
    * Output only. Time when document was updated.
    *
-   * @generated from field: google.protobuf.Timestamp update_time = 7;
+   * @generated from field: google.protobuf.Timestamp update_time = 9;
    */
   updateTime?: Timestamp;
 
   /**
    * Output only. Time when this version was published. Not present in drafts.
    *
-   * @generated from field: google.protobuf.Timestamp publish_time = 8;
+   * @generated from field: google.protobuf.Timestamp publish_time = 10;
    */
   publishTime?: Timestamp;
 
   /**
    * Output only. Current version of the document.
    *
-   * @generated from field: string version = 12;
+   * @generated from field: string version = 11;
    */
   version = "";
 
@@ -1906,7 +1906,7 @@ export class Document extends Message<Document> {
    * Output only. Previous version of the document,
    * Empty if this is the first version.
    *
-   * @generated from field: string previous_version = 13;
+   * @generated from field: string previous_version = 12;
    */
   previousVersion = "";
 
@@ -1919,17 +1919,17 @@ export class Document extends Message<Document> {
   static readonly typeName = "com.seed.documents.v2alpha.Document";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 15, name: "metadata", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
-    { no: 14, name: "profile_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 11, name: "authors", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-    { no: 9, name: "content", kind: "message", T: BlockNode, repeated: true },
-    { no: 16, name: "index", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
-    { no: 6, name: "create_time", kind: "message", T: Timestamp },
-    { no: 7, name: "update_time", kind: "message", T: Timestamp },
-    { no: 8, name: "publish_time", kind: "message", T: Timestamp },
-    { no: 12, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 13, name: "previous_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "owner", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "metadata", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+    { no: 4, name: "profile_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "authors", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "content", kind: "message", T: BlockNode, repeated: true },
+    { no: 7, name: "index", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+    { no: 8, name: "create_time", kind: "message", T: Timestamp },
+    { no: 9, name: "update_time", kind: "message", T: Timestamp },
+    { no: 10, name: "publish_time", kind: "message", T: Timestamp },
+    { no: 11, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "previous_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Document {

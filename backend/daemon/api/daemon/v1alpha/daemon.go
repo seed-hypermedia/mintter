@@ -45,10 +45,10 @@ type Server struct {
 // NewServer creates a new Server.
 func NewServer(store Storage, blobs *hyper.Storage, w Wallet, syncFunc func() error) *Server {
 	return &Server{
-		store:         store,
-		blobs:         blobs,
-		startTime:     time.Now(),
-		wallet:        w,
+		store:     store,
+		blobs:     blobs,
+		startTime: time.Now(),
+		// wallet:        w, // TODO(hm24): Put the wallet back.
 		forceSyncFunc: syncFunc,
 	}
 }
@@ -78,15 +78,8 @@ func (srv *Server) RegisterKey(ctx context.Context, req *daemon.RegisterKeyReque
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
-	// TODO(hm24): Simply make name required when multiple keys are supported across the whole app.
-	{
-		if req.Name == "" {
-			req.Name = "main"
-		}
-
-		if req.Name != "main" {
-			return nil, status.Error(codes.InvalidArgument, "TODO: support for multiple keys is not implemented yet")
-		}
+	if req.Name == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "name is required for a key")
 	}
 
 	acc, err := core.AccountFromMnemonic(req.Mnemonic, req.Passphrase)
@@ -152,15 +145,18 @@ func (srv *Server) RegisterAccount(ctx context.Context, name string, kp core.Key
 		return err
 	}
 
-	if _, err := Register(ctx, srv.blobs, kp, kp.PublicKey, time.Now().UTC()); err != nil {
-		return err
-	}
+	// TODO(hm24): Get rid of this Register function entirely.
+	// if _, err := Register(ctx, srv.blobs, kp, kp.PublicKey, time.Now().UTC()); err != nil {
+	// 	return err
+	// }
 
 	// TODO(hm24): we don't need to do this here since now we have the keys always accessible, unless the user
 	// chooses not to store the keys... Do this at the time of creating the seed wallet (new method not insert
 	// wallet which is an external wallet)
-	if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
-		return fmt.Errorf("failed to configure wallet when registering: %w", err)
+	if srv.wallet != nil {
+		if err := srv.wallet.ConfigureSeedLNDHub(ctx, kp); err != nil {
+			return fmt.Errorf("failed to configure wallet when registering: %w", err)
+		}
 	}
 	return nil
 }

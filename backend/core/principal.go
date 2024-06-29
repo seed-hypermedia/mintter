@@ -72,6 +72,11 @@ func (p Principal) UnsafeString() string {
 	return unsafe.String(&p[0], len(p))
 }
 
+// Equal checks if two principals are equal.
+func (p Principal) Equal(pp Principal) bool {
+	return p.UnsafeString() == pp.UnsafeString()
+}
+
 // Verify implements Verifier.
 func (p Principal) Verify(data []byte, sig Signature) error {
 	code, key := p.Explode()

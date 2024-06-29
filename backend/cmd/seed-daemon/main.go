@@ -13,7 +13,7 @@ import (
 	"seed/backend/config"
 	"seed/backend/core"
 	"seed/backend/daemon"
-	"seed/backend/daemon/storage"
+	storage "seed/backend/daemon/storage2"
 	"seed/backend/logging"
 
 	"github.com/burdiyan/go/mainutil"

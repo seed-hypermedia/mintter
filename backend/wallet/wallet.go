@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"regexp"
 	"seed/backend/core"
-	"seed/backend/daemon/storage"
 	p2p "seed/backend/genproto/p2p/v1alpha"
 	"seed/backend/hyper/hypersql"
 	"seed/backend/lndhub"
@@ -58,7 +57,7 @@ type Credentials struct {
 // New is the constructor of the wallet service. Since it needs to authenticate to the internal wallet provider (lndhub)
 // it may take time in case node is offline. This is why it's initialized in a gorutine and calls to the service functions
 // will fail until the initial wallet is successfully initialized.
-func New(ctx context.Context, log *zap.Logger, storage *storage.Store, keyName string, net *mttnet.Node, mainnet bool) *Service {
+func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, ks core.KeyStore, keyName string, net *mttnet.Node, mainnet bool) *Service {
 	lndhubDomain := "ln.testnet.mintter.com"
 	lnaddressDomain := "ln.testnet.mintter.com"
 	if mainnet {
@@ -67,19 +66,19 @@ func New(ctx context.Context, log *zap.Logger, storage *storage.Store, keyName s
 		lnaddressDomain = "ln.mintter.com"
 	}
 	srv := &Service{
-		pool: storage.DB(),
+		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(ctx, &http.Client{}, storage.DB(), storage.KeyStore(), keyName, lndhubDomain, lnaddressDomain),
+			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, ks, keyName, lndhubDomain, lnaddressDomain),
 		},
 		net:      net,
 		log:      log,
-		keyStore: storage.KeyStore(),
+		keyStore: ks,
 		keyName:  keyName,
 	}
 	srv.net.SetInvoicer(srv)
 	// Check if the user already had a lndhub wallet (reusing db)
 	// if not, then Auth will simply fail.
-	conn, release, err := storage.DB().Conn(ctx)
+	conn, release, err := db.Conn(ctx)
 	if err != nil {
 		panic(err)
 	}

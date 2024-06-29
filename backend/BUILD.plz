@@ -9,6 +9,7 @@ go_binary(
         exclude = ["**/*_test.go"],
     ) + [
         "//backend/daemon/storage:go_library",
+        "//backend/daemon/storage2:go_library",
         "//backend/hyper/hypersql:go_library",
         "//backend/lndhub/lndhubsql:go_library",
         "//backend/wallet/walletsql:go_library",
@@ -40,6 +41,7 @@ go_binary(
         exclude = ["**/*_test.go"],
     ) + [
         "//backend/daemon/storage:go_library",
+        "//backend/daemon/storage2:go_library",
         "//backend/hyper/hypersql:go_library",
         "//backend/lndhub/lndhubsql:go_library",
         "//backend/wallet/walletsql:go_library",

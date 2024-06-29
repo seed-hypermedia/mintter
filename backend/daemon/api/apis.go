@@ -3,14 +3,17 @@ package api
 import (
 	"context"
 	"fmt"
+	"seed/backend/core"
 	accounts "seed/backend/daemon/api/accounts/v1alpha"
 	activity "seed/backend/daemon/api/activity/v1alpha"
 	daemon "seed/backend/daemon/api/daemon/v1alpha"
 	documents "seed/backend/daemon/api/documents/v1alpha"
+	documentsv2 "seed/backend/daemon/api/documents/v2alpha"
 	entities "seed/backend/daemon/api/entities/v1alpha"
 	networking "seed/backend/daemon/api/networking/v1alpha"
-	"seed/backend/daemon/storage"
+	"seed/backend/daemon/index"
 	"seed/backend/hyper"
+	"seed/backend/logging"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/future"
 
@@ -22,18 +25,26 @@ import (
 
 // Server combines all the daemon API services into one thing.
 type Server struct {
-	Accounts   *accounts.Server
-	Daemon     *daemon.Server
-	Documents  *documents.Server
-	Networking *networking.Server
-	Entities   *entities.Server
-	Activity   *activity.Server
+	Accounts    *accounts.Server
+	Daemon      *daemon.Server
+	Documents   *documents.Server
+	Networking  *networking.Server
+	Entities    *entities.Server
+	Activity    *activity.Server
+	DocumentsV2 *documentsv2.Server
+}
+
+type Storage interface {
+	DB() *sqlitex.Pool
+	KeyStore() core.KeyStore
+	Migrate() error
+	Device() core.KeyPair
 }
 
 // New creates a new API server.
 func New(
 	ctx context.Context,
-	repo *storage.Store,
+	repo Storage,
 	db *sqlitex.Pool,
 	blobs *hyper.Storage,
 	node *mttnet.Node,
@@ -44,17 +55,20 @@ func New(
 		return fmt.Errorf("TODO(hm24): implement forced syncing")
 	}
 
+	idx := index.NewIndex(db, logging.New("seed/index", LogLevel))
+
 	documentsSrv := documents.NewServer(repo.KeyStore(), db,
 		nil, // TODO(hm24): add discovery back
 		nil, // TODO(hm24): add gateway client back
 		LogLevel)
 	return Server{
-		Accounts:   accounts.NewServer(repo.KeyStore(), blobs),
-		Activity:   activity.NewServer(db),
-		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
-		Documents:  documentsSrv,
-		Networking: networking.NewServer(blobs, node),
-		Entities:   entities.NewServer(blobs, &lazyDiscoverer{}),
+		Accounts:    accounts.NewServer(repo.KeyStore(), blobs),
+		Activity:    activity.NewServer(db),
+		Daemon:      daemon.NewServer(repo, blobs, wallet, doSync),
+		Documents:   documentsSrv,
+		Networking:  networking.NewServer(blobs, node),
+		Entities:    entities.NewServer(blobs, &lazyDiscoverer{}),
+		DocumentsV2: documentsv2.NewServer(repo.KeyStore(), idx),
 	}
 }
 
@@ -66,6 +80,7 @@ func (s Server) Register(srv *grpc.Server) {
 	s.Activity.RegisterServer(srv)
 	s.Networking.RegisterServer(srv)
 	s.Entities.RegisterServer(srv)
+	s.DocumentsV2.RegisterServer(srv)
 }
 
 type lazyGwClient struct {

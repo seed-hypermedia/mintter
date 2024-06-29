@@ -92,10 +92,9 @@ func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 	repo := daemontest.MakeTestRepo(t, u)
 	db := storage.MakeTestDB(t)
-	wallet := new(mockedWallet)
 	blobs := hyper.NewStorage(db, logging.New("seed/hyper", "debug"))
 
-	return NewServer(repo, blobs, wallet, nil)
+	return NewServer(repo, blobs, nil, nil)
 }
 
 type mockedWallet struct {

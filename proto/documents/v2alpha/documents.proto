@@ -453,43 +453,43 @@ message Document {
   // Permanent ID of the document.
   string id = 1;
 
-  // Output only. Author ID of the document.
-  string author = 4;
+  // Output only. Owner's Account ID.
+  string owner = 2;
 
   // Metadata values for a document.
-  map<string, string> metadata = 15;
+  map<string, string> metadata = 3;
 
   // Output only. Set to account ID if this is a profile document.
-  string profile_account_id = 14;
+  string profile_account_id = 4;
 
   // Output only. Every account ID who has modified the document.
   // Includes the original author as well.
-  repeated string authors = 11;
+  repeated string authors = 5;
 
   // Blocks content of the document.
-  repeated BlockNode content = 9;
+  repeated BlockNode content = 6;
 
   // The indexed children documents under this document.
   // Keys are used as the path names (and slash "/" is not allowed in the key)
   // Values will refer to other documents as exact versions such as "hm://DOC_ID?v=1"
   // Values may refer to "latest" versions with "hm://DOC_ID"
-  map<string, string> index = 16;
+  map<string, string> index = 7;
 
   // Output only. Time when document was created.
-  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp create_time = 8;
 
   // Output only. Time when document was updated.
-  google.protobuf.Timestamp update_time = 7;
+  google.protobuf.Timestamp update_time = 9;
 
   // Output only. Time when this version was published. Not present in drafts.
-  google.protobuf.Timestamp publish_time = 8;
+  google.protobuf.Timestamp publish_time = 10;
 
   // Output only. Current version of the document.
-  string version = 12;
+  string version = 11;
 
   // Output only. Previous version of the document,
   // Empty if this is the first version.
-  string previous_version = 13;
+  string previous_version = 12;
 }
 
 // Content block with children.

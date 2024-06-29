@@ -4,16 +4,15 @@ package daemon
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
 
 	"seed/backend/config"
+	"seed/backend/core"
 	"seed/backend/daemon/api"
 	daemon "seed/backend/daemon/api/daemon/v1alpha"
-	"seed/backend/daemon/storage"
 	"seed/backend/hyper"
 	"seed/backend/logging"
 	"seed/backend/mttnet"
@@ -41,7 +40,7 @@ type App struct {
 
 	log *zap.Logger
 
-	Storage      *storage.Store
+	Storage      Storage
 	HTTPListener net.Listener
 	HTTPServer   *http.Server
 	GRPCListener net.Listener
@@ -91,6 +90,13 @@ func WithGRPCServerOption(opt grpc.ServerOption) Option {
 	}
 }
 
+type Storage interface {
+	DB() *sqlitex.Pool
+	KeyStore() core.KeyStore
+	Migrate() error
+	Device() core.KeyPair
+}
+
 // Load all of the dependencies for the app, and start
 // all the background goroutines.
 //
@@ -104,7 +110,7 @@ func WithGRPCServerOption(opt grpc.ServerOption) Option {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, r Storage, oo ...Option) (a *App, err error) {
 	a = &App{
 		log:     logging.New("seed/daemon", cfg.LogLevel),
 		Storage: r,
@@ -147,9 +153,11 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option
 	otel.SetTracerProvider(tp)
 
 	a.Blobs = hyper.NewStorage(a.Storage.DB(), logging.New("seed/hyper", cfg.LogLevel))
-	if err := a.Blobs.MaybeReindex(ctx); err != nil {
-		return nil, fmt.Errorf("failed to reindex database: %w", err)
-	}
+
+	// TODO(hm24): Get rid of hyper entirely.
+	// if err := a.Blobs.MaybeReindex(ctx); err != nil {
+	// 	return nil, fmt.Errorf("failed to reindex database: %w", err)
+	// }
 
 	a.Net, err = initNetwork(&a.clean, a.g, a.Storage, cfg.P2P, a.Blobs, cfg.LogLevel, opts.extraP2PServices...)
 	if err != nil {
@@ -162,7 +170,9 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Store, oo ...Option
 	// 	return nil, err
 	// }
 
-	a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage, "main", a.Net, cfg.Lndhub.Mainnet)
+	// TODO(hm24): put the wallet back.
+	a.Wallet = nil
+	// a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage.DB(), a.Storage.KeyStore(), "main", a.Net, cfg.Lndhub.Mainnet)
 
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.Storage.DB(), a.Blobs, a.Net,
 		nil, // TODO(hm24): put the syncing back a.Syncing,
@@ -269,7 +279,7 @@ func (a *App) Wait() error {
 func initNetwork(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
-	store *storage.Store,
+	store Storage,
 	cfg config.P2P,
 	blobs *hyper.Storage,
 	LogLevel string,
@@ -378,7 +388,7 @@ func initGRPC(
 	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
-	repo *storage.Store,
+	repo Storage,
 	pool *sqlitex.Pool,
 	blobs *hyper.Storage,
 	node *mttnet.Node,

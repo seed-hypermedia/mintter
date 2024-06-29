@@ -11,8 +11,7 @@ import (
 	"seed/backend/config"
 	"seed/backend/core"
 	"seed/backend/core/coretest"
-	"seed/backend/daemon"
-	"seed/backend/daemon/storage"
+	storage "seed/backend/daemon/storage2"
 
 	"github.com/burdiyan/go/mainutil"
 )
@@ -22,9 +21,6 @@ func main() {
 }
 
 func run() error {
-	ctx, cancel := context.WithCancel(mainutil.TrapSignals())
-	defer cancel()
-
 	alice := coretest.NewTester("alice")
 
 	cfg := config.Default()
@@ -46,18 +42,6 @@ func run() error {
 	}
 	defer dir.Close()
 
-	if err := dir.KeyStore().StoreKey(ctx, "main", alice.Account); err != nil {
-		return err
-	}
-
-	app, err := daemon.Load(ctx, cfg, dir)
-	if err != nil {
-		return err
-	}
-
-	cancel()
-
-	err = app.Wait()
 	fmt.Println("Database has been saved in:", cfg.Base.DataDir)
 	if errors.Is(err, context.Canceled) {
 		return nil

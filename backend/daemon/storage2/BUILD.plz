@@ -1,0 +1,34 @@
+subinclude("//build/rules/go:defs", "//build/rules/codegen:defs")
+
+# Generates SQLite queries for the wallet package.
+# This could be defined inside the package itself,
+# but then the Go source files would need to be
+# exposed and depended on in the `seed-daemon` rule.
+generated(
+    name = "schema",
+    srcs = [
+        "gen.go",
+        "schema.go",
+        "schema.sql",
+    ],
+    outs = ["schema.gen.go"],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG
+$TOOLS_GORUN -tags codegen generateSchema
+""",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gorun",
+    ],
+)
+
+filegroup(
+    name = "go_library",
+    srcs = glob([
+        "*.go",
+        "dbext/*",
+    ]) + ["schema.sql"],
+    visibility = ["//backend/..."],
+)

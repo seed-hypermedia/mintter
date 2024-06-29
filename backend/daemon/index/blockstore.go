@@ -1,9 +1,8 @@
-package hyper
+package index
 
 import (
 	"context"
 	"fmt"
-	"seed/backend/hyper/hypersql"
 	"seed/backend/ipfs"
 	"seed/backend/pkg/dqb"
 
@@ -21,7 +20,7 @@ import (
 
 var (
 	mCallsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "seed_old_ipfs_blockstore_calls_total",
+		Name: "seed_ipfs_blockstore_calls_total",
 		Help: "The total of method calls on the IPFS' Blockstore public interface.",
 	}, []string{"method"})
 )
@@ -70,12 +69,12 @@ func (b *blockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 }
 
 func (b *blockStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
-	res, err := hypersql.BlobsHave(conn, c.Hash())
+	res, err := dbBlobsHave(conn, c.Hash())
 	if err != nil {
 		return false, err
 	}
 
-	if res.Have == 1 {
+	if res == 1 {
 		return true, nil
 	}
 
@@ -96,7 +95,7 @@ func (b *blockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
 }
 
 func (b *blockStore) get(conn *sqlite.Conn, c cid.Cid) (blocks.Block, error) {
-	res, err := hypersql.BlobsGet(conn, c.Hash())
+	res, err := dbBlobsGet(conn, c.Hash())
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +137,7 @@ func (b *blockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	}
 	defer release()
 
-	res, err := hypersql.BlobsGetSize(conn, c.Hash())
+	res, err := dbBlobsGetSize(conn, c.Hash())
 	if err != nil {
 		return 0, err
 	}
@@ -181,7 +180,7 @@ func (b *blockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 }
 
 func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash multihash.Multihash, data []byte) (id int64, exists bool, err error) {
-	size, err := hypersql.BlobsGetSize(conn, hash)
+	size, err := dbBlobsGetSize(conn, hash)
 	if err != nil {
 		return 0, false, err
 	}
@@ -221,8 +220,8 @@ func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash 
 		return newID, false, blobsUpdateMissingData(conn, compressed, int64(len(data)), newID, size.BlobsID)
 	}
 
-	ins, err := hypersql.BlobsInsert(conn, inID, hash, int64(codec), compressed, int64(len(data)))
-	return ins.BlobsID, false, err
+	ins, err := dbBlobsInsert(conn, inID, hash, int64(codec), compressed, int64(len(data)))
+	return ins, false, err
 }
 
 func allocateBlobID(conn *sqlite.Conn) (int64, error) {
@@ -276,8 +275,8 @@ func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
 }
 
 func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) (oldid int64, err error) {
-	ret, err := hypersql.BlobsDelete(conn, c.Hash())
-	return ret.BlobsID, err
+	ret, err := dbBlobsDelete(conn, c.Hash())
+	return ret, err
 }
 
 // AllKeysChan implements. blockstore.Blockstore interface.
@@ -291,7 +290,7 @@ func (b *blockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 		return nil, err
 	}
 
-	list, err := hypersql.BlobsListKnown(conn)
+	list, err := dbBlobsListKnown(conn)
 	if err != nil {
 		return nil, err
 	}

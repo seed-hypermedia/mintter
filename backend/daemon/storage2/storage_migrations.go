@@ -48,7 +48,7 @@ type migration struct {
 var migrations = []migration{
 	// New beginning. While we're doing the HM24 migration we can still make some breaking changes.
 	// TODO(burdiyan): add a real version when we are ready to release.
-	{Version: "2024-06-19.hm24-dev-1", Run: func(d *Store, conn *sqlite.Conn) error {
+	{Version: "2024-06-20.hm24-dev-2", Run: func(d *Store, conn *sqlite.Conn) error {
 		return nil
 	}},
 }
@@ -92,11 +92,7 @@ func (s *Store) init() (currentVersion string, err error) {
 	}
 
 	if s.device.Wrapped() == nil {
-		kp, err := core.NewKeyPairRandom()
-		if err != nil {
-			return "", fmt.Errorf("failed to generate random device key: %w", err)
-		}
-		s.device = kp
+		panic("BUG: device key must be set when calling init()")
 	}
 
 	if err := writeDeviceKeyFile(s.path, s.device.Wrapped()); err != nil {

@@ -151,7 +151,7 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	t.Cleanup(cancel)
 	require.NoError(t, repo.KeyStore().StoreKey(ctx, "main", u.Account))
-	srv := New(ctx, logging.New("seed/wallet", "debug"), repo, "main", node, false)
+	srv := New(ctx, logging.New("seed/wallet", "debug"), repo.DB(), repo.KeyStore(), "main", node, false)
 
 	return srv
 }
