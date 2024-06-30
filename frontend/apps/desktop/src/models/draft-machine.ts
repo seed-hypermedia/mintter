@@ -1,4 +1,4 @@
-import {HMDocument, HMDraft} from '@shm/shared'
+import {HMDraft} from '@shm/shared'
 import {createActorContext} from '@xstate/react'
 import {StateFrom, assign, createMachine, setup} from 'xstate'
 
@@ -22,7 +22,8 @@ export const draftMachine = setup({
       | {type: 'GET.DRAFT.ERROR'; error: any}
       | {type: 'GET.DRAFT.RETRY'}
       | {type: 'GET.DRAFT.SUCCESS'; draft: HMDraft}
-      | {type: 'SAVE.ON.EXIT'},
+      | {type: 'SAVE.ON.EXIT'}
+      | {type: 'EMPTY.ID'},
   },
 
   actions: {
@@ -32,6 +33,12 @@ export const draftMachine = setup({
           return event.draft
         }
         return null
+      },
+      title: ({context, event}) => {
+        if (event.type == 'GET.DRAFT.SUCCESS' && event.draft) {
+          return event.draft.metadata.title
+        }
+        return context.title
       },
     }),
     setTitle: assign({
@@ -43,7 +50,12 @@ export const draftMachine = setup({
       },
     }),
     setErrorMessage: assign({
-      errorMessage: ({event}) => event.error || '',
+      errorMessage: ({context, event}) => {
+        if (event.type == 'GET.DRAFT.ERROR') {
+          return JSON.stringify(event.error, null) || ''
+        }
+        return context.errorMessage
+      },
     }),
     setChanged: assign({
       changed: ({context}) => {
@@ -83,6 +95,9 @@ export const draftMachine = setup({
   states: {
     idle: {
       on: {
+        'EMPTY.ID': {
+          target: 'ready',
+        },
         'GET.DRAFT.SUCCESS': [
           {
             target: 'setupData',
@@ -96,11 +111,24 @@ export const draftMachine = setup({
       },
     },
     setupData: {
-      after: {
-        100: {
-          target: 'ready',
-          actions: [{type: 'populateEditor'}],
+      entry: [
+        () => {
+          console.log('== ENTERING READY!')
         },
+      ],
+      exit: [
+        () => {
+          console.log('== EXITING READY!')
+        },
+      ],
+      always: {
+        target: 'ready',
+        actions: [
+          () => {
+            console.log('== AFTER TIMEOUT READY!')
+          },
+          {type: 'populateEditor'},
+        ],
       },
     },
     error: {},
@@ -183,18 +211,6 @@ export const draftMachine = setup({
                 target: 'idle',
                 actions: [
                   {
-                    type: 'indicatorIdle',
-                  },
-                  {
-                    type: 'replaceRouteifNeeded',
-                  },
-                ],
-                guard: ({event}) => typeof event.output == 'string',
-              },
-              {
-                target: 'idle',
-                actions: [
-                  {
                     type: 'onSaveSuccess',
                   },
                   {
@@ -212,324 +228,6 @@ export const draftMachine = setup({
     },
   },
 })
-
-export const _draftMachine = createMachine(
-  {
-    context: {
-      hasChangedWhileSaving: false,
-      draft: null,
-      errorMessage: '',
-      restoreTries: 0,
-      changed: false,
-    },
-    id: 'Draft',
-    initial: 'init',
-    on: {
-      'GET.DRAFT.SUCCESS': {
-        target: '#Draft.mountingEditor',
-        actions: {
-          type: 'setCurrentDraft',
-        },
-      },
-      'GET.DRAFT.ERROR': {
-        target: '#Draft.error',
-        actions: {
-          type: 'setError',
-        },
-      },
-      'SAVE.ON.EXIT': {
-        target: '#Draft.ready.saving',
-      },
-    },
-    states: {
-      init: {
-        always: [
-          {
-            target: 'fetching',
-            guard: {
-              type: 'routeHasId',
-            },
-          },
-          {
-            target: 'ready',
-          },
-        ],
-      },
-      fetching: {},
-      mountingEditor: {
-        after: {
-          10: {
-            target: 'ready',
-            actions: [
-              {
-                type: 'populateEditor',
-              },
-            ],
-          },
-        },
-      },
-      ready: {
-        initial: 'idle',
-        entry: [
-          {
-            type: 'focusEditor',
-          },
-        ],
-        states: {
-          idle: {
-            on: {
-              CHANGE: {
-                target: 'changed',
-                actions: {
-                  type: 'setTitle',
-                },
-              },
-            },
-          },
-          changed: {
-            on: {
-              CHANGE: {
-                target: 'changed',
-                actions: {
-                  type: 'setTitle',
-                },
-                reenter: true,
-              },
-            },
-            after: {
-              autosaveTimeout: {
-                target: 'saving',
-              },
-            },
-            entry: [
-              {
-                type: 'indicatorChange',
-              },
-              {
-                type: 'setchanged',
-              },
-            ],
-          },
-          saving: {
-            on: {
-              CHANGE: {
-                target: 'saving',
-                actions: [
-                  {
-                    type: 'setHasChangedWhileSaving',
-                  },
-                  {
-                    type: 'setTitle',
-                  },
-                ],
-                reenter: false,
-              },
-            },
-            entry: [
-              {
-                type: 'resetChangeWhileSaving',
-              },
-              {
-                type: 'indicatorSaving',
-              },
-            ],
-            invoke: {
-              id: 'update-or-create-draft-actor',
-              input: ({context}) => context,
-              onDone: [
-                {
-                  target: 'saving',
-                  actions: [
-                    {
-                      type: 'updateContextAfterSave',
-                    },
-                    {
-                      type: 'replaceRouteifNeeded',
-                    },
-                  ],
-                  guard: {
-                    type: 'didChangeWhileSaving',
-                  },
-                  reenter: true,
-                },
-                {
-                  target: 'idle',
-                  actions: [
-                    {
-                      type: 'indicatorIdle',
-                    },
-                    {
-                      type: 'replaceRouteifNeeded',
-                    },
-                  ],
-                  guard: ({event}) => typeof event.output == 'string',
-                },
-                {
-                  target: 'idle',
-                  actions: [
-                    {
-                      type: 'onSaveSuccess',
-                    },
-                    {
-                      type: 'indicatorSaved',
-                    },
-                    {
-                      type: 'updateContextAfterSave',
-                    },
-                    {
-                      type: 'replaceRouteifNeeded',
-                    },
-                  ],
-                },
-              ],
-              onError: {
-                target: 'saveError',
-                actions: {
-                  type: 'indicatorError',
-                },
-              },
-              src: 'updateOrCreateDraft',
-            },
-          },
-          saveError: {
-            on: {
-              'RESET.DRAFT': {
-                target: 'resetting',
-              },
-              'RESTORE.DRAFT': {
-                target: 'restoring',
-                actions: {
-                  type: 'incrementRestoreTries',
-                },
-              },
-            },
-          },
-          resetting: {
-            invoke: {
-              id: 'reset-draft',
-              input: {},
-              onDone: {
-                actions: {
-                  type: 'reload',
-                },
-              },
-              onError: {
-                target: 'saveError',
-              },
-              src: 'resetDraft',
-            },
-          },
-          restoring: {
-            invoke: {
-              id: 'restore-draft',
-              input: {},
-              onDone: {
-                actions: {
-                  type: 'reload',
-                },
-              },
-              onError: {
-                target: 'saveError',
-              },
-              src: 'restoreDraft',
-            },
-          },
-        },
-      },
-      error: {
-        on: {
-          'GET.DRAFT.RETRY': {
-            target: 'fetching',
-            actions: assign({hasChangedWhileSaving: false, draft: null}),
-          },
-          'RESET.CORRUPT.DRAFT': {
-            actions: {
-              type: 'resetDraftAndRedirectToDraftList',
-            },
-          },
-        },
-        entry: {
-          type: 'indicatorError',
-        },
-      },
-    },
-    types: {
-      events: {} as
-        | {type: 'CHANGE'; title?: string}
-        | {type: 'RESET.DRAFT'}
-        | {type: 'RESTORE.DRAFT'}
-        | {type: 'RESET.CORRUPT.DRAFT'}
-        | {type: 'GET.DRAFT.ERROR'; error: any}
-        | {type: 'GET.DRAFT.RETRY'}
-        | {type: 'GET.DRAFT.SUCCESS'; draft: HMDocument}
-        | {type: 'SAVE.ON.EXIT'},
-      context: {} as {
-        hasChangedWhileSaving: boolean
-        draft: HMDocument | null
-        errorMessage: string
-        restoreTries: number
-        changed: boolean
-      },
-    },
-  },
-  {
-    actions: {
-      setHasChangedWhileSaving: assign({
-        hasChangedWhileSaving: true,
-      }),
-      resetChangeWhileSaving: assign({
-        hasChangedWhileSaving: false,
-      }),
-      setchanged: assign({
-        changed: ({context}) => {
-          if (!context.changed) {
-            return true
-          }
-        },
-      }),
-
-      setTitle: assign({
-        draft: ({event, context}) => {
-          if (event.type == 'CHANGE' && event.title) {
-            return {
-              ...context.draft,
-              title: event.title,
-            }
-          } else {
-            return context.draft
-          }
-        },
-      }),
-      reload: () => {
-        window.location.reload()
-      },
-      updateContextAfterSave: assign(({context, event}) => {
-        //TODO: IMPLEMENT ME
-        const output = (event as any).output
-        if (output && typeof output != 'string') {
-          console.log('=== OUTPUT!', output)
-        }
-        return context
-      }),
-      setCurrentDraft: assign({
-        draft: ({event, context}) => {
-          return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
-        },
-      }),
-      setError: assign({
-        errorMessage: ({event}) => {
-          return 'ERROR: '
-        },
-      }),
-      incrementRestoreTries: assign({
-        restoreTries: ({context}) => context.restoreTries + 1,
-      }),
-    },
-    guards: {
-      didChangeWhileSaving: ({context}) => context.hasChangedWhileSaving,
-    },
-  },
-)
 
 export const saveIndicator = createMachine(
   {

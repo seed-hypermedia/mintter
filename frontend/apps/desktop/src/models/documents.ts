@@ -35,6 +35,7 @@ import {Extension, findParentNode} from '@tiptap/core'
 import {NodeSelection} from '@tiptap/pm/state'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
+import {nanoid} from 'nanoid'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {
@@ -447,6 +448,8 @@ export function queryDraft({
 export function useDraftEditor({id}: {id: string}) {
   const {queryClient, grpcClient} = useAppContext()
   const openUrl = useOpenUrl()
+  const route = useNavRoute()
+  const replaceRoute = useNavigate('replace')
   const gwUrl = useGatewayUrlStream()
   const checkWebUrl = trpc.webImporting.checkWebUrl.useMutation()
   const gotEdited = useRef(false)
@@ -539,17 +542,22 @@ export function useDraftEditor({id}: {id: string}) {
             editor._tiptapEditor.commands.focus()
           }
         },
+        replaceRouteifNeeded: ({event}) => {
+          const output = event.output
+          if (!id) {
+            replaceRoute({...route, id: output.id})
+          }
+        },
       },
       actors: {
         createOrUpdateDraft: fromPromise<
           HMDraft,
           ContextFrom<typeof draftMachine>
         >(({input}) => {
-          console.log('--- createOrUpdateDraft', input, editor)
           const blocks = editor.topLevelBlocks
           let inputData: Partial<HMDraft> = {}
-
-          if (!input.currentDraft) {
+          const draftId = id || nanoid()
+          if (!input.draft) {
             inputData = {
               content: blocks,
               deps: [],
@@ -561,16 +569,16 @@ export function useDraftEditor({id}: {id: string}) {
             }
           } else {
             inputData = {
-              ...input.currentDraft,
+              ...input.draft,
               content: blocks,
               metadata: {
-                ...input.currentDraft.metadata,
+                ...input.draft.metadata,
                 title: input.title,
               },
             }
           }
 
-          return saveDraft.mutateAsync({id, draft: inputData})
+          return saveDraft.mutateAsync({id: draftId, draft: inputData})
         }),
       },
     }),
@@ -581,14 +589,19 @@ export function useDraftEditor({id}: {id: string}) {
   const backendDraft = useDraft({draftId: id})
 
   useEffect(() => {
-    if (state.matches('idle')) {
-      if (backendDraft.status == 'success') {
-        send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
-      }
-      if (backendDraft.status == 'error') {
-        send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
-      }
+    // if (backendDraft.status == 'loading' && !id) {
+    //   send({type: 'EMPTY.ID'})
+    // }
+    // if (state.matches('idle')) {
+    if (backendDraft.status == 'success') {
+      console.log('=== SUCCESS', backendDraft)
+      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
     }
+    if (backendDraft.status == 'error') {
+      console.log('=== ERROR', backendDraft)
+      send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
+    }
+    // }
   }, [backendDraft])
 
   useEffect(() => {

@@ -1,7 +1,8 @@
 import {HMEditorContainer, HyperMediaEditorView} from '@/components/editor'
 import {MainWrapper} from '@/components/main-wrapper'
 import {BlockNoteEditor, getBlockInfoFromPos} from '@/editor'
-import {useDraft, useDraftEditor} from '@/models/documents'
+import {useDraftEditor} from '@/models/documents'
+import {draftMachine} from '@/models/draft-machine'
 import {trpc} from '@/trpc'
 import {
   chromiumSupportedImageMimeTypes,
@@ -12,14 +13,20 @@ import {
 import {useNavRoute} from '@/utils/navigation'
 import {
   BlockRange,
+  blockStyles,
   createPublicWebHmUrl,
   ExpandedBlockRange,
   unpackDocId,
+  useDocContentContext,
+  useHeadingMarginStyles,
+  useHeadingTextStyles,
 } from '@shm/shared'
-import {copyUrlToClipboardWithFeedback, SizableText} from '@shm/ui'
-import {useState} from 'react'
+import {copyUrlToClipboardWithFeedback, Input, XStack} from '@shm/ui'
+import {useSelector} from '@xstate/react'
+import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {YStack} from 'tamagui'
+import {ActorRefFrom} from 'xstate'
 import {AppDocContentProvider} from './document-content-provider'
 export default function DraftPage() {
   const route = useNavRoute()
@@ -28,11 +35,17 @@ export default function DraftPage() {
   const [isDragging, setIsDragging] = useState(false)
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
 
-  const draft = useDraft({draftId: route.id})
-
   let data = useDraftEditor({
     id: route.id,
   })
+
+  console.log(`== ~ DraftPage ~ data:`, data.state.value)
+
+  useEffect(() => {
+    if (data.state) {
+      window.state = data.state
+    }
+  }, [data.state])
 
   if (data.state.matches('ready')) {
     return (
@@ -63,7 +76,11 @@ export default function DraftPage() {
                 e.stopPropagation()
               }}
             >
-              <SizableText>Editor title</SizableText>
+              <DraftTitleInput
+                draftActor={data.actor}
+                onEnter={() => {}}
+                disabled={!data.state.matches('ready')}
+              />
             </YStack>
             <HMEditorContainer>
               {data.editor ? (
@@ -207,4 +224,113 @@ export default function DraftPage() {
       'Block',
     )
   }
+}
+
+export function DraftTitleInput({
+  onEnter,
+  draftActor,
+  disabled = false,
+}: {
+  onEnter: () => void
+  draftActor: ActorRefFrom<typeof draftMachine>
+  disabled?: boolean
+}) {
+  const {textUnit, layoutUnit} = useDocContentContext()
+  let headingTextStyles = useHeadingTextStyles(1, textUnit)
+  const title = useSelector(
+    draftActor,
+    (s) => s.context.title || s.context.draft?.metadata.title || '',
+  )
+  const input = useRef<HTMLTextAreaElement | null>(null)
+  const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
+
+  useEffect(() => {
+    // handle the initial size of the title
+    const target = input.current
+    if (!target) return
+    applyTitleResize(target)
+  }, [input.current])
+
+  useEffect(() => {
+    const target = input.current
+    if (!target) return
+    if (target.value !== title) {
+      // handle cases where the model has a different title. this happens when pasting multiline text into the title
+      target.value = title || ''
+      applyTitleResize(target)
+    }
+  }, [title])
+
+  useEffect(() => {
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+
+    function handleResize() {
+      // handle the resize size of the title, responsive size may be changed
+      const target = input.current
+      if (!target) return
+      applyTitleResize(target)
+    }
+  }, [input.current])
+
+  return (
+    <XStack
+      flex="none"
+      {...blockStyles}
+      marginBottom={layoutUnit}
+      paddingBottom={layoutUnit / 2}
+      borderBottomColor="$color6"
+      borderBottomWidth={1}
+      paddingHorizontal={54}
+      {...headingMarginStyles}
+    >
+      <Input
+        disabled={disabled}
+        // we use multiline so that we can avoid horizontal scrolling for long titles
+        multiline
+        ref={input}
+        onKeyPress={(e: any) => {
+          if (e.nativeEvent.key == 'Enter') {
+            e.preventDefault()
+            onEnter()
+          }
+        }}
+        size="$9"
+        borderRadius="$1"
+        borderWidth={0}
+        overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
+        flex={1}
+        backgroundColor="$color2"
+        fontWeight="bold"
+        fontFamily="$body"
+        onChange={(e: any) => {
+          applyTitleResize(e.target as HTMLTextAreaElement)
+        }}
+        outlineColor="transparent"
+        borderColor="transparent"
+        paddingLeft={9.6}
+        defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
+        // value={title}
+        onChangeText={(title: string) => {
+          // TODO: change title here
+          draftActor.send({type: 'CHANGE', title})
+        }}
+        placeholder="Untitled Document"
+        {...headingTextStyles}
+        padding={0}
+      />
+    </XStack>
+  )
+}
+
+function applyTitleResize(target: HTMLTextAreaElement) {
+  // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
+  target.style.height = ''
+
+  // here is the actual auto-resize
+  target.style.height = `${target.scrollHeight}px`
 }
