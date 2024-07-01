@@ -76,7 +76,7 @@ export const draftsApi = t.router({
       }
     }),
   delete: t.procedure.input(z.string()).mutation(async ({input}) => {
-    const draftPath = join(draftsDir, `${input}.json`)
+    const draftPath = join(draftsDir, inputIdToDraftFile(input))
     draftIdList = draftIdList?.filter((id) => id !== input)
     await fs.unlink(draftPath)
   }),
