@@ -8,7 +8,7 @@ import {Add, Button, Form, Input} from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {dispatchWizardEvent, NamedKey} from 'src/app-account'
 import {useAccountKeys} from 'src/models/daemon'
-import {Label, XStack, YStack} from 'tamagui'
+import {Label, SizableText, XStack, YStack} from 'tamagui'
 
 export default function HomePage() {
   const {data: keys} = useAccountKeys()
@@ -36,6 +36,7 @@ export default function HomePage() {
           </XStack>
         </Form>
         <Button>Open Seed Hypermedia document</Button>
+        <DraftList />
       </YStack>
     </MainWrapper>
   )
@@ -75,4 +76,37 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
       </Button>
     </li>
   )
+}
+
+function DraftList() {
+  const openDraft = useOpenDraft('push')
+  const drafts = trpc.drafts.list.useQuery()
+  const deleteDraft = trpc.drafts.delete.useMutation()
+
+  function handleDelete(id: string) {
+    deleteDraft.mutateAsync(id).then(() => {
+      // drafts.refetch()
+      console.log('=== deleted!', id)
+    })
+  }
+
+  if (drafts.data && drafts.data?.length != 0) {
+    return (
+      <YStack>
+        {drafts.data.map((draft) => (
+          <XStack tag="li" key={draft} gap="$2">
+            <XStack f={1}>
+              <SizableText style={{display: 'block'}}>{draft}</SizableText>
+            </XStack>
+            <Button size="$2" onPress={() => openDraft({id: draft})}>
+              Open
+            </Button>
+            <Button size="$2" onPress={() => handleDelete(draft)}>
+              Delete
+            </Button>
+          </XStack>
+        ))}
+      </YStack>
+    )
+  }
 }
