@@ -34,7 +34,7 @@ import {TextAlignmentExtension} from './extensions/TextAlignment/TextAlignmentEx
 import {TextColorExtension} from './extensions/TextColor/TextColorExtension'
 import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
-import UniqueID from './extensions/UniqueID/UniqueID'
+import {UniqueID} from './extensions/UniqueID/UniqueID'
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default

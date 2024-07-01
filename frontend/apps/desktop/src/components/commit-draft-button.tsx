@@ -9,11 +9,12 @@ import {
   toast,
 } from '@shm/ui'
 import {Check} from '@tamagui/lucide-icons'
+import {useMachine} from '@xstate/react'
 import {PropsWithChildren} from 'react'
+import {createMachine} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount_deprecated} from '../models/accounts'
 import {usePublishDraft, usePushPublication} from '../models/documents'
-import {DraftStatusContext} from '../models/draft-machine'
 import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
 import {useMediaDialog} from './media-dialog'
 
@@ -26,12 +27,8 @@ export default function CommitDraftButton() {
   const grpcClient = useGRPCClient()
   const myAccount = useMyAccount_deprecated()
   const mediaDialog = useMediaDialog()
-  const canPublish = DraftStatusContext.useSelector(
-    (s) => s.matches('idle') || s.matches('saved'),
-  )
-  const hasUpdateError = DraftStatusContext.useSelector((s) =>
-    s.matches('error'),
-  )
+  const canPublish = false // TODO: change with stream
+  const hasUpdateError = false // TODO: change with stream
   const pushOnPublish = usePushOnPublish()
   const push = usePushPublication()
   const gwHost = useGatewayHost()
@@ -107,8 +104,10 @@ function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
   )
 }
 
+const dummyMachine = createMachine({initial: 'demo', states: {demo: {}}})
+
 function SaveIndicatorStatus() {
-  const state = DraftStatusContext.useSelector((s) => s)
+  const [state] = useMachine(dummyMachine) // TODO: change with stream
 
   if (state.matches('saving')) {
     return (

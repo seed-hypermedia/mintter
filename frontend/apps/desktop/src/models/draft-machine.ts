@@ -1,6 +1,5 @@
 import {HMDraft} from '@shm/shared'
-import {createActorContext} from '@xstate/react'
-import {StateFrom, assign, createMachine, setup} from 'xstate'
+import {StateFrom, assign, setup} from 'xstate'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
 
@@ -228,66 +227,3 @@ export const draftMachine = setup({
     },
   },
 })
-
-export const saveIndicator = createMachine(
-  {
-    id: 'saveIndicator',
-    initial: 'idle',
-
-    states: {
-      idle: {},
-      changed: {
-        on: {
-          'INDICATOR.SAVING': {
-            target: 'saving',
-          },
-        },
-      },
-      saving: {
-        on: {
-          'INDICATOR.SAVED': {
-            target: 'saved',
-          },
-        },
-      },
-      saved: {
-        after: {
-          '2000': {
-            target: '#saveIndicator.idle',
-            actions: [],
-            meta: {},
-          },
-        },
-      },
-      error: {},
-    },
-    on: {
-      'INDICATOR.CHANGE': {
-        target: '.changed',
-      },
-      'INDICATOR.ERROR': {
-        target: '.error',
-      },
-      'INDICATOR.IDLE': {
-        target: '.idle',
-      },
-    },
-    onDone: [{target: '.idle'}],
-    types: {
-      events: {} as
-        | {type: 'INDICATOR.CHANGE'}
-        | {type: 'INDICATOR.SAVING'}
-        | {type: 'INDICATOR.SAVED'}
-        | {type: 'INDICATOR.ERROR'}
-        | {type: 'INDICATOR.IDLE'},
-    },
-  },
-  {
-    actions: {},
-    actors: {},
-    guards: {},
-    delays: {},
-  },
-)
-
-export const DraftStatusContext = createActorContext(saveIndicator)

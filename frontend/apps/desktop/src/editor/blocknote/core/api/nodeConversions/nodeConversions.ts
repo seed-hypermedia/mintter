@@ -17,7 +17,7 @@ import {
   ToggledStyle,
 } from '../../extensions/Blocks/api/inlineContentTypes'
 import {getBlockInfo} from '../../extensions/Blocks/helpers/getBlockInfoFromPos'
-import UniqueID from '../../extensions/UniqueID/UniqueID'
+import {UniqueID} from '../../extensions/UniqueID/UniqueID'
 import {UnreachableCaseError} from '../../shared/utils'
 
 const toggleStyles = new Set<ToggledStyle>([

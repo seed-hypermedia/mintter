@@ -48,7 +48,7 @@ import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
-import {DraftStatusContext, draftMachine} from './draft-machine'
+import {draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useInlineMentions} from './search'
@@ -584,21 +584,20 @@ export function useDraftEditor({id}: {id: string}) {
     }),
   )
 
-  console.log(`== ~ useDraftEditor ~ state:`, state)
-
   const backendDraft = useDraft({draftId: id})
-
+  console.log(`== ~ useDraftEditor ~ state:`, {
+    status: backendDraft.status,
+    id,
+    state: state.value,
+  })
   useEffect(() => {
-    // if (backendDraft.status == 'loading' && !id) {
-    //   send({type: 'EMPTY.ID'})
-    // }
-    // if (state.matches('idle')) {
+    if (backendDraft.status == 'loading' && typeof id == 'undefined') {
+      send({type: 'EMPTY.ID'})
+    }
     if (backendDraft.status == 'success') {
-      console.log('=== SUCCESS', backendDraft)
       send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
     }
     if (backendDraft.status == 'error') {
-      console.log('=== ERROR', backendDraft)
       send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
     }
     // }
@@ -692,8 +691,6 @@ export function _useDraftEditor({
   })
 
   console.log(`== ~ backendDraft:`, backendDraft, route)
-
-  const draftStatusActor = DraftStatusContext.useActorRef()
 
   // const [state, send, actor] = useMachine(
   //   draftMachine.provide({

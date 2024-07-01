@@ -1,7 +1,6 @@
 import {useListen} from '@/app-context'
 
 import {Launcher} from '@/components/launcher'
-import {DraftStatusContext} from '@/models/draft-machine'
 import {SidebarContextProvider} from '@/sidebar-context'
 import {getRouteKey, useNavRoute} from '@/utils/navigation'
 import {NavRoute} from '@/utils/routes'
@@ -86,11 +85,9 @@ export default function Main({className}: {className?: string}) {
             window.location.reload()
           }}
         >
-          <DraftStatusContext.Provider>
-            {titlebar}
-            <PageComponent />
-            {launcher}
-          </DraftStatusContext.Provider>
+          {titlebar}
+          <PageComponent />
+          {launcher}
         </ErrorBoundary>
         {sidebar}
       </SidebarContextProvider>
