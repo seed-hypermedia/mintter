@@ -28,8 +28,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
-RUN chmod -R 655 /frontend/apps/site/.next
-
 EXPOSE 3000
 
 ENV PORT 3000
