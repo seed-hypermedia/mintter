@@ -582,6 +582,8 @@ const EmbedSideAnnotation = forwardRef<
         }
       : {}
 
+  return null
+
   return (
     <YStack
       ref={ref}

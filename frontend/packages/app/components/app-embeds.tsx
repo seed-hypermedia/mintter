@@ -353,6 +353,7 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
     pubTarget.data?.publication?.document?.editors || [],
   )
 
+  return null
   if (pubTarget.status == 'success') {
     return (
       <YStack
