@@ -1,4 +1,5 @@
 import {useGRPCClient} from '@/app-context'
+import {Code, ConnectError} from '@connectrpc/connect'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 
@@ -80,6 +81,12 @@ export function useAccountKeys() {
         const q = await client.daemon.listKeys({})
         return q?.keys
       } catch (e) {
+        const connectError = ConnectError.from(e)
+        console.error(
+          `useAccountKeys error code ${
+            Code[connectError.code]
+          }: ${JSON.stringify(connectError.message)}`,
+        )
         return []
       }
     },

@@ -1,31 +1,30 @@
-import { AccessoryLayout } from '@/components/accessory-sidebar'
-import { Avatar } from '@/components/avatar'
-import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
-import { useDeleteDialog } from '@/components/delete-dialog'
-import { DocumentListItem } from '@/components/document-list-item'
-import { FavoriteButton } from '@/components/favoriting'
-import Footer, { FooterButton } from '@/components/footer'
-import { ListItem, copyLinkMenuItem } from '@/components/list-item'
-import { MainWrapperNoScroll } from '@/components/main-wrapper'
-import { useMyAccountIds } from '@/models/accounts'
-import { useEntityMentions } from '@/models/content-graph'
-import {
-  useAccountDocuments,
-  useProfile
-} from '@/models/documents'
-import { useResourceFeedWithLatest } from '@/models/feed'
-import { getAvatarUrl } from '@/utils/account-url'
-import { useNavRoute } from '@/utils/navigation'
-import { useNavigate } from '@/utils/useNavigate'
+import {AccessoryLayout} from '@/components/accessory-sidebar'
+import {AppErrorPage} from '@/components/app-error'
+import {Avatar} from '@/components/avatar'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {useDeleteDialog} from '@/components/delete-dialog'
+import {DocumentListItem} from '@/components/document-list-item'
+import {FavoriteButton} from '@/components/favoriting'
+import Footer, {FooterButton} from '@/components/footer'
+import {ListItem, copyLinkMenuItem} from '@/components/list-item'
+import {MainWrapper, MainWrapperNoScroll} from '@/components/main-wrapper'
+import {useMyAccountIds, useProfile} from '@/models/accounts'
+import {useEntityMentions} from '@/models/content-graph'
+import {useAccountDocuments} from '@/models/documents'
+import {useResourceFeedWithLatest} from '@/models/feed'
+import {getAvatarUrl} from '@/utils/account-url'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   DocContent,
+  DocHeading,
   Event,
   HMDocument,
   createHmId,
   getDocumentTitle,
   hmId,
   pluralS,
-  unpackDocId
+  unpackDocId,
 } from '@shm/shared'
 import {
   BlockQuote,
@@ -34,18 +33,18 @@ import {
   Section,
   SizableText,
   View,
-  XStack
+  XStack,
 } from '@shm/ui'
-import { PageContainer } from '@shm/ui/src/container'
-import { RadioButtons } from '@shm/ui/src/radio-buttons'
-import { Trash } from '@tamagui/lucide-icons'
-import React, { ReactNode, useMemo } from 'react'
-import { VirtuosoHandle } from 'react-virtuoso'
-import { EntityCitationsAccessory } from '../components/citations'
-import { CopyReferenceButton } from '../components/titlebar-common'
-import { AppDocContentProvider } from './document-content-provider'
-import { FeedItem, FeedPageFooter, NewUpdatesButton } from './feed'
-
+import {PageContainer} from '@shm/ui/src/container'
+import {RadioButtons} from '@shm/ui/src/radio-buttons'
+import {Trash} from '@tamagui/lucide-icons'
+import React, {ReactNode, useMemo} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {VirtuosoHandle} from 'react-virtuoso'
+import {EntityCitationsAccessory} from '../components/citations'
+import {CopyReferenceButton} from '../components/titlebar-common'
+import {AppDocContentProvider} from './document-content-provider'
+import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
 
 export function getProfileName(profile: HMDocument | null | undefined) {
   if (!profile) return ''
@@ -56,6 +55,31 @@ export default function AccountPage() {
   const route = useNavRoute()
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
+
+  const myAccountIds = useMyAccountIds()
+  const isMyAccount = myAccountIds.includes(accountId)
+  const {profile} = useProfile(accountId)
+  console.log('== ROUTE', {
+    myAccountIds,
+    isMyAccount,
+    profile,
+
+    accountId,
+  })
+
+  return (
+    <ErrorBoundary FallbackComponent={AppErrorPage} onReset={() => {}}>
+      <MainWrapper>
+        <AppDocContentProvider>
+          <DocHeading>{profile?.metadata.title}</DocHeading>
+          <code>
+            <pre>{JSON.stringify(profile, null, 3)}</pre>
+          </code>
+        </AppDocContentProvider>
+      </MainWrapper>
+    </ErrorBoundary>
+  )
+
   const accessoryKey = route.accessory?.key
   const replace = useNavigate('replace')
   const accountEntityId = createHmId('a', accountId)
@@ -84,8 +108,8 @@ export default function AccountPage() {
             icon={BlockQuote}
             onPress={() => {
               if (route.accessory?.key === 'citations')
-                return replace({ ...route, accessory: null })
-              replace({ ...route, accessory: { key: 'citations' } })
+                return replace({...route, accessory: null})
+              replace({...route, accessory: {key: 'citations'}})
             }}
           />
         ) : null}
@@ -101,7 +125,7 @@ function MainAccountPage() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const myAccountIds = useMyAccountIds()
   const isMyAccount = myAccountIds.includes(accountId)
-  const { data: documents } = useAccountDocuments(
+  const {data: documents} = useAccountDocuments(
     route.tab === 'documents' ? accountId : undefined,
   )
   const allDocs = useMemo(() => {
@@ -109,9 +133,8 @@ function MainAccountPage() {
     const allPubIds = new Set<string>()
     if (!documents) return []
     const docs = documents.documents.map((d) => {
-      if (d?.id)
-        allPubIds.add(d?.id)
-      return { key: 'document', document: d } as const
+      if (d?.id) allPubIds.add(d?.id)
+      return {key: 'document', document: d} as const
     })
     return [...docs]
   }, [isMyAccount, route.tab, documents])
@@ -120,15 +143,15 @@ function MainAccountPage() {
 
   let items: Array<
     | 'profile'
-    | { key: 'event', event: Event }
+    | {key: 'event'; event: Event}
     | {
-      key: 'document'
-      document: HMDocument
-    }
+        key: 'document'
+        document: HMDocument
+      }
     | {
-      key: 'draft'
-      document: HMDocument
-    }
+        key: 'draft'
+        document: HMDocument
+      }
   > = ['profile']
   const feed = useResourceFeedWithLatest(
     route.tab === 'activity' ? hmId('a', accountId).qid : undefined,
@@ -136,9 +159,9 @@ function MainAccountPage() {
   if (route.tab === 'documents') {
     items = allDocs || []
   } else if (route.tab === 'activity') {
-    items = feed.data ? feed.data.map(event => ({ key: 'event', event })) : []
+    items = feed.data ? feed.data.map((event) => ({key: 'event', event})) : []
   }
-  const { content: deleteDialog, open: openDelete } = useDeleteDialog()
+  const {content: deleteDialog, open: openDelete} = useDeleteDialog()
   const navigate = useNavigate()
   return (
     <>
@@ -152,7 +175,7 @@ function MainAccountPage() {
         onEndReached={() => {
           if (route.tab === 'activity') feed.fetchNextPage()
         }}
-        renderItem={({ item }) => {
+        renderItem={({item}) => {
           if (item === 'profile') {
             return <ProfileDoc />
           }
@@ -208,7 +231,7 @@ function MainAccountPage() {
                 theme="yellow"
                 backgroundColor="$color3"
                 accessory={
-                  <Button disabled onPress={() => { }} size="$1">
+                  <Button disabled onPress={() => {}} size="$1">
                     Draft
                   </Button>
                 }
@@ -223,7 +246,7 @@ function MainAccountPage() {
       {route.tab === 'activity' && feed.hasNewItems && (
         <NewUpdatesButton
           onPress={() => {
-            scrollRef.current?.scrollTo({ top: 0 })
+            scrollRef.current?.scrollTo({top: 0})
             feed.refetch()
           }}
         />
@@ -278,13 +301,15 @@ function AccountPageHeader() {
             <RadioButtons
               key={route.tab}
               value={route.tab || 'profile'}
-              options={[
-                { key: 'profile', label: 'Profile' },
-                { key: 'documents', label: 'Documents' },
-                { key: 'activity', label: 'Activity' },
-              ] as const}
+              options={
+                [
+                  {key: 'profile', label: 'Profile'},
+                  {key: 'documents', label: 'Documents'},
+                  {key: 'activity', label: 'Activity'},
+                ] as const
+              }
               onValue={(tab) => {
-                replace({ ...route, tab })
+                replace({...route, tab})
               }}
             />
           </XStack>
@@ -294,16 +319,14 @@ function AccountPageHeader() {
   )
 }
 
-function ProfileDoc({ }: {}) {
+function ProfileDoc({}: {}) {
   const route = useNavRoute()
   const accountRoute = route.key === 'account' ? route : undefined
   if (!accountRoute) throw new Error('Invalid route, no account id')
   const profile = useProfile(accountRoute.accountId)
   return profile.status == 'success' && profile.data ? (
     <PageContainer>
-      <AppDocContentProvider
-        routeParams={{ blockRef: accountRoute?.blockId }}
-      >
+      <AppDocContentProvider routeParams={{blockRef: accountRoute?.blockId}}>
         <DocContent
           document={profile.data}
           focusBlockId={

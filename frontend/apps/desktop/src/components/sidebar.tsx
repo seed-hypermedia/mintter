@@ -1,5 +1,5 @@
-import {useAccount_deprecated} from '@/models/accounts'
-import {useDocument, useDocumentEmbeds, useProfile} from '@/models/documents'
+import {useAccount_deprecated, useProfile} from '@/models/accounts'
+import {useDocument, useDocumentEmbeds} from '@/models/documents'
 import {useFavorites} from '@/models/favorites'
 import {appRouteOfId, getRouteKey, useNavRoute} from '@/utils/navigation'
 import {getRouteContext, getRouteParentContext} from '@/utils/route-context'

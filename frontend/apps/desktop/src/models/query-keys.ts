@@ -39,6 +39,7 @@ export const queryKeys = {
   DOCUMENT_LIST: 'DOCUMENT_LIST', // 'trusted' | 'global'
   EDITOR_DRAFT: 'EDITOR_DRAFT', // , docId: string
   DOCUMENT: 'DOCUMENT', //, docId: string, versionId?: string
+  PROFILE_DOCUMENT: 'PROFILE_DOCUMENT', //, accountId: string
 
   // comments
   COMMENT: 'COMMENT', //, commentId: string

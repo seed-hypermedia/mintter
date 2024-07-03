@@ -6,6 +6,7 @@ import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
 import {trpc} from '@/trpc'
 import {Timestamp, toPlainMessage} from '@bufbuild/protobuf'
+import {ConnectError} from '@connectrpc/connect'
 import {
   Document,
   DocumentChange,
@@ -49,7 +50,7 @@ import {pathNameify} from '../utils/path'
 import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {draftMachine} from './draft-machine'
-import {getBlockGroup, setGroupTypes} from './editor-utils'
+import {setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useInlineMentions} from './search'
 
@@ -279,7 +280,35 @@ function changesToJSON(changes: DocumentChange[]) {
   })
 }
 
-export function usePublishDraft(
+export function usePublishDraft(grpcClient: GRPCClient, accountId?: string) {
+  return useMutation<
+    HMDocument,
+    any,
+    {draft: HMDraft; previous: HMDocument | undefined}
+  >({
+    mutationFn: async ({draft, previous}) => {
+      console.log('=== ACCOUNTID', accountId?.split('hm://a/')[1])
+      const blocksMap = previous ? createBlocksMap(previous.content, '') : {}
+      const changes = compareBlocksWithMap(blocksMap, draft.content, '')
+
+      console.log(`== ~ mutationFn: ~ changes:`, {
+        blocksMap,
+        draft: draft.content,
+        changes,
+      })
+      const res = await grpcClient.documents.changeProfileDocument({
+        accountId: accountId?.split('hm://a/')[1],
+        changes: changes.changes,
+      })
+
+      console.log(`== ~ mutationFn: ~ res:`, res)
+
+      return res
+    },
+  })
+}
+
+export function _usePublishDraft(
   opts?: UseMutationOptions<
     {
       pub: Document
@@ -585,11 +614,7 @@ export function useDraftEditor({id}: {id: string}) {
   )
 
   const backendDraft = useDraft({draftId: id})
-  console.log(`== ~ useDraftEditor ~ state:`, {
-    status: backendDraft.status,
-    id,
-    state: state.value,
-  })
+
   useEffect(() => {
     if (backendDraft.status == 'loading' && typeof id == 'undefined') {
       send({type: 'EMPTY.ID'})
@@ -1040,6 +1065,7 @@ export function usePushPublication() {
   return useMutation({
     mutationFn: async (docId: string) => {
       if (!gatewayUrl.data) throw new Error('Cannot determine Gateway URL')
+
       await grpcClient.documents.pushDocument({
         documentId: docId,
         url: gatewayUrl.data,
@@ -1049,9 +1075,8 @@ export function usePushPublication() {
 }
 
 export function compareBlocksWithMap(
-  editor: BlockNoteEditor,
   blocksMap: BlocksMap,
-  blocks: Array<EditorBlock>,
+  blocks: HMDraft['content'],
   parentId: string,
 ) {
   let changes: Array<DocumentChange> = []
@@ -1065,9 +1090,10 @@ export function compareBlocksWithMap(
     // compare replace
     let prevBlockState = blocksMap[block.id]
 
-    const childGroup = getBlockGroup(editor, block.id)
+    // const childGroup = getBlockGroup(editor, block.id) // TODO: do this with no editor
 
-    if (childGroup) {
+    // if (childGroup) {
+    if (false) {
       // @ts-expect-error
       block.props.childrenType = childGroup.type ? childGroup.type : 'group'
       // @ts-expect-error
@@ -1135,7 +1161,6 @@ export function compareBlocksWithMap(
 
     if (block.children.length) {
       let nestedResults = compareBlocksWithMap(
-        editor,
         blocksMap,
         block.children,
         block.id,
@@ -1423,18 +1448,33 @@ export function useDraftRebase({
 }
 
 export function useDocument(
-  docId: string | undefined,
+  id: string | undefined,
   version?: string | undefined,
   options?: UseQueryOptions<HMDocument | null> & {
     draftId?: string
   },
 ) {
   const grpcClient = useGRPCClient()
-  return useQuery(queryDocument({docId, version, grpcClient, ...options}))
+  const {data: document, status: documentStatus} = useQuery(
+    queryDocument({id, version, grpcClient, ...options}),
+  )
+  const {data: draft, status: draftStatus} = trpc.drafts.get.useQuery(id)
+
+  return useMemo(
+    () => ({
+      document,
+      draft,
+    }),
+    [documentStatus, draftStatus],
+  )
 }
 
+/**
+ *
+ * @deprecated
+ */
 export function useDocuments(
-  docs: {docId?: string | undefined; version?: string | undefined}[],
+  docs: {id?: string | undefined; version?: string | undefined}[],
   options?: UseQueryOptions<HMDocument | null>,
 ) {
   const grpcClient = useGRPCClient()
@@ -1445,68 +1485,34 @@ export function useDocuments(
 }
 
 export function queryDocument({
-  docId,
+  id,
   version,
   grpcClient,
   ...options
 }: {
-  docId?: string
+  id?: string
   version?: string
   grpcClient: GRPCClient
 } & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
-    enabled: !!docId,
-    queryKey: [queryKeys.EDITOR_DRAFT, docId],
+    enabled: !!id,
+    queryKey: [queryKeys.DOCUMENT, id],
     useErrorBoundary: false,
     queryFn: async () => {
-      const doc = await grpcClient.documents.getDocument({
-        documentId: docId,
-        version: version || '',
-      })
-      return toPlainMessage(doc)
-    },
-    ...options,
-  }
-}
-
-export function useProfile(
-  docId: string | undefined,
-  version?: string | undefined,
-  options?: UseQueryOptions<HMDocument | null> & {
-    draftId?: string
-  },
-) {
-  // TODO: implement me!
-  return {data: null}
-}
-
-export function useProfiles(
-  ids: string[],
-  options?: UseQueryOptions<HMDocument | null>,
-) {
-  const grpcClient = useGRPCClient()
-  return useQueries({
-    queries: ids.map((docId) => queryProfile({docId, grpcClient})),
-    ...(options || {}),
-  })
-}
-
-export function queryProfile({
-  docId,
-  version,
-  grpcClient,
-  ...options
-}: {
-  docId?: string
-  version?: string
-  grpcClient: GRPCClient
-} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
-  return {
-    enabled: !!docId,
-    queryKey: [queryKeys.EDITOR_DRAFT, docId],
-    useErrorBoundary: false,
-    queryFn: async () => {
-      return toPlainMessage({})
+      try {
+        const doc = await grpcClient.documents.getDocument({
+          documentId: id,
+          version: version || '',
+        })
+        return toPlainMessage(doc)
+      } catch (error) {
+        const connectErr = ConnectError.from(error)
+        console.error(
+          'Error loading document',
+          connectErr.code,
+          connectErr.message,
+        )
+      }
     },
     ...options,
   }

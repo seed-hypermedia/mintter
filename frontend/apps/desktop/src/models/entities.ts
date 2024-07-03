@@ -10,14 +10,8 @@ import {
   BaseEntityRoute,
   NavRoute,
 } from '../utils/routes'
-import {useAccounts} from './accounts'
-import {
-  useDocument,
-  useDocuments,
-  useDrafts,
-  useProfile,
-  useProfiles,
-} from './documents'
+import {useAccounts, useProfile, useProfiles} from './accounts'
+import {useDocument, useDocuments, useDrafts} from './documents'
 import {queryKeys} from './query-keys'
 import {useDeleteRecent} from './recents'
 

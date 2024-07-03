@@ -1,5 +1,6 @@
+import {dispatchDraftStatus, DraftStatus} from '@/draft-status'
 import {HMDraft} from '@shm/shared'
-import {StateFrom, assign, setup} from 'xstate'
+import {assign, setup, StateFrom} from 'xstate'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
 
@@ -70,6 +71,10 @@ export const draftMachine = setup({
     resetChangeWhileSaving: assign({
       hasChangedWhileSaving: false,
     }),
+    setDraftStatus: function (_, params: {status: DraftStatus}) {
+      console.log('=== DRAFT STATUS', params.status)
+      dispatchDraftStatus(params.status)
+    },
     populateEditor: function () {},
     focusEditor: function () {},
   },
@@ -110,24 +115,9 @@ export const draftMachine = setup({
       },
     },
     setupData: {
-      entry: [
-        () => {
-          console.log('== ENTERING READY!')
-        },
-      ],
-      exit: [
-        () => {
-          console.log('== EXITING READY!')
-        },
-      ],
       always: {
         target: 'ready',
-        actions: [
-          () => {
-            console.log('== AFTER TIMEOUT READY!')
-          },
-          {type: 'populateEditor'},
-        ],
+        actions: [{type: 'populateEditor'}],
       },
     },
     error: {},
@@ -136,6 +126,10 @@ export const draftMachine = setup({
       entry: [
         {
           type: 'focusEditor',
+        },
+        {
+          type: 'setDraftStatus',
+          params: {status: 'idle'},
         },
       ],
       states: {
@@ -150,6 +144,12 @@ export const draftMachine = setup({
           },
         },
         changed: {
+          entry: [
+            {
+              type: 'setDraftStatus',
+              params: {status: 'changed'},
+            },
+          ],
           on: {
             CHANGE: {
               target: 'changed',
@@ -164,9 +164,17 @@ export const draftMachine = setup({
               target: 'saving',
             },
           },
-          entry: [{type: 'setChanged'}],
         },
         saving: {
+          entry: [
+            {
+              type: 'resetChangeWhileSaving',
+            },
+            {
+              type: 'setDraftStatus',
+              params: {status: 'saving'},
+            },
+          ],
           on: {
             CHANGE: {
               target: 'saving',
@@ -181,11 +189,6 @@ export const draftMachine = setup({
               reenter: false,
             },
           },
-          entry: [
-            {
-              type: 'resetChangeWhileSaving',
-            },
-          ],
           invoke: {
             input: ({context}) => ({
               title: context.title,
@@ -217,6 +220,10 @@ export const draftMachine = setup({
                   },
                   {
                     type: 'replaceRouteifNeeded',
+                  },
+                  {
+                    type: 'setDraftStatus',
+                    params: {status: 'saved'},
                   },
                 ],
               },

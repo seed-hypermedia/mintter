@@ -4,7 +4,7 @@ import z from 'zod'
 import {userDataPath} from './app-paths'
 import {t} from './app-trpc'
 
-const draftsDir = join(userDataPath, 'data', 'drafts')
+const draftsDir = join(userDataPath, 'drafts')
 
 let draftIdList: string[] | undefined = undefined
 

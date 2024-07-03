@@ -1,27 +1,27 @@
-import { focusDraftBlock } from '@/draft-focusing'
-import { useMyAccount_deprecated } from '@/models/accounts'
-import { useDocument, useDocumentDrafts, useProfile } from '@/models/documents'
+import {focusDraftBlock} from '@/draft-focusing'
+import {useMyAccount_deprecated, useProfile} from '@/models/accounts'
+import {useDocument, useDocumentDrafts} from '@/models/documents'
 import {
   getEntityRoutes,
   useEntitiesContent,
   useEntityContent,
   useEntityRoutes,
 } from '@/models/entities'
-import { useFavorites } from '@/models/favorites'
-import { getProfileName } from '@/pages/account-page'
-import { appRouteOfId, getRouteKey, useNavRoute } from '@/utils/navigation'
-import { getRouteContext } from '@/utils/route-context'
-import { BaseAccountRoute, BaseEntityRoute, NavRoute } from '@/utils/routes'
-import { useNavigate } from '@/utils/useNavigate'
+import {useFavorites} from '@/models/favorites'
+import {getProfileName} from '@/pages/account-page'
+import {appRouteOfId, getRouteKey, useNavRoute} from '@/utils/navigation'
+import {getRouteContext} from '@/utils/route-context'
+import {BaseAccountRoute, BaseEntityRoute, NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   HMBlockNode,
   HMEntityContent,
   UnpackedHypermediaId,
   getBlockNodeById,
   getDocumentTitle,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
-import { Tooltip } from '@shm/ui'
+import {Tooltip} from '@shm/ui'
 import {
   Contact,
   FilePen,
@@ -30,8 +30,8 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import { ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, SizableText, Spinner, View } from 'tamagui'
+import {ReactNode, memo, useCallback, useEffect, useMemo, useState} from 'react'
+import {Button, SizableText, Spinner, View} from 'tamagui'
 import {
   FocusButton,
   SidebarDivider,
@@ -39,7 +39,7 @@ import {
   SidebarItem,
 } from './sidebar-base'
 
-type IconDefinition = React.FC<{ size: any; color: any }>
+type IconDefinition = React.FC<{size: any; color: any}>
 
 export const SidebarNeo = memo(_SidebarNeo)
 function _SidebarNeo() {
@@ -49,7 +49,7 @@ function _SidebarNeo() {
   const myAccount = useMyAccount_deprecated()
   const myAccountRoute = useMemo(() => {
     return myAccount
-      ? ({ key: 'account', accountId: myAccount } as BaseAccountRoute)
+      ? ({key: 'account', accountId: myAccount} as BaseAccountRoute)
       : null
   }, [myAccount])
   const navigate = useNavigate()
@@ -158,11 +158,11 @@ function getBlockHeadings(
   children: HMBlockNode[] | undefined,
   blockId: string | undefined,
 ) {
-  let blockHeadings: null | { id: string; text: string }[] = []
+  let blockHeadings: null | {id: string; text: string}[] = []
   if (!blockId) return []
   function findBlock(
     nodes: HMBlockNode[] | undefined,
-    parentHeadings: { id: string; text: string }[],
+    parentHeadings: {id: string; text: string}[],
   ) {
     return nodes?.find((blockNode) => {
       if (!blockId) return null
@@ -188,7 +188,7 @@ function getBlockHeadings(
   findBlock(children, [])
   return blockHeadings as
     | null
-    | { id: string; text: string; embedId: null | string }[]
+    | {id: string; text: string; embedId: null | string}[]
 }
 
 export function getItemDetails(
@@ -215,7 +215,6 @@ export function getItemDetails(
   icon = FilePen
   isDraft = true
 
-
   const headings = getBlockHeadings(entity.document?.children, blockId)
   return {
     docId: entity.document?.id,
@@ -228,9 +227,9 @@ export function getItemDetails(
 
 type ItemDetails = ReturnType<typeof getItemDetails>
 
-function ResumeDraftButton({ info }: { info: ItemDetails }) {
+function ResumeDraftButton({info}: {info: ItemDetails}) {
   if (!info) throw new Error('ItemDetails required for ResumeDraftButton')
-  const { docId } = info
+  const {docId} = info
   const navigate = useNavigate()
   const myAccount = useMyAccount_deprecated()
   // const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
@@ -288,7 +287,7 @@ function ContextItems({
         icon={info.icon}
         onPress={() => {
           if (route.key === 'draft') return
-          onNavigate({ ...route, blockId: undefined, isBlockFocused: undefined })
+          onNavigate({...route, blockId: undefined, isBlockFocused: undefined})
         }}
         iconAfter={
           info.isDraft ? (
@@ -317,7 +316,7 @@ function ContextItems({
             title={heading.text}
             onPress={() => {
               if (route.key === 'draft') return
-              onNavigate({ ...route, blockId: heading.id, isBlockFocused: true })
+              onNavigate({...route, blockId: heading.id, isBlockFocused: true})
             }}
           />
         )
@@ -340,7 +339,7 @@ function RouteSection({
   collapse?: boolean
   setCollapse?: (collapse: boolean) => void
   onNavigate: (route: NavRoute, doReplace?: boolean) => void
-  entityContents?: { route: BaseEntityRoute; entity?: HMEntityContent }[]
+  entityContents?: {route: BaseEntityRoute; entity?: HMEntityContent}[]
   active?: boolean
 }) {
   const thisRoute = routes.at(-1)
@@ -352,17 +351,15 @@ function RouteSection({
     thisRoute?.key === 'draft'
       ? undefined
       : thisRoute?.isBlockFocused
-        ? thisRoute?.blockId
-        : undefined
-  const thisRouteDetails = getItemDetails(
-    thisRouteEntity?.entity,
-  )
+      ? thisRoute?.blockId
+      : undefined
+  const thisRouteDetails = getItemDetails(thisRouteEntity?.entity)
   const focusedNodes =
     thisRouteFocusBlockId && thisRouteEntity?.entity?.document?.content
       ? getBlockNodeById(
-        thisRouteEntity?.entity?.document?.content,
-        thisRouteFocusBlockId,
-      )?.children
+          thisRouteEntity?.entity?.document?.content,
+          thisRouteFocusBlockId,
+        )?.children
       : thisRouteEntity?.entity?.document?.content
   const outlineNodes = focusedNodes?.filter(
     (node) => node.block.type === 'heading' || node.block.type === 'embed',
@@ -379,7 +376,7 @@ function RouteSection({
         focusDraftBlock(thisRoute.draftId, blockId)
         return
       }
-      onNavigate({ ...thisRoute, blockId, isBlockFocused: false }, shouldReplace)
+      onNavigate({...thisRoute, blockId, isBlockFocused: false}, shouldReplace)
     },
     [thisRoute, activeRoute],
   )
@@ -389,7 +386,7 @@ function RouteSection({
       return null
     }
     return (blockId: string) => {
-      onNavigate({ ...thisRoute, blockId, isBlockFocused: true })
+      onNavigate({...thisRoute, blockId, isBlockFocused: true})
     }
   }, [onNavigate, thisRoute])
   return (
@@ -511,19 +508,19 @@ function _SidebarEmbedOutlineItem({
             onFocusBlock={
               destRoute
                 ? (childBlockId) => {
-                  if (!destRoute) return
-                  if (
-                    destRoute.key === 'document' ||
-                    destRoute.key === 'account'
-                  ) {
-                    navigate({
-                      ...destRoute,
-                      blockId: childBlockId,
-                      isBlockFocused: true,
-                      context: getRouteContext(route, blockId),
-                    })
-                  } else navigate(destRoute)
-                }
+                    if (!destRoute) return
+                    if (
+                      destRoute.key === 'document' ||
+                      destRoute.key === 'account'
+                    ) {
+                      navigate({
+                        ...destRoute,
+                        blockId: childBlockId,
+                        isBlockFocused: true,
+                        context: getRouteContext(route, blockId),
+                      })
+                    } else navigate(destRoute)
+                  }
                 : null
             }
             nodes={outlineNodes}
@@ -675,7 +672,7 @@ function SidebarFavorites({
   let items: ReactNode[] = []
   if (!collapse) {
     items = favorites.map((fav) => {
-      const { key, url } = fav
+      const {key, url} = fav
       if (key === 'account') {
         return (
           <FavoriteAccountItem key={url} url={url} onNavigate={onNavigate} />
@@ -698,7 +695,7 @@ function SidebarFavorites({
       <SidebarItem
         active={route.key == 'favorites'}
         onPress={() => {
-          navigate({ key: 'favorites' })
+          navigate({key: 'favorites'})
         }}
         title="Favorites"
         bold
@@ -742,7 +739,7 @@ function FavoriteAccountItem({
       active={route.key === 'account' && route.accountId === accountId}
       indented
       onPress={() => {
-        onNavigate({ key: 'account', accountId })
+        onNavigate({key: 'account', accountId})
       }}
       title={getProfileName(profile.data)}
     />
@@ -758,10 +755,7 @@ function FavoritePublicationItem({
 }) {
   const id = unpackHmId(url)
   const route = useNavRoute()
-  const pub = useDocument(
-    id?.qid,
-    id?.version || undefined,
-  )
+  const pub = useDocument(id?.qid, id?.version || undefined)
   const documentId = id?.qid
   if (!documentId) return null
   return (

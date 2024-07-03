@@ -6,8 +6,12 @@ import {useEditProfileDialog} from '@/components/edit-profile-dialog'
 import {useFavoriteMenuItem} from '@/components/favoriting'
 import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
 import {DraftPublicationButtons, VersionContext} from '@/components/variants'
-import {useAccount_deprecated, useMyAccountIds} from '@/models/accounts'
-import {useDocument, useProfile, usePushPublication} from '@/models/documents'
+import {
+  useAccount_deprecated,
+  useMyAccountIds,
+  useProfile,
+} from '@/models/accounts'
+import {useDocument, usePushPublication} from '@/models/documents'
 import {useGatewayHost, useGatewayUrl} from '@/models/gateway-settings'
 import {SidebarWidth, useSidebarContext} from '@/sidebar-context'
 import {
@@ -381,9 +385,9 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'account') {
     buttonGroup = [
-      <EditAccountButton key="editAccount" />,
-      <CreateDropdown key="create" />,
-      <AccountOptionsButton key="accountOptions" />,
+      // <EditAccountButton key="editAccount" />,
+      // <CreateDropdown key="create" />,
+      // <AccountOptionsButton key="accountOptions" />,
     ]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>

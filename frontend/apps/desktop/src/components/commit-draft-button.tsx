@@ -1,4 +1,7 @@
-import { useNavRoute } from '@/utils/navigation'
+import {DraftStatus, draftStatus} from '@/draft-status'
+import {useNavRoute} from '@/utils/navigation'
+import {DraftRoute} from '@/utils/routes'
+import {HMDocument} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -8,17 +11,55 @@ import {
   YStackProps,
   toast,
 } from '@shm/ui'
-import { Check } from '@tamagui/lucide-icons'
-import { useMachine } from '@xstate/react'
-import { PropsWithChildren } from 'react'
-import { createMachine } from 'xstate'
-import { useGRPCClient } from '../app-context'
-import { useMyAccount_deprecated } from '../models/accounts'
-import { usePublishDraft, usePushPublication } from '../models/documents'
-import { useGatewayHost, usePushOnPublish } from '../models/gateway-settings'
-import { useMediaDialog } from './media-dialog'
+import {Check} from '@tamagui/lucide-icons'
+import {PropsWithChildren, useEffect, useState} from 'react'
+import {createMachine} from 'xstate'
+import {useGRPCClient} from '../app-context'
+import {useMyAccount_deprecated, useProfile} from '../models/accounts'
+import {
+  useDraft,
+  usePublishDraft,
+  usePushPublication,
+} from '../models/documents'
+import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
+import {useMediaDialog} from './media-dialog'
 
 export default function CommitDraftButton() {
+  const route = useNavRoute()
+  const grpcClient = useGRPCClient()
+  const draftRoute: DraftRoute = route.key === 'draft' ? route : null
+  if (!draftRoute)
+    throw new Error('DraftPublicationButtons requires draft route')
+  const previousDoc = useProfile(
+    draftRoute.id && draftRoute.id.startsWith('hm://a')
+      ? draftRoute.id.split('hm://a')[0]
+      : draftRoute.id,
+  )
+
+  const draft = useDraft({draftId: draftRoute.id})
+  const publish = usePublishDraft(grpcClient, draftRoute.id)
+  // console.log(`== ~ CommitDraftButton ~ draft:`, draft)
+  // console.log(`== ~ CommitDraftButton ~ previousDoc:`, {previousDoc, draft})
+
+  return (
+    <>
+      <SaveIndicatorStatus />
+      <Button
+        size="$2"
+        onPress={() =>
+          publish.mutate({
+            draft: draft.data,
+            previous: previousDoc.data as HMDocument,
+          })
+        }
+      >
+        Publishh
+      </Button>
+    </>
+  )
+}
+
+export function _CommitDraftButton() {
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : null
   if (!draftRoute)
@@ -33,7 +74,7 @@ export default function CommitDraftButton() {
   const push = usePushPublication()
   const gwHost = useGatewayHost()
   const publish = usePublishDraft({
-    onSuccess: ({ pub: publishedDoc }) => {
+    onSuccess: ({pub: publishedDoc}) => {
       if (!publishedDoc || !draftId) return
       if (pushOnPublish.data === 'always') {
         toast.promise(push.mutateAsync(draftId), {
@@ -70,7 +111,7 @@ export default function CommitDraftButton() {
           disabled={!canPublish || hasUpdateError}
           opacity={!canPublish ? 0.5 : 1}
           onPress={() => {
-            grpcClient.drafts.getDraft({ draftId }).then((draft) => {
+            grpcClient.drafts.getDraft({draftId}).then((draft) => {
               const hasEmptyMedia = draft.document?.content.find((block) => {
                 return (
                   block.block &&
@@ -84,7 +125,7 @@ export default function CommitDraftButton() {
                   publish,
                 })
               } else {
-                publish.mutate({ draftId })
+                publish.mutate({draftId})
               }
             })
           }}
@@ -97,7 +138,7 @@ export default function CommitDraftButton() {
   )
 }
 
-function StatusWrapper({ children, ...props }: PropsWithChildren<YStackProps>) {
+function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
   return (
     <YStack space="$2" opacity={0.6}>
       {children}
@@ -105,12 +146,23 @@ function StatusWrapper({ children, ...props }: PropsWithChildren<YStackProps>) {
   )
 }
 
-const dummyMachine = createMachine({ initial: 'demo', states: { demo: {} } })
+const dummyMachine = createMachine({initial: 'demo', states: {demo: {}}})
 
 function SaveIndicatorStatus() {
-  const [state] = useMachine(dummyMachine) // TODO: change with stream
+  const [status, setStatus] = useState('idle' as DraftStatus)
 
-  if (state.matches('saving')) {
+  useEffect(() => {
+    draftStatus.subscribe((current) => {
+      if (current == 'saved') {
+        setTimeout(() => {
+          setStatus('idle')
+        }, 1000)
+      }
+      setStatus(current)
+    })
+  }, [])
+
+  if (status == 'saving') {
     return (
       <StatusWrapper>
         <Button chromeless size="$1" icon={<Spinner />}>
@@ -120,7 +172,7 @@ function SaveIndicatorStatus() {
     )
   }
 
-  if (state.matches('saved')) {
+  if (status == 'saved') {
     return (
       <StatusWrapper>
         <Button chromeless size="$1" icon={<Check />} disabled>
@@ -130,7 +182,7 @@ function SaveIndicatorStatus() {
     )
   }
 
-  if (state.matches('error')) {
+  if (status == 'error') {
     return (
       <StatusWrapper alignItems="flex-end">
         <Tooltip content="An error ocurred while trying to save the latest changes.">

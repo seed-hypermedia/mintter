@@ -1,4 +1,4 @@
-import {useAccount_deprecated} from '@/models/accounts'
+import {useAccount_deprecated, useProfile} from '@/models/accounts'
 import {
   API_FILE_URL,
   BlockContentUnknown,
@@ -40,7 +40,7 @@ import {
 import {YStackProps} from 'tamagui'
 import {useAccounts} from '../models/accounts'
 import {useComment} from '../models/comments'
-import {useDocument, useProfile} from '../models/documents'
+import {useDocument} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
 import {getRouteContext, useOpenInContext} from '../utils/route-context'

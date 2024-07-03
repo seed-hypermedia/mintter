@@ -156,7 +156,8 @@ export function hmId(
   }
 }
 
-export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
+export function unpackHmId(hypermediaId?: string): UnpackedHypermediaId | null {
+  if (!hypermediaId) return null
   const parsed = parseCustomURL(hypermediaId)
   if (!parsed) return null
   if (parsed.scheme === HYPERMEDIA_SCHEME) {

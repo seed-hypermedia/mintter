@@ -1,9 +1,11 @@
 import {useGRPCClient} from '@/app-context'
 import {invalidateQueries} from '@/app-invalidation'
 import {MainWrapper} from '@/components/main-wrapper'
+import {useProfile} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {trpc} from '@/trpc'
 import {useOpenDraft} from '@/utils/open-draft'
+import {useNavigate} from '@/utils/useNavigate'
 import {Add, Button, Form, Input} from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {dispatchWizardEvent, NamedKey} from 'src/app-account'
@@ -18,11 +20,11 @@ export default function HomePage() {
       <YStack gap="$4" maxWidth={600} alignSelf="center" width="100%">
         <h1>home page</h1>
         {keys?.length ? (
-          <ul>
+          <YStack>
             {keys.map((key, index) => (
               <AccountKeyItem accountKey={key} key={key.accountId} />
             ))}
-          </ul>
+          </YStack>
         ) : (
           <Button onPress={() => dispatchWizardEvent(true)} icon={Add}>
             Add account
@@ -45,7 +47,11 @@ export default function HomePage() {
 function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   const client = useGRPCClient()
   const openDraft = useOpenDraft('push')
-  const {data: profile} = trpc.drafts.get.useQuery(accountKey.accountId)
+  const data = useProfile(accountKey.accountId)
+
+  console.log(`== ~ AccountKeyItem ~ data:`, data)
+  const navigate = useNavigate('push')
+
   const deleteKey = useMutation({
     mutationFn: async (name: string) => {
       await client.daemon.deleteKey({
@@ -54,11 +60,25 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
     },
   })
 
+  function openProfile() {
+    navigate({
+      key: 'account',
+      accountId: accountKey.accountId,
+    })
+  }
+
   return (
-    <li key={accountKey.accountId}>
-      <XStack>
-        <YStack>
-          <p style={{display: 'block'}}>public key: {accountKey.publicKey}</p>
+    <XStack key={accountKey.accountId}>
+      <XStack f={1} ai="center" gap="$2">
+        <YStack f={1}>
+          <p
+            style={{
+              display: 'block',
+            }}
+          >
+            public key:{' '}
+            {accountKey.publicKey.substring(accountKey.publicKey.length - 12)}
+          </p>
           <p style={{display: 'block'}}>name: {accountKey.name}</p>
         </YStack>
         <Button
@@ -67,14 +87,23 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
             invalidateQueries(queryKeys.KEYS_LIST)
           }}
         >
-          delete
+          delete key
         </Button>
       </XStack>
+      {data.draft ? (
+        <Button onPress={() => openDraft({id: accountKey.accountId})}>
+          Resume editing
+        </Button>
+      ) : null}
 
-      <Button onPress={() => openDraft({id: accountKey.accountId})}>
-        {profile ? 'Edit Profile document' : 'Create Profile Document'}
-      </Button>
-    </li>
+      {data.profile ? (
+        <Button onPress={openProfile}>See Profile</Button>
+      ) : (
+        <Button onPress={() => openDraft({id: accountKey.accountId})}>
+          {data.draft ? 'Resume editing' : 'Create Draft'}
+        </Button>
+      )}
+    </XStack>
   )
 }
 

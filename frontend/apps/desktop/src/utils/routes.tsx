@@ -48,6 +48,7 @@ export const baseDocumentRouteSchema = z.object({
   documentId: z.string(),
   versionId: z.string().optional(),
   blockId: z.string().optional(),
+  isProfileDocument: z.boolean().optional(),
   isBlockFocused: z.boolean().optional(),
   blockRange: z
     .object({
@@ -71,6 +72,7 @@ export type BaseDocumentRoute = z.infer<typeof baseDocumentRouteSchema>
 export const baseAccountRouteSchema = z.object({
   key: z.literal('account'),
   accountId: z.string(),
+  versionId: z.string().optional(),
   blockId: z.string().optional(),
   isBlockFocused: z.boolean().optional(),
   accessory: z
@@ -83,6 +85,7 @@ export type BaseAccountRoute = z.infer<typeof baseAccountRouteSchema>
 export const baseDraftRouteSchema = z.object({
   key: z.literal('draft'),
   id: z.string().optional(),
+  deps: z.array(z.string()).optional(),
 })
 export type BaseDraftRoute = z.infer<typeof baseDraftRouteSchema>
 
