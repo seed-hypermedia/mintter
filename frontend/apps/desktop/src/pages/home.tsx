@@ -1,5 +1,4 @@
-import {useGRPCClient} from '@/app-context'
-import {invalidateQueries} from '@/app-invalidation'
+import {useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {MainWrapper} from '@/components/main-wrapper'
 import {useProfile} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
@@ -46,10 +45,10 @@ export default function HomePage() {
 
 function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   const client = useGRPCClient()
+  const invalidate = useQueryInvalidator()
   const openDraft = useOpenDraft('push')
   const data = useProfile(accountKey.accountId)
 
-  console.log(`== ~ AccountKeyItem ~ data:`, data)
   const navigate = useNavigate('push')
 
   const deleteKey = useMutation({
@@ -57,6 +56,7 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
       await client.daemon.deleteKey({
         name,
       })
+      invalidate([queryKeys.KEYS_LIST])
     },
   })
 
@@ -84,7 +84,6 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
         <Button
           onPress={() => {
             deleteKey.mutate(accountKey.name)
-            invalidateQueries(queryKeys.KEYS_LIST)
           }}
         >
           delete key

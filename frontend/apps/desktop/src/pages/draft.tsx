@@ -2,7 +2,7 @@ import {useGRPCClient} from '@/app-context'
 import {HMEditorContainer, HyperMediaEditorView} from '@/components/editor'
 import {MainWrapper} from '@/components/main-wrapper'
 import {BlockNoteEditor, getBlockInfoFromPos} from '@/editor'
-import {useDraftEditor, usePublishDraft} from '@/models/documents'
+import {useDraftEditor} from '@/models/documents'
 import {draftMachine} from '@/models/draft-machine'
 import {trpc} from '@/trpc'
 import {
@@ -36,7 +36,6 @@ export default function DraftPage() {
   const importWebFile = trpc.webImporting.importWebFile.useMutation()
   const [isDragging, setIsDragging] = useState(false)
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
-  const publish = usePublishDraft(grpcClient, route.id)
 
   let data = useDraftEditor({
     id: route.id,

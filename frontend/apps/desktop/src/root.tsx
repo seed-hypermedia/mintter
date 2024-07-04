@@ -205,6 +205,10 @@ function MainApp({
           utils.recents.getRecents.invalidate()
         } else if (value[0] === 'trpc.appSettings.getAutoUpdatePreference') {
           utils.appSettings.getAutoUpdatePreference.invalidate()
+        } else if (value[0] == 'trpc.drafts.get') {
+          utils.drafts.get.invalidate()
+        } else if (value[0] == 'trpc.drafts.list') {
+          utils.drafts.list.invalidate()
         } else if (queryClient.client) {
           queryClient.client.invalidateQueries(value)
         }

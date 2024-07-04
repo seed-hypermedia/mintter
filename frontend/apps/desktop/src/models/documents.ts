@@ -4,7 +4,7 @@ import {useAccounts, useMyAccount_deprecated} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
-import {trpc} from '@/trpc'
+import {client, trpc} from '@/trpc'
 import {Timestamp, toPlainMessage} from '@bufbuild/protobuf'
 import {ConnectError} from '@connectrpc/connect'
 import {
@@ -47,12 +47,10 @@ import {
 } from '../editor'
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
-import {NavRoute} from '../utils/routes'
 import {useNavigate} from '../utils/useNavigate'
 import {draftMachine} from './draft-machine'
 import {setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
-import {useInlineMentions} from './search'
 
 export function useDocumentList(
   opts?: UseInfiniteQueryOptions<{
@@ -487,6 +485,7 @@ export function useDraftEditor({id}: {id: string}) {
   const checkWebUrl = trpc.webImporting.checkWebUrl.useMutation()
   const gotEdited = useRef(false)
   const showNostr = trpc.experiments.get.useQuery().data?.nostr
+  const invalidate = useQueryInvalidator()
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
@@ -580,6 +579,11 @@ export function useDraftEditor({id}: {id: string}) {
           if (!id) {
             replaceRoute({...route, id: output.id})
           }
+        },
+        onSaveSuccess: function () {
+          invalidate([queryKeys.GET_DRAFT_LIST])
+          invalidate(['trpc.drafts.get'])
+          invalidate(['trpc.drafts.list'])
         },
       },
       actors: {
@@ -684,303 +688,6 @@ export function useDraftEditor({id}: {id: string}) {
         ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
       }
     }
-  }
-}
-
-export function _useDraftEditor({
-  draftId,
-  route,
-  checkWebUrl,
-}: {
-  draftId?: string
-  route: NavRoute
-  checkWebUrl: any
-}) {
-  const grpcClient = useGRPCClient()
-  const openUrl = useOpenUrl()
-  const replace = useNavigate('replace')
-  const queryClient = useAppContext().queryClient
-  const {invalidate, client} = queryClient
-  const diagnosis = useDraftDiagnosis()
-  const gotEdited = useRef(false)
-  const create = trpc.drafts.write.useMutation()
-  const {inlineMentionsData, inlineMentionsQuery} = useInlineMentions()
-  const [writeEditorStream, editorStream] = useRef(
-    writeableStateStream<any>(null),
-  ).current
-  const showNostr = trpc.experiments.get.useQuery().data?.nostr
-
-  // fetch draft
-  const backendDraft = useDraft({
-    enabled: !!draftId,
-    draftId: draftId,
-    onError: (error) => {
-      send({type: 'GET.DRAFT.ERROR', error})
-    },
-  })
-
-  console.log(`== ~ backendDraft:`, backendDraft, route)
-
-  // const [state, send, actor] = useMachine(
-  //   draftMachine.provide({
-  //     actions: {
-  //       populateEditor: function ({context, event}, params) {
-  //         console.log('=== POPULATE EDITOR')
-  //         if (
-  //           event.type == 'GET.DRAFT.SUCCESS' &&
-  //           event.draft.content?.length
-  //         ) {
-  //           let editorBlocks = toHMBlock(
-  //             event.draft.content as Array<HMBlockNode>,
-  //           )
-
-  //           // editor.removeBlocks(editor.topLevelBlocks)
-  //           editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-  //           const tiptap = editor?._tiptapEditor
-  //           // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
-  //           setGroupTypes(tiptap, editorBlocks)
-  //         } else {
-  //           console.log('== the draft is empty!')
-  //         }
-  //       },
-  //       focusEditor: () => {
-  //         const tiptap = editor?._tiptapEditor
-  //         if (tiptap && !tiptap.isFocused) {
-  //           editor._tiptapEditor.commands.focus()
-  //         }
-  //       },
-  //       onSaveSuccess: ({event}) => {
-  //         // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
-  //         // @ts-expect-error
-  //         if (event.output) {
-  //           invalidate([queryKeys.GET_DRAFT_LIST])
-  //           invalidate([queryKeys.DOCUMENT_DRAFTS, draftId])
-  //           invalidate([queryKeys.EDITOR_DRAFT, draftId])
-  //         }
-  //       },
-  //       indicatorChange: () =>
-  //         draftStatusActor.send({type: 'INDICATOR.CHANGE'}),
-  //       indicatorSaving: () =>
-  //         draftStatusActor.send({type: 'INDICATOR.SAVING'}),
-  //       indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
-  //       indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
-  //       indicatorIdle: () => draftStatusActor.send({type: 'INDICATOR.IDLE'}),
-  //       resetDraftAndRedirectToDraftList: () => {
-  //         // TODO: IMPLEMENT ME
-  //         replace({key: 'home'})
-  //       },
-  //     },
-  //     actors: {
-  //       updateOrCreateDraft: fromPromise<
-  //         HMDocument,
-  //         ContextFrom<typeof draftMachine>
-  //       >(async ({input}) => {
-  //         // delay the time we save to the backend to force editor changes.
-  //         // await delay(0)
-
-  //         if (input.draft) {
-  //           console.log('=== UPDATEDRAFT', input)
-  //           return updateDraft({editor, draft: input.draft})
-  //         } else {
-  //           console.log('=== CREATE DRAFT', input)
-  //           const newDraft = await createDraft({
-  //             create,
-  //             editor,
-  //             title: 'Hello Hello',
-  //           })
-
-  //           //   const newDraft = await createNewDraft({editor: val})
-  //           replace({...route, draftId: newDraft.id} as DraftRoute)
-  //           return newDraft
-  //         }
-  //       }),
-  //       restoreDraft: fromPromise<HMDocument, ContextFrom<typeof draftMachine>>(
-  //         async ({input}) => {
-  //           // TODO: IMPLEMENT ME
-  //           return input.draft
-  //         },
-  //       ),
-  //       resetDraft: fromPromise<HMDocument, ContextFrom<typeof draftMachine>>(
-  //         async ({input}) => {
-  //           // TODO: IMPLEMENT ME
-  //           return input.draft
-  //         },
-  //       ),
-  //     },
-  //     delays: {
-  //       // This is the time the machine waits after the last keystroke event before starting to save.
-  //       autosaveTimeout: 500,
-  //     },
-  //     guards: {
-  //       routeHasId: function () {
-  //         return !!draftId || typeof backendDraft != 'string'
-  //       },
-  //     },
-  //   }),
-  // )
-
-  const gwUrl = useGatewayUrlStream()
-
-  // create editor
-  const editor = useBlockNote<typeof hmBlockSchema>({
-    onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      if (!gotEdited.current) {
-        gotEdited.current = true
-      }
-
-      writeEditorStream(editor.topLevelBlocks)
-      observeBlocks(
-        editor,
-        editor.topLevelBlocks,
-        () => {},
-        // send({type: 'CHANGE'}),
-      )
-      send({type: 'CHANGE'})
-    },
-    onTextCursorPositionChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      const {view} = editor._tiptapEditor
-      const {selection} = view.state
-      if (
-        selection.from !== selection.to &&
-        !(selection instanceof NodeSelection)
-      )
-        return
-      const domAtPos = view.domAtPos(selection.from)
-      try {
-        const rect: DOMRect = domAtPos.node.getBoundingClientRect()
-        // Check if the cursor is off screen
-        if ((rect && rect.top < 0) || rect.bottom > window.innerHeight) {
-          // Scroll the cursor into view
-          domAtPos.node.scrollIntoView({block: 'center'})
-        }
-      } catch {}
-      return
-    },
-
-    linkExtensionOptions: {
-      openOnClick: false,
-      queryClient,
-      grpcClient,
-      gwUrl,
-      openUrl,
-      checkWebUrl: checkWebUrl.mutate,
-    },
-    onMentionsQuery: (query: string) => {
-      inlineMentionsQuery(query)
-    },
-
-    // onEditorReady: (e) => {
-    //   readyThings.current[0] = e
-    //   handleMaybeReady()
-    // },
-    blockSchema: hmBlockSchema,
-    slashMenuItems: !showNostr
-      ? slashMenuItems.filter((item) => item.name != 'Nostr')
-      : slashMenuItems,
-    _tiptapOptions: {
-      extensions: [
-        Extension.create({
-          name: 'hypermedia-link',
-          addProseMirrorPlugins() {
-            return [
-              createHypermediaDocLinkPlugin({
-                queryClient,
-              }).plugin,
-            ]
-          },
-        }),
-      ],
-    },
-  })
-
-  // useEffect(() => {
-  //   if (state.matches('fetching')) {
-  //     if (backendDraft.status == 'success' && backendDraft.data) {
-  //       send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
-  //     } else if (backendDraft.status == 'error') {
-  //       send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
-  //     }
-  //   }
-
-  //   return () => {
-  //     if (state.matches({ready: 'changed'})) {
-  //       updateDraft({
-  //         editor,
-  //         draft: state.context.draft,
-  //       }).then(() => {
-  //         invalidate([queryKeys.GET_DRAFT_LIST])
-  //         invalidate([queryKeys.DOCUMENT_DRAFTS, draftId])
-  //         invalidate([queryKeys.EDITOR_DRAFT, draftId])
-  //       })
-  //     }
-  //   }
-  // }, [backendDraft.status])
-
-  // useEffect(() => {
-  //   if (inlineMentionsData) {
-  //     editor?.setInlineEmbedOptions(inlineMentionsData)
-  //   }
-  // }, [inlineMentionsData])
-
-  useEffect(() => {
-    function handleSelectAll(event: KeyboardEvent) {
-      if (event.key == 'a' && event.metaKey) {
-        if (editor) {
-          event.preventDefault()
-          editor._tiptapEditor.commands.focus()
-          editor._tiptapEditor.commands.selectAll()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleSelectAll)
-
-    return () => {
-      window.removeEventListener('keydown', handleSelectAll)
-    }
-  }, [])
-
-  function handleFocusAtMousePos(event) {
-    let ttEditor = (editor as BlockNoteEditor)._tiptapEditor
-    let editorView = ttEditor.view
-    let editorRect = editorView.dom.getBoundingClientRect()
-    let centerEditor = editorRect.left + editorRect.width / 2
-
-    const pos = editorView.posAtCoords({
-      left: editorRect.left + 1,
-      top: event.clientY + editorView.dom.offsetTop,
-    })
-
-    if (pos) {
-      let node = editorView.state.doc.nodeAt(pos.pos)
-
-      let sel = Selection.near(
-        editorView.state.doc.resolve(
-          event.clientX < centerEditor ? pos.pos : pos.pos + node.nodeSize - 1,
-        ),
-      )
-
-      ttEditor.commands.focus()
-      ttEditor.commands.setTextSelection(sel)
-    } else {
-      if (event.clientY > editorRect.top) {
-        // this is needed because if the user clicks on one of the sides of the title we don't want to jump to the bottom of the document to focus the document.
-        // if the window is scrolled and the title is not visible this will not matter because a block will be at its place so the normal focus should work.
-        ttEditor.commands.focus()
-        ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
-      }
-    }
-  }
-
-  return {
-    state,
-    send,
-    actor,
-    draft: backendDraft.data,
-    editor,
-    editorStream,
-    draftStatusActor,
-    handleFocusAtMousePos,
   }
 }
 
@@ -1510,6 +1217,9 @@ export function queryDocument({
           documentId: id,
           version: version || '',
         })
+        const draft = await client.drafts.get.query(id)
+
+        console.log(`== ~ DRAFT INSIDE USEDOCUMENT: ~ draft:`, draft)
         return toPlainMessage(doc)
       } catch (error) {
         const connectErr = ConnectError.from(error)

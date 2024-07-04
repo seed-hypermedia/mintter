@@ -147,24 +147,29 @@ export function queryProfile({
     queryKey: [queryKeys.PROFILE_DOCUMENT, accountId],
     useErrorBoundary: false,
     queryFn: async () => {
+      if (!accountId) return null
       const unpacked = unpackHmId(accountId)
       try {
-        return grpcClient.documents.getProfileDocument({
+        const res = await grpcClient.documents.getProfileDocument({
           accountId: unpacked ? unpacked.eid : accountId,
           version,
         })
+
+        return res
       } catch (error) {
         const connectErr = ConnectError.from(error)
-        if (connectErr.code == Code.NotFound) {
-          console.log(`Profile for ${accountId} not found`)
+        if ([Code.Unknown, Code.NotFound].includes(connectErr.code)) {
+          // either the entity is unknown (no changes) or 404
           return null
+        } else {
+          console.log('queryProfile ERROR', connectErr)
+          throw Error(
+            `GetProfileDocument Error: ${connectErr.code} ${JSON.stringify(
+              connectErr,
+              null,
+            )}`,
+          )
         }
-        throw Error(
-          `GetProfileDocument Error: ${connectErr.code} ${JSON.stringify(
-            connectErr,
-            null,
-          )}`,
-        )
       }
     },
     ...options,

@@ -1,4 +1,5 @@
 import type {Interceptor} from '@connectrpc/connect'
+import {Code, ConnectError} from '@connectrpc/connect'
 import {createGrpcWebTransport} from '@connectrpc/connect-node'
 import {API_HTTP_URL, createGRPCClient} from '@shm/shared'
 
@@ -10,11 +11,18 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     return result
   } catch (e: any) {
     let error = e
+    const connectErr = ConnectError.from(e)
+
     if (e.message.match('stream.getReader is not a function')) {
       error = new Error('RPC broken, try running yarn and ./dev gen')
     }
-    console.error(`🚨 to ${req.method.name} `, req.message, error)
-    throw error
+    if ([Code.Unknown, Code.NotFound].includes(connectErr.code)) {
+      error = null
+      console.log(`🚨 to ${req.method.name}: ${Code[connectErr.code]}`)
+    } else {
+      console.error(`🚨 to ${req.method.name} `, req.message, error)
+      throw error
+    }
   }
 }
 

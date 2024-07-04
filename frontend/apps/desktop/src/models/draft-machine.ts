@@ -77,6 +77,7 @@ export const draftMachine = setup({
     },
     populateEditor: function () {},
     focusEditor: function () {},
+    onSaveSuccess: function ({context}) {},
   },
   guards: {
     didChangeWhileSaving: ({context}) => context.hasChangedWhileSaving,

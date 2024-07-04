@@ -1,6 +1,6 @@
-import { DialogTitle } from '@/components/dialog'
-import { queryKeys } from '@/models/query-keys'
-import { eventStream } from '@shm/shared'
+import {DialogTitle} from '@/components/dialog'
+import {queryKeys} from '@/models/query-keys'
+import {eventStream} from '@shm/shared'
 import {
   Button,
   CheckboxField,
@@ -11,11 +11,12 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import { useMutation } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
-import { invalidateQueries } from './app-invalidation'
-import { useDeleteKey, useMnemonics, useRegisterKey } from './models/daemon'
-import { trpc } from './trpc'
+import {useMutation} from '@tanstack/react-query'
+import {useEffect, useMemo, useState} from 'react'
+import {useQueryInvalidator} from './app-context'
+import {invalidateQueries} from './app-invalidation'
+import {useDeleteKey, useMnemonics, useRegisterKey} from './models/daemon'
+import {trpc} from './trpc'
 
 export type NamedKey = {
   name: string
@@ -29,6 +30,7 @@ export const [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
 type AccountStep = 'start' | 'create' | 'complete'
 
 export function AccountWizardDialog() {
+  const invalidate = useQueryInvalidator()
   const [open, setOpen] = useState(false)
   const [newAccount, setNewAccount] = useState<null | boolean>(null)
   const [step, setStep] = useState<AccountStep>('start')
@@ -38,7 +40,7 @@ export function AccountWizardDialog() {
 
   const saveWords = trpc.secureStorage.write.useMutation()
 
-  const { data: genWords, refetch: refetchWords } = useMnemonics()
+  const {data: genWords, refetch: refetchWords} = useMnemonics()
 
   const register = useRegisterKey()
 
@@ -99,8 +101,8 @@ export function AccountWizardDialog() {
           width="100vw"
           animation="fast"
           opacity={0.8}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
         />
         <Dialog.Content
           backgroundColor={'$background'}
@@ -112,8 +114,8 @@ export function AccountWizardDialog() {
               },
             },
           ]}
-          enterStyle={{ y: -10, opacity: 0 }}
-          exitStyle={{ y: -10, opacity: 0 }}
+          enterStyle={{y: -10, opacity: 0}}
+          exitStyle={{y: -10, opacity: 0}}
         >
           <DialogTitle>Account</DialogTitle>
           {step == 'start' ? (
@@ -184,9 +186,9 @@ export function AccountWizardDialog() {
                       })
                       .then((res) => {
                         if (isSaveWords) {
-                          saveWords.mutate({ key: 'main', value: words })
+                          saveWords.mutate({key: 'main', value: words})
                         }
-                        invalidateQueries(queryKeys.KEYS_LIST)
+                        invalidate([queryKeys.KEYS_LIST])
                         setStep('complete')
                       })
                   }}
