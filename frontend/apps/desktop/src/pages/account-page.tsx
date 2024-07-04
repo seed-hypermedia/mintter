@@ -58,12 +58,11 @@ export default function AccountPage() {
 
   const myAccountIds = useMyAccountIds()
   const isMyAccount = myAccountIds.includes(accountId)
-  const {profile} = useProfile(accountId)
+  const {data} = useProfile(accountId)
 
   console.log('== ROUTE', {
     myAccountIds,
     isMyAccount,
-    profile,
 
     accountId,
   })
@@ -72,9 +71,9 @@ export default function AccountPage() {
     <ErrorBoundary FallbackComponent={AppErrorPage} onReset={() => {}}>
       <MainWrapper>
         <AppDocContentProvider>
-          <DocHeading>{profile?.metadata.title}</DocHeading>
+          <DocHeading>{data?.profile?.metadata.title}</DocHeading>
           <code>
-            <pre>{JSON.stringify(profile, null, 3)}</pre>
+            <pre>{JSON.stringify(data?.profile, null, 3)}</pre>
           </code>
         </AppDocContentProvider>
       </MainWrapper>

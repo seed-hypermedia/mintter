@@ -4,7 +4,7 @@ import {useNavRoute} from '@/utils/navigation'
 import {DraftRoute} from '@/utils/routes'
 import {useNavigate} from '@/utils/useNavigate'
 import {PlainMessage} from '@bufbuild/protobuf'
-import {Document, unpackHmId} from '@shm/shared'
+import {Document} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -19,11 +19,7 @@ import {PropsWithChildren, useEffect, useState} from 'react'
 import {createMachine} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount_deprecated, useProfile} from '../models/accounts'
-import {
-  useDraft,
-  usePublishDraft,
-  usePushPublication,
-} from '../models/documents'
+import {usePublishDraft, usePushPublication} from '../models/documents'
 import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
 import {useMediaDialog} from './media-dialog'
 
@@ -34,36 +30,32 @@ export default function CommitDraftButton() {
   const draftRoute: DraftRoute = route.key === 'draft' ? route : null
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
-  const unpacked = unpackHmId(draftRoute.id)
-
   const prevProfile = useProfile(draftRoute.id)
   // TODO: add also previous document here
   const deleteDraft = trpc.drafts.delete.useMutation()
-
-  const draft = useDraft({draftId: draftRoute.id})
   const publish = usePublishDraft(grpcClient, draftRoute.id)
-  // console.log(`== ~ CommitDraftButton ~ draft:`, draft)
-  // console.log(`== ~ CommitDraftButton ~ prevProfile:`, {prevProfile, draft})
 
   function handlePublish() {
-    publish
-      .mutateAsync({
-        draft: draft.data,
-        previous: prevProfile.profile as PlainMessage<Document>,
-      })
-      .then((res) => {
-        deleteDraft.mutateAsync(res.id).then(() => {
-          if (draftRoute.id) {
-            if (draftRoute.id.startsWith('hm://a/')) {
-              navigate({key: 'account', accountId: draftRoute.id})
-            } else {
-              navigate({key: 'document', documentId: res.id})
-            }
-          } else {
-            console.error(`can't navigate to account`)
-          }
+    if (prevProfile.data?.draft) {
+      publish
+        .mutateAsync({
+          draft: prevProfile.data?.draft,
+          previous: prevProfile.data.profile as PlainMessage<Document>,
         })
-      })
+        .then((res) => {
+          deleteDraft.mutateAsync(res.id).then(() => {
+            if (draftRoute.id) {
+              if (draftRoute.id.startsWith('hm://a/')) {
+                navigate({key: 'account', accountId: draftRoute.id})
+              } else {
+                navigate({key: 'document', documentId: res.id})
+              }
+            } else {
+              console.error(`can't navigate to account`)
+            }
+          })
+        })
+    }
   }
 
   return (

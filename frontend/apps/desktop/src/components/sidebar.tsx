@@ -378,18 +378,18 @@ function AccountContextItem({
   getContext: () => BaseEntityRoute[]
 }) {
   const unpacked = unpackHmId(route.accountId)
-  const doc = useProfile(unpacked?.eid)
+  const {data} = useProfile(unpacked?.eid)
   const navigate = useNavigate()
   return (
     <>
       <SidebarItem
-        title={getDocumentTitle(doc.data) || 'Unknown Account'}
+        title={getDocumentTitle(data?.profile) || 'Unknown Account'}
         icon={Contact}
         onPress={() => {
           navigate({...route, blockId: undefined, isBlockFocused: undefined})
         }}
       />
-      {useIntermediateContext(route, doc.data, route.blockId)}
+      {useIntermediateContext(route, data?.profile, route.blockId)}
     </>
   )
 }

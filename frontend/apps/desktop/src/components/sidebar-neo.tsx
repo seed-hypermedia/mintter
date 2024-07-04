@@ -732,7 +732,7 @@ function FavoriteAccountItem({
   const id = unpackHmId(url)
   const route = useNavRoute()
   const accountId = id?.eid
-  const profile = useProfile(accountId)
+  const {data} = useProfile(accountId)
   if (!accountId) return null
   return (
     <SidebarItem
@@ -741,7 +741,7 @@ function FavoriteAccountItem({
       onPress={() => {
         onNavigate({key: 'account', accountId})
       }}
-      title={getProfileName(profile.data)}
+      title={getProfileName(data?.profile)}
     />
   )
 }

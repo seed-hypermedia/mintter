@@ -5,7 +5,7 @@ import {queryKeys} from '@/models/query-keys'
 import {trpc} from '@/trpc'
 import {useOpenDraft} from '@/utils/open-draft'
 import {useNavigate} from '@/utils/useNavigate'
-import {Add, Button, Form, Input} from '@shm/ui'
+import {Add, Button, Form, Input, toast} from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {dispatchWizardEvent, NamedKey} from 'src/app-account'
 import {useAccountKeys} from 'src/models/daemon'
@@ -47,7 +47,11 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   const client = useGRPCClient()
   const invalidate = useQueryInvalidator()
   const openDraft = useOpenDraft('push')
-  const data = useProfile(accountKey.accountId)
+  const {data, status} = useProfile(accountKey.accountId)
+
+  console.log(`== ~ AccountKeyItem ~ accountKey:`, accountKey)
+
+  console.log(`== ~ useProfile ~ data:`, status, data)
 
   const navigate = useNavigate('push')
 
@@ -89,32 +93,35 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
           delete key
         </Button>
       </XStack>
-      {data.draft ? (
+
+      {data?.draft ? (
         <Button onPress={() => openDraft({id: accountKey.accountId})}>
           Resume editing
         </Button>
-      ) : null}
-
-      {data.profile ? (
-        <Button onPress={openProfile}>See Profile</Button>
       ) : (
         <Button onPress={() => openDraft({id: accountKey.accountId})}>
-          {data.draft ? 'Resume editing' : 'Create Draft'}
+          {data?.profile ? 'Edit Profile' : 'Create Draft'}
         </Button>
       )}
+
+      {data?.profile ? (
+        <Button onPress={openProfile}>See Profile</Button>
+      ) : null}
     </XStack>
   )
 }
 
 function DraftList() {
+  const invalidate = useQueryInvalidator()
   const openDraft = useOpenDraft('push')
   const drafts = trpc.drafts.list.useQuery()
   const deleteDraft = trpc.drafts.delete.useMutation()
 
   function handleDelete(id: string) {
     deleteDraft.mutateAsync(id).then(() => {
-      // drafts.refetch()
-      console.log('=== deleted!', id)
+      toast.success('Draft Deleted Successfully')
+      invalidate(['trpc.drafts.list'])
+      invalidate(['trpc.drafts.get', id])
     })
   }
 

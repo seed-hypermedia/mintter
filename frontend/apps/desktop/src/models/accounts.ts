@@ -2,11 +2,18 @@ import {useGRPCClient} from '@/app-context'
 import appError from '@/errors'
 import {useAccountKeys} from '@/models/daemon'
 import {queryKeys} from '@/models/query-keys'
-import {trpc} from '@/trpc'
+import {client} from '@/trpc'
+import {PlainMessage} from '@bufbuild/protobuf'
 import {Code, ConnectError} from '@connectrpc/connect'
-import {GRPCClient, HMAccount, HMDocument, unpackHmId} from '@shm/shared'
+import {
+  Document,
+  GRPCClient,
+  HMAccount,
+  HMDocument,
+  HMDraft,
+  unpackHmId,
+} from '@shm/shared'
 import {useQueries, useQuery, UseQueryOptions} from '@tanstack/react-query'
-import {useMemo} from 'react'
 import {useConnectedPeers} from './networking'
 
 export function useAccount_deprecated(accountId?: string) {
@@ -87,33 +94,18 @@ export function useSetProfile_deprecated() {
 export function useProfile(
   accountId: string | undefined,
   version?: string | undefined,
-  options?: UseQueryOptions<HMDocument | null> & {
+  options?: UseQueryOptions<{profile?: HMDocument; draft?: HMDraft} | null> & {
     draftId?: string
   },
 ) {
   const grpcClient = useGRPCClient()
-  const unpacked = unpackHmId(accountId)
-  const {data: profile, status: profileStatus} = useQuery(
+  return useQuery(
     queryProfile({
-      accountId: unpacked ? unpacked.eid : accountId,
+      accountId: accountId,
       version,
       grpcClient,
       ...options,
     }),
-  )
-  const {data: draft, status: profileDraftStatus} = trpc.drafts.get.useQuery(
-    accountId,
-    {
-      enabled: !!accountId,
-    },
-  )
-
-  return useMemo(
-    () => ({
-      profile,
-      draft,
-    }),
-    [profileStatus, profileDraftStatus, accountId],
   )
 }
 
@@ -141,7 +133,10 @@ export function queryProfile({
   accountId?: string
   version?: string
   grpcClient: GRPCClient
-} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
+} & UseQueryOptions<{
+  profile?: HMDocument
+  draft?: HMDraft
+} | null>): UseQueryOptions<{profile?: HMDocument; draft?: HMDraft} | null> {
   return {
     enabled: !!accountId,
     queryKey: [queryKeys.PROFILE_DOCUMENT, accountId],
@@ -149,18 +144,18 @@ export function queryProfile({
     queryFn: async () => {
       if (!accountId) return null
       const unpacked = unpackHmId(accountId)
+      let profile: PlainMessage<Document> | null = null
+      let draft: HMDraft | null = null
       try {
-        const res = await grpcClient.documents.getProfileDocument({
+        const profileReq = await grpcClient.documents.getProfileDocument({
           accountId: unpacked ? unpacked.eid : accountId,
           version,
         })
-
-        return res
+        profile = profileReq
       } catch (error) {
         const connectErr = ConnectError.from(error)
         if ([Code.Unknown, Code.NotFound].includes(connectErr.code)) {
           // either the entity is unknown (no changes) or 404
-          return null
         } else {
           console.log('queryProfile ERROR', connectErr)
           throw Error(
@@ -171,6 +166,26 @@ export function queryProfile({
           )
         }
       }
+
+      try {
+        const draftReq = await client.drafts.get.query(accountId)
+        draft = draftReq
+      } catch (error) {
+        const connectErr = ConnectError.from(error)
+        if ([Code.Unknown, Code.NotFound].includes(connectErr.code)) {
+          // either the entity is unknown (no changes) or 404
+        } else {
+          console.log('queryProfile draft ERROR', connectErr)
+          throw Error(
+            `DRAFT get Error: ${connectErr.code} ${JSON.stringify(
+              connectErr,
+              null,
+            )}`,
+          )
+        }
+      }
+
+      return {draft, profile}
     },
     ...options,
   }

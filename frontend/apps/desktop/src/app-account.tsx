@@ -14,9 +14,9 @@ import {
 import {useMutation} from '@tanstack/react-query'
 import {useEffect, useMemo, useState} from 'react'
 import {useQueryInvalidator} from './app-context'
-import {invalidateQueries} from './app-invalidation'
-import {useDeleteKey, useMnemonics, useRegisterKey} from './models/daemon'
+import {useMnemonics, useRegisterKey} from './models/daemon'
 import {trpc} from './trpc'
+import {useOpenDraft} from './utils/open-draft'
 
 export type NamedKey = {
   name: string
@@ -37,6 +37,8 @@ export function AccountWizardDialog() {
   const [existingWords, setExistingWords] = useState<string>('')
   const [isSaveWords, setSaveWords] = useState<null | boolean>(null)
   const [isExistingWordsSave, setExistingWordsSave] = useState<boolean>(false)
+  const [createdAccount, setCreatedAccount] = useState<string | null>(null)
+  const openDraft = useOpenDraft('push')
 
   const saveWords = trpc.secureStorage.write.useMutation()
 
@@ -67,8 +69,6 @@ export function AccountWizardDialog() {
       return res
     },
   })
-
-  const deleteKey = useDeleteKey()
 
   const words = useMemo(() => {
     if (newAccount) {
@@ -189,6 +189,7 @@ export function AccountWizardDialog() {
                           saveWords.mutate({key: 'main', value: words})
                         }
                         invalidate([queryKeys.KEYS_LIST])
+                        setCreatedAccount(res.accountId)
                         setStep('complete')
                       })
                   }}
@@ -234,8 +235,9 @@ export function AccountWizardDialog() {
                   }}
                   disabled={!isExistingWordsSave}
                   onPress={() => {
-                    addExistingAccount.mutateAsync().then(() => {
-                      invalidateQueries(queryKeys.KEYS_LIST)
+                    addExistingAccount.mutateAsync().then((res) => {
+                      invalidate([queryKeys.KEYS_LIST])
+                      setCreatedAccount(res.accountId)
                       setStep('complete')
                     })
                   }}
@@ -248,8 +250,16 @@ export function AccountWizardDialog() {
           {step == 'complete' ? (
             <YStack gap="$2" width="100%" maxWidth="400px">
               <SizableText>Account created!</SizableText>
-              <Button>Update my profile</Button>
-              <Button>Share my account with others</Button>
+              <Button
+                onPress={() => {
+                  if (createdAccount) {
+                    dispatchWizardEvent(false)
+                    openDraft({id: createdAccount})
+                  }
+                }}
+              >
+                Update my profile
+              </Button>
               <Button onPress={() => dispatchWizardEvent(false)}>close</Button>
             </YStack>
           ) : null}

@@ -140,16 +140,16 @@ export function useEntityContent(
     type === 'd' ? qid : undefined,
     version || undefined,
   )
-  const profileDoc = useProfile(eid)
-  if (type === 'a' && profileDoc.data) {
+  const {data} = useProfile(eid)
+  if (type === 'a' && data?.profile) {
     return {
       type: 'a',
-      document: profileDoc.data,
+      document: data.profile,
     }
-  } else if (type === 'd' && document.data) {
+  } else if (type === 'd' && data?.profile) {
     return {
       type: 'd',
-      document: document.data,
+      document: data.profile,
     }
   }
   return null

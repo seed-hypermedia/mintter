@@ -146,7 +146,7 @@ export function AccountOptionsButton() {
   const deleteEntity = useDeleteDialog()
   const editProfileDialog = useEditProfileDialog()
   const myAccountIds = useMyAccountIds()
-  const profile = useProfile(route.accountId)
+  const {data: profileData} = useProfile(route.accountId)
   const isMyAccount = myAccountIds.includes(route.accountId)
   if (isMyAccount) {
     menuItems.push({
@@ -166,7 +166,7 @@ export function AccountOptionsButton() {
     onPress: () => {
       deleteEntity.open({
         id: createHmId('a', route.accountId),
-        title: getProfileName(profile.data),
+        title: getProfileName(profileData?.profile),
         onSuccess: () => {
           dispatch({type: 'pop'})
         },
