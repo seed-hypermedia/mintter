@@ -377,7 +377,8 @@ function AccountContextItem({
   route: AccountRoute
   getContext: () => BaseEntityRoute[]
 }) {
-  const doc = useProfile(route.accountId)
+  const unpacked = unpackHmId(route.accountId)
+  const doc = useProfile(unpacked?.eid)
   const navigate = useNavigate()
   return (
     <>

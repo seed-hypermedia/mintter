@@ -93,13 +93,19 @@ export function useProfile(
 ) {
   const grpcClient = useGRPCClient()
   const unpacked = unpackHmId(accountId)
-
-  console.log(`== ~ userProfile unpacked:`, accountId, unpacked)
   const {data: profile, status: profileStatus} = useQuery(
-    queryProfile({accountId: unpacked?.eid, version, grpcClient, ...options}),
+    queryProfile({
+      accountId: unpacked ? unpacked.eid : accountId,
+      version,
+      grpcClient,
+      ...options,
+    }),
   )
   const {data: draft, status: profileDraftStatus} = trpc.drafts.get.useQuery(
-    accountId!,
+    accountId,
+    {
+      enabled: !!accountId,
+    },
   )
 
   return useMemo(
@@ -141,10 +147,10 @@ export function queryProfile({
     queryKey: [queryKeys.PROFILE_DOCUMENT, accountId],
     useErrorBoundary: false,
     queryFn: async () => {
+      const unpacked = unpackHmId(accountId)
       try {
-        console.log('=== GETPROFILEDOCUMENT', accountId)
         return grpcClient.documents.getProfileDocument({
-          accountId,
+          accountId: unpacked ? unpacked.eid : accountId,
           version,
         })
       } catch (error) {

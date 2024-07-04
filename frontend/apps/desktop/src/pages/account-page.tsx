@@ -59,6 +59,7 @@ export default function AccountPage() {
   const myAccountIds = useMyAccountIds()
   const isMyAccount = myAccountIds.includes(accountId)
   const {profile} = useProfile(accountId)
+
   console.log('== ROUTE', {
     myAccountIds,
     isMyAccount,

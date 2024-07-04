@@ -1,7 +1,10 @@
 import {DraftStatus, draftStatus} from '@/draft-status'
+import {trpc} from '@/trpc'
 import {useNavRoute} from '@/utils/navigation'
 import {DraftRoute} from '@/utils/routes'
-import {HMDocument} from '@shm/shared'
+import {useNavigate} from '@/utils/useNavigate'
+import {PlainMessage} from '@bufbuild/protobuf'
+import {Document, unpackHmId} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -26,33 +29,47 @@ import {useMediaDialog} from './media-dialog'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
+  const navigate = useNavigate('replace')
   const grpcClient = useGRPCClient()
   const draftRoute: DraftRoute = route.key === 'draft' ? route : null
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
-  const previousDoc = useProfile(
-    draftRoute.id && draftRoute.id.startsWith('hm://a')
-      ? draftRoute.id.split('hm://a')[0]
-      : draftRoute.id,
-  )
+  const unpacked = unpackHmId(draftRoute.id)
+
+  const prevProfile = useProfile(draftRoute.id)
+  // TODO: add also previous document here
+  const deleteDraft = trpc.drafts.delete.useMutation()
 
   const draft = useDraft({draftId: draftRoute.id})
   const publish = usePublishDraft(grpcClient, draftRoute.id)
   // console.log(`== ~ CommitDraftButton ~ draft:`, draft)
-  // console.log(`== ~ CommitDraftButton ~ previousDoc:`, {previousDoc, draft})
+  // console.log(`== ~ CommitDraftButton ~ prevProfile:`, {prevProfile, draft})
+
+  function handlePublish() {
+    publish
+      .mutateAsync({
+        draft: draft.data,
+        previous: prevProfile.profile as PlainMessage<Document>,
+      })
+      .then((res) => {
+        deleteDraft.mutateAsync(res.id).then(() => {
+          if (draftRoute.id) {
+            if (draftRoute.id.startsWith('hm://a/')) {
+              navigate({key: 'account', accountId: draftRoute.id})
+            } else {
+              navigate({key: 'document', documentId: res.id})
+            }
+          } else {
+            console.error(`can't navigate to account`)
+          }
+        })
+      })
+  }
 
   return (
     <>
       <SaveIndicatorStatus />
-      <Button
-        size="$2"
-        onPress={() =>
-          publish.mutate({
-            draft: draft.data,
-            previous: previousDoc.data as HMDocument,
-          })
-        }
-      >
+      <Button size="$2" onPress={handlePublish}>
         Publishh
       </Button>
     </>

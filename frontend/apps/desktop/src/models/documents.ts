@@ -287,7 +287,7 @@ export function usePublishDraft(grpcClient: GRPCClient, accountId?: string) {
     {draft: HMDraft; previous: HMDocument | undefined}
   >({
     mutationFn: async ({draft, previous}) => {
-      console.log('=== ACCOUNTID', accountId?.split('hm://a/')[1])
+      const unpacked = unpackHmId(accountId)
       const blocksMap = previous ? createBlocksMap(previous.content, '') : {}
       const changes = compareBlocksWithMap(blocksMap, draft.content, '')
 
@@ -296,14 +296,18 @@ export function usePublishDraft(grpcClient: GRPCClient, accountId?: string) {
         draft: draft.content,
         changes,
       })
-      const res = await grpcClient.documents.changeProfileDocument({
-        accountId: accountId?.split('hm://a/')[1],
-        changes: changes.changes,
-      })
+      const deleteChanges = extractDeletes(blocksMap, changes.touchedBlocks)
+      try {
+        const publish = await grpcClient.documents.changeProfileDocument({
+          accountId: unpacked?.eid,
+          changes: [...changes.changes, ...deleteChanges],
+        })
 
-      console.log(`== ~ mutationFn: ~ res:`, res)
-
-      return res
+        return publish
+      } catch (error) {
+        const connectErr = ConnectError.from(error)
+        throw Error(connectErr.message)
+      }
     },
   })
 }
@@ -1458,7 +1462,9 @@ export function useDocument(
   const {data: document, status: documentStatus} = useQuery(
     queryDocument({id, version, grpcClient, ...options}),
   )
-  const {data: draft, status: draftStatus} = trpc.drafts.get.useQuery(id)
+  const {data: draft, status: draftStatus} = trpc.drafts.get.useQuery(id, {
+    enabled: !!id,
+  })
 
   return useMemo(
     () => ({
