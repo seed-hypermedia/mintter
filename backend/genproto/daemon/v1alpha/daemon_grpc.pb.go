@@ -40,6 +40,8 @@ type DaemonClient interface {
 	UpdateKey(ctx context.Context, in *UpdateKeyRequest, opts ...grpc.CallOption) (*NamedKey, error)
 	// Deletes a key from the underlying key store.
 	DeleteKey(ctx context.Context, in *DeleteKeyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Deletes all Seed keys from the underlying key store.
+	DeleteAllKeys(ctx context.Context, in *DeleteAllKeysRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type daemonClient struct {
@@ -113,6 +115,15 @@ func (c *daemonClient) DeleteKey(ctx context.Context, in *DeleteKeyRequest, opts
 	return out, nil
 }
 
+func (c *daemonClient) DeleteAllKeys(ctx context.Context, in *DeleteAllKeysRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.seed.daemon.v1alpha.Daemon/DeleteAllKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaemonServer is the server API for Daemon service.
 // All implementations should embed UnimplementedDaemonServer
 // for forward compatibility
@@ -134,6 +145,8 @@ type DaemonServer interface {
 	UpdateKey(context.Context, *UpdateKeyRequest) (*NamedKey, error)
 	// Deletes a key from the underlying key store.
 	DeleteKey(context.Context, *DeleteKeyRequest) (*emptypb.Empty, error)
+	// Deletes all Seed keys from the underlying key store.
+	DeleteAllKeys(context.Context, *DeleteAllKeysRequest) (*emptypb.Empty, error)
 }
 
 // UnimplementedDaemonServer should be embedded to have forward compatible implementations.
@@ -160,6 +173,9 @@ func (UnimplementedDaemonServer) UpdateKey(context.Context, *UpdateKeyRequest) (
 }
 func (UnimplementedDaemonServer) DeleteKey(context.Context, *DeleteKeyRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKey not implemented")
+}
+func (UnimplementedDaemonServer) DeleteAllKeys(context.Context, *DeleteAllKeysRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllKeys not implemented")
 }
 
 // UnsafeDaemonServer may be embedded to opt out of forward compatibility for this service.
@@ -299,6 +315,24 @@ func _Daemon_DeleteKey_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_DeleteAllKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAllKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).DeleteAllKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.seed.daemon.v1alpha.Daemon/DeleteAllKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).DeleteAllKeys(ctx, req.(*DeleteAllKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -333,6 +367,10 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteKey",
 			Handler:    _Daemon_DeleteKey_Handler,
+		},
+		{
+			MethodName: "DeleteAllKeys",
+			Handler:    _Daemon_DeleteAllKeys_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

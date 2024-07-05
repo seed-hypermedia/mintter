@@ -251,6 +251,39 @@ export class ForceSyncRequest extends Message<ForceSyncRequest> {
 }
 
 /**
+ * Request to delete all keys.
+ *
+ * @generated from message com.seed.daemon.v1alpha.DeleteAllKeysRequest
+ */
+export class DeleteAllKeysRequest extends Message<DeleteAllKeysRequest> {
+  constructor(data?: PartialMessage<DeleteAllKeysRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.seed.daemon.v1alpha.DeleteAllKeysRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteAllKeysRequest {
+    return new DeleteAllKeysRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteAllKeysRequest {
+    return new DeleteAllKeysRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteAllKeysRequest {
+    return new DeleteAllKeysRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteAllKeysRequest | PlainMessage<DeleteAllKeysRequest> | undefined, b: DeleteAllKeysRequest | PlainMessage<DeleteAllKeysRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteAllKeysRequest, a, b);
+  }
+}
+
+/**
  * Request to list signing keys.
  *
  * @generated from message com.seed.daemon.v1alpha.ListKeysRequest

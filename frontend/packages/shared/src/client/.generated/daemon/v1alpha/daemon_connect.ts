@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { DeleteKeyRequest, ForceSyncRequest, GenMnemonicRequest, GenMnemonicResponse, GetInfoRequest, Info, ListKeysRequest, ListKeysResponse, NamedKey, RegisterKeyRequest, UpdateKeyRequest } from "./daemon_pb";
+import { DeleteAllKeysRequest, DeleteKeyRequest, ForceSyncRequest, GenMnemonicRequest, GenMnemonicResponse, GetInfoRequest, Info, ListKeysRequest, ListKeysResponse, NamedKey, RegisterKeyRequest, UpdateKeyRequest } from "./daemon_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -91,6 +91,17 @@ export const Daemon = {
     deleteKey: {
       name: "DeleteKey",
       I: DeleteKeyRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Deletes all Seed keys from the underlying key store.
+     *
+     * @generated from rpc com.seed.daemon.v1alpha.Daemon.DeleteAllKeys
+     */
+    deleteAllKeys: {
+      name: "DeleteAllKeys",
+      I: DeleteAllKeysRequest,
       O: Empty,
       kind: MethodKind.Unary,
     },

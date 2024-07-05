@@ -103,6 +103,11 @@ func (srv *Server) DeleteKey(ctx context.Context, req *daemon.DeleteKeyRequest) 
 	return &emptypb.Empty{}, srv.store.KeyStore().DeleteKey(ctx, req.Name)
 }
 
+// DeleteAllKeys implement the corresponding gRPC method.
+func (srv *Server) DeleteAllKeys(ctx context.Context, req *daemon.DeleteAllKeysRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, srv.store.KeyStore().DeleteAllKeys(ctx)
+}
+
 // ListKeys implement the corresponding gRPC method.
 func (srv *Server) ListKeys(ctx context.Context, req *daemon.ListKeysRequest) (*daemon.ListKeysResponse, error) {
 	//var ret []*daemon.NamedKey

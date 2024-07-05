@@ -32,6 +32,9 @@ service Daemon {
 
   // Deletes a key from the underlying key store.
   rpc DeleteKey(DeleteKeyRequest) returns (google.protobuf.Empty);
+
+  // Deletes all Seed keys from the underlying key store.
+  rpc DeleteAllKeys(DeleteAllKeysRequest) returns (google.protobuf.Empty);
 }
 
 // Request to generate mnemonic words.
@@ -67,6 +70,9 @@ message GetInfoRequest {}
 
 // Request to force the syncing process.
 message ForceSyncRequest {}
+
+// Request to delete all keys.
+message DeleteAllKeysRequest {}
 
 // Request to list signing keys.
 message ListKeysRequest {}
