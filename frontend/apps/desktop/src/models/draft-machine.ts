@@ -76,6 +76,7 @@ export const draftMachine = setup({
       dispatchDraftStatus(params.status)
     },
     populateEditor: function () {},
+    replaceRouteifNeeded: function () {},
     focusEditor: function () {},
     onSaveSuccess: function ({context}) {},
   },

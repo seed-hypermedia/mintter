@@ -38,7 +38,7 @@ import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {nanoid} from 'nanoid'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {ContextFrom, fromPromise} from 'xstate'
+import {ContextFrom, OutputFrom, fromPromise} from 'xstate'
 import {
   BlockNoteEditor,
   Block as EditorBlock,
@@ -112,8 +112,8 @@ export function useDeleteDraft(
         invalidate([queryKeys.GET_DRAFT_LIST])
         invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
         invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-        invalidate([queryKeys.EDITOR_DRAFT, documentId])
-        queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+        invalidate([queryKeys.GET_DRAFT, documentId])
+        queryClient.client.removeQueries([queryKeys.GET_DRAFT, documentId])
       }, 200)
       opts?.onSuccess?.(response, documentId, context)
     },
@@ -278,7 +278,16 @@ function changesToJSON(changes: DocumentChange[]) {
   })
 }
 
-export function usePublishDraft(grpcClient: GRPCClient, accountId?: string) {
+export function usePublishDraft(
+  grpcClient: GRPCClient,
+  accountId?: string,
+  opts?: UseMutationOptions<
+    HMDocument,
+    unknown,
+    {draft: HMDraft; previous: HMDocument | undefined}
+  >,
+) {
+  const invalidate = useQueryInvalidator()
   return useMutation<
     HMDocument,
     any,
@@ -306,6 +315,23 @@ export function usePublishDraft(grpcClient: GRPCClient, accountId?: string) {
         const connectErr = ConnectError.from(error)
         throw Error(connectErr.message)
       }
+    },
+    onSuccess: (result, variables, context) => {
+      const documentId = result.id
+      opts?.onSuccess?.(result, variables, context)
+      // invalidate([queryKeys.FEED_LATEST_EVENT])
+      // invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
+      // invalidate([queryKeys.DOCUMENT_LIST])
+      invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.PROFILE_DOCUMENT, documentId])
+      invalidate([queryKeys.DOCUMENT, documentId])
+      // invalidate([queryKeys.ENTITY_TIMELINE, documentId])
+      // invalidate([queryKeys.ENTITY_CITATIONS])
+      setTimeout(() => {
+        // client.removeQueries([queryKeys.GET_DRAFT, documentId])
+        // otherwise it will re-query for a draft that no longer exists and an error happens
+        invalidate([queryKeys.GET_DRAFT, documentId])
+      }, 250)
     },
   })
 }
@@ -379,7 +405,7 @@ export function _usePublishDraft(
       invalidate([queryKeys.ACCOUNT, myAccount.data?.id])
       invalidate([queryKeys.ENTITY_CITATIONS])
       setTimeout(() => {
-        client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+        client.removeQueries([queryKeys.GET_DRAFT, documentId])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
@@ -433,7 +459,7 @@ export function useDrafts(
   // return useQueries({
   //   queries: ids.map((draftId) => trpc.drafts.get.useQuery(draftId, {
   //     enabled: !!draftId,
-  //     queryKey: [queryKeys.EDITOR_DRAFT, draftId],
+  //     queryKey: [queryKeys.GET_DRAFT, draftId],
   //   }),
   //   ...(options || {}),
   // })
@@ -450,7 +476,7 @@ export function queryDraft({
 } & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
     enabled: !!draftId,
-    queryKey: [queryKeys.EDITOR_DRAFT, draftId],
+    queryKey: [queryKeys.GET_DRAFT, draftId],
     useErrorBoundary: false,
     queryFn: async () => {
       try {
@@ -557,6 +583,44 @@ export function useDraftEditor({id}: {id: string}) {
     },
   })
 
+  const createOrUpdateDraft = fromPromise<
+    HMDraft & {id?: string},
+    ContextFrom<typeof draftMachine>
+  >(async ({input}) => {
+    const blocks = editor.topLevelBlocks
+    let inputData: Partial<HMDraft> = {}
+    const draftId = id || nanoid()
+    if (!input.draft) {
+      inputData = {
+        content: blocks,
+        deps: [],
+        metadata: {
+          title: input.title,
+        },
+        members: {},
+        index: {},
+        // signingAccount: ...
+      }
+    } else {
+      inputData = {
+        ...input.draft,
+        content: blocks,
+        metadata: {
+          ...input.draft.metadata,
+          title: input.title,
+        },
+      }
+    }
+
+    const res = await saveDraft.mutateAsync({id: draftId, draft: inputData})
+
+    if (!id) {
+      return {...res, id: draftId}
+    } else {
+      return res
+    }
+  })
+
   const [state, send, actor] = useMachine(
     draftMachine.provide({
       actions: {
@@ -574,49 +638,23 @@ export function useDraftEditor({id}: {id: string}) {
             editor._tiptapEditor.commands.focus()
           }
         },
-        replaceRouteifNeeded: ({event}) => {
-          const output = event.output
-          if (!id) {
-            replaceRoute({...route, id: output.id})
+        replaceRouteifNeeded: ({
+          event,
+        }: {
+          event: {output: OutputFrom<typeof createOrUpdateDraft>}
+        }) => {
+          if (event.output.id) {
+            replaceRoute({...route, id: event.output.id})
           }
         },
         onSaveSuccess: function () {
           invalidate([queryKeys.GET_DRAFT_LIST])
-          invalidate(['trpc.drafts.get'])
-          invalidate(['trpc.drafts.list'])
+          invalidate([queryKeys.GET_DRAFT, id])
+          invalidate([queryKeys.PROFILE_DOCUMENT, id])
         },
       },
       actors: {
-        createOrUpdateDraft: fromPromise<
-          HMDraft,
-          ContextFrom<typeof draftMachine>
-        >(({input}) => {
-          const blocks = editor.topLevelBlocks
-          let inputData: Partial<HMDraft> = {}
-          const draftId = id || nanoid()
-          if (!input.draft) {
-            inputData = {
-              content: blocks,
-              deps: [],
-              metadata: {
-                title: input.title,
-              },
-              members: {},
-              index: {},
-            }
-          } else {
-            inputData = {
-              ...input.draft,
-              content: blocks,
-              metadata: {
-                ...input.draft.metadata,
-                title: input.title,
-              },
-            }
-          }
-
-          return saveDraft.mutateAsync({id: draftId, draft: inputData})
-        }),
+        createOrUpdateDraft,
       },
     }),
   )
