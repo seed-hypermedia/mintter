@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    // "target": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "commonjs",
     "baseUrl": ".",
@@ -19,14 +19,15 @@
       {
         "name": "site"
       },
-      {
-        // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
-        "name": "@nderscore/tamagui-typescript-plugin",
-        "pathToApp": "."
-      }
+      // {
+      //   // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
+      //   "name": "@nderscore/tamagui-typescript-plugin",
+      //   "pathToApp": "."
+      // }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shm/ui": ["../../packages/ui/src/index.tsx"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

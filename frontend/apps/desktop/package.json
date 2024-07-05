@@ -53,7 +53,7 @@
     "@sentry/vite-plugin": "latest",
     "@shm/prettier": "*",
     "@shm/shared": "*",
-    "@shm/ui": "*",
+    "@shm/ui": "0.1.0",
     "@tamagui/lucide-icons": "1.95.0",
     "@tanstack/react-query": "4.33.0",
     "@tanstack/react-query-devtools": "4.33.0",

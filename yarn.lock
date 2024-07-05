@@ -3098,8 +3098,8 @@ __metadata:
   linkType: hard
 
 "@electron/osx-sign@npm:^1.0.5":
-  version: 1.3.0
-  resolution: "@electron/osx-sign@npm:1.3.0"
+  version: 1.3.1
+  resolution: "@electron/osx-sign@npm:1.3.1"
   dependencies:
     compare-version: ^0.1.2
     debug: ^4.3.4
@@ -3110,7 +3110,7 @@ __metadata:
   bin:
     electron-osx-flat: bin/electron-osx-flat.js
     electron-osx-sign: bin/electron-osx-sign.js
-  checksum: 7e3400546ec8c5dbf26216d5874d7d4d94c59dc008e935d186bfe1256d8f5d4a3b74d8d3d95d5d4d7f28ae18e759985670a50b2a10ffdb03289652426c0930dd
+  checksum: b35f3ee3220473b3578c5e7b279b3e0596d3161e19cede6ff283dcb1ba92183982fbd8d9c31929ecc3d1b57aa2e7cb787a9c0fce1c82f3a24a612bb3280033a0
   languageName: node
   linkType: hard
 
@@ -4510,8 +4510,8 @@ __metadata:
   linkType: hard
 
 "@graphql-tools/utils@npm:^10.0.0, @graphql-tools/utils@npm:^10.0.13, @graphql-tools/utils@npm:^10.2.1, @graphql-tools/utils@npm:^10.2.3":
-  version: 10.2.3
-  resolution: "@graphql-tools/utils@npm:10.2.3"
+  version: 10.3.1
+  resolution: "@graphql-tools/utils@npm:10.3.1"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
     cross-inspect: 1.0.0
@@ -4519,7 +4519,7 @@ __metadata:
     tslib: ^2.4.0
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: a9905e39bca239ad83108ed43190fc2f9cc52c9af38f56d82e44f52d5156fd3e8d6b812ad438298fbf74d0ef5b18ccecdaf1ad75a594653bd77219749923ba34
+  checksum: 343326fd4ec131f715906cb11458e0591e62284f710b03c7c548e3018de88397dcddc053ec02e3253cbeb53c7b6dd0c5ad64ea4072d0e5c833c0b5530d0aa4b3
   languageName: node
   linkType: hard
 
@@ -6581,7 +6581,7 @@ __metadata:
     "@sentry/vite-plugin": latest
     "@shm/prettier": "*"
     "@shm/shared": "*"
-    "@shm/ui": "*"
+    "@shm/ui": 0.1.0
     "@tamagui/lucide-icons": 1.95.0
     "@tamagui/vite-plugin": 1.95.0
     "@tanstack/react-query": 4.33.0
@@ -6712,7 +6712,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@shm/ui@*, @shm/ui@workspace:frontend/packages/ui":
+"@shm/ui@0.1.0, @shm/ui@workspace:frontend/packages/ui":
   version: 0.0.0-use.local
   resolution: "@shm/ui@workspace:frontend/packages/ui"
   dependencies:
@@ -9915,11 +9915,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 20.14.9
-  resolution: "@types/node@npm:20.14.9"
+  version: 20.14.10
+  resolution: "@types/node@npm:20.14.10"
   dependencies:
     undici-types: ~5.26.4
-  checksum: 5e9eda1ac8c6cc6bcd1063903ae195eaede9aad1bdad00408a919409cfbcdd2d6535aa3d50346f0d385528f9e03dafc7d1b3bad25aedb1dcd79a6ad39d06c35d
+  checksum: 2f397d393de8cddb126e0b7999402ea450215ac69d49666ddef4f730a73325054499ce7345f86095e7b935c55b2e02139f3b8b9afc72fb978ed29edf6bb956b0
   languageName: node
   linkType: hard
 
@@ -14983,9 +14983,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.796":
-  version: 1.4.816
-  resolution: "electron-to-chromium@npm:1.4.816"
-  checksum: 5abaa04cee77af4889e68d7fd7305c50b98eaa9b4016b228c85de5713a933767e423e2e6bcd71007fff1c405c5bea79d6e9e9d18efddaa966040fe9e97f43e2e
+  version: 1.4.817
+  resolution: "electron-to-chromium@npm:1.4.817"
+  checksum: 44e92a3cda86c32e8161e89bbec4f3728b39cbcc1f7c16b3674dbe36418741735528012892b2c53cbe07bb44a77292468961ecf7b1974fa6c269f05300964a51
   languageName: node
   linkType: hard
 
