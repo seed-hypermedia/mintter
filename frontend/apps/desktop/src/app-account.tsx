@@ -1,15 +1,12 @@
-import {DialogTitle} from '@/components/dialog'
 import {queryKeys} from '@/models/query-keys'
 import {eventStream} from '@shm/shared'
 import {
   Button,
   CheckboxField,
   Dialog,
-  Label,
-  SizableText,
+  Onboarding,
   TextArea,
   XStack,
-  YStack,
 } from '@shm/ui'
 import {useMutation} from '@tanstack/react-query'
 import {useEffect, useMemo, useState} from 'react'
@@ -23,6 +20,8 @@ export type NamedKey = {
   accountId: string
   publicKey: string
 }
+
+const onboardingColor = '#755EFF'
 
 export const [dispatchWizardEvent, wizardEvents] = eventStream<boolean>()
 export const [dispatchNewKeyEvent, newKeyEvent] = eventStream<boolean>()
@@ -105,6 +104,11 @@ export function AccountWizardDialog() {
           exitStyle={{opacity: 0}}
         />
         <Dialog.Content
+          overflow="hidden"
+          h={430}
+          w="100%"
+          maxWidth={600}
+          p={0}
           backgroundColor={'$background'}
           animation={[
             'fast',
@@ -117,151 +121,174 @@ export function AccountWizardDialog() {
           enterStyle={{y: -10, opacity: 0}}
           exitStyle={{y: -10, opacity: 0}}
         >
-          <DialogTitle>Account</DialogTitle>
           {step == 'start' ? (
-            <YStack>
-              <SizableText>start</SizableText>
-              <Button
-                onPress={() => {
-                  setNewAccount(true)
-                  setSaveWords(true)
-                  setStep('create')
-                }}
-              >
-                Create a new Account
-              </Button>
-              <Button
-                onPress={() => {
-                  setNewAccount(false)
-                  setSaveWords(false)
-                  setStep('create')
-                }}
-              >
-                Add existing account
-              </Button>
-            </YStack>
-          ) : null}
-          {step == 'create' && newAccount ? (
-            <YStack gap="$2" width="100%" maxWidth="400px">
-              <SizableText>create</SizableText>
-              {words?.length ? (
-                <TextArea
-                  width="300px"
-                  disabled
-                  value={(words as Array<string>).join(', ')}
-                />
-              ) : null}
-              <Button
-                onPress={() => {
-                  refetchWords()
-                }}
-              >
-                regenerate
-              </Button>
-              <CheckboxField
-                value={isSaveWords}
-                id="register-save-words"
-                onValue={setSaveWords}
-              >
-                Save words on this device
-              </CheckboxField>
-              <XStack gap="$2">
+            <Onboarding.Wrapper>
+              <MarketingSection />
+              <Onboarding.MainSection>
                 <Button
-                  f={1}
                   onPress={() => {
-                    setNewAccount(null)
-                    setSaveWords(null)
-                    setStep('start')
+                    setNewAccount(true)
+                    setSaveWords(true)
+                    setStep('create')
                   }}
                 >
-                  Prev
+                  Create a new Account
                 </Button>
                 <Button
-                  f={1}
                   onPress={() => {
-                    register
-                      .mutateAsync({
-                        mnemonic: words as Array<string>,
-                        name: 'main',
-                      })
-                      .then((res) => {
-                        if (isSaveWords) {
-                          saveWords.mutate({key: 'main', value: words})
-                        }
+                    setNewAccount(false)
+                    setSaveWords(false)
+                    setStep('create')
+                  }}
+                >
+                  Add existing account
+                </Button>
+              </Onboarding.MainSection>
+            </Onboarding.Wrapper>
+          ) : null}
+          {step == 'create' && newAccount ? (
+            <Onboarding.Wrapper>
+              <MarketingSection />
+              <Onboarding.MainSection>
+                <Onboarding.Title>Create a New Account</Onboarding.Title>
+                {words?.length ? (
+                  <TextArea
+                    disabled
+                    value={(words as Array<string>).join(', ')}
+                  />
+                ) : null}
+                <XStack gap="$4">
+                  <Button
+                    f={1}
+                    onPress={() => {
+                      refetchWords()
+                    }}
+                  >
+                    regenerate
+                  </Button>
+                  <Button f={1}>Copy</Button>
+                </XStack>
+                <CheckboxField
+                  value={isSaveWords}
+                  id="register-save-words"
+                  onValue={setSaveWords}
+                >
+                  Save words on this device
+                </CheckboxField>
+                <XStack gap="$2">
+                  <Button
+                    f={1}
+                    onPress={() => {
+                      setNewAccount(null)
+                      setSaveWords(null)
+                      setStep('start')
+                    }}
+                  >
+                    Prev
+                  </Button>
+                  <Button
+                    f={1}
+                    onPress={() => {
+                      register
+                        .mutateAsync({
+                          mnemonic: words as Array<string>,
+                          name: 'main',
+                        })
+                        .then((res) => {
+                          if (isSaveWords) {
+                            saveWords.mutate({key: 'main', value: words})
+                          }
+                          invalidate([queryKeys.KEYS_LIST])
+                          setCreatedAccount(res.accountId)
+                          setStep('complete')
+                        })
+                    }}
+                  >
+                    Create new Account
+                  </Button>
+                </XStack>
+              </Onboarding.MainSection>
+            </Onboarding.Wrapper>
+          ) : null}
+          {step == 'create' && !newAccount ? (
+            <Onboarding.Wrapper>
+              <MarketingSection />
+              <Onboarding.MainSection>
+                <Onboarding.Title>My secret words</Onboarding.Title>
+                <TextArea
+                  id="input-words"
+                  width="300px"
+                  value={existingWords}
+                  onChangeText={setExistingWords}
+                />
+                <CheckboxField
+                  value={isExistingWordsSave}
+                  onValue={setExistingWordsSave}
+                  id="existing-save-words"
+                >
+                  I have my words save somewhere
+                </CheckboxField>
+                <XStack gap="$2">
+                  <Button
+                    f={1}
+                    onPress={() => {
+                      setNewAccount(null)
+                      setStep('start')
+                    }}
+                  >
+                    Prev
+                  </Button>
+                  <Button
+                    f={1}
+                    opacity={!isExistingWordsSave ? 0.4 : 1}
+                    hoverStyle={{
+                      cursor: isExistingWordsSave
+                        ? 'pointer'
+                        : 'not-allowed !important',
+                    }}
+                    disabled={!isExistingWordsSave}
+                    onPress={() => {
+                      addExistingAccount.mutateAsync().then((res) => {
                         invalidate([queryKeys.KEYS_LIST])
                         setCreatedAccount(res.accountId)
                         setStep('complete')
                       })
-                  }}
-                >
-                  Create new Account
-                </Button>
-              </XStack>
-            </YStack>
-          ) : null}
-          {step == 'create' && !newAccount ? (
-            <YStack gap="$2" width="100%" maxWidth="400px">
-              <Label htmlFor="input-words">My secret words</Label>
-              <TextArea
-                id="input-words"
-                width="300px"
-                value={existingWords}
-                onChangeText={setExistingWords}
-              />
-              <CheckboxField
-                value={isExistingWordsSave}
-                onValue={setExistingWordsSave}
-                id="existing-save-words"
-              >
-                I have my words save somewhere
-              </CheckboxField>
-              <XStack gap="$2">
-                <Button
-                  f={1}
-                  onPress={() => {
-                    setNewAccount(null)
-                    setStep('start')
-                  }}
-                >
-                  Prev
-                </Button>
-                <Button
-                  f={1}
-                  opacity={!isExistingWordsSave ? 0.4 : 1}
-                  hoverStyle={{
-                    cursor: isExistingWordsSave
-                      ? 'pointer'
-                      : 'not-allowed !important',
-                  }}
-                  disabled={!isExistingWordsSave}
-                  onPress={() => {
-                    addExistingAccount.mutateAsync().then((res) => {
-                      invalidate([queryKeys.KEYS_LIST])
-                      setCreatedAccount(res.accountId)
-                      setStep('complete')
-                    })
-                  }}
-                >
-                  Add Existing account
-                </Button>
-              </XStack>
-            </YStack>
+                    }}
+                  >
+                    Add Existing account
+                  </Button>
+                </XStack>
+              </Onboarding.MainSection>
+            </Onboarding.Wrapper>
           ) : null}
           {step == 'complete' ? (
-            <YStack gap="$2" width="100%" maxWidth="400px">
-              <SizableText>Account created!</SizableText>
-              <Button
-                onPress={() => {
-                  if (createdAccount) {
-                    dispatchWizardEvent(false)
-                    openDraft({id: createdAccount})
-                  }
-                }}
-              >
-                Update my profile
-              </Button>
-              <Button onPress={() => dispatchWizardEvent(false)}>close</Button>
-            </YStack>
+            <Onboarding.Wrapper>
+              <Onboarding.AccentSection />
+              <Onboarding.MainSection ai="center">
+                <Onboarding.SuccessIcon />
+                <Onboarding.Title>Account Created!</Onboarding.Title>
+                <Onboarding.Text>
+                  Your account has successfully been created. Check out the
+                  things you could do next!
+                </Onboarding.Text>
+                <Button
+                  f={1}
+                  onPress={() => {
+                    if (createdAccount) {
+                      dispatchWizardEvent(false)
+                      setNewAccount(null)
+                      setStep('start')
+                      openDraft({id: createdAccount})
+                    }
+                  }}
+                >
+                  Update my profile
+                </Button>
+                <Button f={1} onPress={() => dispatchWizardEvent(false)}>
+                  close
+                </Button>
+              </Onboarding.MainSection>
+            </Onboarding.Wrapper>
           ) : null}
         </Dialog.Content>
       </Dialog.Portal>
@@ -290,4 +317,18 @@ function extractWords(input: string): Array<string> {
   })
   let words = wordSplitting.filter((word) => word.length > 0)
   return words
+}
+
+function MarketingSection() {
+  return (
+    <Onboarding.AccentSection>
+      <Onboarding.Title color="$color2">
+        Getting started with Seed Hypermedia
+      </Onboarding.Title>
+      <Onboarding.Text color="$color8">
+        Dive into our collaborative documents and join a community that's
+        passionate about innovation and shared knowledge.
+      </Onboarding.Text>
+    </Onboarding.AccentSection>
+  )
 }

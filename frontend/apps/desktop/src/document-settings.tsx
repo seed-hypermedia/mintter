@@ -1,17 +1,16 @@
-import { SizableText, XStack, YStack } from '@shm/ui'
-import { useEffect, useState } from 'react'
-import { useEntityTimeline } from './models/changes'
-import { useNavRoute } from './utils/navigation'
+import {SizableText, XStack, YStack} from '@shm/ui'
+import {useEffect, useState} from 'react'
+import {useEntityTimeline} from './models/changes'
+import {useNavRoute} from './utils/navigation'
 
-export function DocumentSettings({ open = true }: { open: boolean }) {
+export function DocumentSettings({open = true}: {open: boolean}) {
   const route = useNavRoute()
 
   const timeline = useEntityTimeline(route.documentId)
-  console.log(`== ~ DocumentSettings ~ route:`, route)
-  console.log(`== ~ DocumentSettings ~ timeline:`, timeline)
+
   const [sourceIndex, setSourceIndex] = useState<number[]>([])
   const [targetIndex, setTargetIndex] = useState<number[]>([])
-  console.log('INDEXES', { sourceIndex, targetIndex })
+  console.log('INDEXES', {sourceIndex, targetIndex})
   useEffect(() => {
     if (timeline.data?.changesByTime.length) {
       let sv = route.sourceVersion.split('.').map((v) => {
