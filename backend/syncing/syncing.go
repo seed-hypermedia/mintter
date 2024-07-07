@@ -11,6 +11,7 @@ import (
 	"seed/backend/hyper"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/dqb"
+	"seed/backend/syncing/rbsr"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -289,7 +290,6 @@ func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 // SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
 // if a list a list of initialObjects is provided, then only syncs objects from that list.
 func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
-
 	// Can't sync with self.
 	if s.host.Network().LocalPeer() == pid {
 		return nil
@@ -316,6 +316,21 @@ func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
 	bswap := s.bitswap.NewSession(ctx)
 
 	return syncPeer(ctx, pid, c, bs, bswap, s.db, s.log)
+
+	//TODO(hm24): include new syncing
+	/*
+		store := rbsr.NewSliceStore()
+		ne, err := rbsr.NewSession(store, 50000)
+
+		if err != nil {
+			return err
+		}
+
+		if err = store.Seal(); err != nil {
+			return err
+		}
+		return syncPeerRbsr(ctx, pid, c, bs, bswap, ne, s.log)
+	*/
 }
 
 func syncPeer(
@@ -421,6 +436,95 @@ func syncPeer(
 	if lastSavedCursor != lastCursor {
 		if err := SaveCursor(ctx, db, remotePrincipal, lastCursor); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func syncPeerRbsr(
+	ctx context.Context,
+	pid peer.ID,
+	c p2p.P2PClient,
+	bs blockstore.Blockstore,
+	sess exchange.Fetcher,
+	ne *rbsr.Session,
+	log *zap.Logger,
+) (err error) {
+	mSyncsInFlight.Inc()
+	defer func() {
+		mSyncsInFlight.Dec()
+		mSyncsTotal.Inc()
+		if err != nil {
+			mSyncErrorsTotal.Inc()
+		}
+	}()
+
+	if _, ok := ctx.Deadline(); !ok {
+		panic("BUG: syncPeer must have timeout")
+	}
+
+	msg, err := ne.Initiate()
+	if err != nil {
+		return err
+	}
+
+	var allWants [][]byte
+
+	ch, err := bs.AllKeysChan(ctx)
+	if err != nil {
+		return err
+	}
+
+	var haves [][]byte
+	for k := range ch {
+		haves = append(haves, k.Bytes())
+	}
+	var rounds int
+	for msg != nil {
+		rounds++
+		if rounds > 1000 {
+			return fmt.Errorf("Too many rounds of interactive syncing")
+		}
+
+		msg, err = ne.Reconcile(msg)
+		if err != nil {
+			return err
+		}
+		var wants [][]byte
+		msg, err = ne.ReconcileWithIDs(msg, &haves, &wants)
+		if err != nil {
+			return err
+		}
+
+		allWants = append(allWants, wants...)
+	}
+
+	if len(allWants) == 0 {
+		return nil
+	}
+
+	MSyncingWantedBlobs.WithLabelValues("syncing").Add(float64(len(allWants)))
+	defer MSyncingWantedBlobs.WithLabelValues("syncing").Sub(float64(len(allWants)))
+
+	log = log.With(
+		zap.String("peer", pid.String()),
+	)
+
+	for _, c := range allWants {
+		cid, err := cid.Cast(c)
+		if err != nil {
+			return err
+		}
+		blk, err := sess.GetBlock(ctx, cid)
+		if err != nil {
+			log.Debug("FailedToGetWantedBlob", zap.String("cid", cid.String()), zap.Error(err))
+			continue
+		}
+
+		if err := bs.Put(ctx, blk); err != nil {
+			log.Debug("FailedToSaveWantedBlob", zap.String("cid", cid.String()), zap.Error(err))
+			continue
 		}
 	}
 
