@@ -101,7 +101,6 @@ type Service struct {
 	log     *zap.Logger
 	db      *sqlitex.Pool
 	blobs   *hyper.Storage
-	me      core.Identity
 	bitswap bitswap
 	client  netDialFunc
 	host    host.Host
@@ -120,13 +119,12 @@ const (
 const peerRoutingConcurrency = 3 // how many concurrent requests for peer routing.
 
 // NewService creates a new syncing service. Users should call Start() to start the periodic syncing.
-func NewService(cfg config.Syncing, log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, net *mttnet.Node) *Service {
+func NewService(cfg config.Syncing, log *zap.Logger, db *sqlitex.Pool, blobs *hyper.Storage, net *mttnet.Node) *Service {
 	svc := &Service{
 		cfg:       cfg,
 		log:       log,
 		db:        db,
 		blobs:     blobs,
-		me:        me,
 		bitswap:   net.Bitswap(),
 		client:    net.Client,
 		host:      net.Libp2p().Host,
@@ -171,18 +169,8 @@ func (s *Service) Start(ctx context.Context) (err error) {
 
 func (s *Service) refreshWorkers(ctx context.Context) error {
 	peers := make(map[peer.ID]struct{}, int(float64(len(s.workers))*1.5)) // arbitrary multiplier to avoid map resizing.
-
-	if err := s.db.Query(ctx, func(conn *sqlite.Conn) error {
-		return sqlitex.Exec(conn, qListPeersToSync(), func(stmt *sqlite.Stmt) error {
-			pid, err := core.Principal(stmt.ColumnBytesUnsafe(0)).PeerID()
-			if err != nil {
-				return err
-			}
-			peers[pid] = struct{}{}
-			return nil
-		})
-	}); err != nil {
-		return err
+	for _, pid := range s.host.Peerstore().Peers() {
+		peers[pid] = struct{}{}
 	}
 
 	var workersDiff int
@@ -257,16 +245,6 @@ type SyncResult struct {
 	Errs          []error
 }
 
-var qListPeersToSync = dqb.Str(`
-	SELECT
-		del.principal AS delegate
-	FROM key_delegations
-	JOIN trusted_accounts ON trusted_accounts.id = key_delegations.issuer
-	JOIN public_keys del ON del.id = key_delegations.delegate
-	-- Skipping our own key delegation.
-	WHERE key_delegations.id != 1
-`)
-
 // SyncAll attempts to sync the with all the peers at once.
 func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 	if !s.mu.TryLock() {
@@ -274,19 +252,7 @@ func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 	}
 	defer s.mu.Unlock()
 
-	var peers []peer.ID
-	if err := s.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		return sqlitex.Exec(conn, qListPeersToSync(), func(stmt *sqlite.Stmt) error {
-			pid, err := core.Principal(stmt.ColumnBytesUnsafe(0)).PeerID()
-			if err != nil {
-				return err
-			}
-			peers = append(peers, pid)
-			return nil
-		})
-	}); err != nil {
-		return res, err
-	}
+	peers := s.host.Peerstore().Peers()
 
 	res.Peers = make([]peer.ID, len(peers))
 	res.Errs = make([]error, len(peers))
@@ -323,8 +289,9 @@ func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 // SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
 // if a list a list of initialObjects is provided, then only syncs objects from that list.
 func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
+
 	// Can't sync with self.
-	if s.me.DeviceKey().PeerID() == pid {
+	if s.host.Network().LocalPeer() == pid {
 		return nil
 	}
 

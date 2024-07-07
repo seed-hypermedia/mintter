@@ -16,6 +16,7 @@ import (
 	"seed/backend/logging"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/future"
+	"seed/backend/syncing"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -31,6 +32,7 @@ type Server struct {
 	Networking  *networking.Server
 	Entities    *entities.Server
 	Activity    *activity.Server
+	Syncing     *syncing.Service
 	DocumentsV2 *documentsv2.Server
 }
 
@@ -49,10 +51,18 @@ func New(
 	blobs *hyper.Storage,
 	node *mttnet.Node,
 	wallet daemon.Wallet,
+	sync *syncing.Service,
 	LogLevel string,
 ) Server {
 	doSync := func() error {
-		return fmt.Errorf("TODO(hm24): implement forced syncing")
+		go func() {
+			if err := sync.SyncAllAndLog(context.Background()); err != nil {
+				panic("bug or fatal error during sync " + err.Error())
+			}
+		}()
+
+		return nil
+
 	}
 
 	idx := index.NewIndex(db, logging.New("seed/index", LogLevel))
@@ -69,6 +79,7 @@ func New(
 		Networking:  networking.NewServer(blobs, node),
 		Entities:    entities.NewServer(blobs, &lazyDiscoverer{}),
 		DocumentsV2: documentsv2.NewServer(repo.KeyStore(), idx),
+		Syncing:     sync,
 	}
 }
 

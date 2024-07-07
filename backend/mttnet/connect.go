@@ -86,27 +86,31 @@ func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err
 	if err := n.checkHyperMediaProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
 		return err
 	}
-
-	c, err := n.client.Dial(ctx, info.ID)
-	if err != nil {
-		return err
-	}
-
-	myInfo, err := n.handshakeInfo(ctx)
-	if err != nil {
-		return err
-	}
-
-	theirInfo, err := c.Handshake(ctx, myInfo)
-	if err != nil {
-		return fmt.Errorf("failed to handshake with peer %s: %w", info.ID, err)
-	}
-
-	if err := n.verifyHandshake(ctx, info.ID, theirInfo); err != nil {
-		return err
-	}
-
 	return nil
+	//TODO(hm24): Handshake still valid?
+	/*
+		c, err := n.client.Dial(ctx, info.ID)
+
+		if err != nil {
+			return err
+		}
+
+		myInfo, err := n.handshakeInfo(ctx)
+		if err != nil {
+			return err
+		}
+
+		theirInfo, err := c.Handshake(ctx, myInfo)
+		if err != nil {
+			return fmt.Errorf("failed to handshake with peer %s: %w", info.ID, err)
+		}
+
+		if err := n.verifyHandshake(ctx, info.ID, theirInfo); err != nil {
+			return err
+		}
+
+		return nil
+	*/
 }
 
 func (n *Node) checkHyperMediaProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string) (err error) {

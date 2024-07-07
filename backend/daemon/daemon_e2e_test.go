@@ -6,9 +6,12 @@ import (
 	"seed/backend/core/coretest"
 	daemon "seed/backend/genproto/daemon/v1alpha"
 	documents "seed/backend/genproto/documents/v2alpha"
+	networking "seed/backend/genproto/networking/v1alpha"
+	"seed/backend/mttnet"
 	"seed/backend/pkg/debugx"
 	"seed/backend/pkg/must"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -77,7 +80,7 @@ func TestDaemonUpdateProfile(t *testing.T) {
 		AccountId: alice.Account.Principal().String(),
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetMetadata_{
-				SetMetadata: &documents.DocumentChange_SetMetadata{Key: "title", Value: "Alice from the Wunderland"},
+				SetMetadata: &documents.DocumentChange_SetMetadata{Key: "title", Value: "Alice from the Wonderland"},
 			}},
 			{Op: &documents.DocumentChange_MoveBlock_{
 				MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1", Parent: "", LeftSibling: ""},
@@ -104,4 +107,63 @@ func TestDaemonUpdateProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	debugx.Dump(doc)
+}
+
+func TestSyncingProfiles(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	ctx := context.Background()
+	aliceIdentity := coretest.NewTester("alice")
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	//bobIdentity := coretest.NewTester("bob")
+	doc, err := alice.RPC.DocumentsV2.ChangeProfileDocument(ctx, &documents.ChangeProfileDocumentRequest{
+		AccountId: aliceIdentity.Account.Principal().String(),
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetMetadata_{
+				SetMetadata: &documents.DocumentChange_SetMetadata{Key: "title", Value: "Alice from the Wonderland"},
+			}},
+			{Op: &documents.DocumentChange_MoveBlock_{
+				MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1", Parent: "", LeftSibling: ""},
+			}},
+			{Op: &documents.DocumentChange_ReplaceBlock{
+				ReplaceBlock: &documents.Block{
+					Id:   "b1",
+					Type: "paragraph",
+					Text: "Hello",
+				},
+			}},
+			{Op: &documents.DocumentChange_MoveBlock_{
+				MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2", Parent: "b1", LeftSibling: ""},
+			}},
+			{Op: &documents.DocumentChange_ReplaceBlock{
+				ReplaceBlock: &documents.Block{
+					Id:   "b2",
+					Type: "paragraph",
+					Text: "World!",
+				},
+			}},
+		},
+	})
+	require.NoError(t, err)
+
+	_, err = alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: mttnet.AddrInfoToStrings(bob.Net.AddrInfo()),
+	})
+	require.NoError(t, err)
+
+	//require.NoError(t, alice.Blobs.SetAccountTrust(ctx, bobIdentity.Account.Principal()))
+	//require.NoError(t, bob.Blobs.SetAccountTrust(ctx, aliceIdentity.Account.Principal()))
+	_, err = bob.RPC.DocumentsV2.GetProfileDocument(ctx, &documents.GetProfileDocumentRequest{
+		AccountId: aliceIdentity.Account.String(),
+	})
+	require.Error(t, err)
+	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	time.Sleep(time.Millisecond * 50000)
+	require.NoError(t, err)
+	doc2, err := bob.RPC.DocumentsV2.GetProfileDocument(ctx, &documents.GetProfileDocumentRequest{
+		AccountId: aliceIdentity.Account.String(),
+	})
+	require.NoError(t, err)
+	require.Equal(t, doc, doc2)
 }

@@ -18,6 +18,7 @@ import (
 	"seed/backend/mttnet"
 	"seed/backend/pkg/cleanup"
 	"seed/backend/pkg/future"
+	"seed/backend/syncing"
 	"seed/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -47,10 +48,9 @@ type App struct {
 	GRPCServer   *grpc.Server
 	RPC          api.Server
 	Net          *mttnet.Node
-	// Syncing      *future.ReadOnly[*syncing.Service]
-	Blobs  *hyper.Storage
-	Wallet *wallet.Service
-	// TODO(hm24): add syncing service back.
+	Syncing      *syncing.Service
+	Blobs        *hyper.Storage
+	Wallet       *wallet.Service
 }
 
 type options struct {
@@ -164,18 +164,15 @@ func Load(ctx context.Context, cfg config.Config, r Storage, oo ...Option) (a *A
 		return nil, err
 	}
 
-	// TODO(hm24): put the syncing back.
-	// a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.Storage.DB(), a.Blobs, me, a.Net, cfg.LogLevel)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.Storage.DB(), a.Blobs, a.Net, cfg.LogLevel)
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO(hm24): put the wallet back.
-	a.Wallet = nil
-	// a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage.DB(), a.Storage.KeyStore(), "main", a.Net, cfg.Lndhub.Mainnet)
+	a.Wallet = wallet.New(ctx, logging.New("seed/wallet", cfg.LogLevel), a.Storage.DB(), a.Storage.KeyStore(), "main", a.Net, cfg.Lndhub.Mainnet)
 
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.Storage.DB(), a.Blobs, a.Net,
-		nil, // TODO(hm24): put the syncing back a.Syncing,
+		a.Syncing,
 		a.Wallet,
 		cfg.LogLevel, opts.grpc)
 	if err != nil {
@@ -327,61 +324,36 @@ func initNetwork(
 	return n, nil
 }
 
-// TODO(hm24): put the syncing back.
-// func initSyncing(
-// 	cfg config.Syncing,
-// 	clean *cleanup.Stack,
-// 	g *errgroup.Group,
-// 	db *sqlitex.Pool,
-// 	blobs *hyper.Storage,
-// 	me *future.ReadOnly[core.Identity],
-// 	net *future.ReadOnly[*mttnet.Node],
-// 	LogLevel string,
-// ) (*future.ReadOnly[*syncing.Service], error) {
-// 	f := future.New[*syncing.Service]()
+func initSyncing(
+	cfg config.Syncing,
+	clean *cleanup.Stack,
+	g *errgroup.Group,
+	db *sqlitex.Pool,
+	blobs *hyper.Storage,
+	node *mttnet.Node,
+	LogLevel string,
+) (*syncing.Service, error) {
+	done := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
+	clean.AddErrFunc(func() error {
+		cancel()
+		<-done
+		return nil
+	})
 
-// 	done := make(chan struct{})
-// 	ctx, cancel := context.WithCancel(context.Background())
-// 	clean.AddErrFunc(func() error {
-// 		cancel()
-// 		// Wait for syncing service to stop fully if it was ever started.
-// 		if _, ok := f.Get(); ok {
-// 			<-done
-// 		}
-// 		return nil
-// 	})
+	svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), db, blobs, node)
+	if cfg.NoPull {
+		close(done)
+	} else {
+		g.Go(func() error {
+			err := svc.Start(ctx)
+			close(done)
+			return err
+		})
+	}
 
-// 	g.Go(func() error {
-// 		id, err := me.Await(ctx)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		node, err := net.Await(ctx)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), id, db, blobs, node)
-// 		if cfg.NoPull {
-// 			close(done)
-// 		} else {
-// 			g.Go(func() error {
-// 				err := svc.Start(ctx)
-// 				close(done)
-// 				return err
-// 			})
-// 		}
-
-// 		if err := f.Resolve(svc); err != nil {
-// 			return err
-// 		}
-
-// 		return nil
-// 	})
-
-// 	return f.ReadOnly, nil
-// }
+	return svc, nil
+}
 
 func initGRPC(
 	ctx context.Context,
@@ -392,7 +364,7 @@ func initGRPC(
 	pool *sqlitex.Pool,
 	blobs *hyper.Storage,
 	node *mttnet.Node,
-	sync any, // TODO(hm24): put the syncing back any*future.ReadOnly[*syncing.Service],
+	sync *syncing.Service,
 	wallet daemon.Wallet,
 	LogLevel string,
 	opts grpcOpts,
@@ -404,7 +376,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opts.serverOptions...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, wallet, LogLevel)
+	rpc = api.New(ctx, repo, pool, blobs, node, wallet, sync, LogLevel)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

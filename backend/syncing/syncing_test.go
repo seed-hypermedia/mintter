@@ -42,8 +42,6 @@ func TestSync(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, alice.Blobs.SaveBlob(ctx, blob))
 
-	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Syncer.me.Account().Principal()))
-
 	res, err := bob.Syncer.SyncAll(ctx)
 	require.NoError(t, err)
 	require.Equalf(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures: %v", res.Errs)
@@ -104,7 +102,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 		Account: accountKey,
 		Blobs:   blobs,
 		Device:  identity,
-		Syncer:  NewService(cfg.Syncing, must.Do2(zap.NewDevelopment()).Named(name), identity, db, blobs, n),
+		Syncer:  NewService(cfg.Syncing, must.Do2(zap.NewDevelopment()).Named(name), db, blobs, n),
 	}
 }
 

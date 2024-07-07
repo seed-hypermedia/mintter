@@ -76,9 +76,7 @@ var qListBlobs = dqb.Str(`
 		blobs.codec,
 		blobs.multihash
 	FROM blobs INDEXED BY blobs_metadata
-	LEFT OUTER JOIN drafts ON drafts.blob = blobs.id
 	WHERE blobs.size >= 0
-	AND drafts.blob IS NULL
 	AND blobs.id > ?;
 `)
 
