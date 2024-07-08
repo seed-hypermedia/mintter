@@ -1,50 +1,30 @@
 import {AccessoryLayout} from '@/components/accessory-sidebar'
-import {AppErrorPage} from '@/components/app-error'
 import {Avatar} from '@/components/avatar'
 import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
-import {useDeleteDialog} from '@/components/delete-dialog'
 import {DocumentListItem} from '@/components/document-list-item'
 import {FavoriteButton} from '@/components/favoriting'
 import Footer, {FooterButton} from '@/components/footer'
-import {ListItem, copyLinkMenuItem} from '@/components/list-item'
-import {MainWrapper, MainWrapperNoScroll} from '@/components/main-wrapper'
+import {MainWrapperNoScroll} from '@/components/main-wrapper'
 import {useMyAccountIds, useProfile} from '@/models/accounts'
-import {useEntityMentions} from '@/models/content-graph'
 import {useAccountDocuments} from '@/models/documents'
-import {useResourceFeedWithLatest} from '@/models/feed'
 import {getAvatarUrl} from '@/utils/account-url'
 import {useNavRoute} from '@/utils/navigation'
 import {useNavigate} from '@/utils/useNavigate'
-import {
-  DocContent,
-  DocHeading,
-  Event,
-  HMDocument,
-  createHmId,
-  getDocumentTitle,
-  hmId,
-  pluralS,
-  unpackDocId,
-} from '@shm/shared'
+import {DocContent, HMDocument, createHmId} from '@shm/shared'
 import {
   BlockQuote,
-  Button,
-  List,
+  MainWrapper,
   Section,
   SizableText,
-  View,
+  Spinner,
   XStack,
 } from '@shm/ui'
 import {PageContainer} from '@shm/ui/src/container'
 import {RadioButtons} from '@shm/ui/src/radio-buttons'
-import {Trash} from '@tamagui/lucide-icons'
-import React, {ReactNode, useMemo} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {VirtuosoHandle} from 'react-virtuoso'
+import React, {ReactNode} from 'react'
 import {EntityCitationsAccessory} from '../components/citations'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {AppDocContentProvider} from './document-content-provider'
-import {FeedItem, FeedPageFooter, NewUpdatesButton} from './feed'
 
 export function getProfileName(profile: HMDocument | null | undefined) {
   if (!profile) return ''
@@ -56,34 +36,9 @@ export default function AccountPage() {
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
 
-  const myAccountIds = useMyAccountIds()
-  const isMyAccount = myAccountIds.includes(accountId)
-  const {data} = useProfile(accountId)
-
-  console.log('== ROUTE', {
-    myAccountIds,
-    isMyAccount,
-
-    accountId,
-  })
-
-  return (
-    <ErrorBoundary FallbackComponent={AppErrorPage} onReset={() => {}}>
-      <MainWrapper>
-        <AppDocContentProvider>
-          <DocHeading>{data?.profile?.metadata.title}</DocHeading>
-          <code>
-            <pre>{JSON.stringify(data?.profile, null, 3)}</pre>
-          </code>
-        </AppDocContentProvider>
-      </MainWrapper>
-    </ErrorBoundary>
-  )
-
   const accessoryKey = route.accessory?.key
   const replace = useNavigate('replace')
   const accountEntityId = createHmId('a', accountId)
-  const mentions = useEntityMentions(accountEntityId)
   const [copyDialogContent, onCopy] = useCopyGatewayReference()
   let accessory: ReactNode = null
   if (accessoryKey === 'citations') {
@@ -96,23 +51,17 @@ export default function AccountPage() {
           <MainAccountPage />
         </MainWrapperNoScroll>
       </AccessoryLayout>
-      {copyDialogContent}
       <Footer>
-        {mentions.data?.mentions?.length ? (
-          <FooterButton
-            active={accessoryKey === 'citations'}
-            label={`${mentions.data?.mentions?.length} ${pluralS(
-              mentions.data?.mentions?.length,
-              'Citation',
-            )}`}
-            icon={BlockQuote}
-            onPress={() => {
-              if (route.accessory?.key === 'citations')
-                return replace({...route, accessory: null})
-              replace({...route, accessory: {key: 'citations'}})
-            }}
-          />
-        ) : null}
+        <FooterButton
+          active={accessoryKey === 'citations'}
+          label={'Citations'}
+          icon={BlockQuote}
+          onPress={() => {
+            if (route.accessory?.key === 'citations')
+              return replace({...route, accessory: null})
+            replace({...route, accessory: {key: 'citations'}})
+          }}
+        />
       </Footer>
     </>
   )
@@ -120,140 +69,126 @@ export default function AccountPage() {
 
 function MainAccountPage() {
   const route = useNavRoute()
+  if (route.key !== 'account')
+    throw new Error('Invalid route for MainAccountPage')
+  if (!route.accountId) throw new Error('MainAccountPage requires account id')
 
-  const accountId = route.key === 'account' && route.accountId
-  if (!accountId) throw new Error('Invalid route, no account id')
-  const myAccountIds = useMyAccountIds()
-  const isMyAccount = myAccountIds.includes(accountId)
-  const {data: documents} = useAccountDocuments(
-    route.tab === 'documents' ? accountId : undefined,
+  let content: null | React.ReactElement = (
+    <AccountPageProfile accountId={route.accountId} />
   )
-  const allDocs = useMemo(() => {
-    if (route.tab !== 'documents') return []
-    const allPubIds = new Set<string>()
-    if (!documents) return []
-    const docs = documents.documents.map((d) => {
-      if (d?.id) allPubIds.add(d?.id)
-      return {key: 'document', document: d} as const
-    })
-    return [...docs]
-  }, [isMyAccount, route.tab, documents])
-  const [copyDialogContent, onCopyId] = useCopyGatewayReference()
-  const scrollRef = React.useRef<VirtuosoHandle>(null)
-
-  let items: Array<
-    | 'profile'
-    | {key: 'event'; event: Event}
-    | {
-        key: 'document'
-        document: HMDocument
-      }
-    | {
-        key: 'draft'
-        document: HMDocument
-      }
-  > = ['profile']
-  const feed = useResourceFeedWithLatest(
-    route.tab === 'activity' ? hmId('a', accountId).qid : undefined,
-  )
-  if (route.tab === 'documents') {
-    items = allDocs || []
-  } else if (route.tab === 'activity') {
-    items = feed.data ? feed.data.map((event) => ({key: 'event', event})) : []
-  }
-  const {content: deleteDialog, open: openDelete} = useDeleteDialog()
-  const navigate = useNavigate()
-  return (
-    <>
-      <List
-        ref={scrollRef}
-        header={<AccountPageHeader />}
-        footer={
-          route.tab === 'activity' ? <FeedPageFooter feedQuery={feed} /> : null
-        }
-        items={items}
-        onEndReached={() => {
-          if (route.tab === 'activity') feed.fetchNextPage()
-        }}
-        renderItem={({item}) => {
-          if (item === 'profile') {
-            return <ProfileDoc />
-          }
-          if (item.key === 'document' && item.document) {
-            const docId = item.document?.id
-            return (
-              <DocumentListItem
-                key={docId}
-                document={item.document}
-                author={item.author}
-                editors={item.editors}
-                hasDraft={undefined}
-                menuItems={() => [
-                  copyLinkMenuItem(() => {
-                    const id = unpackDocId(docId)
-                    if (!id) return
-                    onCopyId({
-                      ...id,
-                      version: item.document.version || null,
-                    })
-                  }, 'Document'),
-                  {
-                    label: 'Delete Document',
-                    key: 'delete',
-                    icon: Trash,
-                    onPress: () => {
-                      openDelete({
-                        id: docId,
-                        title: getDocumentTitle(item.document),
-                      })
-                    },
-                  },
-                ]}
-                openRoute={{
-                  key: 'document',
-                  documentId: docId,
-                  versionId: item.document.version,
-                }}
-              />
-            )
-          } else if (item.key === 'event') {
-            return <FeedItem event={item.event} />
-          } else if (item.key === 'draft') {
-            return (
-              <ListItem
-                title={getDocumentTitle(item.document)}
-                onPress={() => {
-                  navigate({
-                    key: 'draft',
-                    draftId: item.document.id,
-                  })
-                }}
-                theme="yellow"
-                backgroundColor="$color3"
-                accessory={
-                  <Button disabled onPress={() => {}} size="$1">
-                    Draft
-                  </Button>
-                }
-              />
-            )
-          }
-          console.log('unrecognized item', item)
-        }}
+  if (route.tab === 'activity') {
+    content = null // todo
+  } else if (route.tab === 'contacts') {
+    content = null // todo
+  } else if (route.tab === 'profile') {
+    content = (
+      <AccountPageProfile
+        accountId={route.accountId}
+        blockId={route.blockId}
+        isBlockFocused={route.isBlockFocused}
       />
-      {deleteDialog}
-      {copyDialogContent}
-      {route.tab === 'activity' && feed.hasNewItems && (
-        <NewUpdatesButton
-          onPress={() => {
-            scrollRef.current?.scrollTo({top: 0})
-            feed.refetch()
-          }}
-        />
-      )}
-    </>
+    )
+  } else if (route.tab === 'documents') {
+    content = <AccountPageDocuments accountId={route.accountId} />
+  }
+  return (
+    <MainWrapper>
+      <AccountPageHeader />
+      {content}
+    </MainWrapper>
   )
 }
+//   return (
+//     <>
+//       <List
+//         ref={scrollRef}
+//         header={<AccountPageHeader />}
+//         footer={
+//           route.tab === 'activity' ? <FeedPageFooter feedQuery={feed} /> : null
+//         }
+//         items={items}
+//         onEndReached={() => {
+//           if (route.tab === 'activity') feed.fetchNextPage()
+//         }}
+//         renderItem={({ item }) => {
+//           if (item === 'profile') {
+//             return <ProfileDoc />
+//           }
+//           if (item.key === 'document' && item.document) {
+//             const docId = item.document?.id
+//             return (
+//               <DocumentListItem
+//                 key={docId}
+//                 document={item.document}
+//                 author={item.author}
+//                 editors={item.editors}
+//                 hasDraft={undefined}
+//                 menuItems={() => [
+//                   copyLinkMenuItem(() => {
+//                     const id = unpackDocId(docId)
+//                     if (!id) return
+//                     onCopyId({
+//                       ...id,
+//                       version: item.document.version || null,
+//                     })
+//                   }, 'Document'),
+//                   {
+//                     label: 'Delete Document',
+//                     key: 'delete',
+//                     icon: Trash,
+//                     onPress: () => {
+//                       openDelete({
+//                         id: docId,
+//                         title: getDocumentTitle(item.document),
+//                       })
+//                     },
+//                   },
+//                 ]}
+//                 openRoute={{
+//                   key: 'document',
+//                   documentId: docId,
+//                   versionId: item.document.version,
+//                 }}
+//               />
+//             )
+//           } else if (item.key === 'event') {
+//             return <FeedItem event={item.event} />
+//           } else if (item.key === 'draft') {
+//             return (
+//               <ListItem
+//                 title={getDocumentTitle(item.document)}
+//                 onPress={() => {
+//                   navigate({
+//                     key: 'draft',
+//                     draftId: item.document.id,
+//                   })
+//                 }}
+//                 theme="yellow"
+//                 backgroundColor="$color3"
+//                 accessory={
+//                   <Button disabled onPress={() => { }} size="$1">
+//                     Draft
+//                   </Button>
+//                 }
+//               />
+//             )
+//           }
+//           console.log('unrecognized item', item)
+//         }}
+//       />
+//       {deleteDialog}
+//       {copyDialogContent}
+//       {route.tab === 'activity' && feed.hasNewItems && (
+//         <NewUpdatesButton
+//           onPress={() => {
+//             scrollRef.current?.scrollTo({ top: 0 })
+//             feed.refetch()
+//           }}
+//         />
+//       )}
+//     </>
+//   )
+// }
 
 function AccountPageHeader() {
   const route = useNavRoute()
@@ -264,7 +199,7 @@ function AccountPageHeader() {
   const profile = useProfile(accountId)
   const isMyAccount = myAccountIds.includes(accountId)
   const accountEntityUrl = createHmId('a', accountId)
-  const accountName = getProfileName(profile.data)
+  const accountName = getProfileName(profile.data?.profile)
   return (
     <>
       <PageContainer marginTop="$6">
@@ -279,7 +214,7 @@ function AccountPageHeader() {
                 id={accountId}
                 size={60}
                 label={accountName}
-                url={getAvatarUrl(profile.data)}
+                url={getAvatarUrl(profile.data?.profile)}
               />
               <SizableText
                 whiteSpace="nowrap"
@@ -303,9 +238,10 @@ function AccountPageHeader() {
               value={route.tab || 'profile'}
               options={
                 [
-                  {key: 'profile', label: 'Profile'},
+                  {key: 'profile', label: 'Home'},
                   {key: 'documents', label: 'Documents'},
                   {key: 'activity', label: 'Activity'},
+                  {key: 'contacts', label: 'Contacts'},
                 ] as const
               }
               onValue={(tab) => {
@@ -319,23 +255,71 @@ function AccountPageHeader() {
   )
 }
 
-function ProfileDoc({}: {}) {
-  const route = useNavRoute()
-  const accountRoute = route.key === 'account' ? route : undefined
-  if (!accountRoute) throw new Error('Invalid route, no account id')
-  const profile = useProfile(accountRoute.accountId)
-  return profile.status == 'success' && profile.data ? (
+function AccountPageProfile({
+  accountId,
+  blockId,
+  isBlockFocused,
+}: {
+  accountId: string
+  blockId?: string
+  isBlockFocused?: boolean
+}) {
+  const profile = useProfile(accountId)
+  if (profile.status !== 'success' || !profile.data?.profile) return <Spinner />
+  return (
     <PageContainer>
-      <AppDocContentProvider routeParams={{blockRef: accountRoute?.blockId}}>
+      <AppDocContentProvider routeParams={{blockRef: blockId}}>
         <DocContent
-          document={profile.data}
-          focusBlockId={
-            accountRoute?.isBlockFocused ? accountRoute.blockId : undefined
-          }
+          document={profile.data.profile}
+          focusBlockId={isBlockFocused ? blockId : undefined}
         />
       </AppDocContentProvider>
     </PageContainer>
-  ) : (
-    <View height={1} />
   )
+}
+
+function AccountPageDocuments({accountId}: {accountId: string}) {
+  const docs = useAccountDocuments()
+  return (
+    <PageContainer>
+      {docs.data?.documents.map((doc) => {
+        return (
+          <DocumentListItem
+            key={doc.id}
+            document={doc}
+            author={[]}
+            editors={[]}
+            hasDraft={undefined}
+            menuItems={() => [
+              // copyLinkMenuItem(() => {
+              //   const id = unpackDocId(docId)
+              //   if (!id) return
+              //   onCopyId({
+              //     ...id,
+              //     version: item.document.version || null,
+              //   })
+              // }, 'Document'),
+              // {
+              //   label: 'Delete Document',
+              //   key: 'delete',
+              //   icon: Trash,
+              //   onPress: () => {
+              //     openDelete({
+              //       id: docId,
+              //       title: getDocumentTitle(item.document),
+              //     })
+              //   },
+              // },
+            ]}
+            openRoute={{
+              key: 'document',
+              documentId: doc.id,
+              versionId: doc.version,
+            }}
+          />
+        )
+      })}
+    </PageContainer>
+  )
+  return null
 }

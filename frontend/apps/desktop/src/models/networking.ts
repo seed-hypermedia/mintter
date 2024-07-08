@@ -80,8 +80,9 @@ export function usePeers(
 ) {
   const client = useGRPCClient()
   return useQuery<PeerInfo[], ConnectError>({
-    queryKey: [queryKeys.GET_PEERS, filterConnected],
+    queryKey: [queryKeys.PEERS, filterConnected],
     queryFn: async () => {
+      return [] as PeerInfo[] // because listPeers is throwing errors
       const listed = await client.networking.listPeers({})
       if (filterConnected)
         return listed.peers.filter((info) => {

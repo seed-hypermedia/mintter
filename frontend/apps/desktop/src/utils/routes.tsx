@@ -98,7 +98,7 @@ export type BaseEntityRoute = z.infer<typeof baseEntityRouteSchema>
 
 export const accountRouteSchema = baseAccountRouteSchema.extend({
   context: z.array(baseEntityRouteSchema).optional(),
-  tab: z.enum(['profile', 'documents', 'activity']).optional(), // profile is the default
+  tab: z.enum(['profile', 'documents', 'activity', 'contacts']).optional(), // profile is the default
 })
 export type AccountRoute = z.infer<typeof accountRouteSchema>
 

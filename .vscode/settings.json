@@ -45,11 +45,13 @@
   // Don't set tab size for Go here. Go uses TAB for tabs, not spaces, so everyone
   // is willing to chose their preffered width in their local settings without disrupting the file contents.
   "[typescript]": {
-    "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
   "[javascript]": {
-    "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.tsdk": "node_modules/typescript/lib",

@@ -116,7 +116,7 @@ export function useConnectPeer(
           clearInterval(invalidationInterval)
         }, 4 * 60_000)
       }
-      invalidate([queryKeys.GET_PEERS])
+      invalidate([queryKeys.PEERS])
       opts?.onSuccess?.(data, ...rest)
     },
   })

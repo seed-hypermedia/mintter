@@ -22,7 +22,7 @@ export const queryKeys = {
   SAVED_MNEMONICS: 'SAVED_MNEMONICS',
 
   // networking
-  GET_PEERS: 'GET_PEERS', // , filterConnected: boolean
+  PEERS: 'PEERS', // , filterConnected: boolean
   GET_PEER_INFO: 'GET_PEER_INFO', // , deviceId: string
 
   // accounts
@@ -82,7 +82,7 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'Daemon Info'
 
     // networking
-    case queryKeys.GET_PEERS:
+    case queryKeys.PEERS:
       return 'Peers'
     case queryKeys.GET_PEER_INFO:
       return `Peer ${abbreviateCid(arg1)}`
