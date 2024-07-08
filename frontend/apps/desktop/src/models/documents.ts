@@ -308,7 +308,23 @@ export function usePublishDraft(
             accountId: draft.signingAccount
               ? draft.signingAccount
               : unpacked?.eid,
-            changes: [...changes.changes, ...deleteChanges],
+            changes: [
+              new DocumentChange({
+                op: {
+                  case: 'setMetadata',
+                  value: draft.metadata,
+                },
+              }),
+              // TODO: @horacio uncomment when setting index is implemented
+              // new DocumentChange({
+              //   op: {
+              //     case: 'setIndex',
+              //     value: draft.index,
+              //   },
+              // }),
+              ...changes.changes,
+              ...deleteChanges,
+            ],
           })
 
           return publish

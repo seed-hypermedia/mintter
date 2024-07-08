@@ -57,7 +57,7 @@ export function Input({
   children,
 }: PropsWithChildren<{label: string; id: string}>) {
   return (
-    <YStack borderWidth={1} borderColor="$color7" borderRadius="$3">
+    <YStack borderWidth={1} borderColor="$color7" borderRadius="$3" f={1}>
       <Label
         position="absolute"
         htmlFor={id}
