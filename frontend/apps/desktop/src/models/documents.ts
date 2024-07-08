@@ -303,28 +303,35 @@ export function usePublishDraft(
       const deleteChanges = extractDeletes(blocksMap, changes.touchedBlocks)
       try {
         if (draft.signingAccount) {
+          const allProfileChanges = [
+            ...Object.entries(draft.metadata).map(([key, value]) => {
+              return new DocumentChange({
+                op: {
+                  case: 'setMetadata',
+                  value: {
+                    key,
+                    value,
+                  },
+                },
+              })
+            }),
+            // TODO: @horacio uncomment when setting index is implemented
+            // new DocumentChange({
+            //   op: {
+            //     case: 'setIndex',
+            //     value: draft.index,
+            //   },
+            // }),
+            ...changes.changes,
+            ...deleteChanges,
+          ]
           // TODO: @horacio we might need a warning here if the user wants to publish a profile update with a different accountId when we have multiple accounts
+
           const publish = await grpcClient.documents.changeProfileDocument({
             accountId: draft.signingAccount
               ? draft.signingAccount
               : unpacked?.eid,
-            changes: [
-              new DocumentChange({
-                op: {
-                  case: 'setMetadata',
-                  value: draft.metadata,
-                },
-              }),
-              // TODO: @horacio uncomment when setting index is implemented
-              // new DocumentChange({
-              //   op: {
-              //     case: 'setIndex',
-              //     value: draft.index,
-              //   },
-              // }),
-              ...changes.changes,
-              ...deleteChanges,
-            ],
+            changes: allProfileChanges,
           })
 
           return publish
@@ -445,7 +452,7 @@ export function useDraftTitle(
   input: UseQueryOptions<EditorDraftState> & {documentId?: string | undefined},
 ) {
   const draft = useDraft({draftId: input.documentId})
-  return draft.data?.title || undefined
+  return draft.data?.metadata?.name || undefined
 }
 
 type DraftChangesState = {
@@ -522,7 +529,7 @@ export function queryDraft({
   }
 }
 
-export function useDraftEditor({id}: {id: string}) {
+export function useDraftEditor({id}: {id: string | undefined}) {
   const keys = useAccountKeys()
   const {queryClient, grpcClient} = useAppContext()
   const openUrl = useOpenUrl()
@@ -615,12 +622,13 @@ export function useDraftEditor({id}: {id: string}) {
     const blocks = editor.topLevelBlocks
     let inputData: Partial<HMDraft> = {}
     const draftId = id || nanoid()
+    console.log('prev draft', input.draft)
     if (!input.draft) {
       inputData = {
         content: blocks,
         deps: [],
         metadata: {
-          title: input.title,
+          name: input.title,
         },
         members: {},
         index: {},
@@ -632,12 +640,11 @@ export function useDraftEditor({id}: {id: string}) {
         content: blocks,
         metadata: {
           ...input.draft.metadata,
-          title: input.title,
+          name: input.title,
         },
         signingAccount,
       }
     }
-
     const res = await saveDraft.mutateAsync({id: draftId, draft: inputData})
 
     if (!id) {
@@ -1154,8 +1161,12 @@ export function useAccountDocuments(accountId?: string | undefined) {
           .map((doc) => hmDocument(doc))
           .filter((d) => !!d)
           .sort((a, b) => {
-            const aTime = a?.updateTime ? new Date(a.updateTime) : 0
-            const bTime = b?.updateTime ? new Date(b.updateTime) : 0
+            const aTime = a?.updateTime?.seconds
+              ? new Date(Number(a.updateTime.seconds) * 1000)
+              : 0
+            const bTime = b?.updateTime?.seconds
+              ? new Date(Number(b.updateTime.seconds) * 1000)
+              : 0
             if (!aTime || !bTime) return 0
             return bTime.getTime() - aTime.getTime()
           }) || []

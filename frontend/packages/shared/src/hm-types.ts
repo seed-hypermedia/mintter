@@ -277,10 +277,14 @@ export type HMCommentDraft = {
   commentId: string
 }
 
+// todo, adopt this type:
+type HMDocMetadata = {
+  name?: string
+}
+
 export type HMDraft = {
-  title: string
   content: Array<Block<typeof hmBlockSchema>>
-  metadata: HMDocument['metadata']
+  metadata: HMDocument['metadata'] // HMDocMetadata
   members: any //HMDocument['members']
   index: HMDocument['index']
   deps: Array<string>

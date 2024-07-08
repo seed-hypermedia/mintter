@@ -21,6 +21,7 @@ import {
 } from '@/utils/navigation'
 import {useOpenDraft} from '@/utils/open-draft'
 import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   BlockRange,
   ExpandedBlockRange,
@@ -189,20 +190,32 @@ function EditAccountButton() {
       'AccountOptionsButton can only be rendered on account route',
     )
   const myAccountIds = useMyAccountIds()
+  const navigate = useNavigate()
+  const profile = useProfile(route.accountId)
   if (!myAccountIds.includes(route.accountId)) {
     return null
   }
   if (route.tab !== 'profile' && route.tab) return null
-  throw new Error('EditAccountButton is not implemented')
-  // TODO create button to go to draft route with the route.accountId
-  // return ( // old thing:
-  //   <EditDocButton
-  //     isProfileDocument
-  //     baseVersion={undefined}
-  //     navMode="push"
-  //     contextRoute={route}
-  //   />
-  // )
+  const hasExistingDraft = !!profile.data?.draft
+  return (
+    <>
+      <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
+        <Button
+          size="$2"
+          theme={hasExistingDraft ? 'yellow' : undefined}
+          onPress={() => {
+            navigate({
+              key: 'draft',
+              id: route.accountId,
+            })
+          }}
+          icon={Pencil}
+        >
+          {hasExistingDraft ? 'Resume Editing' : 'Edit'}
+        </Button>
+      </Tooltip>
+    </>
+  )
 }
 
 export function useFullReferenceUrl(route: NavRoute): {
@@ -385,7 +398,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'account') {
     buttonGroup = [
-      // <EditAccountButton key="editAccount" />,
+      <EditAccountButton key="editAccount" />,
       // <CreateDropdown key="create" />,
       // <AccountOptionsButton key="accountOptions" />,
     ]

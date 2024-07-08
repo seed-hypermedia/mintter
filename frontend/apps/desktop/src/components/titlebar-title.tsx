@@ -249,16 +249,14 @@ function BreadcrumbTitle({route}: {route: DocumentRoute | AccountRoute}) {
       ref={containerObserverRef}
     >
       <XStack position="absolute" gap="$2" f={1} marginRight={'$4'}>
-        {displayItems.map((item, itemIndex) => {
+        {displayItems.flatMap((item, itemIndex) => {
           if (!item) return null
-          return (
-            <>
-              {item}
-              {itemIndex < displayItems.length - 1 ? (
-                <BreadcrumbSeparator />
-              ) : null}
-            </>
-          )
+          return [
+            item,
+            itemIndex < displayItems.length - 1 ? (
+              <BreadcrumbSeparator />
+            ) : null,
+          ]
         })}
       </XStack>
     </XStack>

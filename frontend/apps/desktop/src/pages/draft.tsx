@@ -28,6 +28,7 @@ import {ErrorBoundary} from 'react-error-boundary'
 import {YStack} from 'tamagui'
 import {ActorRefFrom} from 'xstate'
 import {AppDocContentProvider} from './document-content-provider'
+
 export default function DraftPage() {
   const route = useNavRoute()
 
@@ -212,8 +213,8 @@ export default function DraftPage() {
     blockRange: BlockRange | ExpandedBlockRange | undefined,
   ) {
     if (route.key != 'draft') throw new Error('DraftPage must have draft route')
-    if (!route.draftId) throw new Error('draft route draftId is missing')
-    const id = unpackDocId(route.draftId)
+    if (!route.id) throw new Error('draft route id is missing')
+    const id = unpackDocId(route.id)
     if (!id?.eid) throw new Error('eid could not be extracted from draft route')
     copyUrlToClipboardWithFeedback(
       createPublicWebHmUrl('d', id.eid, {
@@ -237,10 +238,9 @@ export function DraftTitleInput({
 }) {
   const {textUnit, layoutUnit} = useDocContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
-  const title = useSelector(
-    draftActor,
-    (s) => s.context.title || s.context.draft?.metadata.title || '',
-  )
+  const title = useSelector(draftActor, (s) => {
+    return s.context.draft?.metadata.name
+  })
   const input = useRef<HTMLTextAreaElement | null>(null)
   const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
 

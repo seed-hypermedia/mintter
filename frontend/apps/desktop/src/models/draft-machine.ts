@@ -36,7 +36,7 @@ export const draftMachine = setup({
       },
       title: ({context, event}) => {
         if (event.type == 'GET.DRAFT.SUCCESS' && event.draft) {
-          return event.draft.metadata.title
+          return event.draft.metadata.name
         }
         return context.title
       },
