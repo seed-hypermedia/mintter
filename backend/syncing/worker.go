@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"seed/backend/syncing/rbsr"
+
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/blockstore"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -183,8 +185,19 @@ func (sw *worker) sync(ctx context.Context) {
 	}
 
 	sess := sw.bswap.NewSession(ctx)
+	store := rbsr.NewSliceStore()
+	ne, err := rbsr.NewSession(store, 50000)
 
-	if err := syncPeer(ctx, sw.pid, c, sw.bs, sess, sw.db, sw.log); err != nil {
+	if err != nil {
+		sw.log.Warn("Failed to Init Syncing Session", zap.Error(err))
+		return
+	}
+
+	if err = store.Seal(); err != nil {
+		sw.log.Warn("Failed to seal store", zap.Error(err))
+		return
+	}
+	if err := syncPeerRbsr(ctx, sw.pid, c, sw.bs, sess, ne, sw.log); err != nil {
 		sw.log.Debug("FailedToSync", zap.Error(err))
 	}
 }

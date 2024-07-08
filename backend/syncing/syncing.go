@@ -87,8 +87,8 @@ func init() {
 }
 
 // netDialFunc is a function of the Seed P2P node that creates an instance
-// of a P2P RPC client for a given remote Device ID.
-type netDialFunc func(context.Context, peer.ID) (p2p.P2PClient, error)
+// of a Syncing RPC client for a given remote Device ID.
+type netDialFunc func(context.Context, peer.ID) (p2p.SyncingClient, error)
 
 // bitswap is a subset of the bitswap that is used by syncing service.
 type bitswap interface {
@@ -127,7 +127,7 @@ func NewService(cfg config.Syncing, log *zap.Logger, db *sqlitex.Pool, blobs *hy
 		db:        db,
 		blobs:     blobs,
 		bitswap:   net.Bitswap(),
-		client:    net.Client,
+		client:    net.RbsrClient,
 		host:      net.Libp2p().Host,
 		workers:   make(map[peer.ID]*worker),
 		semaphore: make(chan struct{}, peerRoutingConcurrency),
@@ -315,22 +315,22 @@ func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
 	bs := s.blobs.IPFSBlockstore()
 	bswap := s.bitswap.NewSession(ctx)
 
-	return syncPeer(ctx, pid, c, bs, bswap, s.db, s.log)
+	//return syncPeer(ctx, pid, c, bs, bswap, s.db, s.log)
 
 	//TODO(hm24): include new syncing
-	/*
-		store := rbsr.NewSliceStore()
-		ne, err := rbsr.NewSession(store, 50000)
 
-		if err != nil {
-			return err
-		}
+	store := rbsr.NewSliceStore()
+	ne, err := rbsr.NewSession(store, 50000)
 
-		if err = store.Seal(); err != nil {
-			return err
-		}
-		return syncPeerRbsr(ctx, pid, c, bs, bswap, ne, s.log)
-	*/
+	if err != nil {
+		return err
+	}
+
+	if err = store.Seal(); err != nil {
+		return err
+	}
+	return syncPeerRbsr(ctx, pid, c, bs, bswap, ne, s.log)
+
 }
 
 func syncPeer(
@@ -445,7 +445,7 @@ func syncPeer(
 func syncPeerRbsr(
 	ctx context.Context,
 	pid peer.ID,
-	c p2p.P2PClient,
+	c p2p.SyncingClient,
 	bs blockstore.Blockstore,
 	sess exchange.Fetcher,
 	ne *rbsr.Session,
@@ -461,7 +461,7 @@ func syncPeerRbsr(
 	}()
 
 	if _, ok := ctx.Deadline(); !ok {
-		panic("BUG: syncPeer must have timeout")
+		return fmt.Errorf("BUG: syncPeerRbsr must have timeout")
 	}
 
 	msg, err := ne.Initiate()
@@ -486,11 +486,11 @@ func syncPeerRbsr(
 		if rounds > 1000 {
 			return fmt.Errorf("Too many rounds of interactive syncing")
 		}
-
-		msg, err = ne.Reconcile(msg)
+		res, err := c.ReconcileBlobs(ctx, &p2p.ReconcileBlobsRequest{Ranges: msg})
 		if err != nil {
 			return err
 		}
+		msg = res.Ranges
 		var wants [][]byte
 		msg, err = ne.ReconcileWithIDs(msg, &haves, &wants)
 		if err != nil {
@@ -511,8 +511,8 @@ func syncPeerRbsr(
 		zap.String("peer", pid.String()),
 	)
 
-	for _, c := range allWants {
-		cid, err := cid.Cast(c)
+	for _, cBytes := range allWants {
+		cid, err := cid.Cast(cBytes)
 		if err != nil {
 			return err
 		}

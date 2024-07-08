@@ -190,7 +190,7 @@ func New(cfg config.P2P, device core.KeyPair, ks core.KeyStore, db *sqlitex.Pool
 
 	rpc := &rpcMux{Node: n}
 	p2p.RegisterP2PServer(n.grpc, rpc)
-
+	p2p.RegisterSyncingServer(n.grpc, rpc)
 	return n, nil
 }
 
@@ -247,6 +247,19 @@ func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, erro
 		return nil, err
 	}
 	return groups_proto.NewWebsiteClient(conn), nil
+}
+
+// RbsrClient opens a connection with a remote node for syncing using RBSR algorithm.
+func (n *Node) RbsrClient(ctx context.Context, pid peer.ID) (p2p.SyncingClient, error) {
+	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+		return nil, err
+	}
+
+	conn, err := n.client.dialPeer(ctx, pid)
+	if err != nil {
+		return nil, err
+	}
+	return p2p.NewSyncingClient(conn), nil
 }
 
 // GatewayClient opens a connection with the remote production gateway.

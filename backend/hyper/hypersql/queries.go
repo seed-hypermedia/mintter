@@ -90,9 +90,7 @@ func generateQueries() error {
 				s.BlobsCodec,
 			), '\n',
 			"FROM", s.Blobs, "INDEXED BY blobs_metadata", '\n',
-			"LEFT JOIN", s.Drafts, "ON", s.DraftsBlob, "=", s.BlobsID, '\n',
 			"WHERE", s.BlobsSize, ">=", "0", '\n',
-			"AND", s.DraftsBlob, "IS NULL", '\n',
 			"ORDER BY", s.BlobsID,
 		),
 
