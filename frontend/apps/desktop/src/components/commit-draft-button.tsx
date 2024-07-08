@@ -62,7 +62,7 @@ export default function CommitDraftButton() {
     <>
       <SaveIndicatorStatus />
       <Button size="$2" onPress={handlePublish}>
-        Publishh
+        Publish
       </Button>
     </>
   )
