@@ -27,7 +27,7 @@ export default function CommitDraftButton() {
   const route = useNavRoute()
   const navigate = useNavigate('replace')
   const grpcClient = useGRPCClient()
-  const draftRoute: DraftRoute = route.key === 'draft' ? route : null
+  const draftRoute: DraftRoute | null = route.key === 'draft' ? route : null
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
   const prevProfile = useProfile(draftRoute.id)
@@ -44,8 +44,8 @@ export default function CommitDraftButton() {
         })
         .then((res) => {
           deleteDraft.mutateAsync(res.id).then(() => {
-            if (draftRoute.id) {
-              if (draftRoute.id.startsWith('hm://a/')) {
+            if (draftRoute?.id) {
+              if (draftRoute?.id.startsWith('hm://a/')) {
                 navigate({key: 'account', accountId: draftRoute.id})
               } else {
                 navigate({key: 'document', documentId: res.id})

@@ -1,4 +1,3 @@
-import {useGRPCClient} from '@/app-context'
 import {HMEditorContainer, HyperMediaEditorView} from '@/components/editor'
 import {MainWrapper} from '@/components/main-wrapper'
 import {BlockNoteEditor, getBlockInfoFromPos} from '@/editor'
@@ -31,8 +30,7 @@ import {ActorRefFrom} from 'xstate'
 import {AppDocContentProvider} from './document-content-provider'
 export default function DraftPage() {
   const route = useNavRoute()
-  // const gwUwl = useGatewayUrl()
-  const grpcClient = useGRPCClient()
+
   const importWebFile = trpc.webImporting.importWebFile.useMutation()
   const [isDragging, setIsDragging] = useState(false)
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')

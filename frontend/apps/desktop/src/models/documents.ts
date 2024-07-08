@@ -1,3 +1,4 @@
+import {dispatchWizardEvent} from '@/app-account'
 import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {createHypermediaDocLinkPlugin} from '@/editor'
 import {useAccounts, useMyAccount_deprecated} from '@/models/accounts'
@@ -48,6 +49,7 @@ import {
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
+import {useAccountKeys} from './daemon'
 import {draftMachine} from './draft-machine'
 import {setGroupTypes} from './editor-utils'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
@@ -298,19 +300,21 @@ export function usePublishDraft(
       const blocksMap = previous ? createBlocksMap(previous.content, '') : {}
       const changes = compareBlocksWithMap(blocksMap, draft.content, '')
 
-      console.log(`== ~ mutationFn: ~ changes:`, {
-        blocksMap,
-        draft: draft.content,
-        changes,
-      })
       const deleteChanges = extractDeletes(blocksMap, changes.touchedBlocks)
       try {
-        const publish = await grpcClient.documents.changeProfileDocument({
-          accountId: unpacked?.eid,
-          changes: [...changes.changes, ...deleteChanges],
-        })
+        if (draft.signingAccount) {
+          // TODO: @horacio we might need a warning here if the user wants to publish a profile update with a different accountId when we have multiple accounts
+          const publish = await grpcClient.documents.changeProfileDocument({
+            accountId: draft.signingAccount
+              ? draft.signingAccount
+              : unpacked?.eid,
+            changes: [...changes.changes, ...deleteChanges],
+          })
 
-        return publish
+          return publish
+        } else {
+          dispatchWizardEvent(true)
+        }
       } catch (error) {
         const connectErr = ConnectError.from(error)
         throw Error(connectErr.message)
@@ -503,6 +507,7 @@ export function queryDraft({
 }
 
 export function useDraftEditor({id}: {id: string}) {
+  const keys = useAccountKeys()
   const {queryClient, grpcClient} = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
@@ -516,6 +521,10 @@ export function useDraftEditor({id}: {id: string}) {
     writeableStateStream<any>(null),
   ).current
   const saveDraft = trpc.drafts.write.useMutation()
+
+  const signingAccount = useMemo(() => {
+    return keys.data?.length == 1 ? keys.data[0].publicKey : undefined // TODO: @horacio need to add a "key selector" here
+  }, [keys.data])
 
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
@@ -599,7 +608,7 @@ export function useDraftEditor({id}: {id: string}) {
         },
         members: {},
         index: {},
-        // signingAccount: ...
+        signingAccount,
       }
     } else {
       inputData = {
@@ -609,6 +618,7 @@ export function useDraftEditor({id}: {id: string}) {
           ...input.draft.metadata,
           title: input.title,
         },
+        signingAccount,
       }
     }
 
