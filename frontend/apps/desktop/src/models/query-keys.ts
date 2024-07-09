@@ -33,11 +33,11 @@ export const queryKeys = {
   ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string, includeDrafts: boolean
 
   // documents
-  GET_DRAFT_LIST: 'trpc.drafts.list', //
+  DRAFT_LIST: 'trpc.drafts.list', //
   DOCUMENT_DRAFTS: 'DOCUMENT_DRAFTS', //, docId: string @deprecated
   ACCOUNT_DOCUMENTS: 'ACCOUNT_DOCUMENTS', //, accountId: string
   DOCUMENT_LIST: 'DOCUMENT_LIST', // 'trusted' | 'global'
-  GET_DRAFT: 'trpc.drafts.get', // , id: string
+  DRAFT: 'DRAFT', // , id: string
   DOCUMENT: 'DOCUMENT', //, docId: string, versionId?: string
   PROFILE_DOCUMENT: 'PROFILE_DOCUMENT', //, accountId: string
 
@@ -98,13 +98,13 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'Entity Timeline'
 
     // documents
-    case queryKeys.GET_DRAFT_LIST:
+    case queryKeys.DRAFT_LIST:
       return 'Drafts'
     case queryKeys.ACCOUNT_DOCUMENTS:
       return 'Account Publications'
     case queryKeys.DOCUMENT_LIST:
       return 'Publications'
-    case queryKeys.GET_DRAFT:
+    case queryKeys.DRAFT:
       return `Editor Draft ${abbreviateCid(arg1)}`
     case queryKeys.DOCUMENT:
       return `Publication ${abbreviateCid(arg1)}`

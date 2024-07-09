@@ -1,5 +1,5 @@
 import {dispatchDraftStatus, DraftStatus} from '@/draft-status'
-import {HMDraft} from '@shm/shared'
+import {HMDocument, HMDraft} from '@shm/shared'
 import {assign, setup, StateFrom} from 'xstate'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
@@ -9,6 +9,7 @@ export const draftMachine = setup({
     context: {} as {
       name: string
       draft: null | HMDraft
+      document: null | HMDocument
       errorMessage: string
       restoreTries: number
       changed: boolean
@@ -21,7 +22,7 @@ export const draftMachine = setup({
       | {type: 'RESET.CORRUPT.DRAFT'}
       | {type: 'GET.DRAFT.ERROR'; error: any}
       | {type: 'GET.DRAFT.RETRY'}
-      | {type: 'GET.DRAFT.SUCCESS'; draft: HMDraft}
+      | {type: 'GET.DRAFT.SUCCESS'; draft: HMDraft; document: null | HMDocument}
       | {type: 'SAVE.ON.EXIT'}
       | {type: 'EMPTY.ID'},
   },
@@ -34,15 +35,24 @@ export const draftMachine = setup({
         }
         return null
       },
-      name: ({context, event}) => {
-        if (event.type == 'GET.DRAFT.SUCCESS' && event.draft) {
-          return event.draft.metadata.name
+    }),
+    setDocument: assign({
+      document: ({event}) => {
+        if (event.type == 'GET.DRAFT.SUCCESS') {
+          return event.document
         }
-        return context.name
+        return null
       },
     }),
     setName: assign({
       name: ({context, event}) => {
+        if (event.type == 'GET.DRAFT.SUCCESS') {
+          if (event.draft) {
+            return event.draft.metadata.name
+          } else if (event.document) {
+            return event.document.metadata.name
+          }
+        }
         if (event.type == 'CHANGE' && event.name) {
           return event.name
         }
@@ -91,6 +101,7 @@ export const draftMachine = setup({
   context: {
     name: '',
     draft: null,
+    document: null,
     errorMessage: '',
     restoreTries: 0,
     changed: false,
@@ -106,7 +117,11 @@ export const draftMachine = setup({
         'GET.DRAFT.SUCCESS': [
           {
             target: 'setupData',
-            actions: [{type: 'setDraft'}],
+            actions: [
+              {type: 'setDraft'},
+              {type: 'setDocument'},
+              {type: 'setName'},
+            ],
           },
         ],
         'GET.DRAFT.ERROR': {
@@ -218,6 +233,9 @@ export const draftMachine = setup({
                   },
                   {
                     type: 'setDraft',
+                  },
+                  {
+                    type: 'setName',
                   },
                   {
                     type: 'replaceRouteifNeeded',

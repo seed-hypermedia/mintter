@@ -15,7 +15,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
       id: opts?.id || undefined,
       contextRoute,
     }
-    // invalidate([queryKeys.GET_DRAFT_LIST])
+    // invalidate([queryKeys.DRAFT_LIST])
     // invalidate([queryKeys.DOCUMENT_DRAFTS, draftId])
     navigate(draftRoute)
   }

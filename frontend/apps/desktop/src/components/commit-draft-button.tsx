@@ -17,7 +17,7 @@ import {
 import {Check} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect, useState} from 'react'
 import {createMachine} from 'xstate'
-import {useGRPCClient} from '../app-context'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount_deprecated, useProfileWithDraft} from '../models/accounts'
 import {usePublishDraft, usePushPublication} from '../models/documents'
 import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
@@ -31,11 +31,14 @@ export default function CommitDraftButton() {
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
   const prevProfile = useProfileWithDraft(draftRoute.id)
+
+  console.log(`== ~ CommitDraftButton ~ draft prevProfile:`, prevProfile.draft)
   // TODO: add also previous document here
   const deleteDraft = trpc.drafts.delete.useMutation()
   const publish = usePublishDraft(grpcClient, draftRoute.id)
-
+  const invalidate = useQueryInvalidator()
   function handlePublish() {
+    console.log('=== PUBLISHING...', prevProfile)
     if (prevProfile?.draft) {
       publish
         .mutateAsync({
@@ -43,8 +46,10 @@ export default function CommitDraftButton() {
           previous: prevProfile.profile as PlainMessage<Document>,
         })
         .then((res) => {
-          deleteDraft.mutateAsync(res.id).then(() => {
+          console.log('== PUBLISHED', res)
+          deleteDraft.mutateAsync(res.id).finally(() => {
             if (draftRoute?.id) {
+              invalidate(['trpc.drafts.get'])
               if (draftRoute?.id.startsWith('hm://a/')) {
                 navigate({key: 'account', accountId: draftRoute.id})
               } else {

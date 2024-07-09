@@ -206,6 +206,7 @@ function MainApp({
         } else if (value[0] === 'trpc.appSettings.getAutoUpdatePreference') {
           utils.appSettings.getAutoUpdatePreference.invalidate()
         } else if (value[0] == 'trpc.drafts.get') {
+          console.log('=== INVALIDATE MEEE', value[0])
           utils.drafts.get.invalidate()
         } else if (value[0] == 'trpc.drafts.list') {
           utils.drafts.list.invalidate()

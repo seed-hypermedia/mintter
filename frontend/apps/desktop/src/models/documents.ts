@@ -1,7 +1,12 @@
 import {dispatchWizardEvent} from '@/app-account'
 import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {createHypermediaDocLinkPlugin} from '@/editor'
-import {useAccounts, useMyAccount_deprecated} from '@/models/accounts'
+import {
+  useAccounts,
+  useDraft,
+  useMyAccount_deprecated,
+  useProfile,
+} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
@@ -20,6 +25,7 @@ import {
   UnpackedHypermediaId,
   fromHMBlock,
   hmDocument,
+  toHMBlock,
   unpackDocId,
   unpackHmId,
   writeableStateStream,
@@ -111,11 +117,11 @@ export function useDeleteDraft(
     },
     onSuccess: (response, documentId, context) => {
       setTimeout(() => {
-        invalidate([queryKeys.GET_DRAFT_LIST])
+        invalidate([queryKeys.DRAFT_LIST])
         invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
         invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-        invalidate([queryKeys.GET_DRAFT, documentId])
-        queryClient.client.removeQueries([queryKeys.GET_DRAFT, documentId])
+        invalidate([queryKeys.DRAFT, documentId])
+        queryClient.client.removeQueries([queryKeys.DRAFT, documentId])
       }, 200)
       opts?.onSuccess?.(response, documentId, context)
     },
@@ -327,16 +333,11 @@ export function usePublishDraft(
       // invalidate([queryKeys.FEED_LATEST_EVENT])
       // invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       // invalidate([queryKeys.DOCUMENT_LIST])
-      invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.DRAFT_LIST])
       invalidate([queryKeys.PROFILE_DOCUMENT, documentId])
       invalidate([queryKeys.DOCUMENT, documentId])
       // invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       // invalidate([queryKeys.ENTITY_CITATIONS])
-      setTimeout(() => {
-        // client.removeQueries([queryKeys.GET_DRAFT, documentId])
-        // otherwise it will re-query for a draft that no longer exists and an error happens
-        invalidate([queryKeys.GET_DRAFT, documentId])
-      }, 250)
     },
   })
 }
@@ -402,7 +403,7 @@ export function _usePublishDraft(
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.DOCUMENT_LIST])
-      invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.DRAFT_LIST])
       invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
       invalidate([queryKeys.DOCUMENT, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
@@ -410,7 +411,7 @@ export function _usePublishDraft(
       invalidate([queryKeys.ACCOUNT, myAccount.data?.id])
       invalidate([queryKeys.ENTITY_CITATIONS])
       setTimeout(() => {
-        client.removeQueries([queryKeys.GET_DRAFT, documentId])
+        client.removeQueries([queryKeys.DRAFT, documentId])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
@@ -429,7 +430,7 @@ export type EditorDraftState = {
 export function useDraftName(
   input: UseQueryOptions<EditorDraftState> & {documentId?: string | undefined},
 ) {
-  const draft = useDraft({draftId: input.documentId})
+  const draft = useDraft(input.documentId)
   return draft.data?.metadata?.name || undefined
 }
 
@@ -446,17 +447,6 @@ type MoveBlockAction = {
   parent: string
 }
 
-export function useDraft({
-  draftId = '',
-  ...options
-}: UseQueryOptions<any | null> & {
-  draftId?: string
-}) {
-  return trpc.drafts.get.useQuery(draftId, {
-    enabled: !!draftId,
-  })
-}
-
 export function useDrafts(
   ids: string[],
   options?: UseQueryOptions<HMDocument | null>,
@@ -464,7 +454,7 @@ export function useDrafts(
   // return useQueries({
   //   queries: ids.map((draftId) => trpc.drafts.get.useQuery(draftId, {
   //     enabled: !!draftId,
-  //     queryKey: [queryKeys.GET_DRAFT, draftId],
+  //     queryKey: [queryKeys.DRAFT, draftId],
   //   }),
   //   ...(options || {}),
   // })
@@ -481,7 +471,7 @@ export function queryDraft({
 } & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
     enabled: !!draftId,
-    queryKey: [queryKeys.GET_DRAFT, draftId],
+    queryKey: [queryKeys.DRAFT, draftId],
     useErrorBoundary: false,
     queryFn: async () => {
       try {
@@ -635,12 +625,21 @@ export function useDraftEditor({id}: {id: string | undefined}) {
     draftMachine.provide({
       actions: {
         populateEditor: function ({context, event}) {
-          if (context.draft != null && context.draft.content.length != 0) {
-            editor.replaceBlocks(editor.topLevelBlocks, context.draft.content)
-            const tiptap = editor?._tiptapEditor
-            // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
-            setGroupTypes(tiptap, context.draft.content)
+          let content: Array<HMBlock> = []
+          if (context.document && !context.draft) {
+            // populate draft from document
+            content = toHMBlock(context.document.content)
+          } else if (
+            context.draft != null &&
+            context.draft.content.length != 0
+          ) {
+            content = context.draft.content
           }
+
+          editor.replaceBlocks(editor.topLevelBlocks, content)
+          const tiptap = editor?._tiptapEditor
+          // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
+          setGroupTypes(tiptap, content)
         },
         focusEditor: () => {
           const tiptap = editor?._tiptapEditor
@@ -658,8 +657,9 @@ export function useDraftEditor({id}: {id: string | undefined}) {
           }
         },
         onSaveSuccess: function () {
-          invalidate([queryKeys.GET_DRAFT_LIST])
-          invalidate([queryKeys.GET_DRAFT, id])
+          invalidate([queryKeys.DRAFT_LIST])
+          invalidate([queryKeys.DRAFT, id])
+          invalidate(['trpc.drafts.get'])
           invalidate([queryKeys.PROFILE_DOCUMENT, id])
         },
       },
@@ -669,20 +669,25 @@ export function useDraftEditor({id}: {id: string | undefined}) {
     }),
   )
 
-  const backendDraft = useDraft({draftId: id})
+  const backendDraft = useDraft(id)
+  const backendDocument = useProfile(id)
 
   useEffect(() => {
     if (backendDraft.status == 'loading' && typeof id == 'undefined') {
       send({type: 'EMPTY.ID'})
     }
     if (backendDraft.status == 'success') {
-      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+      send({
+        type: 'GET.DRAFT.SUCCESS',
+        draft: backendDraft.data,
+        document: backendDocument.data || null,
+      })
     }
     if (backendDraft.status == 'error') {
       send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
     }
     // }
-  }, [backendDraft])
+  }, [backendDraft.status, backendDocument.status])
 
   useEffect(() => {
     function handleSelectAll(event: KeyboardEvent) {

@@ -2,7 +2,7 @@ import {useGRPCClient} from '@/app-context'
 import appError from '@/errors'
 import {useAccountKeys} from '@/models/daemon'
 import {queryKeys} from '@/models/query-keys'
-import {client} from '@/trpc'
+import {client, trpc} from '@/trpc'
 import {PlainMessage} from '@bufbuild/protobuf'
 import {Code, ConnectError} from '@connectrpc/connect'
 import {
@@ -110,13 +110,9 @@ export function useProfile(
 }
 
 export function useDraft(draftId?: string) {
-  const grpcClient = useGRPCClient()
-  return useQuery(
-    queryDraft({
-      draftId,
-      grpcClient,
-    }),
-  )
+  return trpc.drafts.get.useQuery(draftId, {
+    enabled: !!draftId,
+  })
 }
 export function useDrafts(draftIds: string[]) {
   const grpcClient = useGRPCClient()
@@ -207,13 +203,16 @@ export function queryDraft({
 } & UseQueryOptions<HMDraft | null>): UseQueryOptions<HMDraft | null> {
   return {
     enabled: !!draftId,
-    queryKey: [queryKeys.GET_DRAFT, draftId],
+    queryKey: [queryKeys.DRAFT, draftId],
     useErrorBoundary: false,
     queryFn: async () => {
       let draft: HMDraft | null = null
       if (!draftId) return null
       try {
         const draftReq = await client.drafts.get.query(draftId)
+
+        console.log(`== ~ queryFn: ~ draft:`, draftReq)
+
         draft = draftReq
       } catch (error) {
         const connectErr = ConnectError.from(error)

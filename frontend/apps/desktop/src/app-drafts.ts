@@ -40,7 +40,8 @@ export const draftsApi = t.router({
   list: t.procedure.query(async () => {
     return draftIdList
   }),
-  get: t.procedure.input(z.string()).query(async ({input}) => {
+  get: t.procedure.input(z.string().optional()).query(async ({input}) => {
+    if (!input) return null
     const draftPath = join(draftsDir, inputIdToDraftFile(input))
     try {
       const fileContent = await fs.readFile(draftPath, 'utf-8')

@@ -32,6 +32,8 @@ import {AppDocContentProvider} from './document-content-provider'
 export default function DraftPage() {
   const route = useNavRoute()
 
+  console.log(`== ~ DraftPage ~ route:`, route)
+
   const importWebFile = trpc.webImporting.importWebFile.useMutation()
   const [isDragging, setIsDragging] = useState(false)
   if (route.key != 'draft') throw new Error('DraftPage must have draft route')
