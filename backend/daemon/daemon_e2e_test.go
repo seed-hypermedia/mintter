@@ -159,7 +159,7 @@ func TestSyncingProfiles(t *testing.T) {
 	})
 	require.Error(t, err)
 	_, err = bob.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
-	time.Sleep(time.Millisecond * 50000)
+	time.Sleep(time.Millisecond * 100)
 	require.NoError(t, err)
 	doc2, err := bob.RPC.DocumentsV2.GetProfileDocument(ctx, &documents.GetProfileDocumentRequest{
 		AccountId: aliceIdentity.Account.String(),

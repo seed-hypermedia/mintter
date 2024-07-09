@@ -7,10 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"seed/backend/syncing/rbsr"
+	"seed/backend/daemon/index"
 
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/ipfs/boxo/blockstore"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -23,7 +22,7 @@ type worker struct {
 	log        *zap.Logger
 	clientFunc netDialFunc
 	host       host.Host
-	bs         blockstore.Blockstore
+	indexer    *index.Index
 	bswap      bitswap
 	db         *sqlitex.Pool
 	sema       chan struct{}
@@ -38,7 +37,7 @@ func newWorker(
 	log *zap.Logger,
 	clientFunc netDialFunc,
 	host host.Host,
-	bs blockstore.Blockstore,
+	indexer *index.Index,
 	bswap bitswap,
 	db *sqlitex.Pool,
 	semaphore chan struct{},
@@ -52,7 +51,7 @@ func newWorker(
 		log:        log,
 		clientFunc: clientFunc,
 		host:       host,
-		bs:         bs,
+		indexer:    indexer,
 		bswap:      bswap,
 		db:         db,
 		sema:       semaphore,
@@ -185,19 +184,8 @@ func (sw *worker) sync(ctx context.Context) {
 	}
 
 	sess := sw.bswap.NewSession(ctx)
-	store := rbsr.NewSliceStore()
-	ne, err := rbsr.NewSession(store, 50000)
 
-	if err != nil {
-		sw.log.Warn("Failed to Init Syncing Session", zap.Error(err))
-		return
-	}
-
-	if err = store.Seal(); err != nil {
-		sw.log.Warn("Failed to seal store", zap.Error(err))
-		return
-	}
-	if err := syncPeerRbsr(ctx, sw.pid, c, sw.bs, sess, ne, sw.log); err != nil {
+	if err := syncPeerRbsr(ctx, sw.pid, c, sw.indexer, sess, sw.db, sw.log); err != nil {
 		sw.log.Debug("FailedToSync", zap.Error(err))
 	}
 }

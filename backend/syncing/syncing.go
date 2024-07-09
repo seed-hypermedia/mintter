@@ -8,13 +8,14 @@ import (
 	"seed/backend/config"
 	"seed/backend/core"
 	p2p "seed/backend/genproto/p2p/v1alpha"
-	"seed/backend/hyper"
 	"seed/backend/mttnet"
 	"seed/backend/pkg/dqb"
 	"seed/backend/syncing/rbsr"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"seed/backend/daemon/index"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -101,7 +102,7 @@ type Service struct {
 	cfg     config.Syncing
 	log     *zap.Logger
 	db      *sqlitex.Pool
-	blobs   *hyper.Storage
+	indexer *index.Index
 	bitswap bitswap
 	client  netDialFunc
 	host    host.Host
@@ -120,12 +121,12 @@ const (
 const peerRoutingConcurrency = 3 // how many concurrent requests for peer routing.
 
 // NewService creates a new syncing service. Users should call Start() to start the periodic syncing.
-func NewService(cfg config.Syncing, log *zap.Logger, db *sqlitex.Pool, blobs *hyper.Storage, net *mttnet.Node) *Service {
+func NewService(cfg config.Syncing, log *zap.Logger, db *sqlitex.Pool, indexer *index.Index, net *mttnet.Node) *Service {
 	svc := &Service{
 		cfg:       cfg,
 		log:       log,
 		db:        db,
-		blobs:     blobs,
+		indexer:   indexer,
 		bitswap:   net.Bitswap(),
 		client:    net.RbsrClient,
 		host:      net.Libp2p().Host,
@@ -179,7 +180,7 @@ func (s *Service) refreshWorkers(ctx context.Context) error {
 	// Starting workers for newly added trusted peers.
 	for pid := range peers {
 		if _, ok := s.workers[pid]; !ok {
-			w := newWorker(s.cfg, pid, s.log, s.client, s.host, s.blobs.IPFSBlockstore(), s.bitswap, s.db, s.semaphore)
+			w := newWorker(s.cfg, pid, s.log, s.client, s.host, s.indexer, s.bitswap, s.db, s.semaphore)
 			s.wg.Add(1)
 			go w.start(ctx, &s.wg, s.cfg.Interval)
 			workersDiff++
@@ -312,24 +313,10 @@ func (s *Service) SyncWithPeer(ctx context.Context, pid peer.ID) error {
 		defer cancel()
 	}
 
-	bs := s.blobs.IPFSBlockstore()
 	bswap := s.bitswap.NewSession(ctx)
 
 	//return syncPeer(ctx, pid, c, bs, bswap, s.db, s.log)
-
-	//TODO(hm24): include new syncing
-
-	store := rbsr.NewSliceStore()
-	ne, err := rbsr.NewSession(store, 50000)
-
-	if err != nil {
-		return err
-	}
-
-	if err = store.Seal(); err != nil {
-		return err
-	}
-	return syncPeerRbsr(ctx, pid, c, bs, bswap, ne, s.log)
+	return syncPeerRbsr(ctx, pid, c, s.indexer, bswap, s.db, s.log)
 
 }
 
@@ -446,9 +433,9 @@ func syncPeerRbsr(
 	ctx context.Context,
 	pid peer.ID,
 	c p2p.SyncingClient,
-	bs blockstore.Blockstore,
+	idx *index.Index,
 	sess exchange.Fetcher,
-	ne *rbsr.Session,
+	db *sqlitex.Pool,
 	log *zap.Logger,
 ) (err error) {
 	mSyncsInFlight.Inc()
@@ -464,6 +451,42 @@ func syncPeerRbsr(
 		return fmt.Errorf("BUG: syncPeerRbsr must have timeout")
 	}
 
+	store := rbsr.NewSliceStore()
+	ne, err := rbsr.NewSession(store, 50000)
+
+	if err != nil {
+		return fmt.Errorf("Failed to Init Syncing Session", zap.Error(err))
+	}
+
+	var qListBlobs = dqb.Str(`
+		SELECT
+			blobs.codec,
+			blobs.multihash,
+			blobs.insert_time
+		FROM blobs INDEXED BY blobs_metadata
+		WHERE blobs.size >= 0;
+	`)
+	conn, release, err := db.Conn(ctx)
+	if err != nil {
+		return fmt.Errorf("Could not get connection", zap.Error(err))
+	}
+	defer release()
+
+	if err = sqlitex.Exec(conn, qListBlobs(), func(stmt *sqlite.Stmt) error {
+		codec := stmt.ColumnInt64(0)
+		hash := stmt.ColumnBytesUnsafe(1)
+		ts := stmt.ColumnInt64(2)
+		c := cid.NewCidV1(uint64(codec), hash)
+		store.Insert(ts, c.Bytes())
+		return nil
+	}); err != nil {
+		return fmt.Errorf("Could not list ", zap.Error(err))
+	}
+
+	if err = store.Seal(); err != nil {
+		return fmt.Errorf("Failed to seal store", zap.Error(err))
+	}
+
 	msg, err := ne.Initiate()
 	if err != nil {
 		return err
@@ -471,15 +494,6 @@ func syncPeerRbsr(
 
 	var allWants [][]byte
 
-	ch, err := bs.AllKeysChan(ctx)
-	if err != nil {
-		return err
-	}
-
-	var haves [][]byte
-	for k := range ch {
-		haves = append(haves, k.Bytes())
-	}
 	var rounds int
 	for msg != nil {
 		rounds++
@@ -491,7 +505,7 @@ func syncPeerRbsr(
 			return err
 		}
 		msg = res.Ranges
-		var wants [][]byte
+		var haves, wants [][]byte
 		msg, err = ne.ReconcileWithIDs(msg, &haves, &wants)
 		if err != nil {
 			return err
@@ -522,7 +536,7 @@ func syncPeerRbsr(
 			continue
 		}
 
-		if err := bs.Put(ctx, blk); err != nil {
+		if err := idx.Put(ctx, blk); err != nil {
 			log.Debug("FailedToSaveWantedBlob", zap.String("cid", cid.String()), zap.Error(err))
 			continue
 		}

@@ -13,6 +13,7 @@ import (
 	"seed/backend/core"
 	"seed/backend/daemon/api"
 	daemon "seed/backend/daemon/api/daemon/v1alpha"
+	"seed/backend/daemon/index"
 	"seed/backend/hyper"
 	"seed/backend/logging"
 	"seed/backend/mttnet"
@@ -50,6 +51,7 @@ type App struct {
 	Net          *mttnet.Node
 	Syncing      *syncing.Service
 	Blobs        *hyper.Storage
+	Indexer      *index.Index
 	Wallet       *wallet.Service
 }
 
@@ -163,8 +165,8 @@ func Load(ctx context.Context, cfg config.Config, r Storage, oo ...Option) (a *A
 	if err != nil {
 		return nil, err
 	}
-
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.Storage.DB(), a.Blobs, a.Net, cfg.LogLevel)
+	a.Indexer = index.NewIndex(a.Storage.DB(), logging.New("seed/Indexing", cfg.LogLevel))
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.Storage.DB(), a.Indexer, a.Net, cfg.LogLevel)
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +331,7 @@ func initSyncing(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	db *sqlitex.Pool,
-	blobs *hyper.Storage,
+	indexer *index.Index,
 	node *mttnet.Node,
 	LogLevel string,
 ) (*syncing.Service, error) {
@@ -341,7 +343,7 @@ func initSyncing(
 		return nil
 	})
 
-	svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), db, blobs, node)
+	svc := syncing.NewService(cfg, logging.New("seed/syncing", LogLevel), db, indexer, node)
 	if cfg.NoPull {
 		close(done)
 	} else {
