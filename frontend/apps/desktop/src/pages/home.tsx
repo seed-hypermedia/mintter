@@ -49,8 +49,6 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   const openDraft = useOpenDraft('push')
   const {draft, profile} = useProfileWithDraft(accountKey.accountId)
 
-  console.log(`== ~ AccountKeyItem ~ accountKey:`, accountKey)
-
   const navigate = useNavigate('push')
 
   const deleteKey = useMutation({

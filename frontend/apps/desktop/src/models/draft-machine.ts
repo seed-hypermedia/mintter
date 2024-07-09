@@ -35,7 +35,6 @@ export const draftMachine = setup({
         return null
       },
       name: ({context, event}) => {
-        console.log('== setDraft', {event, context})
         if (event.type == 'GET.DRAFT.SUCCESS' && event.draft) {
           return event.draft.metadata.name
         }
@@ -73,7 +72,6 @@ export const draftMachine = setup({
       hasChangedWhileSaving: false,
     }),
     setDraftStatus: function (_, params: {status: DraftStatus}) {
-      console.log('=== DRAFT STATUS', params.status)
       dispatchDraftStatus(params.status)
     },
     populateEditor: function () {},

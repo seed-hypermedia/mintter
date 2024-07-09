@@ -1,6 +1,6 @@
 import {focusDraftBlock} from '@/draft-focusing'
 import {useMyAccount_deprecated, useProfile} from '@/models/accounts'
-import {useDocument, useDocumentDrafts} from '@/models/documents'
+import {useDocument} from '@/models/documents'
 import {
   useEntitiesContent,
   useEntityContent,
@@ -57,16 +57,15 @@ function _SidebarNeo() {
   let standaloneSection: ReactNode = null
   const entityRoutes = useEntityRoutes(route)
   const firstEntityRoute = entityRoutes[0]
-  const isMyAccountHomeDraftActive = false
-
+  const isMyAccountDraftActive = route.key === 'draft' && route.id === myAccount
   const accountEntities = useEntitiesContent(
     myAccountRoute ? [myAccountRoute] : [],
   )
-  // const isMyAccountActive =
-  //   isMyAccountHomeDraftActive ||
-  //   (firstEntityRoute &&
-  //     firstEntityRoute.key === 'account' &&
-  //     firstEntityRoute.accountId === myAccount)
+  const isMyAccountActive =
+    isMyAccountDraftActive ||
+    (firstEntityRoute &&
+      firstEntityRoute.key === 'account' &&
+      firstEntityRoute.accountId === myAccount)
   // const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
   // const entityContents = useEntitiesContent(
   //   myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
@@ -126,7 +125,6 @@ function _SidebarNeo() {
   //     />
   //   )
   // }
-  // console.log('entities', accountEntities)
   return (
     <>
       {myAccountRoute ? (
@@ -136,10 +134,10 @@ function _SidebarNeo() {
             onNavigate={handleNavigate}
             collapse={false}
             setCollapse={() => {}}
-            routes={entityRoutes}
-            activeRoute={myAccountRoute}
+            routes={[myAccountRoute]}
+            activeRoute={route}
             entityContents={accountEntities}
-            active
+            active={isMyAccountActive}
           />
         </>
       ) : null}
@@ -161,27 +159,29 @@ function getBlockHeadings(
   function findBlock(
     nodes: HMBlockNode[] | undefined,
     parentHeadings: {id: string; text: string}[],
-  ) {
-    return nodes?.find((blockNode) => {
-      if (!blockId) return null
-      const theseHeadings = [
-        ...parentHeadings,
-        {
-          id: blockNode.block.id,
-          text: blockNode.block.text,
-          embedId:
-            blockNode.block.type === 'embed' ? blockNode.block.ref : null,
-        },
-      ]
-      if (blockNode.block.id === blockId) {
-        blockHeadings = theseHeadings
-        return true
-      }
-      if (blockNode.children?.length) {
-        return findBlock(blockNode.children, theseHeadings)
-      }
-      return false
-    })
+  ): null | HMBlockNode {
+    return (
+      nodes?.find((blockNode) => {
+        if (!blockId) return null
+        const theseHeadings = [
+          ...parentHeadings,
+          {
+            id: blockNode.block.id,
+            text: blockNode.block.text,
+            embedId:
+              blockNode.block.type === 'embed' ? blockNode.block.ref : null,
+          },
+        ]
+        if (blockNode.block.id === blockId) {
+          blockHeadings = theseHeadings
+          return true
+        }
+        if (blockNode.children?.length) {
+          return findBlock(blockNode.children, theseHeadings)
+        }
+        return false
+      }) || null
+    )
   }
   findBlock(children, [])
   return blockHeadings as
@@ -206,14 +206,14 @@ export function getItemDetails(
     icon = FileText
   }
   if (entity.type === 'd-draft') {
-    title = 'My Account Home'
+    title = '<draft>'
+    icon = FilePen
+    isDraft = true
   } else {
     title = getDocumentTitle(entity.document)
   }
-  icon = FilePen
-  isDraft = true
 
-  const headings = getBlockHeadings(entity.document?.children, blockId)
+  const headings = getBlockHeadings(entity.document?.content, blockId)
   return {
     docId: entity.document?.id,
     title,
@@ -229,21 +229,17 @@ function ResumeDraftButton({info}: {info: ItemDetails}) {
   if (!info) throw new Error('ItemDetails required for ResumeDraftButton')
   const {docId} = info
   const navigate = useNavigate()
-  const myAccount = useMyAccount_deprecated()
-  // const isMyHomeDoc = docId === myAccount.data?.profile?.rootDocument
-  const drafts = useDocumentDrafts(docId)
 
-  const draft = drafts.data?.[0]
+  const draft = false
   if (draft) {
     return (
       <Tooltip content="Resume Editing">
         <Button
-          onPress={(e) => {
+          onPress={(e: Event) => {
             e.stopPropagation()
             navigate({
               key: 'draft',
-              draftId: draft.draftId,
-              // isProfileDocument: isMyHomeDoc,
+              id: draft.draftId,
             })
           }}
           size="$2"
@@ -365,6 +361,7 @@ function RouteSection({
   const canCollapse = !!outlineNodes?.length
   const onActivateBlock = useCallback(
     (blockId: string) => {
+      throw new Error('implementation disabled.') // check use of activeRoute, should we call it that? what is it?
       if (!thisRoute) return
       const thisRouteKey = getRouteKey(thisRoute)
       const activeRouteKey = getRouteKey(activeRoute)
@@ -739,7 +736,7 @@ function FavoriteAccountItem({
       onPress={() => {
         onNavigate({key: 'account', accountId})
       }}
-      title={getProfileName(data?.profile)}
+      title={getProfileName(data)}
     />
   )
 }
@@ -753,7 +750,7 @@ function FavoritePublicationItem({
 }) {
   const id = unpackHmId(url)
   const route = useNavRoute()
-  const pub = useDocument(id?.qid, id?.version || undefined)
+  const doc = useDocument(id?.qid, id?.version || undefined)
   const documentId = id?.qid
   if (!documentId) return null
   return (
@@ -767,7 +764,7 @@ function FavoritePublicationItem({
           versionId: id?.version || undefined,
         })
       }}
-      title={getDocumentTitle(pub.data)}
+      title={getDocumentTitle(doc)}
     />
   )
 }

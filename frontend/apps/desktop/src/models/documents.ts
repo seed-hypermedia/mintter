@@ -168,28 +168,6 @@ export type EmbedsContent = Record<
   | undefined
 >
 
-export function useDocumentDrafts(docId: string | undefined) {
-  const grpcClient = useGRPCClient()
-  const drafts = useQuery({
-    queryKey: [queryKeys.DOCUMENT_DRAFTS, docId],
-    enabled: !!docId,
-    queryFn: async () => {
-      const result = await grpcClient.drafts.listDocumentDrafts({
-        documentId: docId,
-      })
-      const drafts = (
-        await Promise.all(
-          result.drafts.map((draft) =>
-            grpcClient.drafts.getDraft({draftId: draft.id}),
-          ),
-        )
-      ).map(toPlainMessage)
-      return drafts
-    },
-  })
-  return drafts
-}
-
 export function useDocumentEmbeds(
   doc: HMDocument | undefined | null,
   enabled?: boolean,
@@ -622,7 +600,6 @@ export function useDraftEditor({id}: {id: string | undefined}) {
     const blocks = editor.topLevelBlocks
     let inputData: Partial<HMDraft> = {}
     const draftId = id || nanoid()
-    console.log('prev draft', input.draft)
     if (!input.draft) {
       inputData = {
         content: blocks,
@@ -858,14 +835,14 @@ export function usePushPublication() {
 
 export function compareBlocksWithMap(
   blocksMap: BlocksMap,
-  blocks: HMDraft['content'],
+  blocks: HMDraft['content'] | undefined,
   parentId: string,
 ) {
   let changes: Array<DocumentChange> = []
   let touchedBlocks: Array<string> = []
 
   // iterate over editor blocks
-  blocks.forEach((block, idx) => {
+  blocks?.forEach((block, idx) => {
     // add blockid to the touchedBlocks list to capture deletes later
     touchedBlocks.push(block.id)
 
