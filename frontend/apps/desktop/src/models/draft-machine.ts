@@ -7,7 +7,7 @@ export type DraftMachineState = StateFrom<typeof draftMachine>
 export const draftMachine = setup({
   types: {
     context: {} as {
-      title: string
+      name: string
       draft: null | HMDraft
       errorMessage: string
       restoreTries: number
@@ -15,7 +15,7 @@ export const draftMachine = setup({
       hasChangedWhileSaving: boolean
     },
     events: {} as
-      | {type: 'CHANGE'; title?: string}
+      | {type: 'CHANGE'; name?: string}
       | {type: 'RESET.DRAFT'}
       | {type: 'RESTORE.DRAFT'}
       | {type: 'RESET.CORRUPT.DRAFT'}
@@ -34,19 +34,20 @@ export const draftMachine = setup({
         }
         return null
       },
-      title: ({context, event}) => {
+      name: ({context, event}) => {
+        console.log('== setDraft', {event, context})
         if (event.type == 'GET.DRAFT.SUCCESS' && event.draft) {
           return event.draft.metadata.name
         }
-        return context.title
+        return context.name
       },
     }),
-    setTitle: assign({
-      title: ({context, event}) => {
-        if (event.type == 'CHANGE' && event.title) {
-          return event.title
+    setName: assign({
+      name: ({context, event}) => {
+        if (event.type == 'CHANGE' && event.name) {
+          return event.name
         }
-        return context.title
+        return context.name
       },
     }),
     setErrorMessage: assign({
@@ -90,7 +91,7 @@ export const draftMachine = setup({
 }).createMachine({
   id: 'Draft',
   context: {
-    title: '',
+    name: '',
     draft: null,
     errorMessage: '',
     restoreTries: 0,
@@ -140,7 +141,7 @@ export const draftMachine = setup({
             CHANGE: {
               target: 'changed',
               actions: {
-                type: 'setTitle',
+                type: 'setName',
               },
             },
           },
@@ -156,7 +157,7 @@ export const draftMachine = setup({
             CHANGE: {
               target: 'changed',
               actions: {
-                type: 'setTitle',
+                type: 'setName',
               },
               reenter: true,
             },
@@ -185,7 +186,7 @@ export const draftMachine = setup({
                   type: 'setHasChangedWhileSaving',
                 },
                 {
-                  type: 'setTitle',
+                  type: 'setName',
                 },
               ],
               reenter: false,
@@ -193,7 +194,7 @@ export const draftMachine = setup({
           },
           invoke: {
             input: ({context}) => ({
-              title: context.title,
+              name: context.name,
               currentDraft: context.draft,
             }),
             id: 'createOrUpdateDraft',

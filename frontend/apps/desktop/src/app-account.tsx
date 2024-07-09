@@ -6,6 +6,7 @@ import {
   Copy,
   copyTextToClipboard,
   Dialog,
+  Field,
   Link,
   Onboarding,
   Reload,
@@ -144,7 +145,7 @@ export function AccountWizardDialog() {
                 <Onboarding.Title>Create a New Account</Onboarding.Title>
                 <YStack gap="$2">
                   {words?.length ? (
-                    <Onboarding.Input id="words" label="Secret Words">
+                    <Field id="words" label="Secret Words">
                       <TextArea
                         borderColor="$colorTransparent"
                         borderWidth={0}
@@ -152,7 +153,7 @@ export function AccountWizardDialog() {
                         disabled
                         value={(words as Array<string>).join(', ')}
                       />
-                    </Onboarding.Input>
+                    </Field>
                   ) : null}
                   <XStack gap="$4">
                     <Button
@@ -255,7 +256,7 @@ export function AccountWizardDialog() {
               <MarketingSection />
               <Onboarding.MainSection>
                 <Onboarding.Title>My secret words</Onboarding.Title>
-                <Onboarding.Input id="input-words" label="Secret Words">
+                <Field id="input-words" label="Secret Words">
                   <TextArea
                     borderColor="$colorTransparent"
                     borderWidth={0}
@@ -265,7 +266,7 @@ export function AccountWizardDialog() {
                     value={existingWords}
                     onChangeText={setExistingWords}
                   />
-                </Onboarding.Input>
+                </Field>
 
                 <CheckboxField
                   value={isExistingWordsSave}

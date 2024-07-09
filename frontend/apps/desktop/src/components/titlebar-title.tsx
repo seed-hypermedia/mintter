@@ -1,5 +1,5 @@
 import {useSizeObserver} from '@/components/app-embeds'
-import {useDraftTitle} from '@/models/documents'
+import {useDraftName} from '@/models/documents'
 import {useEntitiesContent, useEntityRoutes} from '@/models/entities'
 import {useNavRoute} from '@/utils/navigation'
 import {AccountRoute, DocumentRoute, DraftRoute, NavRoute} from '@/utils/routes'
@@ -80,7 +80,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'draft') {
     return (
       <>
-        <DraftTitle route={route} />
+        <DraftName route={route} />
       </>
     )
   }
@@ -376,15 +376,15 @@ export function Title({size}: {size?: FontSizeTokens}) {
   )
 }
 
-function DraftTitle({
+function DraftName({
   route,
   size = '$4',
 }: {
   route: DraftRoute
   size?: FontSizeTokens
 }) {
-  const title = useDraftTitle({
-    documentId: route.draftId,
+  const title = useDraftName({
+    documentId: route.id,
   })
 
   const realTitle = title ?? 'Untitled Document'

@@ -38,6 +38,7 @@ import {
   ChevronUp,
   Copy,
   ExternalLink,
+  Field,
   H3,
   Heading,
   InfoListHeader,
@@ -45,7 +46,6 @@ import {
   Input,
   Label,
   ListItem,
-  Onboarding,
   Pencil,
   RadioGroup,
   ScrollView,
@@ -455,27 +455,27 @@ function AccountKeys() {
         <XStack marginBottom="$4">
           <Avatar size={80} url={account?.accountId} />
           <YStack f={1} gap="$3">
-            <Onboarding.Input id="username" label="Profile name">
+            <Field id="username" label="Profile name">
               <Input
                 borderColor="$colorTransparent"
                 borderWidth={0}
                 disabled
                 value={profile.data?.profile?.metadata.title || ''}
               />
-            </Onboarding.Input>
-            <Onboarding.Input id="accountid" label="Account Id">
+            </Field>
+            <Field id="accountid" label="Account Id">
               <Input
                 borderColor="$colorTransparent"
                 borderWidth={0}
                 disabled
                 value={account?.accountId}
               />
-            </Onboarding.Input>
+            </Field>
           </YStack>
         </XStack>
         {mnemonics ? (
           <XStack gap="$3">
-            <Onboarding.Input label="Secret Words" id="words">
+            <Field label="Secret Words" id="words">
               <TextArea
                 borderColor="$colorTransparent"
                 borderWidth={0}
@@ -487,7 +487,7 @@ function AccountKeys() {
                     : '**** **** **** **** **** **** **** **** **** **** **** ****'
                 }
               />
-            </Onboarding.Input>
+            </Field>
 
             <YStack gap="$2">
               <Button

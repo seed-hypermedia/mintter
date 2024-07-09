@@ -77,7 +77,7 @@ export default function DraftPage() {
                 e.stopPropagation()
               }}
             >
-              <DraftTitleInput
+              <DraftNameInput
                 draftActor={data.actor}
                 onEnter={() => {}}
                 disabled={!data.state.matches('ready')}
@@ -227,7 +227,7 @@ export default function DraftPage() {
   }
 }
 
-export function DraftTitleInput({
+export function DraftNameInput({
   onEnter,
   draftActor,
   disabled = false,
@@ -238,8 +238,8 @@ export function DraftTitleInput({
 }) {
   const {textUnit, layoutUnit} = useDocContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
-  const title = useSelector(draftActor, (s) => {
-    return s.context.draft?.metadata.name
+  const name = useSelector(draftActor, (s) => {
+    return s.context.name
   })
   const input = useRef<HTMLTextAreaElement | null>(null)
   const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
@@ -254,12 +254,12 @@ export function DraftTitleInput({
   useEffect(() => {
     const target = input.current
     if (!target) return
-    if (target.value !== title) {
+    if (target.value !== name) {
       // handle cases where the model has a different title. this happens when pasting multiline text into the title
-      target.value = title || ''
+      target.value = name || ''
       applyTitleResize(target)
     }
-  }, [title])
+  }, [name])
 
   useEffect(() => {
     handleResize()
@@ -313,11 +313,11 @@ export function DraftTitleInput({
         outlineColor="transparent"
         borderColor="transparent"
         paddingLeft={9.6}
-        defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
+        defaultValue={name?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
         // value={title}
-        onChangeText={(title: string) => {
+        onChangeText={(name: string) => {
           // TODO: change title here
-          draftActor.send({type: 'CHANGE', title})
+          draftActor.send({type: 'CHANGE', name})
         }}
         placeholder="Untitled Document"
         {...headingTextStyles}

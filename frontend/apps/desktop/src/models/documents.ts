@@ -442,13 +442,13 @@ export function _usePublishDraft(
 export type EditorDraftState = {
   id: string
   children: Array<HMBlock>
-  title: string
+  name: string
   changes: DraftChangesState
   webUrl: string
   updatedAt: any
 }
 
-export function useDraftTitle(
+export function useDraftName(
   input: UseQueryOptions<EditorDraftState> & {documentId?: string | undefined},
 ) {
   const draft = useDraft({draftId: input.documentId})
@@ -628,7 +628,7 @@ export function useDraftEditor({id}: {id: string | undefined}) {
         content: blocks,
         deps: [],
         metadata: {
-          name: input.title,
+          name: input.name,
         },
         members: {},
         index: {},
@@ -640,7 +640,7 @@ export function useDraftEditor({id}: {id: string | undefined}) {
         content: blocks,
         metadata: {
           ...input.draft.metadata,
-          name: input.title,
+          name: input.name,
         },
         signingAccount,
       }
