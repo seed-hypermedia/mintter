@@ -16,7 +16,7 @@ import {
   YStack,
   styled,
 } from '@shm/ui'
-import {Sparkles, Star} from '@tamagui/lucide-icons'
+import {File, Sparkles, Star} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {AiOutlineEllipsis} from 'react-icons/ai'
 import {getItemDetails} from './sidebar-neo'
@@ -70,6 +70,14 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       <>
         <Star size={12} />
         <TitleText size={size}>Favorites</TitleText>
+      </>
+    )
+  }
+  if (route.key === 'content') {
+    return (
+      <>
+        <File size={12} />
+        <TitleText size={size}>My Content</TitleText>
       </>
     )
   }

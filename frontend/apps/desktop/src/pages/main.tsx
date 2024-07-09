@@ -26,6 +26,7 @@ var Draft = lazy(() => import('./draft'))
 var Comment = lazy(() => import('./comment'))
 var CommentDraft = lazy(() => import('./comment-draft'))
 var Explore = lazy(() => import('./explore'))
+var Content = lazy(() => import('./content'))
 var Favorites = lazy(() => import('./favorites'))
 var DeletedContent = lazy(() => import('./deleted-content'))
 var DraftRebase = lazy(() => import('./draft-rebase'))
@@ -137,6 +138,12 @@ function getPageComponent(navRoute: NavRoute) {
         PageComponent: Settings,
         Fallback: BaseLoading,
       }
+    case 'content': {
+      return {
+        PageComponent: Content,
+        Fallback: BaseLoading,
+      }
+    }
     case 'deleted-content':
       return {
         PageComponent: DeletedContent,

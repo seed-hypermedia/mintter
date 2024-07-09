@@ -148,8 +148,14 @@ export const draftRouteSchema = baseDraftRouteSchema.extend({
 })
 export type DraftRoute = z.infer<typeof draftRouteSchema>
 
+export const contentRouteSchema = z.object({
+  key: z.literal('content'),
+})
+export type ContentRoute = z.infer<typeof contentRouteSchema>
+
 export const navRouteSchema = z.discriminatedUnion('key', [
   feedRouteSchema,
+  contentRouteSchema,
   contactsRouteSchema,
   accountRouteSchema,
   settingsRouteSchema,

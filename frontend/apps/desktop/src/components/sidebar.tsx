@@ -18,7 +18,14 @@ import {
   unpackHmId,
 } from '@shm/shared'
 import {Button, Home, SizableText, XStack, YStack} from '@shm/ui'
-import {Contact, FileText, Hash, Sparkles, Star} from '@tamagui/lucide-icons'
+import {
+  Contact,
+  File,
+  FileText,
+  Hash,
+  Sparkles,
+  Star,
+} from '@tamagui/lucide-icons'
 import {PropsWithChildren, ReactNode, memo, useMemo} from 'react'
 import {
   GenericSidebarContainer,
@@ -55,6 +62,16 @@ export function MainAppSidebar() {
         title="Feed"
         bold
         icon={Home}
+      />
+      <SidebarItem
+        active={route.key == 'content'}
+        onPress={() => {
+          navigate({key: 'content'})
+        }}
+        title="My Content"
+        bold
+        icon={File}
+        rightHover={[]}
       />
       <SidebarItem
         active={route.key == 'explore'}
