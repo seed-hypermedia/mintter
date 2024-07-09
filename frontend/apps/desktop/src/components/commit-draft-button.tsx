@@ -18,7 +18,7 @@ import {Check} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect, useState} from 'react'
 import {createMachine} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {useMyAccount_deprecated, useProfile} from '../models/accounts'
+import {useMyAccount_deprecated, useProfileWithDraft} from '../models/accounts'
 import {usePublishDraft, usePushPublication} from '../models/documents'
 import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
 import {useMediaDialog} from './media-dialog'
@@ -30,17 +30,17 @@ export default function CommitDraftButton() {
   const draftRoute: DraftRoute | null = route.key === 'draft' ? route : null
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
-  const prevProfile = useProfile(draftRoute.id)
+  const prevProfile = useProfileWithDraft(draftRoute.id)
   // TODO: add also previous document here
   const deleteDraft = trpc.drafts.delete.useMutation()
   const publish = usePublishDraft(grpcClient, draftRoute.id)
 
   function handlePublish() {
-    if (prevProfile.data?.draft) {
+    if (prevProfile?.draft) {
       publish
         .mutateAsync({
-          draft: prevProfile.data?.draft,
-          previous: prevProfile.data.profile as PlainMessage<Document>,
+          draft: prevProfile?.draft,
+          previous: prevProfile.profile as PlainMessage<Document>,
         })
         .then((res) => {
           deleteDraft.mutateAsync(res.id).then(() => {

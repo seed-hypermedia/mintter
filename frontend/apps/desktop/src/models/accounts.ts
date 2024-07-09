@@ -94,14 +94,14 @@ export function useSetProfile_deprecated() {
 export function useProfile(
   accountId: string | undefined,
   version?: string | undefined,
-  options?: UseQueryOptions<{profile?: HMDocument; draft?: HMDraft} | null> & {
+  options?: UseQueryOptions<HMDocument | null> & {
     draftId?: string
   },
 ) {
   const grpcClient = useGRPCClient()
   return useQuery(
     queryProfile({
-      accountId: accountId,
+      accountId,
       version,
       grpcClient,
       ...options,
@@ -109,10 +109,38 @@ export function useProfile(
   )
 }
 
-/**
- *
- * @deprecated
- */
+export function useDraft(draftId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery(
+    queryDraft({
+      draftId,
+      grpcClient,
+    }),
+  )
+}
+export function useDrafts(draftIds: string[]) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: draftIds.map((draftId) => queryDraft({grpcClient, draftId})),
+  })
+}
+
+export function useProfileWithDraft(accountId?: string) {
+  const profile = useProfile(accountId)
+  const draft = useDraft(accountId)
+  return {profile: profile.data, draft: draft.data}
+}
+
+export function useProfilesWithDrafts(accountIds: string[]) {
+  const profiles = useProfiles(accountIds)
+  const drafts = useDrafts(accountIds)
+  return accountIds.map((accountId, index) => {
+    const profile = profiles[index]
+    const draft = drafts[index]
+    return {accountId, profile: profile.data, draft: draft.data}
+  })
+}
+
 export function useProfiles(
   ids: string[],
   options?: UseQueryOptions<HMDocument | null>,
@@ -133,10 +161,7 @@ export function queryProfile({
   accountId?: string
   version?: string
   grpcClient: GRPCClient
-} & UseQueryOptions<{
-  profile?: HMDocument
-  draft?: HMDraft
-} | null>): UseQueryOptions<{profile?: HMDocument; draft?: HMDraft} | null> {
+} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
   return {
     enabled: !!accountId,
     queryKey: [queryKeys.PROFILE_DOCUMENT, accountId],
@@ -145,7 +170,6 @@ export function queryProfile({
       if (!accountId) return null
       const unpacked = unpackHmId(accountId)
       let profile: PlainMessage<Document> | null = null
-      let draft: HMDraft | null = null
       try {
         const profileReq = await grpcClient.documents.getProfileDocument({
           accountId: unpacked ? unpacked.eid : accountId,
@@ -167,8 +191,29 @@ export function queryProfile({
         }
       }
 
+      return profile
+    },
+    ...options,
+  }
+}
+
+export function queryDraft({
+  draftId,
+  grpcClient,
+  ...options
+}: {
+  draftId?: string
+  grpcClient: GRPCClient
+} & UseQueryOptions<HMDraft | null>): UseQueryOptions<HMDraft | null> {
+  return {
+    enabled: !!draftId,
+    queryKey: [queryKeys.GET_DRAFT, draftId],
+    useErrorBoundary: false,
+    queryFn: async () => {
+      let draft: HMDraft | null = null
+      if (!draftId) return null
       try {
-        const draftReq = await client.drafts.get.query(accountId)
+        const draftReq = await client.drafts.get.query(draftId)
         draft = draftReq
       } catch (error) {
         const connectErr = ConnectError.from(error)
@@ -185,7 +230,7 @@ export function queryProfile({
         }
       }
 
-      return {draft, profile}
+      return draft
     },
     ...options,
   }

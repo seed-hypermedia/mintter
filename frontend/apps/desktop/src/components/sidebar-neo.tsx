@@ -2,7 +2,6 @@ import {focusDraftBlock} from '@/draft-focusing'
 import {useMyAccount_deprecated, useProfile} from '@/models/accounts'
 import {useDocument, useDocumentDrafts} from '@/models/documents'
 import {
-  getEntityRoutes,
   useEntitiesContent,
   useEntityContent,
   useEntityRoutes,
@@ -30,7 +29,7 @@ import {
   Pencil,
   Star,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useCallback, useEffect, useMemo, useState} from 'react'
+import {ReactNode, memo, useCallback, useMemo, useState} from 'react'
 import {Button, SizableText, Spinner, View} from 'tamagui'
 import {
   FocusButton,
@@ -59,97 +58,96 @@ function _SidebarNeo() {
   const entityRoutes = useEntityRoutes(route)
   const firstEntityRoute = entityRoutes[0]
   const isMyAccountHomeDraftActive = false
-  const isMyAccountActive =
-    isMyAccountHomeDraftActive ||
-    (firstEntityRoute &&
-      firstEntityRoute.key === 'account' &&
-      firstEntityRoute.accountId === myAccount)
-  const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
-  const entityContents = useEntitiesContent(
-    myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
+
+  const accountEntities = useEntitiesContent(
+    myAccountRoute ? [myAccountRoute] : [],
   )
-  const handleNavigate = useCallback(
-    function handleNavigate(route: NavRoute, doReplace?: boolean) {
-      if (doReplace) replace(route)
-      else navigate(route)
-      const destEntityRoutes = getEntityRoutes(route)
-      const firstEntityRoute = destEntityRoutes[0]
-      const isMyAccountActive =
-        firstEntityRoute &&
-        firstEntityRoute.key === 'account' &&
-        firstEntityRoute.accountId === myAccount
-      setCollapseFavorites(true)
-      setCollapseMe(isMyAccountActive ? false : true)
-      setCollapseStandalone(isMyAccountActive ? true : false)
-    },
-    [myAccount],
-  )
-  useEffect(() => {
-    if (isMyAccountActive) {
-      setCollapseMe(false)
-      setCollapseStandalone(true)
-    } else {
-      setCollapseMe(true)
-      setCollapseStandalone(false)
-    }
-  }, [isMyAccountActive])
-  if (isMyAccountActive) {
-    // the active route is under myAccount section
-    myAccountSection = (
-      <RouteSection
-        onNavigate={handleNavigate}
-        collapse={collapseMe}
-        setCollapse={setCollapseMe}
-        routes={entityRoutes}
-        activeRoute={route}
-        entityContents={entityContents}
-        active
-      />
-    )
-  } else {
-    if (myAccountRoute) {
-      myAccountSection = (
-        <RouteSection
-          onNavigate={handleNavigate}
-          collapse={collapseMe}
-          setCollapse={setCollapseMe}
-          routes={[myAccountRoute]}
-          activeRoute={route}
-          entityContents={entityContents}
-        />
-      )
-    }
-    standaloneSection = (
-      <RouteSection
-        onNavigate={handleNavigate}
-        collapse={collapseStandalone}
-        setCollapse={setCollapseStandalone}
-        routes={entityRoutes}
-        activeRoute={route}
-        entityContents={entityContents}
-        active
-      />
-    )
-  }
+  // const isMyAccountActive =
+  //   isMyAccountHomeDraftActive ||
+  //   (firstEntityRoute &&
+  //     firstEntityRoute.key === 'account' &&
+  //     firstEntityRoute.accountId === myAccount)
+  // const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
+  // const entityContents = useEntitiesContent(
+  //   myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
+  // )
+  const handleNavigate = useCallback(function handleNavigate(
+    route: NavRoute,
+    doReplace?: boolean,
+  ) {
+    if (doReplace) replace(route)
+    else navigate(route)
+    // const destEntityRoutes = getEntityRoutes(route)
+    // const firstEntityRoute = destEntityRoutes[0]
+    // const isMyAccountActive =
+    //   firstEntityRoute &&
+    //   firstEntityRoute.key === 'account' &&
+    //   firstEntityRoute.accountId === myAccount
+    // setCollapseFavorites(true)
+    // setCollapseMe(isMyAccountActive ? false : true)
+    // setCollapseStandalone(isMyAccountActive ? true : false)
+  }, [])
+
+  // if (isMyAccountActive) {
+  //   // the active route is under myAccount section
+  //   myAccountSection = (
+  //     <RouteSection
+  //       onNavigate={handleNavigate}
+  //       collapse={collapseMe}
+  //       setCollapse={setCollapseMe}
+  //       routes={entityRoutes}
+  //       activeRoute={route}
+  //       entityContents={entityContents}
+  //       active
+  //     />
+  //   )
+  // } else {
+  //   if (myAccountRoute) {
+  //     myAccountSection = (
+  //       <RouteSection
+  //         onNavigate={handleNavigate}
+  //         collapse={collapseMe}
+  //         setCollapse={setCollapseMe}
+  //         routes={[myAccountRoute]}
+  //         activeRoute={route}
+  //         entityContents={entityContents}
+  //       />
+  //     )
+  //   }
+  //   standaloneSection = (
+  //     <RouteSection
+  //       onNavigate={handleNavigate}
+  //       collapse={collapseStandalone}
+  //       setCollapse={setCollapseStandalone}
+  //       routes={entityRoutes}
+  //       activeRoute={route}
+  //       entityContents={entityContents}
+  //       active
+  //     />
+  //   )
+  // }
+  // console.log('entities', accountEntities)
   return (
     <>
+      {myAccountRoute ? (
+        <>
+          <SidebarDivider />
+          <RouteSection
+            onNavigate={handleNavigate}
+            collapse={false}
+            setCollapse={() => {}}
+            routes={entityRoutes}
+            activeRoute={myAccountRoute}
+            entityContents={accountEntities}
+            active
+          />
+        </>
+      ) : null}
       <SidebarFavorites
         collapse={collapseFavorites}
         setCollapse={setCollapseFavorites}
         onNavigate={handleNavigate}
       />
-      {myAccountSection ? (
-        <>
-          <SidebarDivider />
-          {myAccountSection}
-        </>
-      ) : null}
-      {standaloneSection ? (
-        <>
-          <SidebarDivider />
-          {standaloneSection}
-        </>
-      ) : null}
     </>
   )
 }

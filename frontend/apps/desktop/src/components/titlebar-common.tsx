@@ -9,7 +9,7 @@ import {DraftPublicationButtons, VersionContext} from '@/components/variants'
 import {
   useAccount_deprecated,
   useMyAccountIds,
-  useProfile,
+  useProfileWithDraft,
 } from '@/models/accounts'
 import {useDocument, usePushPublication} from '@/models/documents'
 import {useGatewayHost, useGatewayUrl} from '@/models/gateway-settings'
@@ -147,7 +147,7 @@ export function AccountOptionsButton() {
   const deleteEntity = useDeleteDialog()
   const editProfileDialog = useEditProfileDialog()
   const myAccountIds = useMyAccountIds()
-  const {data: profileData} = useProfile(route.accountId)
+  const {profile} = useProfileWithDraft(route.accountId)
   const isMyAccount = myAccountIds.includes(route.accountId)
   if (isMyAccount) {
     menuItems.push({
@@ -167,7 +167,7 @@ export function AccountOptionsButton() {
     onPress: () => {
       deleteEntity.open({
         id: createHmId('a', route.accountId),
-        title: getProfileName(profileData?.profile),
+        title: getProfileName(profile),
         onSuccess: () => {
           dispatch({type: 'pop'})
         },
@@ -191,12 +191,12 @@ function EditAccountButton() {
     )
   const myAccountIds = useMyAccountIds()
   const navigate = useNavigate()
-  const profile = useProfile(route.accountId)
+  const {draft} = useProfileWithDraft(route.accountId)
   if (!myAccountIds.includes(route.accountId)) {
     return null
   }
   if (route.tab !== 'profile' && route.tab) return null
-  const hasExistingDraft = !!profile.data?.draft
+  const hasExistingDraft = !!draft
   return (
     <>
       <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>

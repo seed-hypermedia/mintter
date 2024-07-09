@@ -28,6 +28,7 @@ import {
   activeDocOutline,
   getDocOutline,
 } from './sidebar-base'
+import {SidebarNeo} from './sidebar-neo'
 
 export const AppSidebar = memo(MainAppSidebar)
 
@@ -75,7 +76,7 @@ export function MainAppSidebar() {
         bold
       />
       <SidebarDivider />
-      {/* <SidebarNeo /> */}
+      <SidebarNeo />
       {/* <SidebarFavorites key={getRouteKey(route)} />
       <SidebarDivider /> */}
       {/* {account.data && (

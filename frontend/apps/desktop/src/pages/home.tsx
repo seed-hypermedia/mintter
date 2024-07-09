@@ -1,6 +1,6 @@
 import {useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {MainWrapper} from '@/components/main-wrapper'
-import {useProfile} from '@/models/accounts'
+import {useProfileWithDraft} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {trpc} from '@/trpc'
 import {useOpenDraft} from '@/utils/open-draft'
@@ -47,11 +47,9 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   const client = useGRPCClient()
   const invalidate = useQueryInvalidator()
   const openDraft = useOpenDraft('push')
-  const {data, status} = useProfile(accountKey.accountId)
+  const {draft, profile} = useProfileWithDraft(accountKey.accountId)
 
   console.log(`== ~ AccountKeyItem ~ accountKey:`, accountKey)
-
-  console.log(`== ~ useProfile ~ data:`, status, data)
 
   const navigate = useNavigate('push')
 
@@ -94,19 +92,17 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
         </Button>
       </XStack>
 
-      {data?.draft ? (
+      {draft ? (
         <Button onPress={() => openDraft({id: accountKey.accountId})}>
           Resume editing
         </Button>
       ) : (
         <Button onPress={() => openDraft({id: accountKey.accountId})}>
-          {data?.profile ? 'Edit Profile' : 'Create Draft'}
+          {profile ? 'Edit Profile' : 'Create Draft'}
         </Button>
       )}
 
-      {data?.profile ? (
-        <Button onPress={openProfile}>See Profile</Button>
-      ) : null}
+      {profile ? <Button onPress={openProfile}>See Profile</Button> : null}
     </XStack>
   )
 }

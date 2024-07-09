@@ -5,7 +5,11 @@ import {DocumentListItem} from '@/components/document-list-item'
 import {FavoriteButton} from '@/components/favoriting'
 import Footer, {FooterButton} from '@/components/footer'
 import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {useMyAccountIds, useProfile} from '@/models/accounts'
+import {
+  useMyAccountIds,
+  useProfile,
+  useProfileWithDraft,
+} from '@/models/accounts'
 import {useAccountDocuments} from '@/models/documents'
 import {getAvatarUrl} from '@/utils/account-url'
 import {useNavRoute} from '@/utils/navigation'
@@ -196,10 +200,10 @@ function AccountPageHeader() {
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const myAccountIds = useMyAccountIds()
-  const profile = useProfile(accountId)
+  const {profile} = useProfileWithDraft(accountId)
   const isMyAccount = myAccountIds.includes(accountId)
   const accountEntityUrl = createHmId('a', accountId)
-  const accountName = getProfileName(profile.data?.profile)
+  const accountName = getProfileName(profile)
   return (
     <>
       <PageContainer marginTop="$6">
@@ -214,7 +218,7 @@ function AccountPageHeader() {
                 id={accountId}
                 size={60}
                 label={accountName}
-                url={getAvatarUrl(profile.data?.profile)}
+                url={getAvatarUrl(profile)}
               />
               <SizableText
                 whiteSpace="nowrap"
@@ -265,12 +269,12 @@ function AccountPageProfile({
   isBlockFocused?: boolean
 }) {
   const profile = useProfile(accountId)
-  if (profile.status !== 'success' || !profile.data?.profile) return <Spinner />
+  if (profile.status !== 'success' || !profile.data) return <Spinner />
   return (
     <PageContainer>
       <AppDocContentProvider routeParams={{blockRef: blockId}}>
         <DocContent
-          document={profile.data.profile}
+          document={profile.data}
           focusBlockId={isBlockFocused ? blockId : undefined}
         />
       </AppDocContentProvider>

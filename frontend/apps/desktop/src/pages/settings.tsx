@@ -367,7 +367,7 @@ function AccountKeys() {
     return keys?.find((key) => key.name == selectedAccount)
   }, [selectedAccount])
 
-  const profile = useProfile(account?.accountId)
+  const {data: profile} = useProfile(account?.accountId)
 
   console.log(`== ~ AccountKeys ~ profile:`, profile)
 
@@ -460,7 +460,7 @@ function AccountKeys() {
                 borderColor="$colorTransparent"
                 borderWidth={0}
                 disabled
-                value={profile.data?.profile?.metadata.title || ''}
+                value={profile?.metadata.title || ''}
               />
             </Field>
             <Field id="accountid" label="Account Id">
