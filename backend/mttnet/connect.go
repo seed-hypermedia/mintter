@@ -55,7 +55,7 @@ func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err
 	}
 
 	isConnected := n.p2p.Host.Network().Connectedness(info.ID) == network.Connected
-	didHandshake := n.p2p.ConnManager().IsProtected(info.ID, protocolSupportKey)
+	didHandshake := n.p2p.ConnManager().IsProtected(info.ID, ProtocolSupportKey)
 
 	if isConnected && didHandshake {
 		return nil
@@ -86,6 +86,7 @@ func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err
 	if err := n.checkHyperMediaProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
 		return err
 	}
+	n.p2p.ConnManager().Protect(info.ID, ProtocolSupportKey)
 	return nil
 	//TODO(hm24): Handshake still valid?
 	/*
@@ -188,7 +189,7 @@ func (n *Node) verifyHandshake(ctx context.Context, pid peer.ID, pb *p2p.Handsha
 		return fmt.Errorf("failed to save handshake key delegation blob: %w", err)
 	}
 
-	n.p2p.ConnManager().Protect(pid, protocolSupportKey)
+	n.p2p.ConnManager().Protect(pid, ProtocolSupportKey)
 
 	return nil
 }

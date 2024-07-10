@@ -44,7 +44,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const protocolSupportKey = "seed-support" // This is what we use as a key to protect the connection in ConnManager.
+const ProtocolSupportKey = "seed-support" // This is what we use as a key to protect the connection in ConnManager.
 
 const (
 	protocolPrefix  = "/hypermedia/"

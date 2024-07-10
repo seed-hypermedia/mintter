@@ -4,15 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/netip"
-	"seed/backend/core"
 	networking "seed/backend/genproto/networking/v1alpha"
 	"seed/backend/hyper"
-	"seed/backend/hyper/hypersql"
 	"seed/backend/ipfs"
 	"seed/backend/mttnet"
 	"strings"
 
-	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -68,32 +65,27 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 
 	out := &networking.ListPeersResponse{}
 
-	var (
-		dels []hypersql.KeyDelegationsListAllResult
-		err  error
-	)
-	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		dels, err = hypersql.KeyDelegationsListAll(conn)
-		return err
-	}); err != nil {
-		return nil, err
-	}
+	pids := net.Libp2p().Peerstore().Peers()
 
-	out.Peers = make([]*networking.PeerInfo, 0, len(dels))
+	out.Peers = make([]*networking.PeerInfo, 0, len(pids))
 
-	for _, del := range dels {
-		pid, err := core.Principal(del.KeyDelegationsViewDelegate).PeerID()
-		if err != nil {
-			return nil, err
-		}
+	for _, pid := range pids {
 
 		// Skip our own peer.
 		if pid == net.Libp2p().ID() {
 			continue
 		}
 
-		pids := pid.String()
+		// Skip non-seed peers
+		if !net.Libp2p().ConnManager().IsProtected(pid, mttnet.ProtocolSupportKey) {
+			continue
+		}
 
+		pids := pid.String()
+		aid, err := net.AccountForDevice(ctx, pid)
+		if err != nil {
+			return nil, err
+		}
 		addrinfo := net.Libp2p().Peerstore().PeerInfo(pid)
 		mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
 		if err != nil {
@@ -104,7 +96,7 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 
 		out.Peers = append(out.Peers, &networking.PeerInfo{
 			Id:               pids,
-			AccountId:        core.Principal(del.KeyDelegationsViewIssuer).String(),
+			AccountId:        aid.String(),
 			Addrs:            ipfs.StringAddrs(mas),
 			ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 		})
