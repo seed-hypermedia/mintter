@@ -9,20 +9,20 @@ export const IS_DEV_DESKTOP = !!import.meta.env?.DEV
 export const P2P_PORT =
   (import.meta.env && import.meta.env.VITE_DESKTOP_P2P_PORT) ||
   process.env.VITE_DESKTOP_P2P_PORT ||
-  55000
+  56000
 export const HTTP_PORT =
   (import.meta.env && import.meta.env.VITE_DESKTOP_HTTP_PORT) ||
   process.env.VITE_DESKTOP_HTTP_PORT ||
-  55001
+  56001
 export const GRPC_PORT =
   (import.meta.env && import.meta.env.VITE_DESKTOP_GRPC_PORT) ||
   process.env.VITE_DESKTOP_GRPC_PORT ||
-  55002
+  56002
 
 export const ELECTRON_HTTP_PORT =
   (import.meta.env && import.meta.env.VITE_ELECTRON_HTTP_PORT) ||
   process.env.VITE_ELECTRON_HTTP_PORT ||
-  55003
+  56003
 
 export const HOSTNAME =
   (import.meta.env && import.meta.env.VITE_DESKTOP_HOSTNAME) ||

@@ -169,7 +169,7 @@ function ImageComponent({
           </Button>
         ) : null}
         <img
-          src={`http://localhost:55001/ipfs/${block.props.url}`}
+          src={`http://localhost:56001/ipfs/${block.props.url}`}
           contentEditable={false}
         />
       </YStack>
@@ -201,7 +201,7 @@ function ImageForm({
 
         try {
           const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
+            'http://localhost:56001/ipfs/file-upload',
             {
               method: 'POST',
               body: formData,
@@ -229,7 +229,7 @@ function ImageForm({
 
         try {
           const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
+            'http://localhost:56001/ipfs/file-upload',
             {
               method: 'POST',
               body: formData,

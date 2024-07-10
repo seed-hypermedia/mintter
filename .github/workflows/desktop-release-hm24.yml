@@ -1,0 +1,192 @@
+name: Desktop app release
+
+permissions:
+  contents: write
+
+on:
+  # schedule:
+  #   - cron: "0 8 * * *"
+  push:
+    branches:
+      - "hm24"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: hm24
+
+      - name: Set Version
+        id: set_version
+        run: |
+          if [[ $GITHUB_REF =~ ^refs/tags/ ]]; then
+            VERSION=${{ github.ref_name }}
+          elif [[ $GITHUB_REF =~ ^refs/heads/release/.* ]]; then 
+            chmod +x ./scripts/generate-rc-version.sh
+            VERSION=$(./scripts/generate-rc-version.sh ${{ github.ref }})
+          else
+            VERSION=0.0.1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Display Version
+        run: |
+          echo "App Version: ${{ steps.set_version.outputs.version }}"
+
+  build-binaries:
+    name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
+    runs-on: ${{ matrix.config.os }}
+    # if: startsWith(github.ref, 'refs/tags/')
+    needs: [get-version]
+    strategy:
+      matrix:
+        config:
+          - os: macos-latest-xl
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-apple-darwin
+          - os: macos-latest-xl
+            arch: arm64
+            goarch: arm64
+            daemon_name: aarch64-apple-darwin
+          - os: ubuntu-20.04
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-pc-windows-msvc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: hm24
+
+      - uses: ./.github/actions/ci-setup
+        with:
+          matrix-os: ${{ matrix.config.os }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
+          # matrix-arch: ${{ matrix.config.arch }}
+
+      - name: Build Backend (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }} ./backend/cmd/seed-daemon
+        env:
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Build Backend (Windows)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/seed-daemon-${{ matrix.config.daemon_name }}.exe ./backend/cmd/seed-daemon
+        env:
+          GOOS: "windows"
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Set MacOS signing certs
+        if: matrix.config.os == 'macos-latest-xl'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+        run: |
+          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p $APPLE_KEYCHAIN_PASSWORD build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p $APPLE_KEYCHAIN_PASSWORD build.keychain
+          security import certificate.p12 -k build.keychain -P $APPLE_CERTIFICATE_PASSWORD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k $APPLE_KEYCHAIN_PASSWORD build.keychain
+          rm -fr *.p12
+          security set-keychain-settings -lut 1200 # prevent the keychain to get locked before codesign is done
+
+      - name: Set temporal version in package.json
+        run: |
+          node scripts/set-desktop-version.mjs
+        env:
+          VITE_VERSION: "${{ needs.get-version.outputs.version }}"
+
+      - name: Build, package & make (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          # VITE_VERSION: "${{ needs.get-version.outputs.version }}"
+          VITE_VERSION: "0.1.0-alpla"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "56000"
+          VITE_DESKTOP_HTTP_PORT: "56001"
+          VITE_DESKTOP_GRPC_PORT: "56002"
+          VITE_DESKTOP_APPDATA: "Seed"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+          VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
+          SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}"
+
+      - name: Build, package and make (Win32)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
+          # VITE_VERSION: "${{ needs.get-version.outputs.version }}"
+          VITE_VERSION: "0.1.0-alpla"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          VITE_DESKTOP_SENTRY_DSN: "${{ secrets.DESKTOP_SENTRY_DSN }}"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "56000"
+          VITE_DESKTOP_HTTP_PORT: "56001"
+          VITE_DESKTOP_GRPC_PORT: "56002"
+          VITE_DESKTOP_APPDATA: "Seed"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ matrix.config.daemon_name }}
+          path: frontend/apps/desktop/out/make/**/*
+  publish-to-github:
+    needs: [get-version, build-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: hm24
+
+      - name: Download amd64 artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: "create release"
+        uses: softprops/action-gh-release@master
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          tag_name: "${{ needs.get-version.outputs.version }}"
+          prerelease: true
+          generate_release_notes: true
+          files: ./artifacts/artifacts-*/**/*

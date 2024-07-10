@@ -173,7 +173,7 @@ export class ListPeersResponse extends Message<ListPeersResponse> {
 export class ConnectRequest extends Message<ConnectRequest> {
   /**
    * A list of multiaddrs for the same peer ID to attempt p2p connection.
-   * For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
+   * For example `/ip4/10.0.0.1/tcp/56000/p2p/QmDeadBeef`.
    *
    * @generated from field: repeated string addrs = 1;
    */

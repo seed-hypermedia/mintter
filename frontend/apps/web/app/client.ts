@@ -12,7 +12,7 @@ function getGRPCHost() {
     return "https://hyper.media";
   }
 
-  return "http://127.0.0.1:56001";
+  return "http://127.0.0.1:57001";
 }
 
 export const transport = createGrpcWebTransport({
