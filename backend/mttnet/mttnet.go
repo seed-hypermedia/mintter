@@ -11,7 +11,6 @@ import (
 	groups_proto "seed/backend/genproto/groups/v1alpha"
 	p2p "seed/backend/genproto/p2p/v1alpha"
 	"seed/backend/hyper"
-	"seed/backend/hyper/hypersql"
 	"seed/backend/ipfs"
 	"seed/backend/pkg/cleanup"
 	"seed/backend/pkg/libp2px"
@@ -19,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	provider "github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
@@ -326,37 +324,49 @@ func (n *Node) ArePrivateIPsAllowed() bool {
 
 // AccountForDevice returns the linked AccountID of a given device.
 func (n *Node) AccountForDevice(ctx context.Context, pid peer.ID) (core.Principal, error) {
-	var out core.Principal
-	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		pk, err := pid.ExtractPublicKey()
+	// TODO(hm24): How to know the public key of other peers?
+	fmt.Println(n.p2p.Network().LocalPeer())
+	if n.p2p.Network().LocalPeer() == pid {
+		pk, err := n.keys.GetKey(ctx, "main")
 		if err != nil {
-			return err
+			return nil, fmt.Errorf("Can't get account for this device. Has the user registered any key?")
 		}
-
-		delegate := core.PrincipalFromPubKey(pk)
-
-		list, err := hypersql.KeyDelegationsListByDelegate(conn, delegate)
-		if err != nil {
-			return err
-		}
-		if len(list) == 0 {
-			return fmt.Errorf("not found key delegation for peer: %s", pid)
-		}
-
-		if len(list) > 1 {
-			n.log.Warn("MoreThanOneKeyDelegation", zap.String("peer", pid.String()))
-		}
-
-		del := list[0]
-
-		out = core.Principal(del.KeyDelegationsViewIssuer)
-
-		return nil
-	}); err != nil {
-		return nil, err
+		return pk.PublicKey.Principal(), nil
 	}
+	return nil, fmt.Errorf("Can't know the account of a peer different than myself.")
+	/*
+		var out core.Principal
+		if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+			pk, err := pid.ExtractPublicKey()
+			if err != nil {
+				return err
+			}
 
-	return out, nil
+			delegate := core.PrincipalFromPubKey(pk)
+
+			list, err := hypersql.KeyDelegationsListByDelegate(conn, delegate)
+			if err != nil {
+				return err
+			}
+			if len(list) == 0 {
+				return fmt.Errorf("not found key delegation for peer: %s", pid)
+			}
+
+			if len(list) > 1 {
+				n.log.Warn("MoreThanOneKeyDelegation", zap.String("peer", pid.String()))
+			}
+
+			del := list[0]
+
+			out = core.Principal(del.KeyDelegationsViewIssuer)
+
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		return out, nil
+	*/
 }
 
 // Libp2p returns the underlying libp2p host.
