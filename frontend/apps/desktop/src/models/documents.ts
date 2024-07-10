@@ -676,11 +676,15 @@ export function useDraftEditor({id}: {id: string | undefined}) {
     if (backendDraft.status == 'loading' && typeof id == 'undefined') {
       send({type: 'EMPTY.ID'})
     }
-    if (backendDraft.status == 'success') {
+    if (
+      backendDraft.status == 'success' &&
+      backendDocument.status != 'loading'
+    ) {
       send({
         type: 'GET.DRAFT.SUCCESS',
         draft: backendDraft.data,
-        document: backendDocument.data || null,
+        document:
+          backendDocument.status != 'error' ? backendDocument.data : null,
       })
     }
     if (backendDraft.status == 'error') {
