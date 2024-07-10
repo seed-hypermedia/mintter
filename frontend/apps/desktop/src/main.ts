@@ -5,6 +5,7 @@ import {
   BrowserWindow,
   Menu,
   app,
+  dialog,
   globalShortcut,
   ipcMain,
   nativeTheme,
@@ -13,6 +14,7 @@ import {
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log/main'
 import squirrelStartup from 'electron-squirrel-startup'
+import fs from 'fs'
 import path from 'node:path'
 import {
   handleSecondInstance,
@@ -127,6 +129,33 @@ ipcMain.handle('dark-mode:system', () => {
 })
 
 ipcMain.on('save-file', saveCidAsFile)
+ipcMain.on('export-document', async (_event, args) => {
+  const {title, markdown} = args
+  const camelTitle = title
+    .split(' ')
+    .map(
+      (word: string) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join('')
+  const {filePath} = await dialog.showSaveDialog({
+    title: 'Save Markdown',
+    defaultPath: path.join(__dirname, camelTitle + '.md'),
+    buttonLabel: 'Save',
+    filters: [{name: 'Markdown Files', extensions: ['md']}],
+  })
+
+  if (filePath) {
+    fs.writeFile(filePath, markdown, (err) => {
+      if (err) {
+        console.error('Error saving file:', err)
+        return
+      }
+      console.log('File successfully saved:', filePath)
+    })
+  }
+})
+
 ipcMain.on('open-external-link', (_event, linkUrl) => {
   shell.openExternal(linkUrl)
 })

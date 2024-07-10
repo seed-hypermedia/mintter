@@ -69,6 +69,7 @@ import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
 import {EditDocButton, useEditDraft} from './edit-doc-button'
+import {ExportDocButton} from './export-doc-button'
 import {FormInput} from './form-input'
 import {FormErrors, FormField} from './forms'
 import {SelectInput} from './select-input'
@@ -569,6 +570,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
       (item) => item.group?.id === groupVariant.groupId,
     )
   const showEditButton = isAuthorVariantEditable || isGroupVariantEditable
+  const showExportButton = pubOwner === myAccount.data?.id
   const realVariants = variants || realAuthorVariants
   return (
     <>
@@ -636,6 +638,9 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           docId={route.documentId}
           baseVersion={route.versionId}
         />
+      )}
+      {showExportButton && (
+        <ExportDocButton docId={route.documentId} version={route.versionId} />
       )}
       {renameDialog.content}
     </>

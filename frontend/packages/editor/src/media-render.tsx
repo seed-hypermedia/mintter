@@ -87,6 +87,12 @@ export const MediaRender: React.FC<RenderProps> = ({
 
   useEffect(() => {
     if (!uploading && hasSrc) {
+      if (block.props.src.startsWith('ipfs')) {
+        editor.updateBlock(block, {
+          props: {url: block.props.src, src: ''},
+        })
+        return
+      }
       setUploading(true)
 
       client.webImporting.importWebFile

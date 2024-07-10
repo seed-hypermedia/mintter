@@ -237,6 +237,9 @@ function MainApp({
         saveCidAsFile={async (cid: string, name: string) => {
           ipc.send?.('save-file', {cid, name})
         }}
+        exportDocument={async (title: string, markdown: string) => {
+          ipc.send?.('export-document', {title, markdown})
+        }}
         windowUtils={windowUtils}
         darkMode={darkMode}
       >

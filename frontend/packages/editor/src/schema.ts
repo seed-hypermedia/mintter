@@ -19,7 +19,10 @@ export const hmBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
   // heading: defaultBlockSchema.heading,
   heading: {
-    propSchema: {},
+    propSchema: {
+      ...defaultProps,
+      level: {default: '1'},
+    },
     node: HMHeadingBlockContent,
   },
   image: ImageBlock,
