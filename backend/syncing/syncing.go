@@ -172,7 +172,9 @@ func (s *Service) Start(ctx context.Context) (err error) {
 func (s *Service) refreshWorkers(ctx context.Context) error {
 	peers := make(map[peer.ID]struct{}, int(float64(len(s.workers))*1.5)) // arbitrary multiplier to avoid map resizing.
 	for _, pid := range s.host.Peerstore().Peers() {
-		peers[pid] = struct{}{}
+		if s.host.ConnManager().IsProtected(pid, mttnet.ProtocolSupportKey) {
+			peers[pid] = struct{}{}
+		}
 	}
 
 	var workersDiff int
@@ -254,14 +256,19 @@ func (s *Service) SyncAll(ctx context.Context) (res SyncResult, err error) {
 	}
 	defer s.mu.Unlock()
 
-	peers := s.host.Peerstore().Peers()
-
-	res.Peers = make([]peer.ID, len(peers))
-	res.Errs = make([]error, len(peers))
+	allPeers := s.host.Peerstore().Peers()
+	seedPeers := []peer.ID{}
+	for _, peer := range allPeers {
+		if s.host.ConnManager().IsProtected(peer, mttnet.ProtocolSupportKey) {
+			seedPeers = append(seedPeers, peer)
+		}
+	}
+	res.Peers = make([]peer.ID, len(seedPeers))
+	res.Errs = make([]error, len(seedPeers))
 	var wg sync.WaitGroup
-	wg.Add(len(peers))
+	wg.Add(len(seedPeers))
 
-	for i, pid := range peers {
+	for i, pid := range seedPeers {
 		go func(i int, pid peer.ID) {
 			var err error
 			defer func() {
