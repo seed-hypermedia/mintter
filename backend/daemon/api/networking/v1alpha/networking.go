@@ -80,12 +80,13 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 		if !net.Libp2p().ConnManager().IsProtected(pid, mttnet.ProtocolSupportKey) {
 			continue
 		}
-
+		var aidString string
 		pids := pid.String()
 		aid, err := net.AccountForDevice(ctx, pid)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			aidString = aid.String()
 		}
+
 		addrinfo := net.Libp2p().Peerstore().PeerInfo(pid)
 		mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
 		if err != nil {
@@ -96,7 +97,7 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 
 		out.Peers = append(out.Peers, &networking.PeerInfo{
 			Id:               pids,
-			AccountId:        aid.String(),
+			AccountId:        aidString,
 			Addrs:            ipfs.StringAddrs(mas),
 			ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 		})
@@ -142,15 +143,15 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 		addrs = append(addrs, addr)
 	}
 	connectedness := net.Libp2p().Network().Connectedness(pid)
-
+	var aidString string
 	aid, err := net.AccountForDevice(ctx, pid)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		aidString = aid.String()
 	}
 
 	resp := &networking.PeerInfo{
 		Id:               in.DeviceId,
-		AccountId:        aid.String(),
+		AccountId:        aidString,
 		Addrs:            addrs,
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 	}
