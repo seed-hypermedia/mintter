@@ -1,5 +1,5 @@
 import {useAccount_deprecated} from '@/models/accounts'
-import {useDocument} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {AppDocContentProvider} from '@/pages/document-content-provider'
 import {trpc} from '@/trpc'
 import {useNavigate} from '@/utils/useNavigate'
@@ -350,10 +350,10 @@ export function CommentPageTitlebarWithDocId({
 }) {
   const docId = useStream<string | null>(targetDocIdStream)
   const usableDocId = targetDocId || docId || undefined
-  const doc = useDocument(usableDocId)
+  const doc = useEntity(unpackHmId(usableDocId))
   const spawn = useNavigate('spawn')
-  const author = doc.data?.author
-  const title = getDocumentTitle(doc.data)
+  const author = doc.data?.document?.owner
+  const title = getDocumentTitle(doc.data?.document)
   if (!doc || !author || !title || !usableDocId)
     return (
       <CommentPageTitlebar>
@@ -377,7 +377,7 @@ export function CommentPageTitlebarWithDocId({
             spawn({
               key: 'document',
               documentId: usableDocId,
-              versionId: doc.data?.version,
+              versionId: doc.data?.document?.version,
             })
           }}
         >

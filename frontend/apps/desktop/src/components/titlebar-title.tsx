@@ -1,6 +1,6 @@
 import {useSizeObserver} from '@/components/app-embeds'
 import {useDraftName} from '@/models/documents'
-import {useEntitiesContent, useEntityRoutes} from '@/models/entities'
+import {useRouteBreadcrumbRoutes, useRouteEntities} from '@/models/entities'
 import {useNavRoute} from '@/utils/navigation'
 import {AccountRoute, DocumentRoute, DraftRoute, NavRoute} from '@/utils/routes'
 import {useNavigate} from '@/utils/useNavigate'
@@ -102,8 +102,8 @@ type CrumbDetails = {
 }
 
 function BreadcrumbTitle({route}: {route: DocumentRoute | AccountRoute}) {
-  const entityRoutes = useEntityRoutes(route)
-  const entityContents = useEntitiesContent(entityRoutes)
+  const entityRoutes = useRouteBreadcrumbRoutes(route)
+  const entityContents = useRouteEntities(entityRoutes)
   const [collapsedCount, setCollapsedCount] = useState(0)
   const widthInfo = useRef({} as Record<string, number>)
   const entityRoutesDetails = useMemo(

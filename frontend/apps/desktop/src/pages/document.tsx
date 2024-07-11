@@ -1,29 +1,30 @@
-import { EntityVersionsAccessory } from '@/changes-list'
-import { AccessoryLayout } from '@/components/accessory-sidebar'
-import { BaseAccountLinkAvatar } from '@/components/account-link-avatar'
-import { CitationsProvider } from '@/components/citations-context'
-import { EntityCommentsAccessory } from '@/components/comments'
-import { PushToGatewayDialog } from '@/components/copy-gateway-reference'
-import { useAppDialog } from '@/components/dialog'
-import { FavoriteButton } from '@/components/favoriting'
-import Footer, { FooterButton } from '@/components/footer'
-import { MainWrapper } from '@/components/main-wrapper'
-import { useAccounts } from '@/models/accounts'
-import { useDocHistory } from '@/models/changes'
-import { useAllPublicationComments, useCreateComment } from '@/models/comments'
-import { useEntityMentions } from '@/models/content-graph'
-import { useGatewayHost } from '@/models/gateway-settings'
-import { useNavRoute } from '@/utils/navigation'
-import { useNavigate } from '@/utils/useNavigate'
+import {EntityVersionsAccessory} from '@/changes-list'
+import {AccessoryLayout} from '@/components/accessory-sidebar'
+import {BaseAccountLinkAvatar} from '@/components/account-link-avatar'
+import {CitationsProvider} from '@/components/citations-context'
+import {EntityCommentsAccessory} from '@/components/comments'
+import {PushToGatewayDialog} from '@/components/copy-gateway-reference'
+import {useAppDialog} from '@/components/dialog'
+import {FavoriteButton} from '@/components/favoriting'
+import Footer, {FooterButton} from '@/components/footer'
+import {MainWrapper} from '@/components/main-wrapper'
+import {useAccounts} from '@/models/accounts'
+import {useDocHistory} from '@/models/changes'
+import {useAllPublicationComments, useCreateComment} from '@/models/comments'
+import {useEntityMentions} from '@/models/content-graph'
+import {useEntity} from '@/models/entities'
+import {useGatewayHost} from '@/models/gateway-settings'
+import {useNavRoute} from '@/utils/navigation'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   DocContent,
   DocHeading,
   HMDocument,
   createHmId,
   formattedDateMedium,
+  getDocumentTitle,
   pluralS,
-  unpackDocId,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
 import {
   BlockQuote,
@@ -33,23 +34,22 @@ import {
   XStack,
   YStack,
 } from '@shm/ui'
-import { History, MessageSquare } from '@tamagui/lucide-icons'
+import {History, MessageSquare} from '@tamagui/lucide-icons'
 import 'allotment/dist/style.css'
-import { ReactNode, useEffect, useRef } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { useDocument } from 'src/models/documents'
-import { AppErrorPage } from '../components/app-error'
-import { EntityCitationsAccessory } from '../components/citations'
-import { CopyReferenceButton } from '../components/titlebar-common'
-import { getProfileName } from './account-page'
-import { AppDocContentProvider } from './document-content-provider'
+import {ReactNode, useEffect, useRef} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AppErrorPage} from '../components/app-error'
+import {EntityCitationsAccessory} from '../components/citations'
+import {CopyReferenceButton} from '../components/titlebar-common'
+import {getProfileName} from './account-page'
+import {AppDocContentProvider} from './document-content-provider'
 
 export default function PublicationPage() {
   const route = useNavRoute()
   if (route.key !== 'document')
     throw new Error('Publication page expects publication route')
 
-  const docId = route?.documentId
+  const docId = unpackHmId(route?.documentId)
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -57,32 +57,27 @@ export default function PublicationPage() {
     throw new Error(
       `Document route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const document = useDocument(
-    docId,
-    route.versionId,
-  )
+  const document = useEntity({...docId, version: route.versionId || null})
 
   const mentions = useEntityMentions(
-    document.status == 'success' ? docId : undefined,
+    document.status == 'success' ? docId.qid : undefined,
   )
-
-  const id = unpackDocId(docId)
 
   const createComment = useCreateComment()
   const pushToGatewayDialog = useAppDialog(PushToGatewayDialog, {
     onClose: () => {
       if (route.immediatelyPromptPush) {
-        replace({ ...route, immediatelyPromptPush: false })
+        replace({...route, immediatelyPromptPush: false})
       }
     },
   })
   const gwHost = useGatewayHost()
   useEffect(() => {
-    if (id && route.immediatelyPromptPush)
+    if (docId && route.immediatelyPromptPush)
       pushToGatewayDialog.open({
         context: 'publish',
         host: gwHost,
-        ...id,
+        ...docId,
       })
   }, [docId, gwHost, route.immediatelyPromptPush])
 
@@ -95,21 +90,17 @@ export default function PublicationPage() {
     if (accessoryKey == 'versions') {
       accessory = (
         <EntityVersionsAccessory
-          id={unpackDocId(docId)}
+          id={docId}
           // variantVersion={publication.data?.variantVersion}
           activeVersion={document.data?.version}
         />
       )
     } else if (accessoryKey == 'citations') {
       accessory = <EntityCitationsAccessory entityId={docId} />
-    } else if (
-      accessoryKey == 'comments' &&
-      id &&
-      document.data?.version
-    ) {
+    } else if (accessoryKey == 'comments' && id && document.data?.version) {
       accessory = (
         <EntityCommentsAccessory
-          id={id}
+          id={docId}
           activeVersion={document.data?.version}
         />
       )
@@ -124,7 +115,7 @@ export default function PublicationPage() {
           documentId={docId}
           onCitationsOpen={() => {
             // todo, pass active citations into route
-            replace({ ...route, accessory: { key: 'citations' } })
+            replace({...route, accessory: {key: 'citations'}})
           }}
         >
           <AccessoryLayout accessory={accessory}>
@@ -139,20 +130,20 @@ export default function PublicationPage() {
                   citations={mentions.data?.mentions}
                   onCitationClick={() => {
                     if (route.accessory?.key === 'citations')
-                      return replace({ ...route, accessory: null })
-                    replace({ ...route, accessory: { key: 'citations' } })
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'citations'}})
                   }}
                   onBlockComment={(blockId, blockRange) => {
-                    replace({ ...route, accessory: { key: 'comments' } })
+                    replace({...route, accessory: {key: 'comments'}})
                     const version = document.data?.version
-                    if (!id) throw new Error('invalid doc id')
+                    if (!docId) throw new Error('invalid doc id')
                     if (!version)
                       throw new Error('no publication version for commenting')
                     createComment(
-                      id.eid,
+                      docId.eid,
                       version,
                       undefined,
-                      createHmId('d', id.eid, {
+                      createHmId('d', docId.eid, {
                         version,
                         blockRef: blockId,
                         blockRange,
@@ -164,26 +155,26 @@ export default function PublicationPage() {
                     right={
                       <XStack
                         gap="$2"
-                      // opacity={0}
-                      // $group-header-hover={{opacity: 1}}
+                        // opacity={0}
+                        // $group-header-hover={{opacity: 1}}
                       >
-                        {id && (
-                          <FavoriteButton url={createHmId('d', id.eid, {})} />
+                        {docId && (
+                          <FavoriteButton
+                            url={createHmId('d', docId.eid, {})}
+                          />
                         )}
                         <CopyReferenceButton />
                       </XStack>
                     }
                   >
-                    {document.data?.document?.title}
+                    {getDocumentTitle(document.data?.document)}
                   </DocHeading>
-                  {document.data ? (
+                  {document.data?.document ? (
                     <>
-                      <DocumentPageMeta
-                        document={document.data}
-                      />
+                      <DocumentPageMeta document={document.data.document} />
                       <DocContent
                         ref={rangeRef}
-                        document={document.data}
+                        document={document.data.document}
                         focusBlockId={
                           route?.isBlockFocused ? route.blockId : undefined
                         }
@@ -200,7 +191,7 @@ export default function PublicationPage() {
           <Footer>
             {document.data && (
               <DocumentVersionsFooterButton
-                variantVersion={document.data?.version}
+                variantVersion={document.data?.document?.version}
               />
             )}
 
@@ -214,8 +205,8 @@ export default function PublicationPage() {
                 icon={BlockQuote}
                 onPress={() => {
                   if (route.accessory?.key === 'citations')
-                    return replace({ ...route, accessory: null })
-                  replace({ ...route, accessory: { key: 'citations' } })
+                    return replace({...route, accessory: null})
+                  replace({...route, accessory: {key: 'citations'}})
                 }}
               />
             ) : null}
@@ -256,8 +247,8 @@ function PublicationCommentaryButton() {
       active={accessoryKey === 'comments'}
       onPress={() => {
         if (route.accessory?.key === 'comments')
-          return replace({ ...route, accessory: null })
-        replace({ ...route, accessory: { key: 'comments' } })
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'comments'}})
       }}
     />
   )
@@ -283,15 +274,15 @@ function DocumentVersionsFooterButton({
       icon={History}
       onPress={() => {
         if (route.accessory?.key === 'versions')
-          return replace({ ...route, accessory: null })
-        replace({ ...route, accessory: { key: 'versions' } })
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'versions'}})
       }}
     />
   )
 }
 
-function DocumentPageMeta({ document }: { document: HMDocument }) {
-  const editors = useAccounts(document.document?.editors || [])
+function DocumentPageMeta({document}: {document: HMDocument}) {
+  const editors = useAccounts(document?.authors || [])
   const navigate = useNavigate()
 
   return (
@@ -339,7 +330,7 @@ function DocumentPageMeta({ document }: { document: HMDocument }) {
                     key={account.id}
                     fontWeight={'bold'}
                     onPress={() => {
-                      navigate({ key: 'account', accountId: account.id })
+                      navigate({key: 'account', accountId: account.id})
                     }}
                     hoverStyle={{
                       textDecorationLine: 'underline',

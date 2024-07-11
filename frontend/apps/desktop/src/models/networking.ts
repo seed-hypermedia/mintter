@@ -112,7 +112,9 @@ function queryPeerInfo(
     enabled: !!deviceId,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     retry: true,
-    queryFn: () => grpcClient.networking.getPeerInfo({deviceId: deviceId}),
+    queryFn: async () => {
+      return await grpcClient.networking.getPeerInfo({deviceId: deviceId})
+    },
     onError: (err) => {
       console.error(`queryPeerInfo Error: `, err)
     },

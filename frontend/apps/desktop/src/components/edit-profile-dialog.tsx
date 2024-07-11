@@ -1,13 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {
-  Button,
-  DialogTitle,
-  Form,
-  Label,
-  Spinner,
-  XStack,
-  YStack,
-} from '@shm/ui'
+import {Button, Form, Label, XStack, YStack} from '@shm/ui'
 import {useEffect} from 'react'
 import {Control, useController, useForm} from 'react-hook-form'
 import {z} from 'zod'
@@ -20,22 +12,11 @@ import {FormError, FormInput} from './form-input'
 export function useEditProfileDialog() {
   // for some reason the dialog doesn't work if the input is falsy
   // input is not needed for this dialog, so we just use "true", lol
-  return useAppDialog<true>(EditProfileDialog)
+  return useAppDialog<string>(EditProfileDialog)
 }
 
 function EditProfileDialog({onClose}: {onClose: () => void}) {
   return null
-  // const profile = useProfile()
-  return (
-    <>
-      <DialogTitle>Edit Profile</DialogTitle>
-      {profile ? (
-        <ProfileForm profile={profile} onDone={onClose} />
-      ) : (
-        <Spinner />
-      )}
-    </>
-  )
 }
 
 const profileSchema = z.object({

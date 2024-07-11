@@ -1,4 +1,5 @@
-import {useAccount_deprecated, useProfile} from '@/models/accounts'
+import {useAccount_deprecated} from '@/models/accounts'
+import {useEntity} from '@/models/entities'
 import {
   API_FILE_URL,
   BlockContentUnknown,
@@ -40,7 +41,6 @@ import {
 import {YStackProps} from 'tamagui'
 import {useAccounts} from '../models/accounts'
 import {useComment} from '../models/comments'
-import {useDocument} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavRoute} from '../utils/navigation'
 import {getRouteContext, useOpenInContext} from '../utils/route-context'
@@ -251,8 +251,8 @@ const EmbedSideAnnotation = forwardRef<
       />
     )
   if (unpacked && unpacked.type != 'd') return null
-  const doc = useDocument(unpacked?.qid, unpacked?.version || undefined)
-  const editors = useAccounts(doc.data?.authors || [])
+  const entity = useEntity(unpacked)
+  const editors = useAccounts(entity.data?.document?.authors || [])
 
   return (
     <YStack
@@ -267,14 +267,14 @@ const EmbedSideAnnotation = forwardRef<
     >
       {/* <XStack ai="center" gap="$2" bg="green"> */}
       <SizableText size="$1" fontWeight="600">
-        {doc?.data?.metadata?.name}
+        {getDocumentTitle(entity?.data?.document)}
       </SizableText>
       {/* <SizableText fontSize={12} color="$color9">
           {formattedDateMedium(pub.data?.document?.publishTime)}
         </SizableText> */}
       {/* </XStack> */}
       <SizableText size="$1" color="$color9">
-        {formattedDateMedium(doc.data?.updateTime)}
+        {formattedDateMedium(entity.data?.document?.updateTime)}
       </SizableText>
       <XStack
         marginHorizontal="$2"
@@ -334,14 +334,9 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
     }
   }, [comment])
 
-  const pubTarget = useDocument(
-    unpackedTarget?.qid,
-    unpackedTarget?.version || undefined,
-  )
+  const pubTarget = useEntity(unpackedTarget)
 
-  const editors = useAccounts(
-    pubTarget.data?.publication?.document?.editors || [],
-  )
+  const editors = useAccounts(pubTarget.data?.document?.authors || [])
 
   if (pubTarget.status == 'success') {
     return (
@@ -359,7 +354,7 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
         <SizableText size="$1">
           comment on{' '}
           <SizableText size="$1" fontWeight="600">
-            {pubTarget?.data?.publication?.document?.title}
+            {getDocumentTitle(pubTarget?.data?.document)}
           </SizableText>
         </SizableText>
         {/* <SizableText fontSize={12} color="$color9">
@@ -367,9 +362,7 @@ const CommentSideAnnotation = forwardRef(function CommentSideAnnotation(
           </SizableText> */}
         {/* </XStack> */}
         <SizableText size="$1" color="$color9">
-          {formattedDateMedium(
-            pubTarget.data?.publication?.document?.updateTime,
-          )}
+          {formattedDateMedium(pubTarget.data?.document?.updateTime)}
         </SizableText>
         <XStack
           marginHorizontal="$2"
@@ -427,19 +420,8 @@ export function EmbedDocument(props: EntityComponentProps) {
 }
 
 export function EmbedDocContent(props: EntityComponentProps) {
-  const documentId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const [showReferenced, setShowReferenced] = useState(false)
-  const doc = useDocument(
-    documentId,
-    showReferenced && props.version
-      ? props.version
-      : props.latest
-      ? undefined
-      : props.version || undefined,
-    {
-      enabled: !!documentId,
-    },
-  )
+  const doc = useEntity(props)
   const route = useNavRoute()
   const navigate = useNavigate()
   return (
@@ -448,48 +430,37 @@ export function EmbedDocContent(props: EntityComponentProps) {
       isLoading={doc.isInitialLoading}
       showReferenced={showReferenced}
       onShowReferenced={setShowReferenced}
-      pub={doc.data}
+      document={doc.data?.document}
       EmbedWrapper={EmbedWrapper}
       parentBlockId={props.parentBlockId}
-      renderOpenButton={() =>
-        documentId && (
-          <Button
-            size="$2"
-            icon={ArrowUpRightSquare}
-            onPress={() => {
-              if (!documentId) return
-              navigate({
-                key: 'document',
-                documentId,
-                versionId: props.version || undefined,
-                context: getRouteContext(
-                  route,
-                  props.parentBlockId || undefined,
-                ),
-              })
-            }}
-          >
-            Open Document
-          </Button>
-        )
-      }
+      renderOpenButton={() => (
+        <Button
+          size="$2"
+          icon={ArrowUpRightSquare}
+          onPress={() => {
+            if (!props.qid) return
+            navigate({
+              key: 'document',
+              documentId: props.qid,
+              versionId: props.version || undefined,
+              context: getRouteContext(route, props.parentBlockId || undefined),
+            })
+          }}
+        >
+          Open Document
+        </Button>
+      )}
     />
   )
 }
 
 export function EmbedDocumentCard(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const doc = useDocument(
-    docId,
-    props.latest ? undefined : props.version || undefined,
-    {
-      enabled: !!docId,
-    },
-  )
+  const doc = useEntity(props)
   let textContent = useMemo(() => {
-    if (doc.data?.content) {
+    if (doc.data?.document?.content) {
       let content = ''
-      doc.data?.content.forEach((bn) => {
+      doc.data?.document?.content.forEach((bn) => {
         content += bn.block?.text + ' '
       })
       return content
@@ -503,11 +474,11 @@ export function EmbedDocumentCard(props: EntityComponentProps) {
       viewType={props.block.attributes?.view == 'card' ? 'card' : 'content'}
     >
       <DocumentCardView
-        title={doc.data?.metadata?.name}
+        title={getDocumentTitle(doc.data?.document)}
         textContent={textContent}
-        editors={doc.data?.authors || []}
+        editors={doc.data?.document?.authors || []}
         AvatarComponent={AvatarComponent}
-        date={doc.data?.updateTime}
+        date={doc.data?.document?.updateTime}
       />
     </EmbedWrapper>
   )
@@ -517,13 +488,14 @@ export function EmbedAccount(
   props: EntityComponentProps,
   parentBlockId: string | null,
 ) {
-  console.log(`== ~ props EmbedAccount:`, props)
-  const accountId = props.type == 'a' ? props.eid : undefined
-  const profile = useProfile(accountId)
+  const profile = useEntity(props)
 
   if (profile.status == 'success') {
+    const account =
+      profile.data?.type === 'a' ? profile.data?.account : undefined
+    if (!account) return null
     if (props.block?.attributes?.view == 'content' && profile.data) {
-      return <EmbedDocContent {...props} {...unpackedRef} />
+      return <EmbedDocContent {...props} />
     } else if (props.block?.attributes?.view == 'card') {
       return (
         <EmbedWrapper
@@ -531,7 +503,7 @@ export function EmbedAccount(
           parentBlockId={parentBlockId}
           viewType="card"
         >
-          <EmbedAccountContent account={profile.data!} />
+          <EmbedAccountContent account={account} />
         </EmbedWrapper>
       )
     }
@@ -542,7 +514,7 @@ export function EmbedAccount(
         parentBlockId={parentBlockId}
         viewType="card"
       >
-        <EmbedAccountContent account={accountQuery.data!} />
+        <EmbedAccountContent account={account} />
         <XStack p="$2" theme="red" gap="$2">
           <FileWarning size={14} />
           <SizableText size="$1">
@@ -659,7 +631,7 @@ function AccountInlineEmbed(props: InlineEmbedComponentProps) {
 function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
   const pubId = props?.type == 'd' ? props.qid : undefined
   if (!pubId) throw new Error('Invalid props at PublicationInlineEmbed (pubId)')
-  const doc = useDocument(pubId, props?.version || undefined)
+  const doc = useEntity(props)
   const navigate = useNavigate()
   return (
     <InlineEmbedButton
@@ -672,7 +644,7 @@ function PublicationInlineEmbed(props: InlineEmbedComponentProps) {
         })
       }
     >
-      {getDocumentTitle(doc.data)}
+      {getDocumentTitle(doc.data?.document)}
     </InlineEmbedButton>
   )
 }

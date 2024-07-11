@@ -64,8 +64,6 @@ export default function DraftPage() {
 
   // const {shouldRebase, newVersion} = useDraftRebase({
 
-  console.log(`== ~ DraftPage ~ data:`, data)
-
   //   shouldCheck:
   //     (data.draft?.previousVersion && data.state.matches('ready')) || false,
   //   draft: data.draft,

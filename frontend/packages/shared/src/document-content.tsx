@@ -1,4 +1,3 @@
-import { Timestamp } from '@bufbuild/protobuf'
 import {
   API_HTTP_URL,
   Block,
@@ -10,6 +9,7 @@ import {
   HMBlockNode,
   HMDocument,
   HMInlineContent,
+  HMTimestamp,
   Mention,
   UnpackedHypermediaId,
   clipContentBlocks,
@@ -22,7 +22,7 @@ import {
   toHMInlineContent,
   unpackHmId,
   useHover,
-  useLowlight
+  useLowlight,
 } from '@shm/shared'
 import {
   BlockQuote,
@@ -58,11 +58,11 @@ import {
   YStack,
   YStackProps,
 } from '@shm/ui'
-import { AlertCircle, MessageSquare, Reply } from '@tamagui/lucide-icons'
+import {AlertCircle, MessageSquare, Reply} from '@tamagui/lucide-icons'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import { common } from 'lowlight'
-import { nip19, nip21, validateEvent, verifySignature } from 'nostr-tools'
+import {common} from 'lowlight'
+import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
@@ -73,7 +73,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { RiCheckFill, RiCloseCircleLine, RiRefreshLine } from 'react-icons/ri'
+import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
 import {
   QuotedTweet,
   TweetBody,
@@ -84,13 +84,10 @@ import {
   enrichTweet,
   useTweet,
 } from 'react-tweet'
-import {
-  contentLayoutUnit,
-  contentTextUnit,
-} from './document-content-constants'
+import {contentLayoutUnit, contentTextUnit} from './document-content-constants'
 import './document-content.css'
-import { HMAccount } from './hm-types'
-import { useRangeSelection } from './range-selection'
+import {HMAccount} from './hm-types'
+import {useRangeSelection} from './range-selection'
 
 export type EntityComponentsRecord = {
   Account: React.FC<EntityComponentProps>
@@ -109,12 +106,12 @@ export type DocContentContextValue = {
   onCitationClick?: () => void
   disableEmbedClick?: boolean
   onCopyBlock:
-  | null
-  | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   onReplyBlock?: null | ((blockId: string) => void)
   onBlockComment?:
-  | null
-  | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
+    | null
+    | ((blockId: string, blockRange?: BlockRange | ExpandedBlockRange) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -129,8 +126,9 @@ export type DocContentContextValue = {
   importWebFile?: any
 }
 
-export const docContentContext =
-  createContext<DocContentContextValue | null>(null)
+export const docContentContext = createContext<DocContentContextValue | null>(
+  null,
+)
 
 export type EntityComponentProps = BlockContentProps & UnpackedHypermediaId
 
@@ -234,9 +232,7 @@ export function useDocContentContext() {
   let context = useContext(docContentContext)
 
   if (!context) {
-    throw new Error(
-      `Please wrap <DocContent /> with <DocContentProvider />`,
-    )
+    throw new Error(`Please wrap <DocContent /> with <DocContentProvider />`)
   }
 
   return context
@@ -245,9 +241,9 @@ export function useDocContentContext() {
 function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
   return debug
     ? {
-      borderWidth: 1,
-      borderColor: color,
-    }
+        borderWidth: 1,
+        borderColor: color,
+      }
     : {}
 }
 
@@ -270,10 +266,9 @@ export function DocContent({
   maxBlockCount?: number
   marginVertical?: any
 }) {
-  const { wrapper, bubble, coords, state, send } = useRangeSelection()
+  const {wrapper, bubble, coords, state, send} = useRangeSelection()
 
-  const { layoutUnit, onCopyBlock, onBlockComment } =
-    useDocContentContext()
+  const {layoutUnit, onCopyBlock, onBlockComment} = useDocContentContext()
   const allBlocks = document?.content || []
   const focusedBlocks = getFocusedBlocks(allBlocks, focusBlockId)
   const displayBlocks = maxBlockCount
@@ -301,7 +296,7 @@ export function DocContent({
     <YStack
       ref={wrapper}
       paddingHorizontal={layoutUnit / 3}
-      $gtMd={{ paddingHorizontal: layoutUnit / 2 }}
+      $gtMd={{paddingHorizontal: layoutUnit / 2}}
       marginVertical={marginVertical}
       {...props}
     >
@@ -324,12 +319,12 @@ export function DocContent({
                   typeof state.context.rangeStart == 'number' &&
                     typeof state.context.rangeEnd == 'number'
                     ? {
-                      start: state.context.rangeStart,
-                      end: state.context.rangeEnd,
-                    }
+                        start: state.context.rangeStart,
+                        end: state.context.rangeEnd,
+                      }
                     : {
-                      expanded: true,
-                    },
+                        expanded: true,
+                      },
                 )
               }}
             />
@@ -341,15 +336,15 @@ export function DocContent({
               size="$2"
               icon={Comment}
               onPress={() => {
-                send({ type: 'CREATE_COMMENT' })
+                send({type: 'CREATE_COMMENT'})
                 onBlockComment(
                   state.context.blockId,
                   typeof state.context.rangeStart == 'number' &&
                     typeof state.context.rangeEnd == 'number'
                     ? {
-                      start: state.context.rangeStart,
-                      end: state.context.rangeEnd,
-                    }
+                        start: state.context.rangeStart,
+                        end: state.context.rangeEnd,
+                      }
                     : undefined,
                 )
               }}
@@ -510,8 +505,8 @@ export function BlockNodeContent({
     layoutUnit,
     isFirstChild,
   )
-  const { hover, ...hoverProps } = useHover()
-  const { citations } = useBlockCitations(blockNode.block?.id)
+  const {hover, ...hoverProps} = useHover()
+  const {citations} = useBlockCitations(blockNode.block?.id)
   const [_expanded, setExpanded] = useState<boolean>(expanded)
 
   useEffect(() => {
@@ -523,19 +518,19 @@ export function BlockNodeContent({
   const elm = useRef<HTMLDivElement>(null)
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
-      <BlockNodeContent
-        key={bn.block!.id}
-        depth={depth + 1}
-        isFirstChild={index == 0}
-        blockNode={bn}
-        childrenType={bn.block!.attributes?.childrenType}
-        start={bn.block!.attributes?.start}
-        listLevel={bn.block!.attributes?.listLevel}
-        index={index}
-        parentBlockId={blockNode.block?.id || null}
-        embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
-      />
-    ))
+        <BlockNodeContent
+          key={bn.block!.id}
+          depth={depth + 1}
+          isFirstChild={index == 0}
+          blockNode={bn}
+          childrenType={bn.block!.attributes?.childrenType}
+          start={bn.block!.attributes?.start}
+          listLevel={bn.block!.attributes?.listLevel}
+          index={index}
+          parentBlockId={blockNode.block?.id || null}
+          embedDepth={embedDepth ? embedDepth + 1 : embedDepth}
+        />
+      ))
     : null
 
   const headingStyles = useMemo(() => {
@@ -568,7 +563,7 @@ export function BlockNodeContent({
 
   useEffect(() => {
     if (elm.current && isHighlight) {
-      elm.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      elm.current.scrollIntoView({behavior: 'smooth', block: 'start'})
     }
   }, [isHighlight])
 
@@ -603,10 +598,10 @@ export function BlockNodeContent({
       borderRadius={layoutUnit / 4}
       bg={isHighlight ? '$yellow3' : '$backgroundTransparent'}
       data-node-type="blockContainer"
-    // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
-    // onHoverOut={() =>
-    //   props.embedDepth ? undefined : hoverProps.onHoverOut()
-    // }
+      // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
+      // onHoverOut={() =>
+      //   props.embedDepth ? undefined : hoverProps.onHoverOut()
+      // }
     >
       <XStack
         padding={isEmbed ? 0 : layoutUnit / 3}
@@ -731,7 +726,7 @@ export function BlockNodeContent({
                     icon={Link}
                     onPress={() => {
                       if (blockNode.block?.id) {
-                        onCopyBlock(blockNode.block.id, { expanded: true })
+                        onCopyBlock(blockNode.block.id, {expanded: true})
                       } else {
                         console.error('onCopyBlock Error: no blockId available')
                       }
@@ -905,7 +900,7 @@ function BlockContentParagraph({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { debug, textUnit, comment } = useDocContentContext()
+  const {debug, textUnit, comment} = useDocContentContext()
 
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   return (
@@ -931,7 +926,7 @@ export function BlockContentHeading({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { textUnit, debug, ffSerif } = useDocContentContext()
+  const {textUnit, debug, ffSerif} = useDocContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
   let tag = `h${depth}`
@@ -968,7 +963,7 @@ export function DocHeading({
   children?: string
   right?: React.ReactNode
 }) {
-  const { textUnit, debug, layoutUnit } = useDocContentContext()
+  const {textUnit, debug, layoutUnit} = useDocContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
 
@@ -976,14 +971,14 @@ export function DocHeading({
     <Theme name="subtle">
       <YStack
         paddingHorizontal={layoutUnit / 3}
-        $gtMd={{ paddingHorizontal: layoutUnit / 2 }}
+        $gtMd={{paddingHorizontal: layoutUnit / 2}}
         group="header"
       >
         <YStack
           padding={layoutUnit / 3}
           // marginBottom={layoutUnit}
           paddingBottom={layoutUnit / 2}
-        // {...headingMarginStyles}
+          // {...headingMarginStyles}
         >
           <XStack>
             <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
@@ -1103,7 +1098,7 @@ function BlockContentImage({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
-  const { ipfsBlobPrefix, textUnit } = useDocContentContext()
+  const {ipfsBlobPrefix, textUnit} = useDocContentContext()
   if (!cid) return null
 
   return (
@@ -1128,7 +1123,7 @@ function BlockContentImage({
         <img
           alt={block?.attributes?.alt}
           src={`${ipfsBlobPrefix}${cid}`}
-          style={{ width: '100%' }}
+          style={{width: '100%'}}
         />
       </XStack>
       {inline.length ? (
@@ -1147,7 +1142,7 @@ function BlockContentVideo({
 }: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
-  const { ipfsBlobPrefix, textUnit } = useDocContentContext()
+  const {ipfsBlobPrefix, textUnit} = useDocContentContext()
 
   return (
     <YStack
@@ -1238,8 +1233,7 @@ function InlineContentView({
   rangeOffset?: number
   isRange?: boolean
 }) {
-  const { onLinkClick, textUnit, entityComponents } =
-    useDocContentContext()
+  const {onLinkClick, textUnit, entityComponents} = useDocContentContext()
 
   const InlineEmbed = entityComponents.Inline
 
@@ -1368,7 +1362,7 @@ function InlineContentView({
               key={`${content.type}-${index}`}
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
-              style={{ textDecorationLine }}
+              style={{textDecorationLine}}
               fontSize={fSize}
               lineHeight={fSize * 1.5}
               data-range-offset={inlineContentOffset}
@@ -1443,9 +1437,8 @@ export function BlockContentEmbed(props: BlockContentProps) {
   return <BlockContentUnknown {...props} />
 }
 
-
-export function EmbedAccountContent({ account }: { account: HMAccount }) {
-  const { ipfsBlobPrefix } = useDocContentContext()
+export function EmbedAccountContent({account}: {account: HMAccount}) {
+  const {ipfsBlobPrefix} = useDocContentContext()
   return (
     <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -1531,7 +1524,7 @@ export function ContentEmbed({
   onShowReferenced: (showReference: boolean) => void
   renderOpenButton: () => React.ReactNode
   EmbedWrapper: React.ComponentType<
-    React.PropsWithChildren<{ hmRef: string; parentBlockId: string }>
+    React.PropsWithChildren<{hmRef: string; parentBlockId: string}>
   >
   parentBlockId: string | null
 }) {
@@ -1544,30 +1537,30 @@ export function ContentEmbed({
     const embedBlocks = props.blockRef
       ? selectedBlock
         ? [
-          {
-            ...selectedBlock,
-            block: {
-              ...selectedBlock.block,
-              annotations:
-                props.blockRange && 'start' in props.blockRange
-                  ? [
-                    ...currentAnnotations,
-                    {
-                      type: 'range',
-                      starts: [props.blockRange.start],
-                      ends: [props.blockRange.end],
-                    },
-                  ]
-                  : currentAnnotations,
+            {
+              ...selectedBlock,
+              block: {
+                ...selectedBlock.block,
+                annotations:
+                  props.blockRange && 'start' in props.blockRange
+                    ? [
+                        ...currentAnnotations,
+                        {
+                          type: 'range',
+                          starts: [props.blockRange.start],
+                          ends: [props.blockRange.end],
+                        },
+                      ]
+                    : currentAnnotations,
+              },
+              // children:
+              //   props.blockRange &&
+              //   'expanded' in props.blockRange &&
+              //   props.blockRange.expanded
+              //     ? [...selectedBlock.children]
+              //     : [],
             },
-            // children:
-            //   props.blockRange &&
-            //   'expanded' in props.blockRange &&
-            //   props.blockRange.expanded
-            //     ? [...selectedBlock.children]
-            //     : [],
-          },
-        ]
+          ]
         : null
       : document?.content
 
@@ -1579,10 +1572,10 @@ export function ContentEmbed({
         blockRange:
           props.blockRange && 'start' in props.blockRange && selectedBlock
             ? {
-              blockId: props.blockRef,
-              start: props.blockRange.start,
-              end: props.blockRange.end,
-            }
+                blockId: props.blockRef,
+                start: props.blockRange.start,
+                end: props.blockRange.end,
+              }
             : null,
       },
     }
@@ -1760,8 +1753,8 @@ export function BlockContentFile({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { hover, ...hoverProps } = useHover()
-  const { layoutUnit, saveCidAsFile } = useDocContentContext()
+  const {hover, ...hoverProps} = useHover()
+  const {layoutUnit, saveCidAsFile} = useDocContentContext()
   const fileCid = block.ref ? getCIDFromIPFSUrl(block.ref) : ''
   return (
     <YStack
@@ -1810,19 +1803,21 @@ export function BlockContentFile({
           </SizableText>
         )}
 
-        {fileCid && <Tooltip content={`Download ${block.attributes?.name || 'File'}`}>
-          <Button
-            position="absolute"
-            right={0}
-            opacity={hover ? 1 : 0}
-            size="$2"
-            onPress={() => {
-              saveCidAsFile(fileCid, block.attributes?.name || 'File')
-            }}
-          >
-            Download
-          </Button>
-        </Tooltip>}
+        {fileCid && (
+          <Tooltip content={`Download ${block.attributes?.name || 'File'}`}>
+            <Button
+              position="absolute"
+              right={0}
+              opacity={hover ? 1 : 0}
+              size="$2"
+              onPress={() => {
+                saveCidAsFile(fileCid, block.attributes?.name || 'File')
+              }}
+            >
+              Download
+            </Button>
+          </Tooltip>
+        )}
       </XStack>
     </YStack>
   )
@@ -1833,7 +1828,7 @@ export function BlockContentNostr({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit } = useDocContentContext()
+  const {layoutUnit} = useDocContentContext()
   const name = block.attributes?.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
 
@@ -1892,15 +1887,15 @@ export function BlockContentNostr({
           flex={1}
         >
           {'Public Key: '}
-          {nip21.test(uri) ? <a href={uri}>{header}</a> : { header }}
+          {nip21.test(uri) ? <a href={uri}>{header}</a> : {header}}
         </SizableText>
         <Tooltip
           content={
             verified === undefined
               ? ''
               : verified
-                ? 'Signature verified'
-                : 'Invalid signature'
+              ? 'Signature verified'
+              : 'Invalid signature'
           }
         >
           <Button
@@ -1913,8 +1908,8 @@ export function BlockContentNostr({
               verified === undefined
                 ? RiRefreshLine
                 : verified
-                  ? RiCheckFill
-                  : RiCloseCircleLine
+                ? RiCheckFill
+                : RiCloseCircleLine
             }
           />
         </Tooltip>
@@ -1933,10 +1928,10 @@ export function BlockContentXPost({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit, onLinkClick } = useDocContentContext()
+  const {layoutUnit, onLinkClick} = useDocContentContext()
   const urlArray = block.ref?.split('/')
   const xPostId = urlArray?.[urlArray.length - 1].split('?')[0]
-  const { data, error, isLoading } = useTweet(xPostId)
+  const {data, error, isLoading} = useTweet(xPostId)
 
   let xPostContent
 
@@ -1990,28 +1985,28 @@ export function BlockContentCode({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit, debug, textUnit } = useDocContentContext()
+  const {layoutUnit, debug, textUnit} = useDocContentContext()
   function getHighlightNodes(result: any) {
     return result.value || result.children || []
   }
 
-  const CodeHighlight = ({ node }: { node: any }) => {
+  const CodeHighlight = ({node}: {node: any}) => {
     if (node.type === 'text') {
       return node.value
     }
 
     if (node.type === 'element') {
-      const { tagName, properties, children } = node
+      const {tagName, properties, children} = node
       if (properties.className && Array.isArray(properties.className)) {
         properties.className = properties.className[0]
       }
       return createElement(
         tagName,
-        { ...properties },
+        {...properties},
         children &&
-        children.map((child: any, index: number) => (
-          <CodeHighlight key={index} node={child} />
-        )),
+          children.map((child: any, index: number) => (
+            <CodeHighlight key={index} node={child} />
+          )),
       )
     }
 
@@ -2054,8 +2049,8 @@ export function BlockContentCode({
         >
           {nodes.length > 0
             ? nodes.map((node, index) => (
-              <CodeHighlight key={index} node={node} />
-            ))
+                <CodeHighlight key={index} node={node} />
+              ))
             : block.text}
         </Text>
       </XStack>
@@ -2068,7 +2063,7 @@ export function BlockContentMath({
   parentBlockId,
   ...props
 }: BlockContentProps) {
-  const { layoutUnit } = useDocContentContext()
+  const {layoutUnit} = useDocContentContext()
 
   const tex = katex.renderToString(block.text ? block.text : '', {
     throwOnError: true,
@@ -2097,7 +2092,7 @@ export function BlockContentMath({
       <SizableText
         ai="center"
         ac="center"
-        dangerouslySetInnerHTML={{ __html: tex }}
+        dangerouslySetInnerHTML={{__html: tex}}
       ></SizableText>
     </YStack>
   )
@@ -2128,7 +2123,7 @@ function CheckboxWithLabel({
   size,
   label,
   ...checkboxProps
-}: CheckboxProps & { size: SizeTokens; label: string }) {
+}: CheckboxProps & {size: SizeTokens; label: string}) {
   const id = `checkbox-${size.toString().slice(1)}`
   return (
     <XStack alignItems="center" space="$2">
@@ -2145,7 +2140,7 @@ function CheckboxWithLabel({
   )
 }
 
-function RadioGroupItemWithLabel(props: { value: string; label: string }) {
+function RadioGroupItemWithLabel(props: {value: string; label: string}) {
   const id = `radiogroup-${props.value}`
   return (
     <XStack alignItems="center" space="$2">
@@ -2170,8 +2165,8 @@ export function DocumentCardView({
   title?: string
   textContent?: string
   editors?: Array<string>
-  AvatarComponent: React.FC<{ accountId?: string }>
-  date?: Timestamp
+  AvatarComponent: React.FC<{accountId?: string}>
+  date?: HMTimestamp
 }) {
   return (
     <XStack padding="$2">
@@ -2222,7 +2217,7 @@ function EditorsAvatars({
   AvatarComponent,
 }: {
   editors?: Array<string>
-  AvatarComponent: React.FC<{ accountId?: string }>
+  AvatarComponent: React.FC<{accountId?: string}>
 }) {
   return (
     <XStack marginLeft={6}>

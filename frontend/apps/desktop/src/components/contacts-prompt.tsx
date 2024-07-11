@@ -1,14 +1,16 @@
-import { AccessURLRow } from '@/url'
-import { HYPERMEDIA_PUBLIC_WEB_GATEWAY } from '@shm/shared'
-import { Button, Spinner, TextArea, XStack, toast } from '@shm/ui'
-import { UserPlus } from '@tamagui/lucide-icons'
-import { compressToEncodedURIComponent } from 'lz-string'
-import { ComponentProps, useMemo, useState } from 'react'
+import {useEntity} from '@/models/entities'
+import {getProfileName} from '@/pages/account-page'
+import {AccessURLRow} from '@/url'
+import {hmId, HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@shm/shared'
+import {Button, Spinner, TextArea, toast, XStack} from '@shm/ui'
+import {UserPlus} from '@tamagui/lucide-icons'
+import {compressToEncodedURIComponent} from 'lz-string'
+import {ComponentProps, useMemo, useState} from 'react'
 import appError from '../errors'
-import { useMyAccount_deprecated } from '../models/accounts'
-import { useConnectPeer } from '../models/contacts'
-import { useDaemonInfo } from '../models/daemon'
-import { usePeerInfo } from '../models/networking'
+import {useMyAccount_deprecated} from '../models/accounts'
+import {useConnectPeer} from '../models/contacts'
+import {useDaemonInfo} from '../models/daemon'
+import {usePeerInfo} from '../models/networking'
 import {
   AppDialog,
   DialogCloseButton,
@@ -29,13 +31,15 @@ function AddConnectionForm({
   onClose,
 }: {
   onClose: () => void
-  input: true | { connectionString?: string; name?: string | undefined }
+  input: true | {connectionString?: string; name?: string | undefined}
 }) {
   const [peerText, setPeer] = useState('')
   const daemonInfo = useDaemonInfo()
   const account = useMyAccount_deprecated()
+  const profile = useEntity(account ? hmId('a', account) : undefined)
   const deviceId = daemonInfo.data?.peerId
   const peerInfo = usePeerInfo(deviceId)
+  console.log('peerInfo', peerInfo.data, deviceId)
 
   const connectionString =
     typeof input === 'object' ? input.connectionString : undefined
@@ -47,10 +51,10 @@ function AddConnectionForm({
       toast.success('Connection Added')
     },
     onError: (error) => {
-      appError(`Connect to peer error: ${error?.rawMessage}`, { error })
+      appError(`Connect to peer error: ${error?.rawMessage}`, {error})
     },
   })
-
+  const myName = getProfileName(profile.data?.document)
   const connectInfo = useMemo(() => {
     if (!deviceId || !peerInfo.data?.addrs?.length) return null
     return compressToEncodedURIComponent(
@@ -58,14 +62,14 @@ function AddConnectionForm({
         a: peerInfo.data?.addrs.map((addr) => {
           return addr.split('/p2p/').slice(0, -1).join('/p2p/')
         }),
-        n: account.data?.profile?.alias,
+        n: myName,
         d: deviceId,
       }),
     )
   }, [
     deviceId,
     peerInfo.data?.addrs?.length, // explicitly using addrs length because the address list is being polled and frequently changes order, which does not affect connecivity
-    account.data?.profile?.alias,
+    myName,
   ])
   return (
     <>

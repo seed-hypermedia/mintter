@@ -5,16 +5,14 @@ import {DocumentListItem} from '@/components/document-list-item'
 import {FavoriteButton} from '@/components/favoriting'
 import Footer, {FooterButton} from '@/components/footer'
 import {MainWrapperNoScroll} from '@/components/main-wrapper'
-import {
-  useMyAccountIds,
-  useProfile,
-  useProfileWithDraft,
-} from '@/models/accounts'
+import {useProfileWithDraft} from '@/models/accounts'
+import {useMyAccountIds} from '@/models/daemon'
 import {useAccountDocuments} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {getAvatarUrl} from '@/utils/account-url'
 import {useNavRoute} from '@/utils/navigation'
 import {useNavigate} from '@/utils/useNavigate'
-import {DocContent, HMDocument, createHmId} from '@shm/shared'
+import {DocContent, HMDocument, createHmId, hmId} from '@shm/shared'
 import {
   BlockQuote,
   MainWrapper,
@@ -31,8 +29,7 @@ import {CopyReferenceButton} from '../components/titlebar-common'
 import {AppDocContentProvider} from './document-content-provider'
 
 export function getProfileName(profile: HMDocument | null | undefined) {
-  if (!profile) return ''
-  return profile.metadata?.name || 'Untitled Account'
+  return profile?.metadata?.name || 'Untitled Account'
 }
 
 export default function AccountPage() {
@@ -201,7 +198,7 @@ function AccountPageHeader() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const myAccountIds = useMyAccountIds()
   const {profile} = useProfileWithDraft(accountId)
-  const isMyAccount = myAccountIds.includes(accountId)
+  const isMyAccount = myAccountIds.data?.includes(accountId)
   const accountEntityUrl = createHmId('a', accountId)
   const accountName = getProfileName(profile)
   return (
@@ -272,13 +269,14 @@ function AccountPageProfile({
   blockId?: string
   isBlockFocused?: boolean
 }) {
-  const profile = useProfile(accountId)
-  if (profile.status !== 'success' || !profile.data) return <Spinner />
+  const profile = useEntity(hmId('a', accountId))
+  if (profile.isLoading) return <Spinner />
+  if (!profile.data?.document) return null
   return (
     <PageContainer>
       <AppDocContentProvider routeParams={{blockRef: blockId}}>
         <DocContent
-          document={profile.data}
+          document={profile.data?.document}
           focusBlockId={isBlockFocused ? blockId : undefined}
         />
       </AppDocContentProvider>

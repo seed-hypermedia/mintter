@@ -1,16 +1,11 @@
 import {dispatchWizardEvent} from '@/app-account'
 import {useAppContext, useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {createHypermediaDocLinkPlugin} from '@/editor'
-import {
-  useAccounts,
-  useDraft,
-  useMyAccount_deprecated,
-  useProfile,
-} from '@/models/accounts'
+import {useDraft, useMyAccount_deprecated} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {useOpenUrl} from '@/open-url'
 import {slashMenuItems} from '@/slash-menu-items'
-import {client, trpc} from '@/trpc'
+import {trpc} from '@/trpc'
 import {Timestamp, toPlainMessage} from '@bufbuild/protobuf'
 import {ConnectError} from '@connectrpc/connect'
 import {
@@ -36,7 +31,6 @@ import {
   UseQueryOptions,
   useInfiniteQuery,
   useMutation,
-  useQueries,
   useQuery,
 } from '@tanstack/react-query'
 import {Extension, findParentNode} from '@tiptap/core'
@@ -55,9 +49,10 @@ import {
 import {useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
-import {useAccountKeys} from './daemon'
+import {useMyAccountIds} from './daemon'
 import {draftMachine} from './draft-machine'
 import {setGroupTypes} from './editor-utils'
+import {useEntities, useEntity} from './entities'
 import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 
 export function useDocumentList(
@@ -117,8 +112,6 @@ export function useDeleteDraft(
     },
     onSuccess: (response, documentId, context) => {
       setTimeout(() => {
-        invalidate([queryKeys.DRAFT_LIST])
-        invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
         invalidate([queryKeys.ENTITY_TIMELINE, documentId])
         invalidate([queryKeys.DRAFT, documentId])
         queryClient.client.removeQueries([queryKeys.DRAFT, documentId])
@@ -180,45 +173,15 @@ export function useDocumentEmbeds(
   opts?: {skipCards: boolean},
 ): EmbedsContent {
   // todo: query for comments here as well
-  const {queryDocuments, queryAccounts} = useMemo(() => {
-    if (!enabled) return {queryDocuments: [], queryAccounts: []}
-    const queryDocuments: {
-      blockId: string
-      refId: UnpackedHypermediaId
-    }[] = []
-    const queryAccounts: {blockId: string; refId: UnpackedHypermediaId}[] = []
-    extractRefs(doc?.content || [], opts?.skipCards).forEach(
-      ({refId, blockId}) => {
-        if (refId.type === 'a') {
-          queryAccounts.push({blockId, refId})
-        } else if (refId.type === 'd') {
-          queryDocuments.push({blockId, refId})
-        }
-      },
-    )
-    return {
-      queryDocuments,
-      queryAccounts,
-    }
+  const docRefs = useMemo(() => {
+    return extractRefs(doc?.content || [], opts?.skipCards)
   }, [doc, enabled])
-  const docs = useDocuments(
-    queryDocuments.map((q) => ({
-      docId: q.refId.qid,
-      version: q.refId.version || undefined,
-    })),
-  )
-  const accounts = useAccounts(queryAccounts.map((q) => q.refId.eid))
-  const embeds = Object.fromEntries([
-    ...docs.map((doc, idx) => [
-      queryDocuments[idx].blockId,
-      {type: 'd', query: queryDocuments[idx], data: doc.data},
-    ]),
-    ...accounts.map((account, idx) => [
-      queryAccounts[idx].blockId,
-      {type: 'a', query: queryAccounts[idx], data: account.data},
-    ]),
-  ]) as EmbedsContent
-  return embeds
+  const entities = useEntities(docRefs.map((r) => r.refId))
+  return docRefs.map((query, i) => {
+    const entity = entities[i]
+
+    return {query, type: query.refId.type}
+  })
 }
 
 // TODO: Duplicate (apps/site/server/routers/_app.ts#~187)
@@ -310,7 +273,6 @@ export function usePublishDraft(
             ...deleteChanges,
           ]
           // TODO: @horacio we might need a warning here if the user wants to publish a profile update with a different accountId when we have multiple accounts
-
           const publish = await grpcClient.documents.changeProfileDocument({
             accountId: draft.signingAccount
               ? draft.signingAccount
@@ -330,14 +292,7 @@ export function usePublishDraft(
     onSuccess: (result, variables, context) => {
       const documentId = result.id
       opts?.onSuccess?.(result, variables, context)
-      // invalidate([queryKeys.FEED_LATEST_EVENT])
-      // invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
-      // invalidate([queryKeys.DOCUMENT_LIST])
-      invalidate([queryKeys.DRAFT_LIST])
-      invalidate([queryKeys.PROFILE_DOCUMENT, documentId])
-      invalidate([queryKeys.DOCUMENT, documentId])
-      // invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-      // invalidate([queryKeys.ENTITY_CITATIONS])
+      invalidate([queryKeys.ENTITY, documentId])
     },
   })
 }
@@ -403,12 +358,10 @@ export function _usePublishDraft(
       invalidate([queryKeys.FEED_LATEST_EVENT])
       invalidate([queryKeys.RESOURCE_FEED_LATEST_EVENT])
       invalidate([queryKeys.DOCUMENT_LIST])
-      invalidate([queryKeys.DRAFT_LIST])
-      invalidate([queryKeys.DOCUMENT_DRAFTS, documentId])
-      invalidate([queryKeys.DOCUMENT, documentId])
+      invalidate([queryKeys.ENTITY, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
-      invalidate([queryKeys.ALL_ACCOUNTS]) // accounts invalidate because profile doc may be updated
-      invalidate([queryKeys.ACCOUNT, myAccount.data?.id])
+      invalidate([queryKeys.LIST_ACCOUNTS]) // accounts invalidate because profile doc may be updated
+      invalidate([queryKeys.ENTITY, myAccount])
       invalidate([queryKeys.ENTITY_CITATIONS])
       setTimeout(() => {
         client.removeQueries([queryKeys.DRAFT, documentId])
@@ -498,7 +451,7 @@ export function queryDraft({
 }
 
 export function useDraftEditor({id}: {id: string | undefined}) {
-  const keys = useAccountKeys()
+  const keys = useMyAccountIds()
   const {queryClient, grpcClient} = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
@@ -514,7 +467,7 @@ export function useDraftEditor({id}: {id: string | undefined}) {
   const saveDraft = trpc.drafts.write.useMutation()
 
   const signingAccount = useMemo(() => {
-    return keys.data?.length == 1 ? keys.data[0].publicKey : undefined // TODO: @horacio need to add a "key selector" here
+    return keys.data?.length == 1 ? keys.data[0] : undefined // TODO: @horacio need to add a "key selector" here
   }, [keys.data])
 
   const editor = useBlockNote<typeof hmBlockSchema>({
@@ -589,7 +542,7 @@ export function useDraftEditor({id}: {id: string | undefined}) {
   >(async ({input}) => {
     const blocks = editor.topLevelBlocks
     let inputData: Partial<HMDraft> = {}
-    const draftId = id || nanoid()
+    const draftId = id || `hm://draft/${nanoid()}`
     if (!input.draft) {
       inputData = {
         content: blocks,
@@ -659,10 +612,9 @@ export function useDraftEditor({id}: {id: string | undefined}) {
           }
         },
         onSaveSuccess: function () {
-          invalidate([queryKeys.DRAFT_LIST])
           invalidate([queryKeys.DRAFT, id])
           invalidate(['trpc.drafts.get'])
-          invalidate([queryKeys.PROFILE_DOCUMENT, id])
+          invalidate([queryKeys.ENTITY, id])
         },
       },
       actors: {
@@ -672,7 +624,7 @@ export function useDraftEditor({id}: {id: string | undefined}) {
   )
 
   const backendDraft = useDraft(id)
-  const backendDocument = useProfile(id)
+  const backendDocument = useEntity(unpackHmId(id))
 
   useEffect(() => {
     if (backendDraft.status == 'loading' && typeof id == 'undefined') {
@@ -686,7 +638,9 @@ export function useDraftEditor({id}: {id: string | undefined}) {
         type: 'GET.DRAFT.SUCCESS',
         draft: backendDraft.data,
         document:
-          backendDocument.status != 'error' ? backendDocument.data : null,
+          backendDocument.status != 'error'
+            ? backendDocument.data?.document
+            : null,
       })
     }
     if (backendDraft.status == 'error') {
@@ -1218,81 +1172,5 @@ export function useDraftRebase({
   return {
     shouldRebase: rebase,
     newVersion,
-  }
-}
-
-export function useDocument(
-  id: string | undefined,
-  version?: string | undefined,
-  options?: UseQueryOptions<HMDocument | null> & {
-    draftId?: string
-  },
-) {
-  const grpcClient = useGRPCClient()
-  const {data: document, status: documentStatus} = useQuery(
-    queryDocument({id, version, grpcClient, ...options}),
-  )
-  const {data: draft, status: draftStatus} = trpc.drafts.get.useQuery(id, {
-    enabled: !!id,
-  })
-
-  return useMemo(
-    () => ({
-      document,
-      draft,
-    }),
-    [documentStatus, draftStatus],
-  )
-}
-
-/**
- *
- * @deprecated
- */
-export function useDocuments(
-  docs: {id?: string | undefined; version?: string | undefined}[],
-  options?: UseQueryOptions<HMDocument | null>,
-) {
-  const grpcClient = useGRPCClient()
-  return useQueries({
-    queries: docs.map((docQ) => queryDocument({...docQ, grpcClient})),
-    ...(options || {}),
-  })
-}
-
-export function queryDocument({
-  id,
-  version,
-  grpcClient,
-  ...options
-}: {
-  id?: string
-  version?: string
-  grpcClient: GRPCClient
-} & UseQueryOptions<HMDocument | null>): UseQueryOptions<HMDocument | null> {
-  return {
-    enabled: !!id,
-    queryKey: [queryKeys.DOCUMENT, id],
-    useErrorBoundary: false,
-    queryFn: async () => {
-      try {
-        const doc = await grpcClient.documents.getDocument({
-          documentId: id,
-          version: version || '',
-        })
-        const draft = await client.drafts.get.query(id)
-
-        console.log(`== ~ DRAFT INSIDE USEDOCUMENT: ~ draft:`, draft)
-        return toPlainMessage(doc)
-      } catch (error) {
-        const connectErr = ConnectError.from(error)
-        console.error(
-          'Error loading document',
-          connectErr.code,
-          connectErr.message,
-        )
-      }
-    },
-    ...options,
   }
 }

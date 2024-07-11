@@ -1,4 +1,4 @@
-import {useGRPCClient} from '@/app-context'
+import {useGRPCClient, useQueryInvalidator} from '@/app-context'
 import {Code, ConnectError} from '@connectrpc/connect'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
@@ -66,24 +66,24 @@ export function useAccountRegistration(
   const grpcClient = useGRPCClient()
   return useMutation({
     mutationFn: async (words: string[]) => {
-      await grpcClient.daemon.register({mnemonic: words})
+      await grpcClient.daemon.registerKey({mnemonic: words})
     },
     ...opts,
   })
 }
 
-export function useAccountKeys() {
+export function useMyAccountIds() {
   const client = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.KEYS_LIST],
+    queryKey: [queryKeys.LOCAL_ACCOUNT_ID_LIST],
     queryFn: async () => {
       try {
         const q = await client.daemon.listKeys({})
-        return q?.keys
+        return q?.keys.map((k) => k.publicKey)
       } catch (e) {
         const connectError = ConnectError.from(e)
         console.error(
-          `useAccountKeys error code ${
+          `useMyAccountIds error code ${
             Code[connectError.code]
           }: ${JSON.stringify(connectError.message)}`,
         )
@@ -114,19 +114,29 @@ export function useRegisterKey(
 }
 
 export function useDeleteKey(
-  opts?: UseMutationOptions<any, unknown, {name: string}>,
+  opts?: UseMutationOptions<any, unknown, {accountId: string}>,
 ) {
   const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
   return useMutation({
-    mutationFn: ({name}) => {
-      return grpcClient.daemon.deleteKey({name})
+    mutationFn: async ({accountId}) => {
+      console.log('is deleting key', accountId)
+      const keys = await grpcClient.daemon.listKeys({})
+      const keyToDelete = keys.keys.find((key) => accountId === key.publicKey)
+      console.log(keys.keys, keyToDelete)
+      if (!keyToDelete) throw new Error('Key not found')
+      return grpcClient.daemon.deleteKey({name: keyToDelete.name})
+    },
+    onSuccess: () => {
+      invalidate([queryKeys.LOCAL_ACCOUNT_ID_LIST])
     },
     ...opts,
   })
 }
 
-export function useSavedMnemonics(key?: string) {
-  return trpc.secureStorage.read.useQuery('main', {enabled: !!key}).data as
+export function useSavedMnemonics() {
+  // todo support multi-account
+  return trpc.secureStorage.read.useQuery('main').data as
     | Array<string>
     | undefined
 }

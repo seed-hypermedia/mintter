@@ -16,7 +16,7 @@ export const queryKeys = {
 
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
-  KEYS_LIST: 'KEYS_LIST',
+  LOCAL_ACCOUNT_ID_LIST: 'LOCAL_ACCOUNT_ID_LIST',
   KEYS_GET: 'KEYS_GET',
   GENERATE_MNEMONIC: 'GENERATE_MNEMONIC',
   SAVED_MNEMONICS: 'SAVED_MNEMONICS',
@@ -26,20 +26,18 @@ export const queryKeys = {
   GET_PEER_INFO: 'GET_PEER_INFO', // , deviceId: string
 
   // accounts
-  ALL_ACCOUNTS: 'ALL_ACCOUNTS', //
+  LIST_ACCOUNTS: 'LIST_ACCOUNTS', //
   ACCOUNT: 'ACCOUNT', // , accountId: string
 
   // entities
   ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string, includeDrafts: boolean
 
   // documents
-  DRAFT_LIST: 'trpc.drafts.list', //
-  DOCUMENT_DRAFTS: 'DOCUMENT_DRAFTS', //, docId: string @deprecated
   ACCOUNT_DOCUMENTS: 'ACCOUNT_DOCUMENTS', //, accountId: string
   DOCUMENT_LIST: 'DOCUMENT_LIST', // 'trusted' | 'global'
   DRAFT: 'DRAFT', // , id: string
-  DOCUMENT: 'DOCUMENT', //, docId: string, versionId?: string
-  PROFILE_DOCUMENT: 'PROFILE_DOCUMENT', //, accountId: string
+
+  ENTITY: 'ENTITY',
 
   // comments
   COMMENT: 'COMMENT', //, commentId: string
@@ -88,7 +86,7 @@ export function labelOfQueryKey(key: QueryKey) {
       return `Peer ${abbreviateCid(arg1)}`
 
     // accounts
-    case queryKeys.ALL_ACCOUNTS:
+    case queryKeys.LIST_ACCOUNTS:
       return 'All Accounts'
     case queryKeys.ACCOUNT:
       return `Account ${abbreviateCid(arg1)}`
@@ -98,16 +96,14 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'Entity Timeline'
 
     // documents
-    case queryKeys.DRAFT_LIST:
-      return 'Drafts'
     case queryKeys.ACCOUNT_DOCUMENTS:
       return 'Account Publications'
     case queryKeys.DOCUMENT_LIST:
       return 'Publications'
     case queryKeys.DRAFT:
       return `Editor Draft ${abbreviateCid(arg1)}`
-    case queryKeys.DOCUMENT:
-      return `Publication ${abbreviateCid(arg1)}`
+    case queryKeys.ENTITY:
+      return `Entity`
 
     // comments
     case queryKeys.COMMENT:

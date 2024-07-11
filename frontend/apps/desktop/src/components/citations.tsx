@@ -3,7 +3,8 @@ import {AccountLinkAvatar} from '@/components/account-link-avatar'
 import {useAccount_deprecated} from '@/models/accounts'
 import {useComment} from '@/models/comments'
 import {useEntityMentions} from '@/models/content-graph'
-import {useDocTextContent, useDocument} from '@/models/documents'
+import {useDocTextContent} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {DocumentRoute} from '@/utils/routes'
 import {useNavigate} from '@/utils/useNavigate'
 import {
@@ -46,12 +47,20 @@ function CitationItem({mention}: {mention: Mention}) {
 function PublicationCitationItem({mention}: {mention: Mention}) {
   const spawn = useNavigate('spawn')
   const unpackedSource = unpackHmId(mention.source)
-  const doc = useDocument(mention.source, mention.sourceBlob?.cid, {
-    enabled: !!mention.source,
-  })
-  let {data: account} = useAccount_deprecated(doc.data?.author)
+  const doc = useEntity(
+    unpackedSource
+      ? {
+          ...unpackedSource,
+          version: mention.sourceBlob?.cid || null,
+        }
+      : undefined,
+    {
+      enabled: !!unpackedSource,
+    },
+  )
+  let {data: account} = useAccount_deprecated(doc.data?.document?.owner)
 
-  const docTextContent = useDocTextContent(doc.data)
+  const docTextContent = useDocTextContent(doc.data?.document)
   const destRoute: DocumentRoute = {
     key: 'document',
     documentId: unpackedSource!.qid,
@@ -60,16 +69,18 @@ function PublicationCitationItem({mention}: {mention: Mention}) {
   }
   return (
     <PanelCard
-      title={getDocumentTitle(doc.data)}
+      title={getDocumentTitle(doc.data?.document)}
       content={docTextContent}
       author={account}
-      date={formattedDateMedium(doc.data?.createTime)}
+      date={formattedDateMedium(doc.data?.document?.createTime)}
       onPress={() => {
         if (unpackedSource) {
           spawn(destRoute)
         }
       }}
-      avatar={<AccountLinkAvatar accountId={doc.data?.author} size={24} />}
+      avatar={
+        <AccountLinkAvatar accountId={doc.data?.document?.owner} size={24} />
+      }
     />
   )
 }
@@ -88,13 +99,7 @@ function CommentCitationItem({mention}: {mention: Mention}) {
     return null
   }, [comment])
 
-  const doc = useDocument(
-    commentTarget?.qid,
-    commentTarget?.version || undefined,
-    {
-      enabled: !!commentTarget,
-    },
-  )
+  const doc = useEntity(commentTarget)
 
   let {data: account} = useAccount_deprecated(comment?.author)
 

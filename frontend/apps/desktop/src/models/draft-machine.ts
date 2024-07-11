@@ -49,9 +49,9 @@ export const draftMachine = setup({
       name: ({context, event}) => {
         if (event.type == 'GET.DRAFT.SUCCESS') {
           if (event.draft) {
-            return event.draft.metadata.name
+            return event.draft.metadata?.name
           } else if (event.document) {
-            return event.document.metadata.name
+            return event.document.metadata?.name
           }
         }
         if (event.type == 'CHANGE' && event.name) {

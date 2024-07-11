@@ -3,7 +3,7 @@ import {
   createAutoCompletePlugin,
 } from '@/editor/autocomplete'
 import {useAccount_deprecated} from '@/models/accounts'
-import {useDocument} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {getDocumentTitle, UnpackedHypermediaId, unpackHmId} from '@shm/shared'
 import {SizableText} from '@shm/ui'
 import {Node} from '@tiptap/core'
@@ -121,7 +121,7 @@ function DocumentMention({
   unpackedRef: UnpackedHypermediaId
   selected?: boolean
 }) {
-  const doc = useDocument(unpackedRef.qid, unpackedRef.version || undefined)
+  const doc = useEntity(unpackedRef)
 
   if (doc.status == 'loading') {
     return <MentionText>...</MentionText>
@@ -129,7 +129,9 @@ function DocumentMention({
 
   return (
     <MentionText selected={selected}>
-      {doc.data ? getDocumentTitle(doc.data) : unpackedRef.qid}
+      {doc.data?.document
+        ? getDocumentTitle(doc.data.document)
+        : unpackedRef.qid}
     </MentionText>
   )
 }

@@ -1,25 +1,19 @@
-import { useGatewayUrl } from '@/models/gateway-settings'
-import { NavRoute } from '@/utils/routes'
-import { useNavigate } from '@/utils/useNavigate'
+import {useEntity} from '@/models/entities'
+import {useGatewayUrl} from '@/models/gateway-settings'
+import {NavRoute} from '@/utils/routes'
+import {useNavigate} from '@/utils/useNavigate'
 import {
   HYPERMEDIA_ENTITY_TYPES,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
-  unpackHmId
+  unpackHmId,
 } from '@shm/shared'
-import {
-  Button,
-  Tooltip,
-  View,
-  XStack
-} from '@shm/ui'
-import { ArrowRight } from '@tamagui/lucide-icons'
-import { useDocument } from 'src/models/documents'
+import {Button, Tooltip, View, XStack} from '@shm/ui'
+import {ArrowRight} from '@tamagui/lucide-icons'
 import CommitDraftButton from './commit-draft-button'
 import DiscardDraftButton from './discard-draft-button'
 
-
-export function VersionContext({ route }: { route: NavRoute }) {
+export function VersionContext({route}: {route: NavRoute}) {
   let exactVersion: string | null = null
   let fullUrl: string | null = null
   const navigate = useNavigate()
@@ -27,21 +21,17 @@ export function VersionContext({ route }: { route: NavRoute }) {
   let latestVersionRoute: NavRoute | null = null
   const gwUrl = useGatewayUrl()
   const pubRoute = route.key === 'document' ? route : null
-  const latestPub = useDocument(
-    pubRoute?.documentId,
-    // version not specified, so we are fetching the latest
-    undefined,
-    {
-      enabled: !!pubRoute?.documentId,
-    })
+  const entity = useEntity(unpackHmId(pubRoute?.documentId), {
+    enabled: !!pubRoute?.documentId,
+  })
   if (route.key === 'document') {
-    const { accessory, documentId, versionId } = route
+    const {accessory, documentId, versionId} = route
     unpackedId = unpackHmId(documentId)
     exactVersion = versionId || null
     if (
       versionId &&
-      latestPub.data?.version &&
-      latestPub.data?.version !== versionId
+      entity.data?.document?.version &&
+      entity.data?.document?.version !== versionId
     ) {
       latestVersionRoute = {
         key: 'document',
@@ -68,8 +58,9 @@ export function VersionContext({ route }: { route: NavRoute }) {
             <Tooltip
               content={`You are looking at an older version of this ${HYPERMEDIA_ENTITY_TYPES[
                 unpackedId.type
-              ].toLowerCase()}. Click to go to the latest ${unpackedId.type === 'd' ? 'in this variant' : 'version'
-                }.`}
+              ].toLowerCase()}. Click to go to the latest ${
+                unpackedId.type === 'd' ? 'in this variant' : 'version'
+              }.`}
             >
               <Button
                 size="$2"

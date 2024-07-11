@@ -1,14 +1,14 @@
-import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
-import { DocumentListItem } from '@/components/document-list-item'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {DocumentListItem} from '@/components/document-list-item'
 import Footer from '@/components/footer'
-import { copyLinkMenuItem } from '@/components/list-item'
-import { MainWrapperNoScroll } from '@/components/main-wrapper'
-import { useAllAccounts } from '@/models/accounts'
-import { FavoriteItem, useFavorites } from '@/models/favorites'
-import { HMAccount, UnpackedHypermediaId } from '@shm/shared'
-import { List } from '@shm/ui'
-import { useDocument } from 'src/models/documents'
-import { ContactItem } from './contacts-page'
+import {copyLinkMenuItem} from '@/components/list-item'
+import {MainWrapperNoScroll} from '@/components/main-wrapper'
+import {useAllAccounts} from '@/models/accounts'
+import {useEntity} from '@/models/entities'
+import {FavoriteItem, useFavorites} from '@/models/favorites'
+import {HMAccount, UnpackedHypermediaId} from '@shm/shared'
+import {List} from '@shm/ui'
+import {ContactItem} from './contacts-page'
 
 export default function FavoritesPage() {
   const favorites = useFavorites()
@@ -25,7 +25,7 @@ export default function FavoritesPage() {
           onEndReached={() => {
             // publications.fetchNextPage()
           }}
-          renderItem={({ item }) => {
+          renderItem={({item}) => {
             return (
               <FavoriteListItem
                 key={item.url}
@@ -57,22 +57,19 @@ function DocumentFavoriteItem({
   allAccounts?: HMAccount[]
 }) {
   if (id.type !== 'd') throw new Error('Not a document')
-  const doc = useDocument(
-    id.qid,
-    id.version || undefined,
-  )
-  if (!doc.data) return null
+  const doc = useEntity(id)
+  if (!doc.data?.document) return null
   function findAccount(id?: string) {
     return allAccounts?.find((a) => a.id === id)
   }
   return (
     <DocumentListItem
       key={id.qid}
-      document={doc.data}
+      document={doc.data?.document}
       hasDraft={undefined}
-      author={findAccount(doc.data?.author)}
+      author={findAccount(doc.data?.document?.owner)}
       editors={
-        doc.data?.authors?.map((accountId) =>
+        doc.data?.document?.authors?.map((accountId) =>
           findAccount(accountId),
         ) || []
       }

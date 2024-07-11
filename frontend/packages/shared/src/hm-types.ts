@@ -11,6 +11,7 @@ import type {
   DeletedEntity,
   Document,
   Link,
+  UnpackedHypermediaId,
 } from '@shm/shared'
 import {HMTimestamp} from './utils'
 
@@ -195,17 +196,21 @@ export type HMEntity =
 export type HMEntityContent =
   | {
       type: 'a'
+      id: UnpackedHypermediaId
       document?: HMDocument | null
       account?: HMAccount | null
     }
   | {
       type: 'd'
+      id: UnpackedHypermediaId
       document?: HMDocument
     }
-  | {
-      type: 'd-draft'
-      document: HMDocument
-    }
+// todo, add comment and maybe draft
+// | {
+//     type: 'd-draft'
+//     id: UnpackedHypermediaId
+//     document: HMDocument
+//   }
 
 export type HMComment = PlainMessage<Comment>
 

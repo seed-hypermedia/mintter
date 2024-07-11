@@ -6,12 +6,10 @@ import {useEditProfileDialog} from '@/components/edit-profile-dialog'
 import {useFavoriteMenuItem} from '@/components/favoriting'
 import {MenuItemType, OptionsDropdown} from '@/components/options-dropdown'
 import {DraftPublicationButtons, VersionContext} from '@/components/variants'
-import {
-  useAccount_deprecated,
-  useMyAccountIds,
-  useProfileWithDraft,
-} from '@/models/accounts'
-import {useDocument, usePushPublication} from '@/models/documents'
+import {useAccount_deprecated, useProfileWithDraft} from '@/models/accounts'
+import {useMyAccountIds} from '@/models/daemon'
+import {usePushPublication} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {useGatewayHost, useGatewayUrl} from '@/models/gateway-settings'
 import {SidebarWidth, useSidebarContext} from '@/sidebar-context'
 import {
@@ -67,12 +65,13 @@ export function DocOptionsButton() {
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
     )
-  const docId = route.documentId
+  const docId = unpackHmId(route.documentId)
+  if (!docId) throw new Error('Invalid document ID')
   const gwHost = useGatewayHost()
   const push = usePushPublication()
   const deleteEntity = useDeleteDialog()
   const [copyContent, onCopy, host] = useCopyGatewayReference()
-  const doc = useDocument(route.documentId, route.versionId)
+  const doc = useEntity({...docId, version: route.versionId || null})
   const menuItems: MenuItemType[] = [
     {
       key: 'link',
@@ -108,7 +107,7 @@ export function DocOptionsButton() {
       onPress: () => {
         deleteEntity.open({
           id: route.documentId,
-          title: getDocumentTitle(doc.data),
+          title: getDocumentTitle(doc.data?.document),
           onSuccess: () => {
             dispatch({type: 'pop'})
           },
@@ -116,9 +115,8 @@ export function DocOptionsButton() {
       },
     },
   ]
-  const id = unpackHmId(docId)
-  const docUrl = id
-    ? createHmId('d', id.eid, {
+  const docUrl = docId
+    ? createHmId('d', docId.eid, {
         version: route.versionId,
       })
     : null
@@ -148,7 +146,7 @@ export function AccountOptionsButton() {
   const editProfileDialog = useEditProfileDialog()
   const myAccountIds = useMyAccountIds()
   const {profile} = useProfileWithDraft(route.accountId)
-  const isMyAccount = myAccountIds.includes(route.accountId)
+  const isMyAccount = myAccountIds.data?.includes(route.accountId)
   if (isMyAccount) {
     menuItems.push({
       key: 'edit-account',
@@ -192,21 +190,21 @@ function EditAccountButton() {
   const myAccountIds = useMyAccountIds()
   const navigate = useNavigate()
   const {draft} = useProfileWithDraft(route.accountId)
-  if (!myAccountIds.includes(route.accountId)) {
+  if (!myAccountIds.data?.includes(route.accountId)) {
     return null
   }
   if (route.tab !== 'profile' && route.tab) return null
   const hasExistingDraft = !!draft
   return (
     <>
-      <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
+      <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Account'}>
         <Button
           size="$2"
           theme={hasExistingDraft ? 'yellow' : undefined}
           onPress={() => {
             navigate({
               key: 'draft',
-              id: route.accountId,
+              id: hmId('a', route.accountId).qid,
             })
           }}
           icon={Pencil}
@@ -228,7 +226,7 @@ export function useFullReferenceUrl(route: NavRoute): {
   content: ReactNode
 } | null {
   const pubRoute = route.key === 'document' ? route : null
-  const pub = useDocument(pubRoute?.documentId, pubRoute?.versionId)
+  const pub = useEntity(unpackHmId(pubRoute?.documentId))
   const gwUrl = useGatewayUrl()
   const [copyDialogContent, onCopyPublic] = useCopyGatewayReference()
 
@@ -238,7 +236,7 @@ export function useFullReferenceUrl(route: NavRoute): {
     let hostname = gwUrl.data
     return {
       url: createPublicWebHmUrl('d', docId.eid, {
-        version: pub.data?.version,
+        version: pub.data?.document?.version,
         hostname,
       }),
       label: hostname ? 'Site Version' : 'Doc Version',
@@ -251,7 +249,7 @@ export function useFullReferenceUrl(route: NavRoute): {
         onCopyPublic({
           ...docId,
           hostname: hostname || null,
-          version: pub.data?.version || null,
+          version: pub.data?.document?.version || null,
           blockRef: blockId || focusBlockId || null,
           blockRange,
         })

@@ -225,7 +225,7 @@ export function AccountWizardDialog() {
                           if (isSaveWords) {
                             saveWords.mutate({key: 'main', value: words})
                           }
-                          invalidate([queryKeys.KEYS_LIST])
+                          invalidate([queryKeys.LOCAL_ACCOUNT_ID_LIST])
                           setCreatedAccount(res.accountId)
                           setStep('complete')
                         })
@@ -291,7 +291,7 @@ export function AccountWizardDialog() {
                     disabled={!isExistingWordsSave}
                     onPress={() => {
                       addExistingAccount.mutateAsync().then((res) => {
-                        invalidate([queryKeys.KEYS_LIST])
+                        invalidate([queryKeys.LOCAL_ACCOUNT_ID_LIST])
                         setCreatedAccount(res.accountId)
                         setStep('complete')
                       })

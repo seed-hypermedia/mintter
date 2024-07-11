@@ -4,7 +4,7 @@ import {useNavRoute} from '@/utils/navigation'
 import {DraftRoute} from '@/utils/routes'
 import {useNavigate} from '@/utils/useNavigate'
 import {PlainMessage} from '@bufbuild/protobuf'
-import {Document} from '@shm/shared'
+import {Document, unpackHmId} from '@shm/shared'
 import {
   AlertCircle,
   Button,
@@ -30,28 +30,28 @@ export default function CommitDraftButton() {
   const draftRoute: DraftRoute | null = route.key === 'draft' ? route : null
   if (!draftRoute)
     throw new Error('DraftPublicationButtons requires draft route')
-  const prevProfile = useProfileWithDraft(draftRoute.id)
-
-  console.log(`== ~ CommitDraftButton ~ draft prevProfile:`, prevProfile.draft)
+  const unpackedDraftId = unpackHmId(draftRoute.id)
+  const prevProfile = useProfileWithDraft(
+    unpackedDraftId?.type === 'a' ? unpackedDraftId.eid : undefined,
+  )
   // TODO: add also previous document here
   const deleteDraft = trpc.drafts.delete.useMutation()
   const publish = usePublishDraft(grpcClient, draftRoute.id)
   const invalidate = useQueryInvalidator()
   function handlePublish() {
-    console.log('=== PUBLISHING...', prevProfile)
-    if (prevProfile?.draft) {
+    if (prevProfile.draft) {
       publish
         .mutateAsync({
           draft: prevProfile?.draft,
           previous: prevProfile.profile as PlainMessage<Document>,
         })
         .then((res) => {
-          console.log('== PUBLISHED', res)
           deleteDraft.mutateAsync(res.id).finally(() => {
             if (draftRoute?.id) {
               invalidate(['trpc.drafts.get'])
               if (draftRoute?.id.startsWith('hm://a/')) {
-                navigate({key: 'account', accountId: draftRoute.id})
+                const accountId = unpackHmId(draftRoute.id)?.eid
+                accountId && navigate({key: 'account', accountId})
               } else {
                 navigate({key: 'document', documentId: res.id})
               }

@@ -3,7 +3,7 @@ import {MainWrapperNoScroll} from '@/components/main-wrapper'
 import {useAccount_deprecated} from '@/models/accounts'
 import {ProfileSchema, useBlobData} from '@/models/changes'
 import {useComment} from '@/models/comments'
-import {useDocument} from '@/models/documents'
+import {useEntity} from '@/models/entities'
 import {useFeedWithLatest, useResourceFeedWithLatest} from '@/models/feed'
 import {appRouteOfId, useNavRoute} from '@/utils/navigation'
 import {useNavigate} from '@/utils/useNavigate'
@@ -286,13 +286,10 @@ function HMLinkButton({
 }
 
 function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
-  const doc = useDocument(id.qid, cid)
+  const doc = useEntity({...id, version: cid})
   const linkId = hmId('d', id.eid, {
     version: cid,
   })
-  const account = useAccount_deprecated(author)
-  const isProfileUpdate = account.data?.profile?.rootDocument === id.qid
-  const message = isProfileUpdate ? 'updated their profile' : 'updated'
   return (
     <FeedItemContainer
       linkId={linkId}
@@ -303,8 +300,10 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
           eventTime={eventTime}
           message={
             <>
-              {message}{' '}
-              <EntityLink id={linkId}>{getDocumentTitle(doc.data)}</EntityLink>
+              updated
+              <EntityLink id={linkId}>
+                {getDocumentTitle(doc.data?.document)}
+              </EntityLink>
             </>
           }
         />
@@ -315,7 +314,9 @@ function DocChangeFeedItem({id, eventTime, cid, author}: ChangeFeedItemProps) {
         </FeedItemFooter>
       }
     >
-      {doc.data && <FeedItemDocContent document={doc.data} />}
+      {doc.data?.document && (
+        <FeedItemDocContent document={doc.data?.document} />
+      )}
     </FeedItemContainer>
   )
 }
@@ -401,10 +402,7 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
   const comment = useComment(id.qid)
   const targetDocId =
     comment.data?.target == null ? null : unpackHmId(comment.data?.target)
-  const targetDoc = useDocument(
-    targetDocId?.qid,
-    targetDocId?.version || undefined,
-  )
+  const targetDoc = useEntity(targetDocId)
   return (
     <FeedItemContainer
       linkId={id}
@@ -416,9 +414,9 @@ function CommentFeedItem({id, eventTime, cid, author}: CommentFeedItemProps) {
           message={
             <>
               commented on{' '}
-              {targetDoc.data && targetDocId ? (
+              {targetDoc.data?.document && targetDocId ? (
                 <EntityLink id={targetDocId}>
-                  {getDocumentTitle(targetDoc.data)}
+                  {getDocumentTitle(targetDoc.data.document)}
                 </EntityLink>
               ) : (
                 'a document'

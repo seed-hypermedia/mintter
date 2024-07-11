@@ -1,24 +1,17 @@
-import { useDocumentList } from '@/models/documents'
-import { Delete, List, Spinner } from '@shm/ui'
+import {useDocumentList} from '@/models/documents'
+import {Delete, List, Spinner} from '@shm/ui'
 
-import { useAppContext } from '@/app-context'
-import { useCopyGatewayReference } from '@/components/copy-gateway-reference'
-import { DocumentListItem } from '@/components/document-list-item'
-import { copyLinkMenuItem } from '@/components/list-item'
-import {
-  queryDocument
-} from '@/models/documents'
-import { getDocumentTitle, unpackHmId } from '@shm/shared'
-import { ReactNode } from 'react'
-import { useDeleteDialog } from './delete-dialog'
+import {useAppContext} from '@/app-context'
+import {useCopyGatewayReference} from '@/components/copy-gateway-reference'
+import {DocumentListItem} from '@/components/document-list-item'
+import {copyLinkMenuItem} from '@/components/list-item'
+import {getDocumentTitle, unpackHmId} from '@shm/shared'
+import {ReactNode} from 'react'
+import {useDeleteDialog} from './delete-dialog'
 
-export function DocumentsFullList({
-  header,
-}: {
-  header: ReactNode
-}) {
+export function DocumentsFullList({header}: {header: ReactNode}) {
   const documents = useDocumentList({})
-  const { queryClient, grpcClient } = useAppContext()
+  const {queryClient, grpcClient} = useAppContext()
   const deleteDialog = useDeleteDialog()
 
   const items = documents.data.documents
@@ -33,8 +26,8 @@ export function DocumentsFullList({
         onEndReached={() => {
           documents.fetchNextPage()
         }}
-        renderItem={({ item: document }) => {
-          const { authors, author } = document
+        renderItem={({item: document}) => {
+          const {authors, author} = document
           if (!document) return null
           const docId = document.id
           const id = unpackHmId(docId)
@@ -49,15 +42,7 @@ export function DocumentsFullList({
                 (d) => d.id == document?.id,
               )}
               onPointerEnter={() => {
-                if (document?.id) {
-                  queryClient.client.prefetchQuery(
-                    queryDocument({
-                      grpcClient,
-                      docId: document.id,
-                      version: document.version,
-                    }),
-                  )
-                }
+                // todo: prefetch here for improved perf
               }}
               document={document}
               author={author}

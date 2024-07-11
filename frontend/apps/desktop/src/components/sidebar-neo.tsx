@@ -1,10 +1,9 @@
 import {focusDraftBlock} from '@/draft-focusing'
-import {useMyAccount_deprecated, useProfile} from '@/models/accounts'
-import {useDocument} from '@/models/documents'
+import {useMyAccount_deprecated} from '@/models/accounts'
 import {
-  useEntitiesContent,
-  useEntityContent,
-  useEntityRoutes,
+  useEntity,
+  useRouteBreadcrumbRoutes,
+  useRouteEntities,
 } from '@/models/entities'
 import {useFavorites} from '@/models/favorites'
 import {getProfileName} from '@/pages/account-page'
@@ -55,10 +54,10 @@ function _SidebarNeo() {
   const replace = useNavigate('replace')
   let myAccountSection: ReactNode = null
   let standaloneSection: ReactNode = null
-  const entityRoutes = useEntityRoutes(route)
+  const entityRoutes = useRouteBreadcrumbRoutes(route)
   const firstEntityRoute = entityRoutes[0]
   const isMyAccountDraftActive = route.key === 'draft' && route.id === myAccount
-  const accountEntities = useEntitiesContent(
+  const accountEntities = useRouteEntities(
     myAccountRoute ? [myAccountRoute] : [],
   )
   const isMyAccountActive =
@@ -67,7 +66,7 @@ function _SidebarNeo() {
       firstEntityRoute.key === 'account' &&
       firstEntityRoute.accountId === myAccount)
   // const [collapseMe, setCollapseMe] = useState(!isMyAccountActive)
-  // const entityContents = useEntitiesContent(
+  // const entityContents = useRouteEntities(
   //   myAccountRoute ? [myAccountRoute, ...entityRoutes] : entityRoutes,
   // )
   const handleNavigate = useCallback(function handleNavigate(
@@ -76,7 +75,6 @@ function _SidebarNeo() {
   ) {
     if (doReplace) replace(route)
     else navigate(route)
-    // const destEntityRoutes = getEntityRoutes(route)
     // const firstEntityRoute = destEntityRoutes[0]
     // const isMyAccountActive =
     //   firstEntityRoute &&
@@ -141,6 +139,7 @@ function _SidebarNeo() {
           />
         </>
       ) : null}
+      <SidebarDivider />
       <SidebarFavorites
         collapse={collapseFavorites}
         setCollapse={setCollapseFavorites}
@@ -209,13 +208,11 @@ export function getItemDetails(
     title = '<draft>'
     icon = FilePen
     isDraft = true
-  } else {
-    title = getDocumentTitle(entity.document)
   }
 
   const headings = getBlockHeadings(entity.document?.content, blockId)
   return {
-    docId: entity.document?.id,
+    id: entity.id,
     title,
     icon,
     headings,
@@ -227,7 +224,7 @@ type ItemDetails = ReturnType<typeof getItemDetails>
 
 function ResumeDraftButton({info}: {info: ItemDetails}) {
   if (!info) throw new Error('ItemDetails required for ResumeDraftButton')
-  const {docId} = info
+  const {id} = info
   const navigate = useNavigate()
 
   const draft = false
@@ -275,7 +272,7 @@ function ContextItems({
   return (
     <>
       <SidebarItem
-        active={active && !info.headings?.length}
+        active={active && !info?.headings?.length}
         {...(info.headings?.length ? {} : collapsedProps)}
         title={info.title}
         icon={info.icon}
@@ -441,7 +438,7 @@ function _SidebarEmbedOutlineItem({
 }) {
   const route = useNavRoute()
   const [collapse, setCollapse] = useState(true)
-  const loadedEntity = useEntityContent(id)
+  const loadedEntity = useEntity(id)
   const navigate = useNavigate()
   if (loadedEntity === undefined)
     return <SidebarItem indented={indent} icon={() => <Spinner />} />
@@ -727,7 +724,7 @@ function FavoriteAccountItem({
   const id = unpackHmId(url)
   const route = useNavRoute()
   const accountId = id?.eid
-  const {data} = useProfile(accountId)
+  const {data} = useEntity(id)
   if (!accountId) return null
   return (
     <SidebarItem
@@ -736,7 +733,7 @@ function FavoriteAccountItem({
       onPress={() => {
         onNavigate({key: 'account', accountId})
       }}
-      title={getProfileName(data)}
+      title={getProfileName(data?.document)}
     />
   )
 }
@@ -750,7 +747,7 @@ function FavoritePublicationItem({
 }) {
   const id = unpackHmId(url)
   const route = useNavRoute()
-  const doc = useDocument(id?.qid, id?.version || undefined)
+  const doc = useEntity(id)
   const documentId = id?.qid
   if (!documentId) return null
   return (
@@ -764,7 +761,7 @@ function FavoritePublicationItem({
           versionId: id?.version || undefined,
         })
       }}
-      title={getDocumentTitle(doc)}
+      title={getDocumentTitle(doc.data?.document)}
     />
   )
 }

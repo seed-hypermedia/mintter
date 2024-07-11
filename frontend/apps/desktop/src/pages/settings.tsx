@@ -4,9 +4,15 @@ import {Avatar} from '@/components/avatar'
 import {AvatarForm} from '@/components/avatar-form'
 import {useEditProfileDialog} from '@/components/edit-profile-dialog'
 import appError from '@/errors'
-import {useMyAccount_deprecated, useProfile} from '@/models/accounts'
+import {useMyAccount_deprecated} from '@/models/accounts'
 import {useAutoUpdatePreference} from '@/models/app-settings'
-import {useDaemonInfo, useDeleteKey, useSavedMnemonics} from '@/models/daemon'
+import {
+  useDaemonInfo,
+  useDeleteKey,
+  useMyAccountIds,
+  useSavedMnemonics,
+} from '@/models/daemon'
+import {useEntity} from '@/models/entities'
 import {useExperiments, useWriteExperiments} from '@/models/experiments'
 import {
   useGatewayUrl,
@@ -25,7 +31,7 @@ import {
 import {useWalletOptIn} from '@/models/wallet'
 import {trpc} from '@/trpc'
 import {getAvatarUrl} from '@/utils/account-url'
-import {LightningWallet, State, VERSION} from '@shm/shared'
+import {hmId, LightningWallet, State, VERSION} from '@shm/shared'
 import {
   AlertDialog,
   ArrowDownRight,
@@ -59,12 +65,12 @@ import {
   TabsContentProps,
   TabsProps,
   TextArea,
+  toast,
   Tooltip,
   View,
   XGroup,
   XStack,
   YStack,
-  toast,
 } from '@shm/ui'
 import {
   AtSign,
@@ -82,7 +88,7 @@ import {
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import React, {useEffect, useId, useMemo, useState} from 'react'
 import {dispatchWizardEvent} from 'src/app-account'
-import {useAccountKeys} from 'src/models/daemon'
+import {getProfileName} from './account-page'
 
 export default function Settings() {
   return (
@@ -323,7 +329,7 @@ export function ProfileForm({
 
 export function ProfileInfo() {
   const account = useMyAccount_deprecated()
-  const profile = account.data?.profile
+  const profile = account?.profile
   const accountId = account.data?.id
 
   if (profile && accountId) {
@@ -342,49 +348,45 @@ export function ProfileInfo() {
 
 function AccountKeys() {
   const deleteKey = useDeleteKey()
-  const {data: keys} = useAccountKeys()
+  const keys = useMyAccountIds()
   const [selectedAccount, setSelectedAccount] = useState<undefined | string>(
     () => {
-      if (keys && keys.length == 1) {
-        return keys[0].name
+      if (keys.data && keys.data.length == 1) {
+        return keys.data[0]
       }
       return undefined
     },
   )
 
   useEffect(() => {
-    if (keys && keys.length == 1) {
-      setSelectedAccount(keys[0].name)
+    if (keys.data && keys.data.length == 1) {
+      setSelectedAccount(keys.data[0])
     }
-  }, [keys])
+  }, [keys.data])
 
   function handleDeleteCurrentAccount() {
-    if (!account) return
-    deleteKey.mutateAsync({name: account.name}).then(() => {})
+    if (!selectedAccount) return
+    deleteKey.mutateAsync({accountId: selectedAccount}).then(() => {})
   }
 
-  const account = useMemo(() => {
-    return keys?.find((key) => key.name == selectedAccount)
-  }, [selectedAccount])
+  const {data: profile} = useEntity(
+    selectedAccount ? hmId('a', selectedAccount) : undefined,
+  )
 
-  const {data: profile} = useProfile(account?.accountId)
-
-  console.log(`== ~ AccountKeys ~ profile:`, profile)
-
-  const mnemonics = useSavedMnemonics(account?.name)
+  const mnemonics = useSavedMnemonics()
   const [showWords, setShowWords] = useState<boolean>(false)
 
   return (
     <XStack style={{flex: 1, height: '100%'}} gap="$4">
       <YStack f={1} borderColor="$color7" borderWidth={1}>
         <YStack f={1}>
-          {keys?.map((key) => (
+          {keys.data?.map((key) => (
             <ListItem
-              title={key.name}
+              title={selectedAccount}
               hoverTheme
               pressTheme
-              bg={selectedAccount == key.name ? '$color5' : undefined}
-              onPress={() => setSelectedAccount(key.name)}
+              bg={selectedAccount == selectedAccount ? '$color5' : undefined}
+              onPress={() => setSelectedAccount(selectedAccount)}
             />
           ))}
         </YStack>
@@ -434,7 +436,7 @@ function AccountKeys() {
               >
                 <AlertDialog.Title>Delete Account</AlertDialog.Title>
                 <AlertDialog.Description>
-                  {`Are you really sure youc ant to delete ${account?.name} account?`}
+                  {`Are you really sure youc ant to delete ${selectedAccount} account?`}
                 </AlertDialog.Description>
                 <XStack space="$3" justifyContent="flex-end">
                   <AlertDialog.Cancel asChild>
@@ -453,14 +455,14 @@ function AccountKeys() {
       </YStack>
       <YStack f={3} borderColor="$color7" borderWidth={1} p="$4">
         <XStack marginBottom="$4">
-          <Avatar size={80} url={account?.accountId} />
+          <Avatar size={80} url={undefined} />
           <YStack f={1} gap="$3">
             <Field id="username" label="Profile name">
               <Input
                 borderColor="$colorTransparent"
                 borderWidth={0}
                 disabled
-                value={profile?.metadata.title || ''}
+                value={getProfileName(profile?.document)}
               />
             </Field>
             <Field id="accountid" label="Account Id">
@@ -468,7 +470,7 @@ function AccountKeys() {
                 borderColor="$colorTransparent"
                 borderWidth={0}
                 disabled
-                value={account?.accountId}
+                value={selectedAccount}
               />
             </Field>
           </YStack>
