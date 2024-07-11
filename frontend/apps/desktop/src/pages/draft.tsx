@@ -1,9 +1,11 @@
+import {AvatarForm} from '@/components/avatar-form'
 import {HMEditorContainer, HyperMediaEditorView} from '@/components/editor'
 import {MainWrapper} from '@/components/main-wrapper'
 import {BlockNoteEditor, getBlockInfoFromPos} from '@/editor'
 import {useDraftEditor} from '@/models/documents'
 import {draftMachine} from '@/models/draft-machine'
 import {trpc} from '@/trpc'
+import {getAvatarUrl} from '@/utils/account-url'
 import {
   chromiumSupportedImageMimeTypes,
   chromiumSupportedVideoMimeTypes,
@@ -31,8 +33,6 @@ import {AppDocContentProvider} from './document-content-provider'
 
 export default function DraftPage() {
   const route = useNavRoute()
-
-  console.log(`== ~ DraftPage ~ route:`, route)
 
   const importWebFile = trpc.webImporting.importWebFile.useMutation()
   const [isDragging, setIsDragging] = useState(false)
@@ -238,10 +238,14 @@ export function DraftNameInput({
   draftActor: ActorRefFrom<typeof draftMachine>
   disabled?: boolean
 }) {
+  const route = useNavRoute()
   const {textUnit, layoutUnit} = useDocContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const name = useSelector(draftActor, (s) => {
     return s.context.name
+  })
+  const avatar = useSelector(draftActor, (s) => {
+    return s.context.avatar
   })
   const input = useRef<HTMLTextAreaElement | null>(null)
   const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
@@ -289,7 +293,19 @@ export function DraftNameInput({
       borderBottomWidth={1}
       paddingHorizontal={54}
       {...headingMarginStyles}
+      gap="$4"
     >
+      <AvatarForm
+        size={80}
+        id={route.key == 'draft' ? route.id : 'document-avatar'}
+        label={name}
+        url={avatar ? getAvatarUrl(avatar) : ''}
+        onAvatarUpload={(avatar) => {
+          if (avatar) {
+            draftActor.send({type: 'CHANGE', avatar: `ipfs://${avatar}`})
+          }
+        }}
+      />
       <Input
         disabled={disabled}
         // we use multiline so that we can avoid horizontal scrolling for long titles

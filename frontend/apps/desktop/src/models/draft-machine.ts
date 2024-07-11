@@ -8,6 +8,7 @@ export const draftMachine = setup({
   types: {
     context: {} as {
       name: string
+      avatar: string
       draft: null | HMDraft
       document: null | HMDocument
       errorMessage: string
@@ -16,7 +17,7 @@ export const draftMachine = setup({
       hasChangedWhileSaving: boolean
     },
     events: {} as
-      | {type: 'CHANGE'; name?: string}
+      | {type: 'CHANGE'; name?: string; avatar?: string}
       | {type: 'RESET.DRAFT'}
       | {type: 'RESTORE.DRAFT'}
       | {type: 'RESET.CORRUPT.DRAFT'}
@@ -57,6 +58,21 @@ export const draftMachine = setup({
           return event.name
         }
         return context.name
+      },
+    }),
+    setAvatar: assign({
+      avatar: ({context, event}) => {
+        if (event.type == 'GET.DRAFT.SUCCESS') {
+          if (event.draft) {
+            return event.draft.metadata.avatar
+          } else if (event.document) {
+            return event.document.metadata.avatar
+          }
+        }
+        if (event.type == 'CHANGE' && event.avatar) {
+          return event.avatar
+        }
+        return context.avatar
       },
     }),
     setErrorMessage: assign({
@@ -100,6 +116,7 @@ export const draftMachine = setup({
   id: 'Draft',
   context: {
     name: '',
+    avatar: '',
     draft: null,
     document: null,
     errorMessage: '',
@@ -121,6 +138,7 @@ export const draftMachine = setup({
               {type: 'setDraft'},
               {type: 'setDocument'},
               {type: 'setName'},
+              {type: 'setAvatar'},
             ],
           },
         ],
@@ -153,9 +171,12 @@ export const draftMachine = setup({
           on: {
             CHANGE: {
               target: 'changed',
-              actions: {
-                type: 'setName',
-              },
+              actions: [
+                {
+                  type: 'setName',
+                },
+                {type: 'setAvatar'},
+              ],
             },
           },
         },
@@ -169,9 +190,12 @@ export const draftMachine = setup({
           on: {
             CHANGE: {
               target: 'changed',
-              actions: {
-                type: 'setName',
-              },
+              actions: [
+                {
+                  type: 'setName',
+                },
+                {type: 'setAvatar'},
+              ],
               reenter: true,
             },
           },
@@ -201,6 +225,7 @@ export const draftMachine = setup({
                 {
                   type: 'setName',
                 },
+                {type: 'setAvatar'},
               ],
               reenter: false,
             },
@@ -208,6 +233,7 @@ export const draftMachine = setup({
           invoke: {
             input: ({context}) => ({
               name: context.name,
+              avatar: context.avatar,
               currentDraft: context.draft,
             }),
             id: 'createOrUpdateDraft',
@@ -231,15 +257,10 @@ export const draftMachine = setup({
                   {
                     type: 'onSaveSuccess',
                   },
-                  {
-                    type: 'setDraft',
-                  },
-                  {
-                    type: 'setName',
-                  },
-                  {
-                    type: 'replaceRouteifNeeded',
-                  },
+                  {type: 'setDraft'},
+                  {type: 'setName'},
+                  {type: 'setAvatar'},
+                  {type: 'replaceRouteifNeeded'},
                   {
                     type: 'setDraftStatus',
                     params: {status: 'saved'},

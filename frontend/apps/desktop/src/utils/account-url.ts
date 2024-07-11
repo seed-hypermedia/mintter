@@ -1,10 +1,11 @@
-import {API_FILE_URL, HMDocument} from '@shm/shared'
+import {API_FILE_URL} from '@shm/shared'
 
-export function getAvatarUrl(profile: HMDocument | null | undefined) {
-  const image = profile?.metadata?.image
+export function getAvatarUrl(image?: string) {
   if (image) {
     return `${API_FILE_URL}/${extractIpfsUrlCid(image)}`
   }
+
+  return ''
 }
 
 function extractIpfsUrlCid(url: string): null | string {

@@ -218,7 +218,11 @@ function AccountPageHeader() {
                 id={accountId}
                 size={60}
                 label={accountName}
-                url={getAvatarUrl(profile)}
+                url={
+                  profile?.metadata.avatar
+                    ? getAvatarUrl(profile?.metadata.avatar)
+                    : ''
+                }
               />
               <SizableText
                 whiteSpace="nowrap"

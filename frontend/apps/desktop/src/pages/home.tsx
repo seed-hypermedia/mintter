@@ -1,8 +1,10 @@
 import {useGRPCClient, useQueryInvalidator} from '@/app-context'
+import {Avatar} from '@/components/avatar'
 import {MainWrapper} from '@/components/main-wrapper'
 import {useProfileWithDraft} from '@/models/accounts'
 import {queryKeys} from '@/models/query-keys'
 import {trpc} from '@/trpc'
+import {getAvatarUrl} from '@/utils/account-url'
 import {useOpenDraft} from '@/utils/open-draft'
 import {useNavigate} from '@/utils/useNavigate'
 import {Add, Button, Form, Input, toast} from '@shm/ui'
@@ -70,6 +72,14 @@ function AccountKeyItem({accountKey}: {accountKey: NamedKey}) {
   return (
     <XStack key={accountKey.accountId}>
       <XStack f={1} ai="center" gap="$2">
+        <Avatar
+          size={40}
+          url={
+            profile?.metadata.avatar
+              ? getAvatarUrl(profile.metadata.avatar)
+              : ''
+          }
+        />
         <YStack f={1}>
           <p
             style={{
