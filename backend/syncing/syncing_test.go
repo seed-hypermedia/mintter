@@ -102,7 +102,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 		Account: accountKey,
 		Blobs:   blobs,
 		Device:  identity,
-		Syncer:  NewService(cfg.Syncing, must.Do2(zap.NewDevelopment()).Named(name), db, blobs, n),
+		Syncer:  NewService(cfg.Syncing, must.Do2(zap.NewDevelopment()).Named(name), db, nil, n), // TODO(hm24): add indexer here.
 	}
 }
 
