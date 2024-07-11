@@ -53,11 +53,19 @@ func (srv *Server) GetProfileDocument(ctx context.Context, in *documents.GetProf
 	if err != nil {
 		return nil, err
 	}
-
-	kp, err := srv.getKey(ctx, acc)
+	kp, err := core.NewKeyPairRandom()
 	if err != nil {
 		return nil, err
 	}
+	pk, err := acc.Libp2pKey()
+	if err != nil {
+		return nil, err
+	}
+	pubKey, err := core.NewPublicKey(pk)
+	if err != nil {
+		return nil, err
+	}
+	kp.PublicKey = pubKey
 
 	adoc := index.IRI("hm://a/" + acc.String())
 

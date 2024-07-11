@@ -470,8 +470,9 @@ func syncPeerRbsr(
 			blobs.codec,
 			blobs.multihash,
 			blobs.insert_time
-		FROM blobs INDEXED BY blobs_metadata
-		WHERE blobs.size >= 0;
+		FROM blobs INDEXED BY blobs_metadata LEFT JOIN structural_blobs sb ON sb.id = blobs.id
+		WHERE blobs.size >= 0 
+		ORDER BY sb.ts, blobs.multihash;
 	`)
 	conn, release, err := db.Conn(ctx)
 	if err != nil {

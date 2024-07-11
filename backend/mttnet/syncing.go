@@ -27,8 +27,9 @@ func (srv *rpcMux) ReconcileBlobs(ctx context.Context, in *p2p.ReconcileBlobsReq
 		blobs.codec,
 		blobs.multihash,
 		blobs.insert_time
-	FROM blobs INDEXED BY blobs_metadata
-	WHERE blobs.size >= 0;
+	FROM blobs INDEXED BY blobs_metadata LEFT JOIN structural_blobs sb ON sb.id = blobs.id
+	WHERE blobs.size >= 0 
+	ORDER BY sb.ts, blobs.multihash;
 `)
 	conn, release, err := srv.Node.db.Conn(ctx)
 	if err != nil {
