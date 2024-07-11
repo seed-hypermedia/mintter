@@ -256,18 +256,19 @@ export function AccountWizardDialog() {
               <MarketingSection />
               <Onboarding.MainSection>
                 <Onboarding.Title>My secret words</Onboarding.Title>
-                <Field id="input-words" label="Secret Words">
-                  <TextArea
-                    borderColor="$colorTransparent"
-                    borderWidth={0}
-                    id="input-words"
-                    width="300px"
-                    ref={inputWords}
-                    value={existingWords}
-                    onChangeText={setExistingWords}
-                  />
-                </Field>
-
+                <YStack gap="$2">
+                  <Field id="input-words" label="Secret Words">
+                    <TextArea
+                      borderColor="$colorTransparent"
+                      borderWidth={0}
+                      id="input-words"
+                      ref={inputWords}
+                      value={existingWords}
+                      onChangeText={setExistingWords}
+                      placeholder="foo, bar, baz..."
+                    />
+                  </Field>
+                </YStack>
                 <CheckboxField
                   value={isExistingWordsSave}
                   onValue={setExistingWordsSave}
