@@ -12,7 +12,7 @@ import (
 	"github.com/multiformats/go-multicodec"
 )
 
-var ProfileGenesisEpoch = must.Do2(time.ParseInLocation(time.RFC3339, "2024-01-01T00:00:00Z", time.UTC)).Unix()
+var ProfileGenesisEpoch = must.Do2(time.ParseInLocation(time.RFC3339, "2024-01-01T00:00:00Z", time.UTC)).UnixMicro()
 
 const BlobTypeDagPB = "DagPB"
 
