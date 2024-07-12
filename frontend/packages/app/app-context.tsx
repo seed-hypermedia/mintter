@@ -20,6 +20,12 @@ export type AppContext = {
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   exportDocument: (title: string, markdown: string) => Promise<void>
+  exportDocuments: (
+    documents: {
+      title: string
+      markdown: string
+    }[],
+  ) => Promise<void>
 }
 
 const AppContext = createContext<AppContext | null>(null)
@@ -34,6 +40,7 @@ export function AppContextProvider({
   windowUtils,
   saveCidAsFile,
   exportDocument,
+  exportDocuments,
   darkMode,
 }: {
   children: ReactNode
@@ -45,6 +52,12 @@ export function AppContextProvider({
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   exportDocument: (title: string, markdown: string) => Promise<void>
+  exportDocuments: (
+    documents: {
+      title: string
+      markdown: string
+    }[],
+  ) => Promise<void>
   darkMode: boolean
 }) {
   const appCtx = useMemo(
@@ -58,6 +71,7 @@ export function AppContextProvider({
       windowUtils,
       saveCidAsFile,
       exportDocument,
+      exportDocuments,
     }),
     [],
   )

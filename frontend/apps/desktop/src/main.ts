@@ -156,6 +156,46 @@ ipcMain.on('export-document', async (_event, args) => {
   }
 })
 
+ipcMain.on(
+  'export-multiple-documents',
+  async (
+    _event,
+    documents: {
+      title: string
+      markdown: string
+    }[],
+  ) => {
+    // Open a dialog to select a directory
+    const {filePaths} = await dialog.showOpenDialog({
+      title: 'Select Export Directory',
+      properties: ['openDirectory'],
+    })
+
+    if (filePaths && filePaths.length > 0) {
+      const exportDir = filePaths[0]
+
+      documents.forEach(({title, markdown}) => {
+        const camelTitle = title
+          .split(' ')
+          .map(
+            (word) =>
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+          )
+          .join('')
+        const filePath = path.join(exportDir, camelTitle + '.md')
+
+        fs.writeFile(filePath, markdown, (err) => {
+          if (err) {
+            console.error('Error saving file:', err)
+            return
+          }
+          console.log('File successfully saved:', filePath)
+        })
+      })
+    }
+  },
+)
+
 ipcMain.on('open-external-link', (_event, linkUrl) => {
   shell.openExternal(linkUrl)
 })

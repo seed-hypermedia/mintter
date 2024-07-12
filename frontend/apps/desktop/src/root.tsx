@@ -240,6 +240,14 @@ function MainApp({
         exportDocument={async (title: string, markdown: string) => {
           ipc.send?.('export-document', {title, markdown})
         }}
+        exportDocuments={async (
+          documents: {
+            title: string
+            markdown: string
+          }[],
+        ) => {
+          ipc.send?.('export-multiple-documents', documents)
+        }}
         windowUtils={windowUtils}
         darkMode={darkMode}
       >

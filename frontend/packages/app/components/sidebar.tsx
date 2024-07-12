@@ -11,6 +11,7 @@ import {Button, Home, SizableText, XStack, YStack} from '@mintter/ui'
 import {
   Book,
   Contact,
+  Download,
   FileText,
   Hash,
   Sparkles,
@@ -124,6 +125,15 @@ export function MainAppSidebar() {
       />
       <SidebarDivider />
       <SidebarNeo />
+      <SidebarItem
+        active={route.key == 'export'}
+        onPress={() => {
+          navigate({key: 'export'})
+        }}
+        icon={Download}
+        title="Export Documents"
+        bold
+      />
       {/* <SidebarFavorites key={getRouteKey(route)} />
       <SidebarDivider /> */}
       {/* {account.data && (

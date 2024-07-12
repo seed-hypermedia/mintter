@@ -28,6 +28,7 @@ var Comment = lazy(() => import('@mintter/app/pages/comment'))
 var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 var Explore = lazy(() => import('@mintter/app/pages/explore'))
 var Favorites = lazy(() => import('@mintter/app/pages/favorites'))
+var Export = lazy(() => import('@mintter/app/pages/export-page'))
 var DeletedContent = lazy(() => import('@mintter/app/pages/deleted-content'))
 var DraftRebase = lazy(() => import('@mintter/app/pages/draft-rebase'))
 
@@ -146,6 +147,11 @@ function getPageComponent(navRoute: NavRoute) {
     case 'favorites':
       return {
         PageComponent: Favorites,
+        Fallback: BaseLoading,
+      }
+    case 'export':
+      return {
+        PageComponent: Export,
         Fallback: BaseLoading,
       }
     case 'draft-rebase':

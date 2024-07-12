@@ -570,7 +570,6 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
       (item) => item.group?.id === groupVariant.groupId,
     )
   const showEditButton = isAuthorVariantEditable || isGroupVariantEditable
-  const showExportButton = pubOwner === myAccount.data?.id
   const realVariants = variants || realAuthorVariants
   return (
     <>
@@ -639,9 +638,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           baseVersion={route.versionId}
         />
       )}
-      {showExportButton && (
-        <ExportDocButton docId={route.documentId} version={route.versionId} />
-      )}
+      <ExportDocButton docId={route.documentId} version={route.versionId} />
       {renameDialog.content}
     </>
   )
