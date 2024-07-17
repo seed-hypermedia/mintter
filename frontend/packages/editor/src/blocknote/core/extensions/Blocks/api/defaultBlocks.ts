@@ -13,6 +13,13 @@ export const defaultProps = {
     default: 'null' as const,
     values: ['deleted', 'added', 'updated', 'null'] as const,
   },
+  childrenType: {
+    default: 'div' as const,
+    values: ['div', 'ul', 'ol'] as const,
+  },
+  listLevel: {
+    default: '1' as const,
+  },
 } satisfies PropSchema
 
 export type DefaultProps = typeof defaultProps

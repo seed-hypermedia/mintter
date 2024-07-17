@@ -437,6 +437,13 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     }
   }
 
+  if (node.lastChild!.attrs.listType) {
+    const {listType, listLevel, start} = node.lastChild!.attrs
+    props['childrenType'] = listType
+    props['listLevel'] = listLevel
+    props['start'] = start
+  }
+
   const content = contentNodeToInlineContent(blockInfo.contentNode)
 
   const children: Block<BSchema>[] = []
