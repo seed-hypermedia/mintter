@@ -237,8 +237,12 @@ function MainApp({
         saveCidAsFile={async (cid: string, name: string) => {
           ipc.send?.('save-file', {cid, name})
         }}
-        exportDocument={async (title: string, markdown: string) => {
-          ipc.send?.('export-document', {title, markdown})
+        exportDocument={async (
+          title: string,
+          markdownContent: string,
+          mediaFiles: {url: string; filename: string}[],
+        ) => {
+          ipc.send?.('export-document', {title, markdownContent, mediaFiles})
         }}
         exportDocuments={async (
           documents: {

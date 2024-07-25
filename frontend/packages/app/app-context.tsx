@@ -19,7 +19,11 @@ export type AppContext = {
   externalOpen: (url: string) => Promise<void>
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  exportDocument: (title: string, markdown: string) => Promise<void>
+  exportDocument: (
+    title: string,
+    markdownContent: string,
+    mediaFiles: {url: string; filename: string}[],
+  ) => Promise<void>
   exportDocuments: (
     documents: {
       title: string
@@ -51,7 +55,11 @@ export function AppContextProvider({
   externalOpen: (url: string) => Promise<void>
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
-  exportDocument: (title: string, markdown: string) => Promise<void>
+  exportDocument: (
+    title: string,
+    markdownContent: string,
+    mediaFiles: {url: string; filename: string}[],
+  ) => Promise<void>
   exportDocuments: (
     documents: {
       title: string

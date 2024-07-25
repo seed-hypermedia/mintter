@@ -31,19 +31,9 @@ function convertContentItemToHtml(contentItem) {
 }
 
 function convertBlockToHtml(block) {
-  let childrenHtml = ''
-  if (block.children) {
-    const childrenContent = block.children.map(convertBlockToHtml).join('\n')
-    if (block.props.childrenType === 'ul') {
-      childrenHtml = `<ul>${childrenContent}</ul>`
-    } else if (block.props.childrenType === 'ol') {
-      childrenHtml = `<ol start="${
-        block.props.start || 1
-      }">${childrenContent}</ol>`
-    } else {
-      childrenHtml = childrenContent
-    }
-  }
+  const childrenHtml = block.children
+    ? block.children.map(convertBlockToHtml).join('\n')
+    : ''
 
   switch (block.type) {
     case 'heading':
@@ -68,6 +58,17 @@ function convertBlockToHtml(block) {
       return `<p>![${block.props.name}](${block.props.url} "width=${block.props.width}")</p>\n${childrenHtml}`
     case 'file':
       return `<p>[${block.props.name}](${block.props.url} "size=${block.props.size}")</p>\n${childrenHtml}`
+    case 'list':
+      if (block.props.childrenType === 'ul') {
+        return `<ul>${block.children
+          .map((child) => `<li>${convertBlockToHtml(child)}</li>`)
+          .join('\n')}</ul>\n${childrenHtml}`
+      } else if (block.props.childrenType === 'ol') {
+        return `<ol start="${block.props.start}">${block.children
+          .map((child) => `<li>${convertBlockToHtml(child)}</li>`)
+          .join('\n')}</ol>\n${childrenHtml}`
+      }
+      return ''
     default:
       return block.content
         ? block.content.map(convertContentItemToHtml).join('') +
@@ -80,15 +81,43 @@ function convertBlocksToHtml(blocks) {
   const htmlContent: string = blocks
     .map((block) => convertBlockToHtml(block))
     .join('\n\n')
+  console.log(htmlContent)
   return htmlContent
 }
 
+async function extractMediaFiles(blocks) {
+  const mediaFiles: {url: string; filename: string}[] = []
+  const extractMedia = async (block) => {
+    if (
+      block.type === 'image' ||
+      block.type === 'video' ||
+      block.type === 'file'
+    ) {
+      const url = block.props.url
+      const filename = url.split('/').pop()
+      mediaFiles.push({url, filename})
+      block.props = {...block.props, url: `media/${filename}`} // Update the URL to point to the local media folder
+    }
+    if (block.children) {
+      for (const child of block.children) {
+        await extractMedia(child)
+      }
+    }
+  }
+  for (const block of blocks) {
+    await extractMedia(block)
+  }
+  return mediaFiles
+}
+
 export async function convertBlocksToMarkdown(blocks: HMBlock[]) {
+  const mediaFiles = await extractMediaFiles(blocks) // Extract media files and update URLs first
   const markdownFile = await unified()
     .use(rehypeParse, {fragment: true})
     .use(rehypeRemark)
     .use(remarkGfm)
     .use(remarkStringify)
     .process(convertBlocksToHtml(blocks))
-  return markdownFile.value as string
+  const markdownContent = markdownFile.value as string
+  return {markdownContent, mediaFiles}
 }

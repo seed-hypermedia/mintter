@@ -25,7 +25,12 @@ export const ExportDocButton = ({
             const blocks: HMBlockNode[] | undefined =
               pub.data?.document?.children
             const editorBlocks = toHMBlock(blocks)
-            exportDocument(title, await convertBlocksToMarkdown(editorBlocks))
+
+            const markdownWithFiles =
+              await convertBlocksToMarkdown(editorBlocks)
+
+            const {markdownContent, mediaFiles} = markdownWithFiles
+            exportDocument(title, markdownContent, mediaFiles)
           }}
           icon={Download}
         >
