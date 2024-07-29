@@ -1,13 +1,14 @@
 import {API_HTTP_URL} from '@mintter/shared'
 import {app, dialog, net} from 'electron'
 import fs from 'fs'
+import mime from 'mime'
 import path from 'node:path'
 
 const {debug, error} = console
 
 export async function saveMarkdownFile(event, args) {
   const {title, markdownContent, mediaFiles} = args
-  const formattedTitle = title
+  const camelTitle = title
     .split(' ')
     .map(
       (word: string) =>
@@ -17,14 +18,14 @@ export async function saveMarkdownFile(event, args) {
 
   const {filePath} = await dialog.showSaveDialog({
     title: 'Save Markdown and Media',
-    defaultPath: path.join(app.getPath('documents'), formattedTitle),
+    defaultPath: path.join(app.getPath('documents'), camelTitle),
     buttonLabel: 'Save',
     filters: [{name: 'Markdown Files', extensions: ['md']}],
   })
 
   if (filePath) {
     const dir = path.dirname(filePath)
-    const documentDir = path.join(dir, formattedTitle)
+    const documentDir = path.join(dir, camelTitle)
 
     if (!fs.existsSync(documentDir)) {
       fs.mkdirSync(documentDir)
@@ -36,7 +37,7 @@ export async function saveMarkdownFile(event, args) {
     }
 
     // Save Markdown file
-    const markdownFilePath = path.join(documentDir, `${formattedTitle}.md`)
+    const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
     fs.writeFile(markdownFilePath, markdownContent, (err) => {
       if (err) {
         error('Error saving file:', err)
@@ -53,7 +54,11 @@ export async function saveMarkdownFile(event, args) {
       const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
 
       request.on('response', (response) => {
-        debug(response)
+        const mimeType = response.headers['content-type']
+        const extension = Array.isArray(mimeType)
+          ? mime.extension(mimeType[0])
+          : mime.extension(mimeType)
+        const filenameWithExt = `${filename}.${extension}`
         if (response.statusCode === 200) {
           const chunks: Buffer[] = []
 
@@ -63,18 +68,17 @@ export async function saveMarkdownFile(event, args) {
 
           response.on('end', () => {
             const data = Buffer.concat(chunks)
-            debug('~~~~~~~~~~~~~HEREEEEEEEEEEEEEEEEE', chunks[0], data.toJSON())
             if (!data || data.length === 0) {
-              error(`Error: No data received for ${filename}`)
+              error(`Error: No data received for ${filenameWithExt}`)
               return
             }
 
-            const mediaFilePath = path.join(mediaDir, filename)
+            const mediaFilePath = path.join(mediaDir, filenameWithExt)
             try {
               fs.writeFileSync(mediaFilePath, data)
               debug(`Media file successfully saved: ${mediaFilePath}`)
             } catch (e) {
-              error(`Failed to save media file ${filename}`, e)
+              error(`Failed to save media file ${filenameWithExt}`, e)
             }
           })
         } else {

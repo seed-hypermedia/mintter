@@ -247,7 +247,10 @@ function MainApp({
         exportDocuments={async (
           documents: {
             title: string
-            markdown: string
+            markdown: {
+              markdownContent: string
+              mediaFiles: {url: string; filename: string}[]
+            }
           }[],
         ) => {
           ipc.send?.('export-multiple-documents', documents)

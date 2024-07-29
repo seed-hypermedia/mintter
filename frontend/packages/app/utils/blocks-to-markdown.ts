@@ -81,7 +81,6 @@ function convertBlocksToHtml(blocks) {
   const htmlContent: string = blocks
     .map((block) => convertBlockToHtml(block))
     .join('\n\n')
-  console.log(htmlContent)
   return htmlContent
 }
 

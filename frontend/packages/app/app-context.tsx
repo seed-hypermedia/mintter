@@ -27,7 +27,10 @@ export type AppContext = {
   exportDocuments: (
     documents: {
       title: string
-      markdown: string
+      markdown: {
+        markdownContent: string
+        mediaFiles: {url: string; filename: string}[]
+      }
     }[],
   ) => Promise<void>
 }
@@ -63,7 +66,10 @@ export function AppContextProvider({
   exportDocuments: (
     documents: {
       title: string
-      markdown: string
+      markdown: {
+        markdownContent: string
+        mediaFiles: {url: string; filename: string}[]
+      }
     }[],
   ) => Promise<void>
   darkMode: boolean
