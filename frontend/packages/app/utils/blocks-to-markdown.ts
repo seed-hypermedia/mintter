@@ -30,50 +30,60 @@ function convertContentItemToHtml(contentItem) {
   }
 }
 
-function convertBlockToHtml(block) {
-  const childrenHtml = block.children
-    ? block.children.map(convertBlockToHtml).join('\n')
+function convertBlockToHtml(block, isListItem = false) {
+  let childrenHtml = ''
+  if (block.children) {
+    const childrenContent = block.children
+      .map((child) =>
+        convertBlockToHtml(
+          child,
+          block.props.childrenType === 'ul' ||
+            block.props.childrenType === 'ol',
+        ),
+      )
+      .join('\n')
+    if (block.props.childrenType === 'ul') {
+      childrenHtml = `<ul>${childrenContent}</ul>`
+    } else if (block.props.childrenType === 'ol') {
+      childrenHtml = `<ol start="${
+        block.props.start || 1
+      }">${childrenContent}</ol>`
+    } else {
+      childrenHtml = childrenContent
+    }
+  }
+
+  const contentHtml = block.content
+    ? block.content.map(convertContentItemToHtml).join('')
     : ''
 
-  switch (block.type) {
-    case 'heading':
-      return `<h${block.props.level}>${block.content
-        .map(convertContentItemToHtml)
-        .join('')}</h${block.props.level}>\n${childrenHtml}`
-    case 'paragraph':
-      return `<p>${block.content
-        .map(convertContentItemToHtml)
-        .join('')}</p>\n${childrenHtml}`
-    case 'image':
-      return `<img src="${block.props.url}" alt="${block.content
-        .map((contentItem) => contentItem.text)
-        .join('')}" title="${block.props.name}">\n${childrenHtml}`
-    case 'codeBlock':
-      return `<pre><code class="language-${
-        block.props.language || 'plaintext'
-      }">${block.content
-        .map((contentItem) => contentItem.text)
-        .join('\n')}</code></pre>\n${childrenHtml}`
-    case 'video':
-      return `<p>![${block.props.name}](${block.props.url} "width=${block.props.width}")</p>\n${childrenHtml}`
-    case 'file':
-      return `<p>[${block.props.name}](${block.props.url} "size=${block.props.size}")</p>\n${childrenHtml}`
-    case 'list':
-      if (block.props.childrenType === 'ul') {
-        return `<ul>${block.children
-          .map((child) => `<li>${convertBlockToHtml(child)}</li>`)
-          .join('\n')}</ul>\n${childrenHtml}`
-      } else if (block.props.childrenType === 'ol') {
-        return `<ol start="${block.props.start}">${block.children
-          .map((child) => `<li>${convertBlockToHtml(child)}</li>`)
-          .join('\n')}</ol>\n${childrenHtml}`
-      }
-      return ''
-    default:
-      return block.content
-        ? block.content.map(convertContentItemToHtml).join('') +
-            `\n${childrenHtml}`
-        : childrenHtml
+  const blockHtml = (() => {
+    switch (block.type) {
+      case 'heading':
+        return `<h${block.props.level}>${contentHtml}</h${block.props.level}>`
+      case 'paragraph':
+        return `<p>${contentHtml}</p>`
+      case 'image':
+        return `<img src="${block.props.url}" alt="${contentHtml}" title="${block.props.name}">`
+      case 'codeBlock':
+        return `<pre><code class="language-${
+          block.props.language || 'plaintext'
+        }">${contentHtml}</code></pre>`
+      case 'video':
+        return `<p>![${block.props.name}](${block.props.url} "width=${block.props.width}")</p>`
+      case 'file':
+        return `<p>[${block.props.name}](${block.props.url} "size=${block.props.size}")</p>`
+      default:
+        return contentHtml
+    }
+  })()
+
+  if (isListItem) {
+    // Wrap the block content in <li> if it's a list item
+    return `<li>${blockHtml}${childrenHtml}</li>`
+  } else {
+    // Return the block content and any children it may have
+    return `${blockHtml}\n${childrenHtml}`
   }
 }
 
