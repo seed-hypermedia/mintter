@@ -73,6 +73,8 @@ function convertBlockToHtml(block, isListItem = false) {
         return `<p>![${block.props.name}](${block.props.url} "width=${block.props.width}")</p>`
       case 'file':
         return `<p>[${block.props.name}](${block.props.url} "size=${block.props.size}")</p>`
+      case 'math' || 'equation':
+        return `<p>$$${contentHtml}$$</p>`
       default:
         return contentHtml
     }
