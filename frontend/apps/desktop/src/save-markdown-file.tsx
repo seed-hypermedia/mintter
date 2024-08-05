@@ -6,7 +6,14 @@ import path from 'node:path'
 
 const {debug, error} = console
 
-export async function saveMarkdownFile(event, args) {
+export async function saveMarkdownFile(
+  event: any,
+  args: {
+    title: string
+    markdownContent: string
+    mediaFiles: {url: string; filename: string}[]
+  },
+) {
   const {title, markdownContent, mediaFiles} = args
   const camelTitle = title
     .split(' ')
@@ -36,61 +43,85 @@ export async function saveMarkdownFile(event, args) {
       fs.mkdirSync(mediaDir)
     }
 
-    // Save Markdown file
+    let updatedMarkdownContent = markdownContent
+
+    const uploadMediaFile = ({
+      url,
+      filename,
+    }: {
+      url: string
+      filename: string
+    }) => {
+      return new Promise<void>((resolve, reject) => {
+        const regex = /ipfs:\/\/(.+)/
+        const match = url.match(regex)
+        const cid = match ? match[1] : null
+        const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
+
+        request.on('response', (response) => {
+          const mimeType = response.headers['content-type']
+          const extension = Array.isArray(mimeType)
+            ? mime.extension(mimeType[0])
+            : mime.extension(mimeType)
+          const filenameWithExt = `${filename}.${extension}`
+          if (response.statusCode === 200) {
+            const chunks: Buffer[] = []
+
+            response.on('data', (chunk) => {
+              chunks.push(chunk)
+            })
+
+            response.on('end', () => {
+              const data = Buffer.concat(chunks)
+              if (!data || data.length === 0) {
+                reject(`Error: No data received for ${filenameWithExt}`)
+                return
+              }
+
+              const mediaFilePath = path.join(mediaDir, filenameWithExt)
+              try {
+                fs.writeFileSync(mediaFilePath, data)
+                debug(`Media file successfully saved: ${mediaFilePath}`)
+                // Update the markdown content with the correct file name
+                updatedMarkdownContent = updatedMarkdownContent.replace(
+                  filename,
+                  filenameWithExt,
+                )
+                resolve()
+              } catch (e) {
+                error(`Failed to save media file ${filenameWithExt}`, e)
+                reject(e)
+              }
+            })
+          } else {
+            reject(`Error: Invalid status code ${response.statusCode}`)
+          }
+        })
+
+        request.on('error', (err) => {
+          reject(err.message)
+        })
+
+        request.end()
+      })
+    }
+
+    // Process all media files
+    const uploadPromises = mediaFiles.map(uploadMediaFile)
+    try {
+      await Promise.all(uploadPromises)
+    } catch (e) {
+      error('Error processing media files:', e)
+    }
+
+    // Save the updated Markdown file after all media files are processed
     const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
-    fs.writeFile(markdownFilePath, markdownContent, (err) => {
+    fs.writeFile(markdownFilePath, updatedMarkdownContent, (err) => {
       if (err) {
         error('Error saving file:', err)
         return
       }
       debug('Markdown file successfully saved:', markdownFilePath)
     })
-
-    // Save Media files using CID
-    for (const {url, filename} of mediaFiles) {
-      const regex = /ipfs:\/\/(.+)/
-      const match = url.match(regex)
-      const cid = match ? match[1] : null
-      const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
-
-      request.on('response', (response) => {
-        const mimeType = response.headers['content-type']
-        const extension = Array.isArray(mimeType)
-          ? mime.extension(mimeType[0])
-          : mime.extension(mimeType)
-        const filenameWithExt = `${filename}.${extension}`
-        if (response.statusCode === 200) {
-          const chunks: Buffer[] = []
-
-          response.on('data', (chunk) => {
-            chunks.push(chunk)
-          })
-
-          response.on('end', () => {
-            const data = Buffer.concat(chunks)
-            if (!data || data.length === 0) {
-              error(`Error: No data received for ${filenameWithExt}`)
-              return
-            }
-
-            const mediaFilePath = path.join(mediaDir, filenameWithExt)
-            try {
-              fs.writeFileSync(mediaFilePath, data)
-              debug(`Media file successfully saved: ${mediaFilePath}`)
-            } catch (e) {
-              error(`Failed to save media file ${filenameWithExt}`, e)
-            }
-          })
-        } else {
-          error(`Error: Invalid status code ${response.statusCode}`)
-        }
-      })
-
-      request.on('error', (err) => {
-        error('Error:', err.message)
-      })
-
-      request.end()
-    }
   }
 }
