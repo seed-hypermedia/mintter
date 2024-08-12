@@ -386,7 +386,7 @@ export function toHMBlock(
         id: serverBlock.block.id,
         props: {
           url: serverBlock.block.ref,
-          view: serverBlock.block.attributes.view || 'content',
+          view: serverBlock.block.attributes?.view || 'content',
           textAlignment: 'left',
           childrenType: extractChildrenType(
             serverBlock.block.attributes?.childrenType,
@@ -401,7 +401,7 @@ export function toHMBlock(
         type: 'codeBlock',
         id: serverBlock.block.id,
         props: {
-          language: serverBlock.block.attributes.language,
+          language: serverBlock.block.attributes?.language,
           textAlignment: 'left',
           childrenType: extractChildrenType(
             serverBlock.block.attributes?.childrenType,
