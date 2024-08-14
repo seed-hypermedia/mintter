@@ -199,53 +199,55 @@ ipcMain.on(
             return new Promise<void>((resolve, reject) => {
               const regex = /ipfs:\/\/(.+)/
               const match = url.match(regex)
-              const cid = match ? match[1] : null
-              const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
+              if (match) {
+                const cid = match ? match[1] : null
+                const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
 
-              request.on('response', (response) => {
-                const mimeType = response.headers['content-type']
-                const extension = Array.isArray(mimeType)
-                  ? mime.extension(mimeType[0])
-                  : mime.extension(mimeType)
-                const filenameWithExt = `${filename}.${extension}`
-                if (response.statusCode === 200) {
-                  const chunks: Buffer[] = []
+                request.on('response', (response) => {
+                  const mimeType = response.headers['content-type']
+                  const extension = Array.isArray(mimeType)
+                    ? mime.extension(mimeType[0])
+                    : mime.extension(mimeType)
+                  const filenameWithExt = `${filename}.${extension}`
+                  if (response.statusCode === 200) {
+                    const chunks: Buffer[] = []
 
-                  response.on('data', (chunk) => {
-                    chunks.push(chunk)
-                  })
+                    response.on('data', (chunk) => {
+                      chunks.push(chunk)
+                    })
 
-                  response.on('end', () => {
-                    const data = Buffer.concat(chunks)
-                    if (!data || data.length === 0) {
-                      reject(`Error: No data received for ${filenameWithExt}`)
-                      return
-                    }
+                    response.on('end', () => {
+                      const data = Buffer.concat(chunks)
+                      if (!data || data.length === 0) {
+                        reject(`Error: No data received for ${filenameWithExt}`)
+                        return
+                      }
 
-                    const mediaFilePath = path.join(mediaDir, filenameWithExt)
-                    try {
-                      fs.writeFileSync(mediaFilePath, data)
-                      debug(`Media file successfully saved: ${mediaFilePath}`)
-                      // Update the markdown content with the correct file name
-                      updatedMarkdownContent = updatedMarkdownContent.replace(
-                        filename,
-                        filenameWithExt,
-                      )
-                      resolve()
-                    } catch (e) {
-                      reject(e)
-                    }
-                  })
-                } else {
-                  reject(`Error: Invalid status code ${response.statusCode}`)
-                }
-              })
+                      const mediaFilePath = path.join(mediaDir, filenameWithExt)
+                      try {
+                        fs.writeFileSync(mediaFilePath, data)
+                        debug(`Media file successfully saved: ${mediaFilePath}`)
+                        // Update the markdown content with the correct file name
+                        updatedMarkdownContent = updatedMarkdownContent.replace(
+                          filename,
+                          filenameWithExt,
+                        )
+                        resolve()
+                      } catch (e) {
+                        reject(e)
+                      }
+                    })
+                  } else {
+                    reject(`Error: Invalid status code ${response.statusCode}`)
+                  }
+                })
 
-              request.on('error', (err) => {
-                reject(err.message)
-              })
+                request.on('error', (err) => {
+                  reject(err.message)
+                })
 
-              request.end()
+                request.end()
+              }
             })
           }
 

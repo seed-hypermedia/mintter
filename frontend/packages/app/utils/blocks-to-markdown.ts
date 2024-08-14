@@ -105,6 +105,13 @@ async function extractMediaFiles(blocks) {
       block.type === 'file'
     ) {
       const url = block.props.url
+      if (
+        url.includes('youtu.be') ||
+        url.includes('youtube') ||
+        url.includes('vimeo')
+      ) {
+        return
+      }
       const filename = url.split('/').pop()
       mediaFiles.push({url, filename})
       block.props = {...block.props, url: `media/${filename}`} // Update the URL to point to the local media folder
