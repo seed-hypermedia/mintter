@@ -64,7 +64,9 @@ function convertBlockToHtml(block, isListItem = false) {
       case 'paragraph':
         return `<p>${contentHtml}</p>`
       case 'image':
-        return `<img src="${block.props.url}" alt="${contentHtml}" title="${block.props.name}">`
+        const {url, name, width} = block.props
+        const titleWithWidth = `${name} | width=${width}`
+        return `<img src="${url}" alt="${contentHtml}" title="${titleWithWidth}">`
       case 'codeBlock':
         return `<pre><code class="language-${
           block.props.language || 'plaintext'
@@ -133,9 +135,29 @@ export async function convertBlocksToMarkdown(blocks: HMBlock[]) {
   const markdownFile = await unified()
     .use(rehypeParse, {fragment: true})
     .use(rehypeRemark)
+    // .use(addImageWidth)
     .use(remarkGfm)
     .use(remarkStringify)
     .process(convertBlocksToHtml(blocks))
   const markdownContent = markdownFile.value as string
   return {markdownContent, mediaFiles}
 }
+
+// import {visit} from 'unist-util-visit'
+
+// function addImageWidth() {
+//   return (tree) => {
+//     visit(tree, 'image', (node) => {
+//       console.log(node)
+//       const width = node.width
+//       console.log(width)
+
+//       if (width) {
+//         // Inject width into the title attribute
+//         node.title = node.title
+//           ? `${node.title} "width=${width}"`
+//           : `"width=${width}"`
+//       }
+//     })
+//   }
+// }
