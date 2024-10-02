@@ -165,6 +165,9 @@ ipcMain.on(
         fs.mkdirSync(filePath)
       }
 
+      // Track how many times each title has been seen
+      const titleCounter: {[key: string]: number} = {}
+
       for (const {title, markdown} of documents) {
         const {markdownContent, mediaFiles} = markdown
         const camelTitle = title
@@ -175,100 +178,111 @@ ipcMain.on(
           )
           .join('')
 
-        if (filePath) {
-          const documentDir = path.join(filePath, camelTitle)
+        // Initialize the counter for the title if it doesn't exist
+        if (!titleCounter[camelTitle]) {
+          titleCounter[camelTitle] = 0
+        }
 
-          if (!fs.existsSync(documentDir)) {
-            fs.mkdirSync(documentDir)
-          }
+        let documentDir = path.join(filePath, camelTitle)
 
-          const mediaDir = path.join(documentDir, 'media')
-          if (!fs.existsSync(mediaDir)) {
-            fs.mkdirSync(mediaDir)
-          }
+        // If the directory already exists, increment the counter for that title
+        if (fs.existsSync(documentDir)) {
+          titleCounter[camelTitle] += 1
+          documentDir = path.join(
+            filePath,
+            `${camelTitle}-${titleCounter[camelTitle]}`,
+          )
+        }
 
-          let updatedMarkdownContent = markdownContent
+        // Create the directory for the document
+        fs.mkdirSync(documentDir)
 
-          const uploadMediaFile = ({
-            url,
-            filename,
-          }: {
-            url: string
-            filename: string
-          }) => {
-            return new Promise<void>((resolve, reject) => {
-              const regex = /ipfs:\/\/(.+)/
-              const match = url.match(regex)
-              if (match) {
-                const cid = match ? match[1] : null
-                const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
+        const mediaDir = path.join(documentDir, 'media')
+        if (!fs.existsSync(mediaDir)) {
+          fs.mkdirSync(mediaDir)
+        }
 
-                request.on('response', (response) => {
-                  const mimeType = response.headers['content-type']
-                  const extension = Array.isArray(mimeType)
-                    ? mime.extension(mimeType[0])
-                    : mime.extension(mimeType)
-                  const filenameWithExt = `${filename}.${extension}`
-                  if (response.statusCode === 200) {
-                    const chunks: Buffer[] = []
+        let updatedMarkdownContent = markdownContent
 
-                    response.on('data', (chunk) => {
-                      chunks.push(chunk)
-                    })
+        const uploadMediaFile = ({
+          url,
+          filename,
+        }: {
+          url: string
+          filename: string
+        }) => {
+          return new Promise<void>((resolve, reject) => {
+            const regex = /ipfs:\/\/(.+)/
+            const match = url.match(regex)
+            if (match) {
+              const cid = match ? match[1] : null
+              const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
 
-                    response.on('end', () => {
-                      const data = Buffer.concat(chunks)
-                      if (!data || data.length === 0) {
-                        reject(`Error: No data received for ${filenameWithExt}`)
-                        return
-                      }
+              request.on('response', (response) => {
+                const mimeType = response.headers['content-type']
+                const extension = Array.isArray(mimeType)
+                  ? mime.extension(mimeType[0])
+                  : mime.extension(mimeType)
+                const filenameWithExt = `${filename}.${extension}`
+                if (response.statusCode === 200) {
+                  const chunks: Buffer[] = []
 
-                      const mediaFilePath = path.join(mediaDir, filenameWithExt)
-                      try {
-                        fs.writeFileSync(mediaFilePath, data)
-                        debug(`Media file successfully saved: ${mediaFilePath}`)
-                        // Update the markdown content with the correct file name
-                        updatedMarkdownContent = updatedMarkdownContent.replace(
-                          filename,
-                          filenameWithExt,
-                        )
-                        resolve()
-                      } catch (e) {
-                        reject(e)
-                      }
-                    })
-                  } else {
-                    reject(`Error: Invalid status code ${response.statusCode}`)
-                  }
-                })
+                  response.on('data', (chunk) => {
+                    chunks.push(chunk)
+                  })
 
-                request.on('error', (err) => {
-                  reject(err.message)
-                })
+                  response.on('end', () => {
+                    const data = Buffer.concat(chunks)
+                    if (!data || data.length === 0) {
+                      reject(`Error: No data received for ${filenameWithExt}`)
+                      return
+                    }
 
-                request.end()
-              }
-            })
-          }
+                    const mediaFilePath = path.join(mediaDir, filenameWithExt)
+                    try {
+                      fs.writeFileSync(mediaFilePath, data)
+                      debug(`Media file successfully saved: ${mediaFilePath}`)
+                      // Update the markdown content with the correct file name
+                      updatedMarkdownContent = updatedMarkdownContent.replace(
+                        filename,
+                        filenameWithExt,
+                      )
+                      resolve()
+                    } catch (e) {
+                      reject(e)
+                    }
+                  })
+                } else {
+                  reject(`Error: Invalid status code ${response.statusCode}`)
+                }
+              })
 
-          // Process all media files
-          const uploadPromises = mediaFiles.map(uploadMediaFile)
-          try {
-            await Promise.all(uploadPromises)
-          } catch (e) {
-            error('Error processing media files:', e)
-          }
+              request.on('error', (err) => {
+                reject(err.message)
+              })
 
-          // Save the updated Markdown file after all media files are processed
-          const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
-          fs.writeFile(markdownFilePath, updatedMarkdownContent, (err) => {
-            if (err) {
-              error('Error saving file:', err)
-              return
+              request.end()
             }
-            debug('Markdown file successfully saved:', markdownFilePath)
           })
         }
+
+        // Process all media files
+        const uploadPromises = mediaFiles.map(uploadMediaFile)
+        try {
+          await Promise.all(uploadPromises)
+        } catch (e) {
+          error('Error processing media files:', e)
+        }
+
+        // Save the updated Markdown file after all media files are processed
+        const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
+        fs.writeFile(markdownFilePath, updatedMarkdownContent, (err) => {
+          if (err) {
+            error('Error saving file:', err)
+            return
+          }
+          debug('Markdown file successfully saved:', markdownFilePath)
+        })
       }
     }
   },
