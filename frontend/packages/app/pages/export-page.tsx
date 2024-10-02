@@ -27,10 +27,6 @@ export default function ExportPage() {
   const [allSelected, setAllSelected] = useState(false)
   const {exportDocuments} = useAppContext()
 
-  useEffect(() => {
-    console.log(documents)
-  }, [documents])
-
   const route = useNavRoute()
   if (route.key !== 'export') throw new Error('invalid route')
 
