@@ -138,10 +138,19 @@ export default function ExportPage() {
       documents.map(async (doc) => {
         const blocks: HMBlockNode[] | undefined = doc.document?.children
         const editorBlocks = toHMBlock(blocks)
-        const markdown = await convertBlocksToMarkdown(editorBlocks)
+        const {markdownContent, mediaFiles} =
+          await convertBlocksToMarkdown(editorBlocks)
+        const title = getDocumentTitle(doc.document)
+
+        // Prepend the title as an H1 to the markdown content
+        const markdownWithTitle = `# ${title}\n\n${markdownContent}`
+
         return {
-          title: getDocumentTitle(doc.document),
-          markdown,
+          title,
+          markdown: {
+            markdownContent: markdownWithTitle,
+            mediaFiles,
+          },
         }
       }),
     )

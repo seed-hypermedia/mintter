@@ -17,11 +17,10 @@ export async function saveMarkdownFile(
   const {title, markdownContent, mediaFiles} = args
   const camelTitle = title
     .split(' ')
-    .map(
-      (word: string) =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-    )
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join('')
+    .replace(/[\/\\|]/g, '-') // Removes invalid characters: / \ |
+    .replace(/\s+/g, '') // Remove all whitespace for camel case
 
   const {filePath} = await dialog.showSaveDialog({
     title: 'Save Markdown and Media',

@@ -177,6 +177,8 @@ ipcMain.on(
               word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
           )
           .join('')
+          .replace(/[\/\\|]/g, '-') // Removes invalid characters: / \ |
+          .replace(/\s+/g, '') // Remove all whitespace for camel case
 
         // Initialize the counter for the title if it doesn't exist
         if (!titleCounter[camelTitle]) {

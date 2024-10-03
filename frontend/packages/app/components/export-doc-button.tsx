@@ -30,7 +30,9 @@ export const ExportDocButton = ({
               await convertBlocksToMarkdown(editorBlocks)
 
             const {markdownContent, mediaFiles} = markdownWithFiles
-            exportDocument(title, markdownContent, mediaFiles)
+            // Prepend the title as an H1 to the markdown content
+            const markdownWithTitle = `# ${title}\n\n${markdownContent}`
+            exportDocument(title, markdownWithTitle, mediaFiles)
           }}
           icon={Download}
         >
