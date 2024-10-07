@@ -26,9 +26,8 @@ COPY --from=builder /app/frontend/apps/site/public ./frontend/apps/site/public
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-USER nextjs
-
 RUN chmod -R 655 /frontend/apps/site/.next
+USER nextjs
 
 EXPOSE 3000
 
