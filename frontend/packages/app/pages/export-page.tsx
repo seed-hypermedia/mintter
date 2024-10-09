@@ -10,6 +10,7 @@ import {
   Checkbox,
   Container,
   SizableText,
+  Spinner,
   XStack,
   YStack,
   toast,
@@ -25,6 +26,7 @@ import {useNavRoute} from '../utils/navigation'
 export default function ExportPage() {
   const [documents, setDocuments] = useState<HMPublication[]>([])
   const [allSelected, setAllSelected] = useState(false)
+  const [loading, setLoading] = useState(false)
   const {exportDocuments} = useAppContext()
 
   const route = useNavRoute()
@@ -129,6 +131,7 @@ export default function ExportPage() {
   }
 
   const submitExportDocuments = async () => {
+    setLoading(true)
     const documentsToExport = await Promise.all(
       documents.map(async (doc) => {
         const blocks: HMBlockNode[] | undefined = doc.document?.children
@@ -153,9 +156,11 @@ export default function ExportPage() {
     exportDocuments(documentsToExport)
       .then((res) => {
         toast.success(res)
+        setLoading(false)
       })
       .catch((err) => {
         toast.error(err)
+        setLoading(false)
       })
   }
 
@@ -168,10 +173,13 @@ export default function ExportPage() {
         <Button
           marginBottom="$4"
           width="$20"
+          disabled={loading}
           onPress={() => {
             submitExportDocuments()
           }}
-        >{`Export ${documents.length} documents`}</Button>
+        >
+          {loading ? <Spinner /> : `Export ${documents.length} documents`}
+        </Button>
         <YStack margin="$1.5" w="100%">
           <XStack
             marginBottom="$5"
@@ -211,10 +219,13 @@ export default function ExportPage() {
           <Button
             marginTop="$3"
             width="$20"
+            disabled={loading}
             onPress={() => {
               submitExportDocuments()
             }}
-          >{`Export ${documents.length} documents`}</Button>
+          >
+            {loading ? <Spinner /> : `Export ${documents.length} documents`}
+          </Button>
         </YStack>
       </Container>
     </MainWrapper>
