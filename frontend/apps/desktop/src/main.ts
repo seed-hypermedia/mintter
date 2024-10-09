@@ -170,7 +170,7 @@ ipcMain.on(
 
       let success: {success: boolean; message: string} = {
         success: true,
-        message: `Export successful at: ${filePath}`,
+        message: `Successfully exported documents to: ${filePath}.`,
       }
 
       for (const {title, markdown} of documents) {
@@ -280,7 +280,7 @@ ipcMain.on(
         } catch (err) {
           success = {
             success: false,
-            message: `Error processing media files: ${err.message || err}`,
+            message: `Error processing media files: ${err.message || err}.`,
           }
           error('Error processing media files:', err)
         }
@@ -293,7 +293,7 @@ ipcMain.on(
               success: false,
               message: `Error saving document "${title}": ${
                 err.message || err
-              }`,
+              }.`,
             }
             error('Error saving file:', err)
             return
@@ -316,7 +316,7 @@ ipcMain.on(
     } else {
       event.sender.send('export-completed', {
         success: false,
-        message: 'Export cancelled',
+        message: 'Export has been cancelled.',
       })
     }
   },
