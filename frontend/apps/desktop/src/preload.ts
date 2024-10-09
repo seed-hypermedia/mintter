@@ -46,6 +46,48 @@ contextBridge.exposeInMainWorld('windowId', windowInfo.windowId)
 contextBridge.exposeInMainWorld('windowType', windowInfo.windowType)
 contextBridge.exposeInMainWorld('initNavState', windowInfo.navState)
 
+contextBridge.exposeInMainWorld('docExport', {
+  exportDocument: async (
+    title: string,
+    markdownContent: string,
+    mediaFiles: {url: string; filename: string}[],
+  ) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.once('export-completed', (event, response) => {
+        if (response.success) {
+          resolve(response.message)
+        } else {
+          reject(response.message)
+        }
+      })
+
+      ipcRenderer.send('export-document', {title, markdownContent, mediaFiles})
+    })
+  },
+
+  exportDocuments: async (
+    documents: {
+      title: string
+      markdown: {
+        markdownContent: string
+        mediaFiles: {url: string; filename: string}[]
+      }
+    }[],
+  ) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.once('export-completed', (event, response) => {
+        if (response.success) {
+          resolve(response.message)
+        } else {
+          reject(response.message)
+        }
+      })
+
+      ipcRenderer.send('export-multiple-documents', documents)
+    })
+  },
+})
+
 const [updateDarkMode, darkMode] = writeableStateStream<GoDaemonState>(
   windowInfo.darkMode,
 )

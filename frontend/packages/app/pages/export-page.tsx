@@ -13,6 +13,7 @@ import {
   SizableText,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
 import {useAppContext} from '../app-context'
@@ -156,6 +157,12 @@ export default function ExportPage() {
     )
 
     exportDocuments(documentsToExport)
+      .then((res) => {
+        toast.success(res)
+      })
+      .catch((err) => {
+        toast.error(err)
+      })
   }
 
   return (
@@ -164,6 +171,13 @@ export default function ExportPage() {
         <SizableText fontWeight="800" fontSize="$9" marginBottom="$8">
           Export your documents
         </SizableText>
+        <Button
+          marginBottom="$4"
+          width="$20"
+          onPress={() => {
+            submitExportDocuments()
+          }}
+        >{`Export ${documents.length} documents`}</Button>
         <YStack margin="$1.5" w="100%">
           <XStack
             marginBottom="$5"

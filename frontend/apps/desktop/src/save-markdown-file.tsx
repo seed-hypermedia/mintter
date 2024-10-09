@@ -43,6 +43,10 @@ export async function saveMarkdownFile(
     }
 
     let updatedMarkdownContent = markdownContent
+    let success: {success: boolean; message: string} = {
+      success: true,
+      message: `Export successful at: ${filePath}`,
+    }
 
     const uploadMediaFile = ({
       url,
@@ -109,18 +113,42 @@ export async function saveMarkdownFile(
     const uploadPromises = mediaFiles.map(uploadMediaFile)
     try {
       await Promise.all(uploadPromises)
-    } catch (e) {
-      error('Error processing media files:', e)
+    } catch (err) {
+      success = {
+        success: false,
+        message: `Error processing media files: ${err.message || err}`,
+      }
+      error('Error processing media files:', err)
     }
 
     // Save the updated Markdown file after all media files are processed
     const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
     fs.writeFile(markdownFilePath, updatedMarkdownContent, (err) => {
       if (err) {
+        success = {
+          success: false,
+          message: `Error saving document "${title}": ${err.message || err}`,
+        }
         error('Error saving file:', err)
         return
       }
       debug('Markdown file successfully saved:', markdownFilePath)
+    })
+    if (success.success) {
+      event.sender.send('export-completed', {
+        success: true,
+        message: success.message,
+      })
+    } else {
+      event.sender.send('export-completed', {
+        success: false,
+        message: success.message,
+      })
+    }
+  } else {
+    event.sender.send('export-completed', {
+      success: false,
+      message: 'Export cancelled',
     })
   }
 }

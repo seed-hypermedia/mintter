@@ -1,5 +1,5 @@
 import {HMBlockNode, toHMBlock} from '@mintter/shared'
-import {Button, Tooltip} from '@mintter/ui'
+import {Button, Tooltip, toast} from '@mintter/ui'
 import {Download} from '@tamagui/lucide-icons'
 import {useAppContext} from '../app-context'
 import {usePublication} from '../models/documents'
@@ -33,6 +33,12 @@ export const ExportDocButton = ({
             // Prepend the title as an H1 to the markdown content
             const markdownWithTitle = `# ${title}\n\n${markdownContent}`
             exportDocument(title, markdownWithTitle, mediaFiles)
+              .then((res) => {
+                toast.success(res)
+              })
+              .catch((err) => {
+                toast.error(err)
+              })
           }}
           icon={Download}
         >
