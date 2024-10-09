@@ -1,5 +1,4 @@
 import {
-  HMAccount,
   HMBlockNode,
   HMPublication,
   getDocumentTitle,
@@ -15,7 +14,7 @@ import {
   YStack,
   toast,
 } from '@mintter/ui'
-import {useEffect, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import {useAppContext} from '../app-context'
 import {MainWrapper} from '../components/main-wrapper'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
@@ -64,34 +63,29 @@ export default function ExportPage() {
   }, [publications.data, accounts.data])
 
   const ExportDocumentListItem = ({
-    publication,
-    author,
-    allSelected,
+    publication, // author,
   }: {
     publication: HMPublication
-    author: HMAccount | string | undefined
-    allSelected: boolean
+    // author: HMAccount | string | undefined
   }) => {
     const title = getDocumentTitle(publication.document)
-    const [checked, setChecked] = useState(allSelected)
 
-    useEffect(() => {
-      setChecked(
-        documents.some((doc) => doc.document?.id === publication.document?.id),
-      )
-    }, [documents, publication.document?.id, allSelected])
+    const checked = documents.some(
+      (doc) => doc.document?.id === publication.document?.id,
+    )
 
     const handleCheckedChange = (isChecked) => {
       if (isChecked) {
-        setDocuments([...documents, publication])
+        setDocuments((prevDocuments) => [...prevDocuments, publication])
+        if (documents.length + 1 === data?.length) setAllSelected(true)
       } else {
         setDocuments((prevDocuments) =>
           prevDocuments.filter(
             (doc) => doc.document?.id !== publication.document?.id,
           ),
         )
+        if (allSelected) setAllSelected(false)
       }
-      setChecked(isChecked)
     }
 
     return (
@@ -210,8 +204,7 @@ export default function ExportPage() {
               <ExportDocumentListItem
                 key={result.publication.document?.id}
                 publication={result.publication}
-                author={result.author}
-                allSelected={allSelected}
+                // author={result.author}
               />
             )
           })}
