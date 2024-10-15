@@ -152,6 +152,7 @@ ipcMain.on(
     }[],
   ) => {
     const {debug, error} = console
+
     // Open a dialog to select a directory
     const {filePaths} = await dialog.showOpenDialog({
       title: 'Select Export Directory',
@@ -160,21 +161,26 @@ ipcMain.on(
     })
 
     if (filePaths && filePaths.length > 0) {
-      const filePath = path.join(filePaths[0], 'Mintter Documents')
-      if (!fs.existsSync(filePath)) {
-        fs.mkdirSync(filePath)
-      }
+      const exportDir = path.join(filePaths[0], 'Mintter Documents')
+      const mediaDir = path.join(exportDir, 'media')
 
-      // Track how many times each title has been seen
-      const titleCounter: {[key: string]: number} = {}
+      // Create the Mintter Documents folder and the shared media folder
+      if (!fs.existsSync(exportDir)) {
+        fs.mkdirSync(exportDir)
+      }
+      if (!fs.existsSync(mediaDir)) {
+        fs.mkdirSync(mediaDir)
+      }
 
       let success: {success: boolean; message: string} = {
         success: true,
-        message: `Successfully exported documents to: ${filePath}.`,
+        message: `Successfully exported documents to: ${exportDir}.`,
       }
 
       for (const {title, markdown} of documents) {
         const {markdownContent, mediaFiles} = markdown
+
+        // Generate a camelCase filename for the markdown document
         const camelTitle = title
           .split(' ')
           .map(
@@ -182,36 +188,14 @@ ipcMain.on(
               word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
           )
           .join('')
-          .replace(/[\/\\|]/g, '-') // Removes invalid characters: / \ |
+          .replace(/[\/\\|]/g, '-') // Remove invalid characters: / \ |
           .replace(/\s+/g, '') // Remove all whitespace for camel case
 
-        // Initialize the counter for the title if it doesn't exist
-        if (!titleCounter[camelTitle]) {
-          titleCounter[camelTitle] = 0
-        }
-
-        let documentDir = path.join(filePath, camelTitle)
-
-        // If the directory already exists, increment the counter for that title
-        if (fs.existsSync(documentDir)) {
-          titleCounter[camelTitle] += 1
-          documentDir = path.join(
-            filePath,
-            `${camelTitle}-${titleCounter[camelTitle]}`,
-          )
-        }
-
-        // Create the directory for the document
-        fs.mkdirSync(documentDir)
-
-        const mediaDir = path.join(documentDir, 'media')
-        if (!fs.existsSync(mediaDir)) {
-          fs.mkdirSync(mediaDir)
-        }
+        const markdownFilePath = path.join(exportDir, `${camelTitle}.md`)
 
         let updatedMarkdownContent = markdownContent
 
-        const uploadMediaFile = ({
+        const uploadMediaFile = async ({
           url,
           filename,
         }: {
@@ -222,7 +206,7 @@ ipcMain.on(
             const regex = /ipfs:\/\/(.+)/
             const match = url.match(regex)
             if (match) {
-              const cid = match ? match[1] : null
+              const cid = match[1]
               const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
 
               request.on('response', (response) => {
@@ -231,6 +215,7 @@ ipcMain.on(
                   ? mime.extension(mimeType[0])
                   : mime.extension(mimeType)
                 const filenameWithExt = `${filename}.${extension}`
+
                 if (response.statusCode === 200) {
                   const chunks: Buffer[] = []
 
@@ -273,33 +258,20 @@ ipcMain.on(
           })
         }
 
-        // Process all media files
-        const uploadPromises = mediaFiles.map(uploadMediaFile)
+        // Handle all media files for the current document
+        await Promise.all(mediaFiles.map(uploadMediaFile))
+
+        // Save the updated markdown file
         try {
-          await Promise.all(uploadPromises)
-        } catch (err) {
+          fs.writeFileSync(markdownFilePath, updatedMarkdownContent)
+          debug(`Markdown file successfully saved: ${markdownFilePath}`)
+        } catch (e) {
+          error(`Error saving markdown file: ${markdownFilePath}`, e)
           success = {
             success: false,
-            message: `Error processing media files: ${err.message || err}.`,
+            message: `Error saving document: ${title}`,
           }
-          error('Error processing media files:', err)
         }
-
-        // Save the updated Markdown file after all media files are processed
-        const markdownFilePath = path.join(documentDir, `${camelTitle}.md`)
-        fs.writeFile(markdownFilePath, updatedMarkdownContent, (err) => {
-          if (err) {
-            success = {
-              success: false,
-              message: `Error saving document "${title}": ${
-                err.message || err
-              }.`,
-            }
-            error('Error saving file:', err)
-            return
-          }
-          debug('Markdown file successfully saved:', markdownFilePath)
-        })
       }
 
       if (success.success) {
