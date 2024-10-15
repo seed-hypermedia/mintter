@@ -145,7 +145,7 @@ export default function ExportPage() {
         .join('')
         .replace(/[\/\\|]/g, '-') // Removes invalid characters: / \ |
         .replace(/\s+/g, '') // Remove all whitespace for camel case
-      const path = './' + camelTitle + '/' + camelTitle + '.md'
+      const path = './' + camelTitle + '.md'
       docMap.set(id, {name: title, path: path})
     })
     const documentsToExport = await Promise.all(
