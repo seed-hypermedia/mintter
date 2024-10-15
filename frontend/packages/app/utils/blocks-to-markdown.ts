@@ -13,7 +13,10 @@ function applyStyles(text, styles) {
   return text
 }
 
-function convertContentItemToHtml(contentItem) {
+function convertContentItemToHtml(
+  contentItem,
+  docMap: Map<string, {name: string; path: string}>,
+) {
   let text = contentItem.text || ''
   const {styles = {}} = contentItem
 
@@ -24,13 +27,20 @@ function convertContentItemToHtml(contentItem) {
       contentItem.content[0].text,
       contentItem.content[0].styles || {},
     )
-    return `<a href="${contentItem.href}">${linkText}</a>`
+    const docPath = docMap.get(contentItem.href)
+    return `<a href="${
+      docPath ? docPath.path : contentItem.href
+    }">${linkText}</a>`
   } else {
     return text
   }
 }
 
-function convertBlockToHtml(block, isListItem = false) {
+function convertBlockToHtml(
+  block,
+  isListItem = false,
+  docMap: Map<string, {name: string; path: string}>,
+) {
   let childrenHtml = ''
   if (block.children) {
     const childrenContent = block.children
@@ -39,6 +49,7 @@ function convertBlockToHtml(block, isListItem = false) {
           child,
           block.props.childrenType === 'ul' ||
             block.props.childrenType === 'ol',
+          docMap,
         ),
       )
       .join('\n')
@@ -54,7 +65,9 @@ function convertBlockToHtml(block, isListItem = false) {
   }
 
   const contentHtml = block.content
-    ? block.content.map(convertContentItemToHtml).join('')
+    ? block.content
+        .map((contentItem) => convertContentItemToHtml(contentItem, docMap))
+        .join('')
     : ''
 
   const blockHtml = (() => {
@@ -91,14 +104,17 @@ function convertBlockToHtml(block, isListItem = false) {
   }
 }
 
-function convertBlocksToHtml(blocks) {
+function convertBlocksToHtml(
+  blocks: HMBlock[],
+  docMap: Map<string, {name: string; path: string}>,
+) {
   const htmlContent: string = blocks
-    .map((block) => convertBlockToHtml(block))
+    .map((block) => convertBlockToHtml(block, undefined, docMap))
     .join('\n\n')
   return htmlContent
 }
 
-async function extractMediaFiles(blocks) {
+async function extractMediaFiles(blocks: HMBlock[]) {
   const mediaFiles: {url: string; filename: string}[] = []
   const extractMedia = async (block) => {
     if (
@@ -132,15 +148,24 @@ async function extractMediaFiles(blocks) {
   return mediaFiles
 }
 
-export async function convertBlocksToMarkdown(blocks: HMBlock[]) {
-  const mediaFiles = await extractMediaFiles(blocks) // Extract media files and update URLs first
+// async function extractLinks(blocks: HMBlock[], blockMap: Map<string, {name: string; path: string}>) {
+//   const setUrls = async (block) => {
+//     if ()
+//   }
+// }
+
+export async function convertBlocksToMarkdown(
+  blocks: HMBlock[],
+  docMap: Map<string, {name: string; path: string}>,
+) {
+  const mediaFiles = await extractMediaFiles(blocks)
   const markdownFile = await unified()
     .use(rehypeParse, {fragment: true})
     .use(rehypeRemark)
     // .use(addImageWidth)
     .use(remarkGfm)
     .use(remarkStringify)
-    .process(convertBlocksToHtml(blocks))
+    .process(convertBlocksToHtml(blocks, docMap))
   const markdownContent = markdownFile.value as string
   return {markdownContent, mediaFiles}
 }

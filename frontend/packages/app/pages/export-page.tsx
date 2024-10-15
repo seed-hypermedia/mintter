@@ -132,12 +132,30 @@ export default function ExportPage() {
 
   const submitExportDocuments = async () => {
     setLoading(true)
+
+    const docMap = new Map<string, {name: string; path: string}>()
+    documents.forEach((doc) => {
+      const id = doc.document!.id!
+      const title = getDocumentTitle(doc.document)
+      const camelTitle = title
+        .split(' ')
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join('')
+        .replace(/[\/\\|]/g, '-') // Removes invalid characters: / \ |
+        .replace(/\s+/g, '') // Remove all whitespace for camel case
+      const path = './' + camelTitle + '/' + camelTitle + '.md'
+      docMap.set(id, {name: title, path: path})
+    })
     const documentsToExport = await Promise.all(
       documents.map(async (doc) => {
         const blocks: HMBlockNode[] | undefined = doc.document?.children
         const editorBlocks = toHMBlock(blocks)
-        const {markdownContent, mediaFiles} =
-          await convertBlocksToMarkdown(editorBlocks)
+        const {markdownContent, mediaFiles} = await convertBlocksToMarkdown(
+          editorBlocks,
+          docMap,
+        )
         const title = getDocumentTitle(doc.document)
 
         // Prepend the title as an H1 to the markdown content
