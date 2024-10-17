@@ -27,7 +27,7 @@ export default function ExportPage() {
   const [documents, setDocuments] = useState<HMPublication[]>([])
   const [allSelected, setAllSelected] = useState(false)
   const [loading, setLoading] = useState(false)
-  const {exportDocuments} = useAppContext()
+  const {exportDocuments, openDirectory} = useAppContext()
 
   const route = useNavRoute()
   if (route.key !== 'export') throw new Error('invalid route')
@@ -173,7 +173,26 @@ export default function ExportPage() {
 
     exportDocuments(documentsToExport)
       .then((res) => {
-        toast.success(res)
+        const success = (
+          <>
+            <YStack gap="$1.5" maxWidth={700}>
+              <SizableText wordWrap="break-word" textOverflow="break-word">
+                Successfully exported documents to: <b>{`${res}`}</b>.
+              </SizableText>
+              <SizableText
+                textDecorationLine="underline"
+                color="$blue9"
+                tag={'a'}
+                onPress={() => {
+                  openDirectory(res)
+                }}
+              >
+                Show directory
+              </SizableText>
+            </YStack>
+          </>
+        )
+        toast.success('', {customContent: success})
         setLoading(false)
       })
       .catch((err) => {

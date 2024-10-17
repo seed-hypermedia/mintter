@@ -176,7 +176,7 @@ ipcMain.on(
       const titleCounter: {[key: string]: number} = {}
       let success: {success: boolean; message: string} = {
         success: true,
-        message: `Successfully exported documents to: ${exportDir}.`,
+        message: exportDir,
       }
 
       for (const {title, markdown} of documents) {
@@ -310,6 +310,9 @@ ipcMain.on(
   },
 )
 
+ipcMain.on('open-directory', (_event, directory: string) => {
+  shell.openPath(directory)
+})
 ipcMain.on('open-external-link', (_event, linkUrl) => {
   shell.openExternal(linkUrl)
 })

@@ -17,6 +17,7 @@ export type AppContext = {
   queryClient: AppQueryClient
   ipc: AppIPC
   externalOpen: (url: string) => Promise<void>
+  openDirectory: (directory: string) => Promise<void>
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   exportDocument: (
@@ -44,6 +45,7 @@ export function AppContextProvider({
   queryClient,
   ipc,
   externalOpen,
+  openDirectory,
   windowUtils,
   saveCidAsFile,
   exportDocument,
@@ -56,6 +58,7 @@ export function AppContextProvider({
   queryClient: AppQueryClient
   ipc: AppIPC
   externalOpen: (url: string) => Promise<void>
+  openDirectory: (directory: string) => Promise<void>
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   exportDocument: (
@@ -82,6 +85,7 @@ export function AppContextProvider({
       queryClient,
       ipc,
       externalOpen,
+      openDirectory,
       windowUtils,
       saveCidAsFile,
       exportDocument,

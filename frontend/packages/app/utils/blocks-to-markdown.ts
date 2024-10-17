@@ -15,7 +15,7 @@ function applyStyles(text, styles) {
 
 function convertContentItemToHtml(
   contentItem,
-  docMap: Map<string, {name: string; path: string}>,
+  docMap?: Map<string, {name: string; path: string}>,
 ) {
   let text = contentItem.text || ''
   const {styles = {}} = contentItem
@@ -27,10 +27,9 @@ function convertContentItemToHtml(
       contentItem.content[0].text,
       contentItem.content[0].styles || {},
     )
-    const docPath = docMap.get(contentItem.href)
-    return `<a href="${
-      docPath ? docPath.path : contentItem.href
-    }">${linkText}</a>`
+    let docPath = contentItem.href
+    if (docMap) docPath = docMap.get(contentItem.href)
+    return `<a href="${docPath}">${linkText}</a>`
   } else {
     return text
   }
@@ -39,7 +38,7 @@ function convertContentItemToHtml(
 function convertBlockToHtml(
   block,
   isListItem = false,
-  docMap: Map<string, {name: string; path: string}>,
+  docMap?: Map<string, {name: string; path: string}>,
 ) {
   let childrenHtml = ''
   if (block.children) {
@@ -106,7 +105,7 @@ function convertBlockToHtml(
 
 function convertBlocksToHtml(
   blocks: HMBlock[],
-  docMap: Map<string, {name: string; path: string}>,
+  docMap?: Map<string, {name: string; path: string}>,
 ) {
   const htmlContent: string = blocks
     .map((block) => convertBlockToHtml(block, undefined, docMap))
@@ -156,7 +155,7 @@ async function extractMediaFiles(blocks: HMBlock[]) {
 
 export async function convertBlocksToMarkdown(
   blocks: HMBlock[],
-  docMap: Map<string, {name: string; path: string}>,
+  docMap?: Map<string, {name: string; path: string}>,
 ) {
   const mediaFiles = await extractMediaFiles(blocks)
   const markdownFile = await unified()

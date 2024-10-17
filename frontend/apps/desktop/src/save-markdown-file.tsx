@@ -45,7 +45,7 @@ export async function saveMarkdownFile(
     let updatedMarkdownContent = markdownContent
     let success: {success: boolean; message: string} = {
       success: true,
-      message: `Successfully exported ${title} to: ${filePath}.`,
+      message: filePath,
     }
 
     const uploadMediaFile = ({

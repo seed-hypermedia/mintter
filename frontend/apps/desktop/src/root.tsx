@@ -231,6 +231,9 @@ function MainApp({
         platform={appInfo.platform()}
         queryClient={queryClient}
         ipc={ipc}
+        openDirectory={async (directory: string) => {
+          ipc.send?.('open-directory', directory)
+        }}
         externalOpen={async (url: string) => {
           ipc.send?.('open-external-link', url)
         }}
