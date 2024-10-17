@@ -172,6 +172,8 @@ ipcMain.on(
         fs.mkdirSync(mediaDir)
       }
 
+      // Track duplicate titles
+      const titleCounter: {[key: string]: number} = {}
       let success: {success: boolean; message: string} = {
         success: true,
         message: `Successfully exported documents to: ${exportDir}.`,
@@ -191,7 +193,21 @@ ipcMain.on(
           .replace(/[\/\\|]/g, '-') // Remove invalid characters: / \ |
           .replace(/\s+/g, '') // Remove all whitespace for camel case
 
-        const markdownFilePath = path.join(exportDir, `${camelTitle}.md`)
+        // Initialize counter for the title if not present
+        if (!titleCounter[camelTitle]) {
+          titleCounter[camelTitle] = 0
+        }
+
+        let markdownFilePath = path.join(exportDir, `${camelTitle}.md`)
+
+        // Check if file with the same name already exists and add a counter to the file name
+        while (fs.existsSync(markdownFilePath)) {
+          titleCounter[camelTitle] += 1
+          markdownFilePath = path.join(
+            exportDir,
+            `${camelTitle}-${titleCounter[camelTitle]}.md`,
+          )
+        }
 
         let updatedMarkdownContent = markdownContent
 

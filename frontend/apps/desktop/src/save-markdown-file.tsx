@@ -23,7 +23,7 @@ export async function saveMarkdownFile(
     .replace(/\s+/g, '') // Remove all whitespace for camel case
 
   const {filePath} = await dialog.showSaveDialog({
-    title: 'Save Markdown and Media',
+    title: 'Save document as markdown',
     defaultPath: path.join(app.getPath('documents'), camelTitle),
     buttonLabel: 'Save',
     filters: [{name: 'Markdown Files', extensions: ['md']}],
@@ -45,7 +45,7 @@ export async function saveMarkdownFile(
     let updatedMarkdownContent = markdownContent
     let success: {success: boolean; message: string} = {
       success: true,
-      message: `Successfully exported documents to: ${filePath}.`,
+      message: `Successfully exported ${title} to: ${filePath}.`,
     }
 
     const uploadMediaFile = ({
